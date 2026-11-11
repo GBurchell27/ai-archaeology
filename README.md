@@ -8,7 +8,7 @@ This is a learning and research project. It is not a product, not a survey, and 
 
 The first region is a **known-site validation area**: Şanlıurfa province in southeastern Anatolia (Upper Mesopotamia), and the published Taş Tepeler Neolithic sites, including Göbekli Tepe and Karahan Tepe. The point of that region is to see whether the pipeline notices monuments that archaeologists already published, and to see how often it is wrong. It is not a blank-map search.
 
-Later regions may include the Maya lowlands (INEGI LiDAR) and Irish or other European LiDAR. No dataset is in use until its licence is written down in [`docs/data-sources.md`](docs/data-sources.md).
+The Anatolia data-gathering notes are in [`Anatolia/`](Anatolia/README.md). Later regions may include the Maya lowlands (INEGI LiDAR) and Irish or other European LiDAR. No dataset is in use until its licence is written down in [`docs/data-sources.md`](docs/data-sources.md), which points at the Anatolia register.
 
 What is implemented now is relief visualisation from a DEM. Detection, the literature check, ranking, and the private review map are the rest of the pipeline and are not built yet.
 
@@ -49,7 +49,8 @@ Published coordinates of already protected, already famous sites are not an invi
 ```
 src/ai_archaeology/    Python package
 scripts/               download scripts (the scripts, not the data)
-docs/data-sources.md   dataset register
+Anatolia/              SE Anatolia notes and the source register
+docs/data-sources.md   pointer to regional registers, plus a blank template
 data/                  gitignored local rasters
 outputs/               gitignored local products
 ```

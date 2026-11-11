@@ -9,7 +9,7 @@ These rules are hard rules:
 - Never commit precise coordinates of candidate or undiscovered sites. The risk is looting.
 - Shareable maps and figures use coarse or jittered locations only.
 - Do not call a candidate a discovery. A candidate stays a candidate until an archaeologist confirms it.
-- Respect each dataset's licence. Record it in `docs/data-sources.md` before use.
+- Respect each dataset's licence. Record it in `docs/data-sources.md` before use. The SE Anatolia register is `Anatolia/data-sources.md`.
 - Do not overclaim. Optical imagery, radar, and elevation models do not see through rock or deep sediment.
 
 ## Data
