@@ -1,0 +1,45 @@
+region_id: ireland_roscommon
+role: source
+title: One Geological Survey Ireland Phase 2 LiDAR tile in County Roscommon
+aoi:
+  kind: gsi_tile
+  tile_name: P_584760
+dataset:
+  adapter: ireland_gsi
+  tile_name: P_584760
+inventory:
+  adapter: nms_smr
+  licence: CC-BY-4.0
+  attribution: National Monuments Service, Government of Ireland, CC BY 4.0
+feature_classes:
+  - id: ringfort
+    monument_classes:
+      - Ringfort - rath
+      - Ringfort - cashel
+      - Ringfort - unclassified
+    diameter_m: [25, 60]
+    note: Usual ringfort diameters are about 25–60 m, so the earthwork is unresolved at 30 m.
+  - id: barrow
+    monument_class_prefix: Barrow
+    diameter_m: [8, 30]
+    note: Barrows are smaller than ringforts and do not survive as a shape at 30 m.
+  - id: large_enclosure
+    monument_classes:
+      - Enclosure - large enclosure
+    diameter_m: [80, 200]
+    note: The large end of this class can remain as broad relief at 30 m.
+  - id: enclosure
+    monument_class_prefix: Enclosure
+    diameter_m: [30, 80]
+    note: Ordinary enclosures are marginal at 30 m. Large enclosures are matched first.
+  - id: hillfort
+    monument_class_prefix: Hillfort
+    diameter_m: [100, 300]
+    note: Hillforts are large enough that a 30 m DEM can show the overall relief.
+validation:
+  block_size_m: 500
+  n_folds: 3
+  frozen:
+    method: eastern_columns
+    columns: 1
+    buffer_m: 150

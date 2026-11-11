@@ -1,0 +1,16 @@
+work_dir: data/cross_region
+output_dir: outputs/cross_region
+patch_size: 8
+epochs: 4
+learning_rate: 0.05
+negatives_per_positive: 2
+negative_buffer_m: 80
+seed: 11
+train_resolution_m: 30
+candidate_density_per_km2: 0.5
+recall_radii_m: [250, 500, 1000]
+random_draws: 24
+relief_radius_m: 12
+multi_directions: 4
+svf_directions: 8
+review_db: null
