@@ -4,10 +4,12 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { AtlasScene, type CameraPose } from "@/components/AtlasScene";
 import { Legend, PeriodDock, ShortcutOverlay, readLegendOpen, storeLegend, useAtlasKeys, useTheme, type AtlasKeyHandlers } from "@/components/AtlasChrome";
 import { naturalExaggeration } from "@/lib/exaggeration";
-import { boundsCenter, lonLatToMercator, sampleHeight, toLocal } from "@/lib/geo";
+import type { ClimatePoint, ContextLineLayer, ContextRasterLayer } from "@/components/ContextLayers";
+import type { ContextFeature } from "@/lib/contextGeometry";
+import { boundsCenter, boundsContain, lonLatToMercator, sampleHeight, toLocal } from "@/lib/geo";
 import { LAYER_STYLE, PERIODS, formatYear, periodOverlaps } from "@/lib/periods";
 import { decodeHeight } from "@/lib/terrain";
-import type { AtlasMetadata, BaseMap, LayerId, SiteCollection, SiteFeature } from "@/lib/types";
+import type { AtlasMetadata, BaseMap, CoronaRecord, LayerId, SiteCollection, SiteFeature } from "@/lib/types";
 import type { TerrainGrid } from "@/lib/terrain";
 
 const RASTER_TITLES: Record<string, string> = {
@@ -21,6 +23,7 @@ const RASTER_TITLES: Record<string, string> = {
   ndvi: "NDVI",
   hypsometric: "Hypsometric tint",
   satellite: "Sentinel-2 cloudless",
+  corona: "CORONA, 1968–69",
 };
 
 export function AtlasApp() {
@@ -56,6 +59,19 @@ export function AtlasApp() {
   const [help, setHelp] = useState(false);
   const [legendOpen, setLegendOpen] = useState(true);
   const [theme, toggleTheme] = useTheme();
+  const [contextOn, setContextOn] = useState<Record<string, boolean>>({
+    rivers: false,
+    lakes: false,
+    "paleo-water": false,
+    roads: false,
+    clay: false,
+    soc: false,
+    climate: false,
+  });
+  const [contextOpacity, setContextOpacity] = useState(0.62);
+  const [vectorCache, setVectorCache] = useState<Record<string, ContextFeature[]>>({});
+  const [climateRecords, setClimateRecords] = useState<ClimateRecord[]>([]);
+  const [climateId, setClimateId] = useState<string | null>(null);
   const readoutRef = useRef<HTMLDivElement>(null);
   const searchRef = useRef<HTMLInputElement>(null);
   const keys = useRef<AtlasKeyHandlers>({
@@ -70,6 +86,30 @@ export function AtlasApp() {
   });
   useAtlasKeys(keys);
   useEffect(() => setLegendOpen(readLegendOpen()), []);
+
+  useEffect(() => {
+    const files: Record<string, string> = {
+      rivers: "rivers.geojson",
+      lakes: "lakes.geojson",
+      "paleo-water": "paleo.geojson",
+      roads: "roads.geojson",
+    };
+    let cancel = false;
+    for (const [id, file] of Object.entries(files)) {
+      if (!contextOn[id] || vectorCache[id]) continue;
+      fetch(`/context/${file}`).then((response) => response.json()).then((data: { features: ContextFeature[] }) => {
+        if (!cancel) setVectorCache((current) => ({ ...current, [id]: data.features }));
+      }).catch(() => undefined);
+    }
+    if (contextOn.climate && climateRecords.length === 0) {
+      fetch("/context/climate.json").then((response) => response.json()).then((data: { records: ClimateRecord[] }) => {
+        if (!cancel) setClimateRecords(data.records);
+      }).catch(() => undefined);
+    }
+    return () => {
+      cancel = true;
+    };
+  }, [contextOn, vectorCache, climateRecords.length]);
 
   useEffect(() => {
     let cancel = false;
@@ -226,6 +266,7 @@ export function AtlasApp() {
       setSelectedId(null);
       setPanelShown(false);
       setReveal(false);
+      setClimateId(null);
     },
     onReset: backToTurkey,
     onTheme: toggleTheme,
@@ -233,6 +274,28 @@ export function AtlasApp() {
   };
 
   const rasterEntries = Object.entries(detail?.rasters ?? {});
+  const roadsInPeriod = period.id === "all" || (period.start <= 700 && period.end >= -300);
+  const lineColor: Record<string, string> = theme === "dark"
+    ? { rivers: "#8ec8d8", lakes: "#8ec8d8", "paleo-water": "#e2b07a", roads: "#f0d7a4" }
+    : { rivers: "#1d6278", lakes: "#1d6278", "paleo-water": "#8a5a22", roads: "#6a4318" };
+  const contextLines: ContextLineLayer[] = ["rivers", "lakes", "paleo-water", "roads"]
+    .filter((id) => contextOn[id] && vectorCache[id] && (id !== "roads" || roadsInPeriod))
+    .map((id) => ({ id, color: lineColor[id], features: vectorCache[id] }));
+  const contextRasters: ContextRasterLayer[] = ["clay", "soc"]
+    .filter((id) => contextOn[id])
+    .map((id) => ({ id, url: `/context/${id}.png`, opacity: contextOpacity }));
+  const climatePoints: ClimatePoint[] = contextOn.climate
+    ? climateRecords.filter((record) => {
+      const [east, north] = lonLatToMercator(record.longitude, record.latitude);
+      return boundsContain(metadata.bounds, east, north);
+    }).map((record) => ({
+      id: record.id,
+      name: record.name,
+      longitude: record.longitude,
+      latitude: record.latitude,
+    }))
+    : [];
+  const climateRecord = climateRecords.find((record) => record.id === climateId) ?? null;
   const detailUrl = detail?.rasters[detailLayer] ? `/terrain/${detail.rasters[detailLayer]}` : null;
   const compareUrl = detail?.rasters[compareLayer] ? `/terrain/${detail.rasters[compareLayer]}` : null;
 
@@ -259,6 +322,14 @@ export function AtlasApp() {
         night={theme === "dark"}
         reveal={reveal}
         readoutRef={readoutRef}
+        contextLines={contextLines}
+        contextRasters={contextRasters}
+        climatePoints={climatePoints}
+        climateId={climateId}
+        onClimate={(recordId) => {
+          setClimateId(recordId);
+          setSettingsOpen(false);
+        }}
         onSelect={(siteId) => {
           const site = sites.find((item) => item.id === siteId);
           if (site) {
@@ -314,6 +385,16 @@ export function AtlasApp() {
           onAzimuth={setAzimuth}
           onAltitude={setAltitude}
           onLabels={setLabels}
+          contextOn={contextOn}
+          contextOpacity={contextOpacity}
+          roadsInPeriod={roadsInPeriod}
+          climateRecords={climateRecords}
+          onContext={(id, enabled) => setContextOn((current) => ({ ...current, [id]: enabled }))}
+          onContextOpacity={setContextOpacity}
+          onClimate={(recordId) => {
+            setClimateId(recordId);
+            setSettingsOpen(false);
+          }}
         />
       ) : null}
       {selected ? (
@@ -336,7 +417,11 @@ export function AtlasApp() {
           onCompareLayer={setCompareLayer}
           onSplit={setSplit}
           onOpacity={setOpacity}
+          corona={detail?.corona}
         />
+      ) : null}
+      {climateRecord ? (
+        <ClimateChart record={climateRecord} onClose={() => setClimateId(null)} />
       ) : null}
       <Legend open={legendOpen} onToggle={() => setLegendOpen((open) => {
         const next = !open;
@@ -348,6 +433,16 @@ export function AtlasApp() {
     </div>
   );
 }
+
+const CONTEXT_TOGGLES: { id: string; title: string }[] = [
+  { id: "rivers", title: "Present-day rivers" },
+  { id: "lakes", title: "Present-day lakes" },
+  { id: "paleo-water", title: "Approximate paleolakes" },
+  { id: "roads", title: "Roman roads" },
+  { id: "clay", title: "Soil clay" },
+  { id: "soc", title: "Soil organic carbon" },
+  { id: "climate", title: "Palaeoclimate records" },
+];
 
 function SettingsMenu(props: {
   baseMap: BaseMap;
@@ -362,6 +457,13 @@ function SettingsMenu(props: {
   onAzimuth: (value: number) => void;
   onAltitude: (value: number) => void;
   onLabels: (value: boolean) => void;
+  contextOn: Record<string, boolean>;
+  contextOpacity: number;
+  roadsInPeriod: boolean;
+  climateRecords: ClimateRecord[];
+  onContext: (id: string, enabled: boolean) => void;
+  onContextOpacity: (value: number) => void;
+  onClimate: (recordId: string) => void;
 }) {
   return (
     <aside className="menu" aria-label="Settings">
@@ -386,6 +488,81 @@ function SettingsMenu(props: {
         <input type="checkbox" checked={props.labels} data-role="labels" onChange={(event) => props.onLabels(event.target.checked)} />
         Place names
       </label>
+      <h2>Context</h2>
+      {CONTEXT_TOGGLES.map((layer) => (
+        <label className="check" key={layer.id}>
+          <input
+            type="checkbox"
+            checked={props.contextOn[layer.id]}
+            data-context={layer.id}
+            onChange={(event) => props.onContext(layer.id, event.target.checked)}
+          />
+          {layer.title}
+        </label>
+      ))}
+      <p className="hint">
+        Rivers and lakes are present-day. Paleolakes are approximate sketches.
+        {props.roadsInPeriod ? " Roman roads are on for this period." : " Roman roads stay hidden until All periods or Classical & Byzantine."}
+      </p>
+      <label>Soil opacity <input type="range" min={0.25} max={0.9} step={0.05} value={props.contextOpacity} data-role="context-opacity" onChange={(event) => props.onContextOpacity(Number(event.target.value))} /></label>
+      {props.contextOn.climate ? (
+        <div className="climate-list">
+          {props.climateRecords.map((record) => (
+            <button type="button" key={record.id} data-climate={record.id} onClick={() => props.onClimate(record.id)}>
+              {record.name}
+            </button>
+          ))}
+        </div>
+      ) : null}
+    </aside>
+  );
+}
+
+interface ClimateRecord {
+  id: string;
+  name: string;
+  longitude: number;
+  latitude: number;
+  units: string;
+  citation: string;
+  sourceUrl: string;
+  series: [number, number][];
+}
+
+function ClimateChart(props: { record: ClimateRecord; onClose: () => void }) {
+  const series = props.record.series;
+  const years = series.map((pair) => pair[0]);
+  const values = series.map((pair) => pair[1]);
+  const minYear = Math.min(...years);
+  const maxYear = Math.max(...years);
+  const minValue = Math.min(...values);
+  const maxValue = Math.max(...values);
+  const width = 360;
+  const height = 148;
+  const pad = 16;
+  const xOf = (year: number) => pad + ((year - minYear) / Math.max(maxYear - minYear, 1)) * (width - pad * 2);
+  const yOf = (value: number) => pad + (1 - (value - minValue) / Math.max(maxValue - minValue, 0.001)) * (height - pad * 2);
+  const path = series.map((pair, index) => `${index === 0 ? "M" : "L"}${xOf(pair[0]).toFixed(1)},${yOf(pair[1]).toFixed(1)}`).join(" ");
+  const marks = [
+    { year: -6200, label: "8.2 ka" },
+    { year: -2200, label: "4.2 ka" },
+  ].filter((mark) => mark.year >= minYear && mark.year <= maxYear);
+  return (
+    <aside className="panel is-in chart" aria-label="Palaeoclimate record" data-chart={props.record.id}>
+      <button type="button" className="close" data-action="close-chart" onClick={props.onClose}>Close</button>
+      <h2>{props.record.name}</h2>
+      <p className="muted">{props.record.units}</p>
+      <svg viewBox={`0 0 ${width} ${height}`} role="img" aria-label={`${props.record.name} time series`}>
+        {marks.map((mark) => (
+          <g key={mark.label}>
+            <line x1={xOf(mark.year)} x2={xOf(mark.year)} y1={pad} y2={height - pad} />
+            <text x={xOf(mark.year) + 4} y={pad + 10}>{mark.label}</text>
+          </g>
+        ))}
+        <path d={path} />
+      </svg>
+      <p>This record shows the published measurements. The lines mark about 6200 BCE (8.2 ka) and 2200 BCE (4.2 ka). The effect of the 8.2 ka event on early farming is debated.</p>
+      <p className="source-line"><a href={props.record.sourceUrl} target="_blank" rel="noreferrer">{props.record.citation}</a></p>
     </aside>
   );
 }
@@ -405,6 +582,7 @@ function SitePanel(props: {
   onCompareLayer: (layer: string) => void;
   onSplit: (value: number) => void;
   onOpacity: (value: number) => void;
+  corona?: CoronaRecord;
 }) {
   const properties = props.site.properties;
   return (
@@ -437,6 +615,13 @@ function SitePanel(props: {
             {props.rasters.map(([id]) => <option key={id} value={id}>{RASTER_TITLES[id] ?? id}</option>)}
           </select>
           <label>Swipe <input type="range" min={0} max={100} value={props.split * 100} data-role="swipe" onChange={(event) => props.onSplit(Number(event.target.value) / 100)} /></label>
+          {props.corona && (props.detailLayer === "corona" || (props.compare && props.compareLayer === "corona")) ? (
+            <p className="source-line" data-role="corona-credit">
+              {props.corona.credit}. Frame {props.corona.frame} ({props.corona.date}), about {props.corona.pixelSizeM.toFixed(1)} m.
+              {" "}{props.corona.licence}. {props.corona.note}{" "}
+              <a href={props.corona.sourceUrl} target="_blank" rel="noreferrer">CORONA Atlas</a>
+            </p>
+          ) : null}
         </section>
       ) : null}
     </aside>

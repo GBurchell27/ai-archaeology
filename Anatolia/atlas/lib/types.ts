@@ -31,6 +31,16 @@ export interface SiteCollection {
   features: SiteFeature[];
 }
 
+export interface CoronaRecord {
+  frame: string;
+  date: string;
+  sourceUrl: string;
+  licence: string;
+  credit: string;
+  pixelSizeM: number;
+  note: string;
+}
+
 export interface DetailRecord {
   bounds: [number, number, number, number];
   width: number;
@@ -38,6 +48,7 @@ export interface DetailRecord {
   pixelSizeM: number;
   elevation: { min: number; max: number };
   rasters: Record<string, string>;
+  corona?: CoronaRecord;
 }
 
 export interface AtlasMetadata {

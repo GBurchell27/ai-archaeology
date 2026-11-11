@@ -5,6 +5,7 @@ import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { Suspense, useEffect, useMemo, useRef, useState, type MutableRefObject, type RefObject } from "react";
 import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
 import * as THREE from "three";
+import { ClimatePins, ContextDrapes, ContextLines, type ClimatePoint, type ContextLineLayer, type ContextRasterLayer } from "@/components/ContextLayers";
 import { boundsCenter, boundsContain, detailClipRect, lonLatToMercator, sampleMeshHeight, toLocal, type ClipRect } from "@/lib/geo";
 import { LAYER_STYLE } from "@/lib/periods";
 import { createSurfaceMaterial, prepareTexture, sunDirection } from "@/lib/shade";
@@ -40,6 +41,11 @@ interface AtlasSceneProps {
   night: boolean;
   reveal: boolean;
   readoutRef: RefObject<HTMLDivElement | null>;
+  contextLines: ContextLineLayer[];
+  contextRasters: ContextRasterLayer[];
+  climatePoints: ClimatePoint[];
+  climateId: string | null;
+  onClimate: (recordId: string) => void;
 }
 
 export function AtlasScene(props: AtlasSceneProps) {
@@ -95,7 +101,31 @@ export function AtlasScene(props: AtlasSceneProps) {
           night={props.night}
         />
       ) : null}
+      <ContextDrapes
+        layers={props.contextRasters}
+        metadata={props.metadata}
+        metres={props.metres}
+        origin={origin}
+        exaggeration={props.exaggeration}
+        clip={cover && props.detail ? detailClipRect(props.detail.bounds, origin) : null}
+      />
       </Suspense>
+      <ContextLines
+        layers={props.contextLines}
+        origin={origin}
+        metadata={props.metadata}
+        metres={props.metres}
+        exaggeration={props.exaggeration}
+      />
+      <ClimatePins
+        points={props.climatePoints}
+        metadata={props.metadata}
+        metres={props.metres}
+        origin={origin}
+        exaggeration={props.exaggeration}
+        selectedId={props.climateId}
+        onSelect={props.onClimate}
+      />
       <SitePins
         sites={props.sites}
         metadata={props.metadata}

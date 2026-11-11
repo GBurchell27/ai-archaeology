@@ -46,7 +46,17 @@
         "sky-view-factor": "details/gobekli-tepe/sky-view-factor.jpg",
         "true-colour": "details/gobekli-tepe/true-colour.jpg",
         "false-colour": "details/gobekli-tepe/false-colour.jpg",
-        "ndvi": "details/gobekli-tepe/ndvi.jpg"
+        "ndvi": "details/gobekli-tepe/ndvi.jpg",
+        "corona": "details/gobekli-tepe/corona.jpg"
+      },
+      "corona": {
+        "frame": "1105-1009A009",
+        "date": "1968-11-04",
+        "sourceUrl": "https://corona.cast.uark.edu/atlas",
+        "licence": "CC BY-SA 4.0",
+        "credit": "Center for Advanced Spatial Technologies, University of Arkansas/U.S. Geological Survey",
+        "pixelSizeM": 2.0,
+        "note": "Clipped from the CAST orthorectified GeoTIFF in EPSG:4326 and resampled onto this site window. No control points were added. The orthorectification residual was not measured. The grey scale is a 2nd\u201398th percentile display stretch, not the raw scan."
       }
     },
     "karahan-tepe": {
@@ -71,7 +81,17 @@
         "sky-view-factor": "details/karahan-tepe/sky-view-factor.jpg",
         "true-colour": "details/karahan-tepe/true-colour.jpg",
         "false-colour": "details/karahan-tepe/false-colour.jpg",
-        "ndvi": "details/karahan-tepe/ndvi.jpg"
+        "ndvi": "details/karahan-tepe/ndvi.jpg",
+        "corona": "details/karahan-tepe/corona.jpg"
+      },
+      "corona": {
+        "frame": "1105-1025A059",
+        "date": "1968-11-05",
+        "sourceUrl": "https://corona.cast.uark.edu/atlas",
+        "licence": "CC BY-SA 4.0",
+        "credit": "Center for Advanced Spatial Technologies, University of Arkansas/U.S. Geological Survey",
+        "pixelSizeM": 1.94,
+        "note": "Clipped from the CAST orthorectified GeoTIFF in EPSG:4326 and resampled onto this site window. No control points were added. The orthorectification residual was not measured. The grey scale is a 2nd\u201398th percentile display stretch, not the raw scan."
       }
     },
     "sayburc": {
@@ -171,7 +191,17 @@
         "sky-view-factor": "details/harran/sky-view-factor.jpg",
         "true-colour": "details/harran/true-colour.jpg",
         "false-colour": "details/harran/false-colour.jpg",
-        "ndvi": "details/harran/ndvi.jpg"
+        "ndvi": "details/harran/ndvi.jpg",
+        "corona": "details/harran/corona.jpg"
+      },
+      "corona": {
+        "frame": "1105-1009A012",
+        "date": "1968-11-04",
+        "sourceUrl": "https://corona.cast.uark.edu/atlas",
+        "licence": "CC BY-SA 4.0",
+        "credit": "Center for Advanced Spatial Technologies, University of Arkansas/U.S. Geological Survey",
+        "pixelSizeM": 2.0,
+        "note": "Clipped from the CAST orthorectified GeoTIFF in EPSG:4326 and resampled onto this site window. No control points were added. The orthorectification residual was not measured. The grey scale is a 2nd\u201398th percentile display stretch, not the raw scan."
       }
     },
     "edessa": {

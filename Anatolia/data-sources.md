@@ -450,3 +450,43 @@ These accounts and frames dominate many Göbekli / Karahan searches. They someti
 - GitHub: `search_repositories` via the cursor-github connector, 11 November 2026. Queries that used only `user:` / `repo:` qualifiers joined by OR were rejected by GitHub and were rerun as separate searches. Broad keyword queries returned many false positives (e.g. Adafruit “RVT,” Eclipse “Pleiades,” generic GEE tutorials); those were discarded.
 - X: public `search_posts_all` and `get_users_by_usernames` only. No posts, follows, likes, or DMs. Recent excavation claims that originated in alternative accounts were kept only when a ministry, AA, or specialist source confirmed them.
 - This document does not recommend field visits, downloads of restricted data, or the publication of unpublished coordinates.
+
+---
+
+## Atlas context layers (added 11 November 2026)
+
+These rows are only for the toggleable context layers in `Anatolia/atlas`. They were checked by downloading the files named below. They do not replace the register above. Raw downloads stay out of git. The atlas keeps simplified GeoJSON and two small soil images, built by `Anatolia/atlas/scripts/build_context.py`.
+
+| Layer | Dataset | Source | Licence | Resolution | Coverage of the Turkey window |
+| --- | --- | --- | --- | --- | --- |
+| Present-day rivers | Natural Earth 1:10m rivers and lake centerlines | https://www.naturalearthdata.com/downloads/10m-physical-vectors/10m-rivers-lake-centerlines/ | Public domain | 1:10,000,000 | Major rivers only. Drawn as present-day lines, never as ancient channels. |
+| Present-day lakes | Natural Earth 1:10m lakes | https://www.naturalearthdata.com/downloads/10m-physical-vectors/10m-lakes/ | Public domain | 1:10,000,000 | Larger lakes in and beside the window, including Van and Tuz. |
+| Approximate paleolakes | Sketches from Roberts 1983 and Wick, Lemcke and Sturm 2003 | https://doi.org/10.1016/0033-5894(83)90002-9 | Outlines drawn for this atlas from the published descriptions. Not a reproduced figure. | Tens of kilometres | Konya basin and a coarse Lake Van high-stand outline. Labelled approximate. |
+| Roman roads | Itiner-e static version 2024, de Soto et al. 2025, Zenodo 17122148 | https://doi.org/10.5281/zenodo.17122148 | CC BY 4.0 | Segments simplified to about 2 km | Clipped to about 25.5–45°E, 35.8–42.2°N. Certainty is the dataset field where it is filled. Shown with All periods and the Classical & Byzantine chip. |
+| Soil clay and soil organic carbon | SoilGrids 2.0, 0–5 cm mean, ISRIC WCS | https://soilgrids.org/ | CC BY 4.0 | Source is 250 m; the drape is averaged to about 5 km | Same window as the terrain. Colour is a 5th–95th percentile stretch, not a soil class. Sea and nodata are transparent. |
+| Palaeoclimate points | NOAA World Data Service for Paleoclimatology | https://www.ncei.noaa.gov/products/paleoclimatology | Open download, no account. Cite the paper and the NOAA file. | Point series, thinned to at most 280 Holocene samples | Sofular Cave, Lake Van, Eski Acıgöl. Soreq and Jeita are regional context south of the map. |
+
+**Not used, and why.**
+
+- **HydroRIVERS and HydroLAKES.** The product pages describe HydroRIVERS as free for scientific, educational, and commercial use under the HydroSHEDS licence, and HydroLAKES as CC BY 4.0. The file host `data.hydrosheds.org` returned HTTP 403 (Cloudflare challenge) to this environment, so those files were not downloaded and are not in the atlas. Present-day water is Natural Earth instead, and it is coarser.
+- **Shifted Tigris, Euphrates, or Harran-plain channels.** No open vector was found. None was invented.
+- **Geology drape.** Not shipped. A licence-clean geology raster at 1:1,000,000 or better, covering Turkey, was not obtained on this run. The PANGAEA GLiM grid that was considered is about 0.5° and too coarse for that bar. OneGeology and Turkish MTA reuse terms were not confirmed, so they were not copied. SoilGrids is the land layer that is actually draped.
+- **Nar Gölü.** Not in the open NOAA Turkey paleolimnology or speleothem folders checked on this run. It is not a marker.
+
+---
+
+## Atlas CORONA windows (added 11 November 2026)
+
+No account and no payment. The atlas clips three site windows from the CAST orthorectified GeoTIFFs on `https://cast-ftp1.cast.uark.edu/coronaftp2/`. The full frames (about 500–800 MB) are not in git. The NITF scans on `coronaftp/` are the raw frames and were not used.
+
+The site licence line is CC BY-SA 4.0. The page says reproductions should be credited to the Center for Advanced Spatial Technologies, University of Arkansas/U.S. Geological Survey. https://corona.cast.uark.edu/
+
+| Place | Frame | Date | File used | Ground pixel |
+| --- | --- | --- | --- | --- |
+| Göbekli Tepe | 1105-1009A009 | 4 Nov 1968 | `1105-1009d/1105-1009da/ds1105-1009da009.tif` | about 2.0 m |
+| Karahan Tepe | 1105-1025A059 | 5 Nov 1968 | `1105-1025d/1105-1025da/ds1105-1025da059.tif` | about 1.9 m |
+| Harran | 1105-1009A012 | 4 Nov 1968 | `1105-1009d/1105-1009da/ds1105-1009da012.tif` | about 2.0 m |
+
+Each GeoTIFF is EPSG:4326 and already orthorectified by CAST. The atlas resamples that grid onto the existing Web Mercator site window. No control points were added, and the orthorectification residual was not measured. The JPEG is a 2nd–98th percentile display stretch.
+
+Harran’s point also falls inside the envelopes of 1105-1009A010 and A011, and of 1107-2138A064 and A066, but those scans are black across the Harran window. A012 is the frame that actually shows it. USGS EarthExplorer was not used: already-scanned film there needs a login, and unscanned film is a paid order.
