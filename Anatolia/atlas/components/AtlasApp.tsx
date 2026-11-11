@@ -7,7 +7,7 @@ import { naturalExaggeration } from "@/lib/exaggeration";
 import { boundsCenter, lonLatToMercator, sampleHeight, toLocal } from "@/lib/geo";
 import { LAYER_STYLE, PERIODS, formatYear, periodOverlaps } from "@/lib/periods";
 import { decodeHeight } from "@/lib/terrain";
-import type { AtlasMetadata, BaseMap, SiteCollection, SiteFeature } from "@/lib/types";
+import type { AtlasMetadata, BaseMap, LayerId, SiteCollection, SiteFeature } from "@/lib/types";
 import type { TerrainGrid } from "@/lib/terrain";
 
 const RASTER_TITLES: Record<string, string> = {
@@ -29,7 +29,12 @@ export function AtlasApp() {
   const [metres, setMetres] = useState<Float32Array | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [periodId, setPeriodId] = useState("all");
-  const [layers, setLayers] = useState({ neolithic: true, crusader: true });
+  const [layers, setLayers] = useState<Record<LayerId, boolean>>({
+    neolithic: true,
+    bronze: true,
+    classical: true,
+    crusader: true,
+  });
   const [baseMap, setBaseMap] = useState<BaseMap>("hypsometric");
   const [exaggeration, setExaggeration] = useState(6.5);
   const [azimuth, setAzimuth] = useState(315);
@@ -163,8 +168,9 @@ export function AtlasApp() {
     document.body.dataset.panel = panelShown ? "open" : "closed";
     document.body.dataset.busy = busy ? "true" : "false";
     document.body.dataset.base = baseMap;
-    document.body.dataset.neolithic = layers.neolithic ? "on" : "off";
-    document.body.dataset.crusader = layers.crusader ? "on" : "off";
+    for (const [layer, enabled] of Object.entries(layers)) {
+      document.body.dataset[layer] = enabled ? "on" : "off";
+    }
   }, [selectedId, settingsOpen, panelShown, busy, baseMap, layers]);
 
   if (error) {
@@ -343,13 +349,13 @@ export function AtlasApp() {
 
 function SettingsMenu(props: {
   baseMap: BaseMap;
-  layers: { neolithic: boolean; crusader: boolean };
+  layers: Record<LayerId, boolean>;
   exaggeration: number;
   azimuth: number;
   altitude: number;
   labels: boolean;
   onBase: (base: BaseMap) => void;
-  onLayer: (layer: "neolithic" | "crusader", enabled: boolean) => void;
+  onLayer: (layer: LayerId, enabled: boolean) => void;
   onExaggeration: (value: number) => void;
   onAzimuth: (value: number) => void;
   onAltitude: (value: number) => void;
@@ -365,14 +371,12 @@ function SettingsMenu(props: {
         </label>
       ))}
       <h2>Places</h2>
-      <label className="check">
-        <input type="checkbox" checked={props.layers.neolithic} data-layer-toggle="neolithic" onChange={(event) => props.onLayer("neolithic", event.target.checked)} />
-        <span className="swatch" style={{ background: LAYER_STYLE.neolithic.color }} /> Neolithic
-      </label>
-      <label className="check">
-        <input type="checkbox" checked={props.layers.crusader} data-layer-toggle="crusader" onChange={(event) => props.onLayer("crusader", event.target.checked)} />
-        <span className="swatch" style={{ background: LAYER_STYLE.crusader.color }} /> Crusader era
-      </label>
+      {(Object.keys(LAYER_STYLE) as LayerId[]).map((layer) => (
+        <label className="check" key={layer}>
+          <input type="checkbox" checked={props.layers[layer]} data-layer-toggle={layer} onChange={(event) => props.onLayer(layer, event.target.checked)} />
+          <span className="swatch" style={{ background: LAYER_STYLE[layer].color }} /> {LAYER_STYLE[layer].title}
+        </label>
+      ))}
       <label>Exaggeration {props.exaggeration.toFixed(1)}× <input type="range" min={1} max={8} step={0.1} value={props.exaggeration} data-role="exaggeration" onChange={(event) => props.onExaggeration(Number(event.target.value))} /></label>
       <label>Sun azimuth <input type="range" min={0} max={360} value={props.azimuth} data-role="azimuth" onChange={(event) => props.onAzimuth(Number(event.target.value))} /></label>
       <label>Sun altitude <input type="range" min={8} max={80} value={props.altitude} data-role="altitude" onChange={(event) => props.onAltitude(Number(event.target.value))} /></label>

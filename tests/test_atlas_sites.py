@@ -30,7 +30,7 @@ def test_every_atlas_site_has_source_and_confidence():
         assert isinstance(properties["startYear"], int)
         assert isinstance(properties["endYear"], int)
         assert properties["startYear"] <= properties["endYear"]
-        assert properties["layer"] in {"neolithic", "crusader"}
+        assert properties["layer"] in {"neolithic", "bronze", "classical", "crusader"}
         assert properties["category"] in {"site", "city", "castle", "battle", "event"}
         assert properties["name"]
         assert properties["description"]
@@ -51,4 +51,4 @@ def test_neolithic_coordinates_match_the_explorer():
 def test_approximate_pins_are_the_uncertain_ones():
     features = json.loads(ATLAS.read_text())["features"]
     approximate = {feature["id"] for feature in features if feature["properties"]["confidence"] == "approximate"}
-    assert approximate == {"dorylaeum", "ravendel", "saleph", "smyrna-hospitaller"}
+    assert approximate == {"dorylaeum", "ravendel", "saleph", "smyrna-hospitaller", "kultepe"}

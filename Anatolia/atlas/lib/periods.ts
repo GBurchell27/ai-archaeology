@@ -10,6 +10,8 @@ export const PERIODS: PeriodChip[] = [
 
 export const LAYER_STYLE = {
   neolithic: { title: "Neolithic", color: "#d06a3a" },
+  bronze: { title: "Bronze & Iron", color: "#c4923a" },
+  classical: { title: "Classical & Byzantine", color: "#6d5b8a" },
   crusader: { title: "Crusader era", color: "#2c6d8a" },
 } as const;
 

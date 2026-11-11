@@ -5,10 +5,18 @@
     {
       "type": "Feature",
       "id": "gobekli-tepe",
-      "geometry": { "type": "Point", "coordinates": [38.922364, 37.223242] },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          38.922364,
+          37.223242
+        ]
+      },
       "properties": {
         "name": "Göbekli Tepe",
-        "names": ["Göbekli Tepe"],
+        "names": [
+          "Göbekli Tepe"
+        ],
         "layer": "neolithic",
         "category": "site",
         "kind": "validation",
@@ -25,10 +33,19 @@
     {
       "type": "Feature",
       "id": "karahan-tepe",
-      "geometry": { "type": "Point", "coordinates": [39.30361, 37.0925] },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          39.30361,
+          37.0925
+        ]
+      },
       "properties": {
         "name": "Karahan Tepe",
-        "names": ["Karahan Tepe", "Karahantepe"],
+        "names": [
+          "Karahan Tepe",
+          "Karahantepe"
+        ],
         "layer": "neolithic",
         "category": "site",
         "kind": "validation",
@@ -45,10 +62,18 @@
     {
       "type": "Feature",
       "id": "sayburc",
-      "geometry": { "type": "Point", "coordinates": [38.6206972, 37.1112389] },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          38.6206972,
+          37.1112389
+        ]
+      },
       "properties": {
         "name": "Sayburç",
-        "names": ["Sayburç"],
+        "names": [
+          "Sayburç"
+        ],
         "layer": "neolithic",
         "category": "site",
         "kind": "published",
@@ -65,10 +90,18 @@
     {
       "type": "Feature",
       "id": "harbetsuvan-tepesi",
-      "geometry": { "type": "Point", "coordinates": [39.2524333, 37.048675] },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          39.2524333,
+          37.048675
+        ]
+      },
       "properties": {
         "name": "Harbetsuvan Tepesi",
-        "names": ["Harbetsuvan Tepesi"],
+        "names": [
+          "Harbetsuvan Tepesi"
+        ],
         "layer": "neolithic",
         "category": "site",
         "kind": "published",
@@ -85,10 +118,18 @@
     {
       "type": "Feature",
       "id": "nevali-cori",
-      "geometry": { "type": "Point", "coordinates": [38.60556, 37.51833] },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          38.60556,
+          37.51833
+        ]
+      },
       "properties": {
         "name": "Nevalı Çori",
-        "names": ["Nevalı Çori"],
+        "names": [
+          "Nevalı Çori"
+        ],
         "layer": "neolithic",
         "category": "site",
         "kind": "submerged",
@@ -105,10 +146,19 @@
     {
       "type": "Feature",
       "id": "harran",
-      "geometry": { "type": "Point", "coordinates": [39.025, 36.87083] },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          39.025,
+          36.87083
+        ]
+      },
       "properties": {
         "name": "Harran",
-        "names": ["Harran", "Carrhae"],
+        "names": [
+          "Harran",
+          "Carrhae"
+        ],
         "layer": "neolithic",
         "category": "city",
         "kind": "landmark",
@@ -125,10 +175,20 @@
     {
       "type": "Feature",
       "id": "edessa",
-      "geometry": { "type": "Point", "coordinates": [38.79166667, 37.15833333] },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          38.79166667,
+          37.15833333
+        ]
+      },
       "properties": {
         "name": "Edessa",
-        "names": ["Edessa", "Şanlıurfa", "Urfa"],
+        "names": [
+          "Edessa",
+          "Şanlıurfa",
+          "Urfa"
+        ],
         "layer": "crusader",
         "category": "city",
         "startYear": 1098,
@@ -144,10 +204,19 @@
     {
       "type": "Feature",
       "id": "antioch",
-      "geometry": { "type": "Point", "coordinates": [36.16055556, 36.2025] },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          36.16055556,
+          36.2025
+        ]
+      },
       "properties": {
         "name": "Antioch",
-        "names": ["Antioch", "Antakya"],
+        "names": [
+          "Antioch",
+          "Antakya"
+        ],
         "layer": "crusader",
         "category": "city",
         "startYear": 1098,
@@ -163,10 +232,19 @@
     {
       "type": "Feature",
       "id": "nicaea",
-      "geometry": { "type": "Point", "coordinates": [29.72111111, 40.42916667] },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          29.72111111,
+          40.42916667
+        ]
+      },
       "properties": {
         "name": "Nicaea",
-        "names": ["Nicaea", "İznik"],
+        "names": [
+          "Nicaea",
+          "İznik"
+        ],
         "layer": "crusader",
         "category": "city",
         "startYear": 1097,
@@ -182,10 +260,19 @@
     {
       "type": "Feature",
       "id": "dorylaeum",
-      "geometry": { "type": "Point", "coordinates": [30.5206, 39.7767] },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          30.5206,
+          39.7767
+        ]
+      },
       "properties": {
         "name": "Dorylaeum",
-        "names": ["Dorylaeum", "Dorylaion"],
+        "names": [
+          "Dorylaeum",
+          "Dorylaion"
+        ],
         "layer": "crusader",
         "category": "battle",
         "startYear": 1097,
@@ -201,10 +288,19 @@
     {
       "type": "Feature",
       "id": "constantinople",
-      "geometry": { "type": "Point", "coordinates": [28.98, 41.0125] },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          28.98,
+          41.0125
+        ]
+      },
       "properties": {
         "name": "Constantinople",
-        "names": ["Constantinople", "Istanbul"],
+        "names": [
+          "Constantinople",
+          "Istanbul"
+        ],
         "layer": "crusader",
         "category": "city",
         "startYear": 1204,
@@ -220,10 +316,20 @@
     {
       "type": "Feature",
       "id": "turbessel",
-      "geometry": { "type": "Point", "coordinates": [37.54555556, 36.87888889] },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          37.54555556,
+          36.87888889
+        ]
+      },
       "properties": {
         "name": "Turbessel",
-        "names": ["Turbessel", "Tilbaşar", "Tell Başar"],
+        "names": [
+          "Turbessel",
+          "Tilbaşar",
+          "Tell Başar"
+        ],
         "layer": "crusader",
         "category": "castle",
         "startYear": 1097,
@@ -239,10 +345,19 @@
     {
       "type": "Feature",
       "id": "ravendel",
-      "geometry": { "type": "Point", "coordinates": [37.053698, 36.873175] },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          37.053698,
+          36.873175
+        ]
+      },
       "properties": {
         "name": "Ravendel",
-        "names": ["Ravendel", "Ravanda"],
+        "names": [
+          "Ravendel",
+          "Ravanda"
+        ],
         "layer": "crusader",
         "category": "castle",
         "startYear": 1097,
@@ -258,10 +373,20 @@
     {
       "type": "Feature",
       "id": "rumkale",
-      "geometry": { "type": "Point", "coordinates": [37.83805556, 37.27194444] },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          37.83805556,
+          37.27194444
+        ]
+      },
       "properties": {
         "name": "Rumkale",
-        "names": ["Rumkale", "Hromgla", "Ranculat"],
+        "names": [
+          "Rumkale",
+          "Hromgla",
+          "Ranculat"
+        ],
         "layer": "crusader",
         "category": "castle",
         "startYear": 1098,
@@ -277,10 +402,20 @@
     {
       "type": "Feature",
       "id": "birecik",
-      "geometry": { "type": "Point", "coordinates": [37.97694444, 37.025] },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          37.97694444,
+          37.025
+        ]
+      },
       "properties": {
         "name": "Birecik",
-        "names": ["Birecik", "Bira", "al-Bira"],
+        "names": [
+          "Birecik",
+          "Bira",
+          "al-Bira"
+        ],
         "layer": "crusader",
         "category": "city",
         "startYear": 1098,
@@ -296,10 +431,19 @@
     {
       "type": "Feature",
       "id": "samosata",
-      "geometry": { "type": "Point", "coordinates": [38.48138889, 37.57944444] },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          38.48138889,
+          37.57944444
+        ]
+      },
       "properties": {
         "name": "Samosata",
-        "names": ["Samosata", "Samsat"],
+        "names": [
+          "Samosata",
+          "Samsat"
+        ],
         "layer": "crusader",
         "category": "city",
         "startYear": 1098,
@@ -315,10 +459,20 @@
     {
       "type": "Feature",
       "id": "marash",
-      "geometry": { "type": "Point", "coordinates": [36.93333333, 37.58333333] },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          36.93333333,
+          37.58333333
+        ]
+      },
       "properties": {
         "name": "Marash",
-        "names": ["Marash", "Kahramanmaraş", "Germanikeia"],
+        "names": [
+          "Marash",
+          "Kahramanmaraş",
+          "Germanikeia"
+        ],
         "layer": "crusader",
         "category": "city",
         "startYear": 1098,
@@ -334,10 +488,20 @@
     {
       "type": "Feature",
       "id": "baghras",
-      "geometry": { "type": "Point", "coordinates": [36.225, 36.42694444] },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          36.225,
+          36.42694444
+        ]
+      },
       "properties": {
         "name": "Baghras",
-        "names": ["Baghras", "Gaston", "Bagras"],
+        "names": [
+          "Baghras",
+          "Gaston",
+          "Bagras"
+        ],
         "layer": "crusader",
         "category": "castle",
         "startYear": 1131,
@@ -353,10 +517,18 @@
     {
       "type": "Feature",
       "id": "tarsus",
-      "geometry": { "type": "Point", "coordinates": [34.8951, 36.9165] },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          34.8951,
+          36.9165
+        ]
+      },
       "properties": {
         "name": "Tarsus",
-        "names": ["Tarsus"],
+        "names": [
+          "Tarsus"
+        ],
         "layer": "crusader",
         "category": "city",
         "startYear": 1097,
@@ -372,10 +544,20 @@
     {
       "type": "Feature",
       "id": "mamistra",
-      "geometry": { "type": "Point", "coordinates": [35.62388889, 36.95777778] },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          35.62388889,
+          36.95777778
+        ]
+      },
       "properties": {
         "name": "Mamistra",
-        "names": ["Mamistra", "Misis", "Mopsuestia"],
+        "names": [
+          "Mamistra",
+          "Misis",
+          "Mopsuestia"
+        ],
         "layer": "crusader",
         "category": "city",
         "startYear": 1097,
@@ -391,10 +573,18 @@
     {
       "type": "Feature",
       "id": "adana",
-      "geometry": { "type": "Point", "coordinates": [35.32133333, 37.0] },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          35.32133333,
+          37.0
+        ]
+      },
       "properties": {
         "name": "Adana",
-        "names": ["Adana"],
+        "names": [
+          "Adana"
+        ],
         "layer": "crusader",
         "category": "city",
         "startYear": 1097,
@@ -410,10 +600,20 @@
     {
       "type": "Feature",
       "id": "saleph",
-      "geometry": { "type": "Point", "coordinates": [33.93222222, 36.37611111] },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          33.93222222,
+          36.37611111
+        ]
+      },
       "properties": {
         "name": "Saleph crossing",
-        "names": ["Saleph", "Göksu", "Silifke"],
+        "names": [
+          "Saleph",
+          "Göksu",
+          "Silifke"
+        ],
         "layer": "crusader",
         "category": "event",
         "startYear": 1190,
@@ -429,10 +629,19 @@
     {
       "type": "Feature",
       "id": "smyrna-hospitaller",
-      "geometry": { "type": "Point", "coordinates": [27.13916667, 38.41861111] },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          27.13916667,
+          38.41861111
+        ]
+      },
       "properties": {
         "name": "Smyrna",
-        "names": ["Smyrna", "İzmir"],
+        "names": [
+          "Smyrna",
+          "İzmir"
+        ],
         "layer": "crusader",
         "category": "castle",
         "startYear": 1344,
@@ -448,10 +657,20 @@
     {
       "type": "Feature",
       "id": "bodrum-petronion",
-      "geometry": { "type": "Point", "coordinates": [27.42944444, 37.03166667] },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          27.42944444,
+          37.03166667
+        ]
+      },
       "properties": {
         "name": "Bodrum Castle",
-        "names": ["Bodrum Castle", "Petronion", "Castle of St Peter"],
+        "names": [
+          "Bodrum Castle",
+          "Petronion",
+          "Castle of St Peter"
+        ],
         "layer": "crusader",
         "category": "castle",
         "startYear": 1402,
@@ -462,6 +681,650 @@
         "sourceUrl": "https://en.wikipedia.org/wiki/Bodrum_Castle",
         "confidence": "high",
         "notes": "Included because it is the Hospitaller successor to Smyrna. The date is 15th century, not 1096–1200."
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "catalhoyuk",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          32.8280556,
+          37.6666667
+        ]
+      },
+      "properties": {
+        "name": "Çatalhöyük",
+        "names": [
+          "Çatalhöyük",
+          "Çatal Höyük"
+        ],
+        "layer": "neolithic",
+        "category": "site",
+        "startYear": -7400,
+        "endYear": -6200,
+        "period": "Neolithic, eastern mound",
+        "description": "Neolithic settlement on the Konya plain. UNESCO dates eighteen occupation levels on the eastern mound to 7400–6200 BCE. The western mound continues into the Chalcolithic, to about 5200 BCE. A known published site, not a discovery.",
+        "source": "UNESCO World Heritage Centre, listing 1405",
+        "sourceUrl": "https://whc.unesco.org/en/list/1405/",
+        "confidence": "high",
+        "notes": "Listing coordinates N37 40 0 E32 49 41. The years used for the period filter are the eastern mound."
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "asikli-hoyuk",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          34.23,
+          38.34888889
+        ]
+      },
+      "properties": {
+        "name": "Aşıklı Höyük",
+        "names": [
+          "Aşıklı Höyük"
+        ],
+        "layer": "neolithic",
+        "category": "site",
+        "startYear": -8200,
+        "endYear": -7400,
+        "period": "Aceramic Neolithic",
+        "description": "Aceramic Neolithic mound on the Melendiz, southeast of Aksaray. Wikipedia records first settlement around 8200 BCE. The end year is a filter bracket for that occupation, not a new chronology.",
+        "source": "Wikipedia, Aşıklı Höyük",
+        "sourceUrl": "https://en.wikipedia.org/wiki/A%C5%9F%C4%B1kl%C4%B1_H%C3%B6y%C3%BCk",
+        "confidence": "high",
+        "notes": "Wikipedia coordinate of the mound, about 1 km south of Kızılkaya."
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "boncuklu-hoyuk",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          32.86478,
+          37.75183
+        ]
+      },
+      "properties": {
+        "name": "Boncuklu Höyük",
+        "names": [
+          "Boncuklu Höyük"
+        ],
+        "layer": "neolithic",
+        "category": "site",
+        "startYear": -8300,
+        "endYear": -7800,
+        "period": "Neolithic",
+        "description": "Neolithic village mound about 9 km from Çatalhöyük. Wikipedia dates the occupation to about 8300–7800 BCE.",
+        "source": "Wikipedia, Boncuklu Höyük",
+        "sourceUrl": "https://en.wikipedia.org/wiki/Boncuklu_H%C3%B6y%C3%BCk",
+        "confidence": "high",
+        "notes": "Wikipedia coordinate. The pin is the mound, not a building plan."
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "cayonu",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          39.72638889,
+          38.21638889
+        ]
+      },
+      "properties": {
+        "name": "Çayönü",
+        "names": [
+          "Çayönü",
+          "Çayönü Tepesi"
+        ],
+        "layer": "neolithic",
+        "category": "site",
+        "startYear": -8630,
+        "endYear": -6800,
+        "period": "Pre-Pottery Neolithic B",
+        "description": "Pre-Pottery Neolithic settlement northwest of Diyarbakır. Wikipedia dates its prosperity to about 8630–6800 BCE.",
+        "source": "Wikipedia, Çayönü",
+        "sourceUrl": "https://en.wikipedia.org/wiki/%C3%87ay%C3%B6n%C3%BC",
+        "confidence": "high",
+        "notes": "Wikipedia coordinate of the published excavation."
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "hallan-cemi",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          41.24166667,
+          38.22416667
+        ]
+      },
+      "properties": {
+        "name": "Hallan Çemi",
+        "names": [
+          "Hallan Çemi"
+        ],
+        "layer": "neolithic",
+        "category": "site",
+        "startYear": -9600,
+        "endYear": -9000,
+        "period": "Protoneolithic",
+        "description": "Protoneolithic site in southeastern Anatolia. Wikipedia says it was founded about 9500 BCE and is more than 11,000 years old. The start year is a filter bracket so the Neolithic chip can include that founding date.",
+        "source": "Wikipedia, Hallan Çemi",
+        "sourceUrl": "https://en.wikipedia.org/wiki/Hallan_%C3%87emi",
+        "confidence": "high",
+        "notes": "Wikipedia coordinate. Round houses and early pigs are published; this pin is not a trench plan."
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "kortik-tepe",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          40.98389444,
+          37.81441667
+        ]
+      },
+      "properties": {
+        "name": "Körtik Tepe",
+        "names": [
+          "Körtik Tepe",
+          "Körtiktepe"
+        ],
+        "layer": "neolithic",
+        "category": "site",
+        "startYear": -10400,
+        "endYear": -9250,
+        "period": "Epipalaeolithic to early Pre-Pottery Neolithic",
+        "description": "Early settled site on the Batman Çayı. Wikipedia dates occupation from about 10400 BCE to abandonment around 9250 BCE.",
+        "source": "Wikipedia, Körtik Tepe",
+        "sourceUrl": "https://en.wikipedia.org/wiki/K%C3%B6rtik_Tepe",
+        "confidence": "high",
+        "notes": "Wikipedia coordinate. The site is published and excavated, not a discovery."
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "hacilar",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          30.08447222,
+          37.58483333
+        ]
+      },
+      "properties": {
+        "name": "Hacılar",
+        "names": [
+          "Hacılar",
+          "Hacılar Höyük"
+        ],
+        "layer": "neolithic",
+        "category": "site",
+        "startYear": -7040,
+        "endYear": -6000,
+        "period": "Neolithic",
+        "description": "Early settlement mound 23 km south of Burdur. Wikipedia dates the earliest stage to 7040 BCE and notes later abandonment and reoccupation. The end year is a filter bracket for the Neolithic chip, not a claim that occupation stopped in 6000 BCE.",
+        "source": "Wikipedia, Hacılar Höyük",
+        "sourceUrl": "https://en.wikipedia.org/wiki/Hac%C4%B1lar_H%C3%B6y%C3%BCk",
+        "confidence": "high",
+        "notes": "Wikipedia coordinate of the mound."
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "can-hasan",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          33.3313,
+          37.263
+        ]
+      },
+      "properties": {
+        "name": "Can Hasan",
+        "names": [
+          "Can Hasan",
+          "Can Hasan 1"
+        ],
+        "layer": "neolithic",
+        "category": "site",
+        "startYear": -6000,
+        "endYear": -4800,
+        "period": "Late Neolithic to Chalcolithic",
+        "description": "Mound group northeast of Karaman. Wikipedia attributes Can Hasan 1, the coordinate used here, to the Chalcolithic, and Can Hasan 3 to the Neolithic. The start year is a filter bracket so the Neolithic chip includes the group. It is not a claim that Can Hasan 1 began in 6000 BCE.",
+        "source": "Wikipedia, Can Hasan 1",
+        "sourceUrl": "https://en.wikipedia.org/wiki/Can_Hasan_1",
+        "confidence": "high",
+        "notes": "Wikipedia coordinate of Can Hasan 1. Can Hasan 3 is not given a separate pin."
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "hattusa",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          34.61527778,
+          40.01972222
+        ]
+      },
+      "properties": {
+        "name": "Hattusa",
+        "names": [
+          "Hattusa",
+          "Hattusha",
+          "Boğazköy"
+        ],
+        "layer": "bronze",
+        "category": "city",
+        "startYear": -1700,
+        "endYear": -1180,
+        "period": "Hittite capital",
+        "description": "Hittite capital at Boğazkale. The UNESCO listing describes the city and its second-millennium influence. These years are a filter bracket for the Hittite capital, not a full occupation history.",
+        "source": "Wikipedia, Hattusa",
+        "sourceUrl": "https://en.wikipedia.org/wiki/Hattusa",
+        "confidence": "high",
+        "notes": "Wikipedia coordinate. The UNESCO listing 377 page did not publish a point."
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "troy",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          26.239,
+          39.95644
+        ]
+      },
+      "properties": {
+        "name": "Troy",
+        "names": [
+          "Troy",
+          "Troia",
+          "Hisarlık"
+        ],
+        "layer": "bronze",
+        "category": "city",
+        "startYear": -3000,
+        "endYear": -950,
+        "period": "Bronze Age citadel",
+        "description": "The mound of Hisarlık, with a Bronze Age citadel and lower town and later Greek and Roman Ilion. The filter years cover the Bronze Age sequence. Later occupation is real and is not what this chip is selecting.",
+        "source": "UNESCO World Heritage Centre, listing 849",
+        "sourceUrl": "https://whc.unesco.org/en/list/849/",
+        "confidence": "high",
+        "notes": "Listing coordinates N39 57 23.184 E26 14 20.4."
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "kultepe",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          35.63333333,
+          38.85
+        ]
+      },
+      "properties": {
+        "name": "Kültepe",
+        "names": [
+          "Kültepe",
+          "Kanesh",
+          "Kaneš"
+        ],
+        "layer": "bronze",
+        "category": "city",
+        "startYear": -2000,
+        "endYear": -1700,
+        "period": "kārum period",
+        "description": "Bronze Age city and Assyrian trading quarter on the central plateau. Wikipedia places the settlement broadly in 3300–1200 BCE and the famous tablets in the early second millennium. The pin is only resolved to about a kilometre.",
+        "source": "Wikipedia, Kültepe",
+        "sourceUrl": "https://en.wikipedia.org/wiki/K%C3%BCltepe",
+        "confidence": "approximate",
+        "notes": "Open ring. The Wikipedia latitude is given only to 0.01 degree."
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "alacahoyuk",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          34.69555556,
+          40.23444444
+        ]
+      },
+      "properties": {
+        "name": "Alacahöyük",
+        "names": [
+          "Alacahöyük",
+          "Alaca Höyük"
+        ],
+        "layer": "bronze",
+        "category": "site",
+        "startYear": -2500,
+        "endYear": -1200,
+        "period": "Early Bronze Age and Hittite",
+        "description": "Mound northeast of Hattusa with Early Bronze Age tombs and a later Hittite settlement. The years are a filter bracket for those published phases.",
+        "source": "Wikipedia, Alaca Höyük",
+        "sourceUrl": "https://en.wikipedia.org/wiki/Alaca_H%C3%B6y%C3%BCk",
+        "confidence": "high",
+        "notes": "Wikipedia coordinate of the mound."
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "arslantepe",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          38.3610917,
+          38.3822
+        ]
+      },
+      "properties": {
+        "name": "Arslantepe",
+        "names": [
+          "Arslantepe",
+          "Malatya"
+        ],
+        "layer": "bronze",
+        "category": "site",
+        "startYear": -3400,
+        "endYear": -2000,
+        "period": "Late Chalcolithic palace and Early Bronze Age",
+        "description": "Tell in the Malatya plain. UNESCO highlights the Late Chalcolithic palace, about 3400–3100 BCE, and an Early Bronze Age royal tomb. Later Hittite levels exist and are not the filter bracket used here.",
+        "source": "UNESCO World Heritage Centre, listing 1622",
+        "sourceUrl": "https://whc.unesco.org/en/list/1622/",
+        "confidence": "high",
+        "notes": "Listing coordinates N38 22 55.92 E38 21 39.93."
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "karkemish",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          38.01638889,
+          36.82944444
+        ]
+      },
+      "properties": {
+        "name": "Karkemish",
+        "names": [
+          "Karkemish",
+          "Carchemish",
+          "Karkamış"
+        ],
+        "layer": "bronze",
+        "category": "city",
+        "startYear": -2000,
+        "endYear": -600,
+        "period": "Bronze and Iron Age capital",
+        "description": "Ancient capital on the Turkish–Syrian border, held at times by Mitanni, the Hittites, and the Neo-Assyrian empire. The pin is the Wikipedia coordinate of the site. The years are a filter bracket, not a dynastic list.",
+        "source": "Wikipedia, Carchemish",
+        "sourceUrl": "https://en.wikipedia.org/wiki/Carchemish",
+        "confidence": "high",
+        "notes": "Wikipedia coordinate. Part of the site lies on the Syrian side of the modern border."
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "gordion",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          31.986111,
+          39.643333
+        ]
+      },
+      "properties": {
+        "name": "Gordion",
+        "names": [
+          "Gordion",
+          "Gordium"
+        ],
+        "layer": "bronze",
+        "category": "city",
+        "startYear": -900,
+        "endYear": -330,
+        "period": "Phrygian capital",
+        "description": "Phrygian capital southwest of Ankara. UNESCO describes the Early Phrygian citadel and the Midas Mound. The years are a filter bracket for that Iron Age capital.",
+        "source": "UNESCO World Heritage Centre, listing 1669",
+        "sourceUrl": "https://whc.unesco.org/en/list/1669/",
+        "confidence": "high",
+        "notes": "Listing coordinates N39 38 36 E31 59 10. A Wikipedia point sits about a kilometre away; this pin uses the listing."
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "sardis",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          28.04027778,
+          38.48833333
+        ]
+      },
+      "properties": {
+        "name": "Sardis",
+        "names": [
+          "Sardis",
+          "Sardes",
+          "Sart"
+        ],
+        "layer": "bronze",
+        "category": "city",
+        "startYear": -800,
+        "endYear": -546,
+        "period": "Lydian capital",
+        "description": "Capital of Lydia, near Sart in Manisa. The filter years run to the Persian takeover in 546 BCE. The city continued through the Hellenistic and Byzantine periods.",
+        "source": "Wikipedia, Sardis",
+        "sourceUrl": "https://en.wikipedia.org/wiki/Sardis",
+        "confidence": "high",
+        "notes": "Wikipedia coordinate. UNESCO inscribed Sardis in 2025; that listing page was not used for the point."
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "ephesus",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          27.34194444,
+          37.94111111
+        ]
+      },
+      "properties": {
+        "name": "Ephesus",
+        "names": [
+          "Ephesus",
+          "Efes"
+        ],
+        "layer": "classical",
+        "category": "city",
+        "startYear": -400,
+        "endYear": 700,
+        "period": "Hellenistic and Roman city",
+        "description": "Ionian and Roman harbour city at modern Selçuk, with earlier settlement nearby. The filter years cover the Hellenistic city through the early Christian centuries. The UNESCO listing page did not publish a point.",
+        "source": "Wikipedia, Ephesus",
+        "sourceUrl": "https://en.wikipedia.org/wiki/Ephesus",
+        "confidence": "high",
+        "notes": "Wikipedia coordinate of the ancient city. UNESCO listing 1018."
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "pergamon",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          27.18416667,
+          39.1325
+        ]
+      },
+      "properties": {
+        "name": "Pergamon",
+        "names": [
+          "Pergamon",
+          "Pergamum",
+          "Bergama"
+        ],
+        "layer": "classical",
+        "category": "city",
+        "startYear": -281,
+        "endYear": 600,
+        "period": "Attalid and Roman city",
+        "description": "Attalid capital and later Roman provincial capital above Bergama. Wikipedia dates the kingdom to 281–133 BCE. The end year keeps the Roman and late antique city inside the Classical chip.",
+        "source": "Wikipedia, Pergamon",
+        "sourceUrl": "https://en.wikipedia.org/wiki/Pergamon",
+        "confidence": "high",
+        "notes": "Wikipedia coordinate of the acropolis. The UNESCO listing 1457 page did not publish a point."
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "aphrodisias",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          28.72361111,
+          37.70833333
+        ]
+      },
+      "properties": {
+        "name": "Aphrodisias",
+        "names": [
+          "Aphrodisias"
+        ],
+        "layer": "classical",
+        "category": "city",
+        "startYear": -200,
+        "endYear": 600,
+        "period": "Hellenistic and Roman city",
+        "description": "Carian city near Geyre, with a temple of Aphrodite from the 3rd century BCE and a Roman civic centre. The years are a filter bracket for that city.",
+        "source": "Wikipedia, Aphrodisias",
+        "sourceUrl": "https://en.wikipedia.org/wiki/Aphrodisias",
+        "confidence": "high",
+        "notes": "Wikipedia coordinate. The UNESCO listing 1519 page did not publish a point."
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "zeugma",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          37.86583333,
+          37.05861111
+        ]
+      },
+      "properties": {
+        "name": "Zeugma",
+        "names": [
+          "Zeugma"
+        ],
+        "layer": "classical",
+        "category": "city",
+        "startYear": -300,
+        "endYear": 400,
+        "period": "Hellenistic and Roman city",
+        "description": "Hellenistic and Roman city of Commagene at a Euphrates crossing in Gaziantep province. Part of the site was later flooded by the Birecik reservoir. The pin is the Wikipedia coordinate of the city.",
+        "source": "Wikipedia, Zeugma (Commagene)",
+        "sourceUrl": "https://en.wikipedia.org/wiki/Zeugma_(Commagene)",
+        "confidence": "high",
+        "notes": "Wikipedia coordinate. Not a mosaic-by-mosaic plan."
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "nemrut",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          38.740983,
+          37.980794
+        ]
+      },
+      "properties": {
+        "name": "Mount Nemrut",
+        "names": [
+          "Mount Nemrut",
+          "Nemrut Dağı"
+        ],
+        "layer": "classical",
+        "category": "site",
+        "startYear": -100,
+        "endYear": 100,
+        "period": "Commagene tumulus",
+        "description": "The hierothesion of Antiochus I of Commagene on Nemrut Dağı, a tumulus with colossal statues. The years are a filter bracket around that 1st-century BCE monument.",
+        "source": "UNESCO World Heritage Centre, listing 448",
+        "sourceUrl": "https://whc.unesco.org/en/list/448/",
+        "confidence": "high",
+        "notes": "Listing coordinates N37 58 50.86 E38 44 27.54."
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "goreme",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          34.82888889,
+          38.64305556
+        ]
+      },
+      "properties": {
+        "name": "Göreme",
+        "names": [
+          "Göreme",
+          "Cappadocia"
+        ],
+        "layer": "classical",
+        "category": "site",
+        "startYear": 400,
+        "endYear": 1095,
+        "period": "Byzantine rock-cut churches",
+        "description": "Town in the Cappadocian valleys, a centre of Byzantine rock-cut churches and hermitages. The pin is the Wikipedia coordinate of the town, not one church. The years are a filter bracket for that Byzantine use.",
+        "source": "Wikipedia, Göreme",
+        "sourceUrl": "https://en.wikipedia.org/wiki/G%C3%B6reme",
+        "confidence": "high",
+        "notes": "Town coordinate inside the Göreme National Park landscape. UNESCO listing 357 did not publish a point on the page checked."
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "ani",
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          43.566667,
+          40.5
+        ]
+      },
+      "properties": {
+        "name": "Ani",
+        "names": [
+          "Ani"
+        ],
+        "layer": "classical",
+        "category": "city",
+        "startYear": 400,
+        "endYear": 1095,
+        "period": "Medieval Armenian and Byzantine city",
+        "description": "Ruined medieval city in Kars province, capital of the Bagratuni kingdom in 961–1045 and occupied earlier. The end year matches the Classical and Byzantine chip. Later occupation continued after 1095.",
+        "source": "UNESCO World Heritage Centre, listing 1518",
+        "sourceUrl": "https://whc.unesco.org/en/list/1518/",
+        "confidence": "high",
+        "notes": "Listing coordinates N40 30 0 E43 34 0."
       }
     }
   ]

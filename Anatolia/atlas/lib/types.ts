@@ -1,4 +1,4 @@
-export type LayerId = "neolithic" | "crusader";
+export type LayerId = "neolithic" | "bronze" | "classical" | "crusader";
 export type Confidence = "high" | "approximate";
 export type Category = "site" | "city" | "castle" | "battle" | "event";
 export type BaseMap = "relief" | "hypsometric" | "satellite";

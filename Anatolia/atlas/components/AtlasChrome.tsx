@@ -88,8 +88,9 @@ export function Legend(props: { open: boolean; onToggle: () => void }) {
       </button>
       {props.open ? (
         <div className="legend-body">
-          <span><span className="swatch" style={{ background: LAYER_STYLE.neolithic.color }} /> Neolithic</span>
-          <span><span className="swatch" style={{ background: LAYER_STYLE.crusader.color }} /> Crusader</span>
+          {(Object.keys(LAYER_STYLE) as LayerId[]).map((layer) => (
+            <span key={layer}><span className="swatch" style={{ background: LAYER_STYLE[layer].color }} /> {LAYER_STYLE[layer].title}</span>
+          ))}
           <span><span className="open-ring" /> approximate</span>
         </div>
       ) : null}
@@ -113,7 +114,7 @@ export function ShortcutOverlay(props: { onClose: () => void }) {
       <h2>Shortcuts</h2>
       <ul>
         <li><kbd>1</kbd>–<kbd>5</kbd> Period chips</li>
-        <li><kbd>N</kbd> Neolithic layer <kbd>C</kbd> Crusader layer</li>
+        <li><kbd>N</kbd> Neolithic <kbd>B</kbd> Bronze <kbd>L</kbd> Classical <kbd>C</kbd> Crusader</li>
         <li><kbd>R</kbd> Relief <kbd>H</kbd> Hypsometric <kbd>S</kbd> Satellite</li>
         <li><kbd>/</kbd> Search <kbd>Esc</kbd> Close <kbd>0</kbd> Reset view</li>
         <li><kbd>D</kbd> Dark mode <kbd>?</kbd> This list</li>
@@ -156,6 +157,10 @@ export function useAtlasKeys(handlers: MutableRefObject<AtlasKeyHandlers>) {
         api.onSearch();
       } else if (event.key.toLowerCase() === "n") {
         api.onLayer("neolithic");
+      } else if (event.key.toLowerCase() === "b") {
+        api.onLayer("bronze");
+      } else if (event.key.toLowerCase() === "l") {
+        api.onLayer("classical");
       } else if (event.key.toLowerCase() === "c") {
         api.onLayer("crusader");
       } else if (event.key.toLowerCase() === "r") {
