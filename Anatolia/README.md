@@ -4,7 +4,7 @@ Focus region: southeastern Anatolia and Upper Mesopotamia. That means Göbekli T
 
 ## Current phase
 
-Data gathering, before a direction is chosen. Sources, licences, coverage, and what is still unverified are in [data-sources.md](data-sources.md). Nothing in that register has been downloaded for analysis.
+Data gathering, before a direction is chosen. Sources, licences, coverage, and what is still unverified are in [data-sources.md](data-sources.md). A local 3D view of the published sites on Copernicus DEM and one Sentinel-2 day is in [explorer/](explorer/README.md). Raw rasters stay out of git.
 GitHub repositories and X accounts from the same pass are in [github-and-x.md](github-and-x.md).
 
 ## Candidate directions

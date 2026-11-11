@@ -1,0 +1,319 @@
+{
+  "generated": "2026-11-11T19:25:31Z",
+  "crs": "EPSG:32637",
+  "honestNote": "30 m terrain shows landscape, not individual enclosures.",
+  "attribution": {
+    "dem": "Contains modified Copernicus DEM data \u00a9 DLR e.V. 2010-2014 and \u00a9 Airbus Defence and Space GmbH 2014-2018 provided under COPERNICUS by the European Union and ESA",
+    "sentinel": "Contains modified Copernicus Sentinel data 2026"
+  },
+  "parameters": {
+    "geographicExtent": [
+      38.55,
+      36.75,
+      39.55,
+      37.55
+    ],
+    "regionPixelM": 120.0,
+    "sitePixelM": 30.0,
+    "siteNeighbourhoodM": 5000.0,
+    "hillshadeAzimuth": 315.0,
+    "hillshadeAltitude": 45.0,
+    "multiDirections": 8,
+    "svfDirections": 8,
+    "regionReliefRadiusM": 1800.0,
+    "regionSvfRadiusM": 2400.0,
+    "siteReliefRadiusM": 360.0,
+    "siteSvfRadiusM": 480.0
+  },
+  "sentinel": {
+    "day": "2026-11-09",
+    "year": 2026,
+    "sceneIds": [
+      "S2A_37SDA_20261109_0_L2A",
+      "S2A_37SEA_20261109_0_L2A",
+      "S2A_37SDB_20261109_0_L2A",
+      "S2A_37SEB_20261109_0_L2A"
+    ]
+  },
+  "catalog": [
+    {
+      "id": "shaded",
+      "title": "Shaded relief",
+      "kind": "procedural",
+      "description": "Live colour from elevation, lit by the sun sliders. This is the view to turn as you change the light."
+    },
+    {
+      "id": "hillshade",
+      "title": "Hillshade",
+      "kind": "raster",
+      "description": "Lambert hillshade from ai_archaeology.relief, azimuth 315\u00b0 and altitude 45\u00b0. Central differences, display image."
+    },
+    {
+      "id": "multidirectional-hillshade",
+      "title": "Multi-directional hillshade",
+      "kind": "raster",
+      "description": "Mean of eight hillshades. Softer than a single sun direction, still only the surface shape."
+    },
+    {
+      "id": "slope",
+      "title": "Slope",
+      "kind": "raster",
+      "description": "Slope in degrees, stretched for display. Pale is flat, brown is steeper."
+    },
+    {
+      "id": "local-relief",
+      "title": "Local relief",
+      "kind": "raster",
+      "description": "DEM minus a circular mean. Blue is locally low, red is locally high. Overview radius 1.8 km; site tiles 360 m."
+    },
+    {
+      "id": "sky-view-factor",
+      "title": "Sky-view factor",
+      "kind": "raster",
+      "description": "Horizon search, eight directions, display-stretched. Darker ground sees less sky. Overview radius 2.4 km; site tiles 480 m."
+    },
+    {
+      "id": "true-colour",
+      "title": "Sentinel-2 true colour",
+      "kind": "raster",
+      "description": "L2A red, green, and blue, display-stretched. One low-cloud day, not a multi-year composite."
+    },
+    {
+      "id": "false-colour",
+      "title": "Sentinel-2 false colour",
+      "kind": "raster",
+      "description": "Near-infrared, red, and green. Vegetation tends to read red in this combination."
+    },
+    {
+      "id": "ndvi",
+      "title": "NDVI",
+      "kind": "raster",
+      "description": "(NIR \u2212 red) / (NIR + red). Brown is bare or dry, green is vegetated. A display ramp, not a field measurement."
+    },
+    {
+      "id": "corona",
+      "title": "CORONA",
+      "kind": "placeholder",
+      "description": "CORONA Atlas imagery is not included yet. This slot is reserved for later rectified KH-4B frames."
+    }
+  ],
+  "region": {
+    "bounds": [
+      459829.9485688736,
+      4067139.652229866,
+      549096.8010095643,
+      4156030.611239674
+    ],
+    "width": 744,
+    "height": 741,
+    "pixelSizeM": 119.98232854931551,
+    "elevation": {
+      "min": 349.5189514160156,
+      "max": 948.5963134765625
+    },
+    "rasters": {
+      "hillshade": "region/hillshade.jpg",
+      "multidirectional-hillshade": "region/multidirectional-hillshade.jpg",
+      "slope": "region/slope.jpg",
+      "local-relief": "region/local-relief.jpg",
+      "sky-view-factor": "region/sky-view-factor.jpg",
+      "true-colour": "region/true-colour.jpg",
+      "false-colour": "region/false-colour.jpg",
+      "ndvi": "region/ndvi.jpg"
+    }
+  },
+  "sites": [
+    {
+      "id": "gobekli-tepe",
+      "utm": [
+        493112.5009035912,
+        4119640.621243258
+      ],
+      "groundElevation": 775.9393310546875,
+      "bounds": [
+        490612.5009035912,
+        4117140.621243258,
+        495612.5009035912,
+        4122140.621243258
+      ],
+      "width": 167,
+      "height": 167,
+      "pixelSizeM": 29.940119760479043,
+      "neighbourhoodM": 5000.0,
+      "elevation": {
+        "min": 566.9337158203125,
+        "max": 800.84716796875
+      },
+      "rasters": {
+        "hillshade": "sites/gobekli-tepe/hillshade.jpg",
+        "multidirectional-hillshade": "sites/gobekli-tepe/multidirectional-hillshade.jpg",
+        "slope": "sites/gobekli-tepe/slope.jpg",
+        "local-relief": "sites/gobekli-tepe/local-relief.jpg",
+        "sky-view-factor": "sites/gobekli-tepe/sky-view-factor.jpg",
+        "true-colour": "sites/gobekli-tepe/true-colour.jpg",
+        "false-colour": "sites/gobekli-tepe/false-colour.jpg",
+        "ndvi": "sites/gobekli-tepe/ndvi.jpg"
+      }
+    },
+    {
+      "id": "karahan-tepe",
+      "utm": [
+        526981.2996665105,
+        4105176.8905815347
+      ],
+      "groundElevation": 689.2796630859375,
+      "bounds": [
+        524481.2996665105,
+        4102676.8905815347,
+        529481.2996665105,
+        4107676.8905815347
+      ],
+      "width": 167,
+      "height": 167,
+      "pixelSizeM": 29.940119760479043,
+      "neighbourhoodM": 5000.0,
+      "elevation": {
+        "min": 632.9981689453125,
+        "max": 741.7283325195312
+      },
+      "rasters": {
+        "hillshade": "sites/karahan-tepe/hillshade.jpg",
+        "multidirectional-hillshade": "sites/karahan-tepe/multidirectional-hillshade.jpg",
+        "slope": "sites/karahan-tepe/slope.jpg",
+        "local-relief": "sites/karahan-tepe/local-relief.jpg",
+        "sky-view-factor": "sites/karahan-tepe/sky-view-factor.jpg",
+        "true-colour": "sites/karahan-tepe/true-colour.jpg",
+        "false-colour": "sites/karahan-tepe/false-colour.jpg",
+        "ndvi": "sites/karahan-tepe/ndvi.jpg"
+      }
+    },
+    {
+      "id": "sayburc",
+      "utm": [
+        466300.288533048,
+        4107279.883561558
+      ],
+      "groundElevation": 672.3939208984375,
+      "bounds": [
+        463800.288533048,
+        4104779.883561558,
+        468800.288533048,
+        4109779.883561558
+      ],
+      "width": 167,
+      "height": 167,
+      "pixelSizeM": 29.940119760479043,
+      "neighbourhoodM": 5000.0,
+      "elevation": {
+        "min": 603.977783203125,
+        "max": 762.5409545898438
+      },
+      "rasters": {
+        "hillshade": "sites/sayburc/hillshade.jpg",
+        "multidirectional-hillshade": "sites/sayburc/multidirectional-hillshade.jpg",
+        "slope": "sites/sayburc/slope.jpg",
+        "local-relief": "sites/sayburc/local-relief.jpg",
+        "sky-view-factor": "sites/sayburc/sky-view-factor.jpg",
+        "true-colour": "sites/sayburc/true-colour.jpg",
+        "false-colour": "sites/sayburc/false-colour.jpg",
+        "ndvi": "sites/sayburc/ndvi.jpg"
+      }
+    },
+    {
+      "id": "harbetsuvan-tepesi",
+      "utm": [
+        522446.217107557,
+        4100301.8600571584
+      ],
+      "groundElevation": 718.0997924804688,
+      "bounds": [
+        519946.217107557,
+        4097801.8600571584,
+        524946.217107557,
+        4102801.8600571584
+      ],
+      "width": 167,
+      "height": 167,
+      "pixelSizeM": 29.940119760479043,
+      "neighbourhoodM": 5000.0,
+      "elevation": {
+        "min": 530.57568359375,
+        "max": 727.3045043945312
+      },
+      "rasters": {
+        "hillshade": "sites/harbetsuvan-tepesi/hillshade.jpg",
+        "multidirectional-hillshade": "sites/harbetsuvan-tepesi/multidirectional-hillshade.jpg",
+        "slope": "sites/harbetsuvan-tepesi/slope.jpg",
+        "local-relief": "sites/harbetsuvan-tepesi/local-relief.jpg",
+        "sky-view-factor": "sites/harbetsuvan-tepesi/sky-view-factor.jpg",
+        "true-colour": "sites/harbetsuvan-tepesi/true-colour.jpg",
+        "false-colour": "sites/harbetsuvan-tepesi/false-colour.jpg",
+        "ndvi": "sites/harbetsuvan-tepesi/ndvi.jpg"
+      }
+    },
+    {
+      "id": "nevali-cori",
+      "utm": [
+        465143.87168102263,
+        4152447.9936396815
+      ],
+      "groundElevation": 553.880859375,
+      "bounds": [
+        462643.87168102263,
+        4149947.9936396815,
+        467643.87168102263,
+        4154947.9936396815
+      ],
+      "width": 167,
+      "height": 167,
+      "pixelSizeM": 29.940119760479043,
+      "neighbourhoodM": 5000.0,
+      "elevation": {
+        "min": 537.0,
+        "max": 618.5512084960938
+      },
+      "rasters": {
+        "hillshade": "sites/nevali-cori/hillshade.jpg",
+        "multidirectional-hillshade": "sites/nevali-cori/multidirectional-hillshade.jpg",
+        "slope": "sites/nevali-cori/slope.jpg",
+        "local-relief": "sites/nevali-cori/local-relief.jpg",
+        "sky-view-factor": "sites/nevali-cori/sky-view-factor.jpg",
+        "true-colour": "sites/nevali-cori/true-colour.jpg",
+        "false-colour": "sites/nevali-cori/false-colour.jpg",
+        "ndvi": "sites/nevali-cori/ndvi.jpg"
+      }
+    },
+    {
+      "id": "harran",
+      "utm": [
+        502228.15876022953,
+        4080543.570291122
+      ],
+      "groundElevation": 363.4826354980469,
+      "bounds": [
+        499728.15876022953,
+        4078043.570291122,
+        504728.15876022953,
+        4083043.570291122
+      ],
+      "width": 167,
+      "height": 167,
+      "pixelSizeM": 29.940119760479043,
+      "neighbourhoodM": 5000.0,
+      "elevation": {
+        "min": 357.482666015625,
+        "max": 392.0689697265625
+      },
+      "rasters": {
+        "hillshade": "sites/harran/hillshade.jpg",
+        "multidirectional-hillshade": "sites/harran/multidirectional-hillshade.jpg",
+        "slope": "sites/harran/slope.jpg",
+        "local-relief": "sites/harran/local-relief.jpg",
+        "sky-view-factor": "sites/harran/sky-view-factor.jpg",
+        "true-colour": "sites/harran/true-colour.jpg",
+        "false-colour": "sites/harran/false-colour.jpg",
+        "ndvi": "sites/harran/ndvi.jpg"
+      }
+    }
+  ]
+}

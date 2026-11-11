@@ -1,0 +1,90 @@
+{
+  "type": "FeatureCollection",
+  "name": "published-se-anatolian-sites",
+  "features": [
+    {
+      "type": "Feature",
+      "id": "gobekli-tepe",
+      "geometry": { "type": "Point", "coordinates": [38.922364, 37.223242] },
+      "properties": {
+        "name": "Göbekli Tepe",
+        "period": "Pre-Pottery Neolithic",
+        "kind": "validation",
+        "description": "Published Taş Tepeler site on the Germuş limestone, and a UNESCO World Heritage property. It is a known validation site for this project, not a discovery.",
+        "source": "UNESCO World Heritage Centre, listing 1572",
+        "sourceUrl": "https://whc.unesco.org/en/list/1572/",
+        "notes": "Official listing coordinates. 30 m terrain cannot resolve individual enclosures or pillars."
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "karahan-tepe",
+      "geometry": { "type": "Point", "coordinates": [39.30361, 37.0925] },
+      "properties": {
+        "name": "Karahan Tepe",
+        "period": "Pre-Pottery Neolithic",
+        "kind": "validation",
+        "description": "Published Taş Tepeler excavation on the Tektek plateau. It is a known validation site for this project, not a discovery.",
+        "source": "Wikipedia, Karahan Tepe",
+        "sourceUrl": "https://en.wikipedia.org/wiki/Karahan_Tepe",
+        "notes": "Public encyclopedia coordinates of a published excavation. Not a new find."
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "sayburc",
+      "geometry": { "type": "Point", "coordinates": [38.6206972, 37.1112389] },
+      "properties": {
+        "name": "Sayburç",
+        "period": "Pre-Pottery Neolithic",
+        "kind": "published",
+        "description": "Published Pre-Pottery Neolithic site in the Şanlıurfa plateau, associated with the Taş Tepeler work.",
+        "source": "Wikipedia, Sayburç",
+        "sourceUrl": "https://en.wikipedia.org/wiki/Saybur%C3%A7",
+        "notes": "Public encyclopedia coordinates. The pin is not a surveyed plan."
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "harbetsuvan-tepesi",
+      "geometry": { "type": "Point", "coordinates": [39.2524333, 37.048675] },
+      "properties": {
+        "name": "Harbetsuvan Tepesi",
+        "period": "Pre-Pottery Neolithic",
+        "kind": "published",
+        "description": "Published Pre-Pottery Neolithic site on the Tektek plateau.",
+        "source": "Turkish Wikipedia, Harbetsuvan Tepesi",
+        "sourceUrl": "https://tr.wikipedia.org/wiki/Harbetsuvan_Tepesi",
+        "notes": "Public encyclopedia coordinates. The pin is not a surveyed plan."
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "nevali-cori",
+      "geometry": { "type": "Point", "coordinates": [38.60556, 37.51833] },
+      "properties": {
+        "name": "Nevalı Çori",
+        "period": "Pre-Pottery Neolithic B",
+        "kind": "submerged",
+        "description": "Published Pre-Pottery Neolithic site. It now lies under the Atatürk reservoir.",
+        "source": "Wikipedia, Nevalı Çori",
+        "sourceUrl": "https://en.wikipedia.org/wiki/Neval%C4%B1_%C3%87ori",
+        "notes": "The published location is submerged by the Atatürk reservoir. The pin is not a place on dry ground you can visit, and the 30 m surface here is the reservoir landscape, not the excavated settlement."
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "harran",
+      "geometry": { "type": "Point", "coordinates": [39.025, 36.87083] },
+      "properties": {
+        "name": "Harran",
+        "period": "Historic town",
+        "kind": "landmark",
+        "description": "Historic town on the Harran plain. A landscape landmark, not a Taş Tepeler Neolithic site.",
+        "source": "Wikipedia, Harran",
+        "sourceUrl": "https://en.wikipedia.org/wiki/Harran",
+        "notes": "Included so the plain has a known landmark. Not a Neolithic discovery and not part of the Taş Tepeler group."
+      }
+    }
+  ]
+}

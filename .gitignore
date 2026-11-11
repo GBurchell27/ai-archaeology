@@ -15,6 +15,10 @@ outputs/
 # Precise candidate locations. Do not commit these (looting risk).
 candidates_private*
 
+# Node
+node_modules/
+Anatolia/explorer/screenshots/
+
 # Python
 __pycache__/
 *.py[cod]
