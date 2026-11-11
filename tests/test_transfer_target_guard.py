@@ -18,8 +18,12 @@ def _turkey():
 
 
 def test_cross_validate_skips_a_transfer_target():
+    # n_folds is present so a removed role filter reaches _require_training_source
+    # instead of dying on a missing validation attribute.
+    turkey = _turkey()
+    turkey.region.validation = SimpleNamespace(n_folds=1)
     try:
-        rows = _cross_validate([_turkey()], None, None)
+        rows = _cross_validate([turkey], None, None)
     except AssertionError as exc:
         pytest.fail(f"transfer target reached training: {exc}")
     assert rows == []
