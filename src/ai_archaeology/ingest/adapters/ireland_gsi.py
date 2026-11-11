@@ -20,7 +20,11 @@ COVERAGE_QUERY = (
     "IE_GSI_LiDAR_Coverage_GSI_Phase2_IE26_ITM/MapServer/12/query"
 )
 TILE_NAME = re.compile(r"^P_(\d{3})(\d{3})$")
-EXPECTED_LICENCE = "Creative Commons Attribution 4.0"
+EXPECTED_LICENCE = (
+    "Please use this specific attribution statement: Contains Irish Public "
+    "Sector Data (Geological Survey Ireland) licensed under a Creative Commons "
+    "Attribution 4.0 International (CC BY 4.0) licence."
+)
 ATTRIBUTION = (
     "Contains Irish Public Sector Data (Geological Survey Ireland) licensed "
     "under a Creative Commons Attribution 4.0 International (CC BY 4.0) licence."
@@ -52,10 +56,10 @@ class IrelandGsiAdapter:
 
 
 def require_gsi_licence(licence_text: str) -> str:
-    """Use the coverage record's licence text, and refuse a different licence."""
-    if EXPECTED_LICENCE not in licence_text:
-        raise ValueError("GSI tile licence is not Creative Commons Attribution 4.0")
-    return licence_text
+    """Accept only the coverage record's full licence statement."""
+    if licence_text.strip() != EXPECTED_LICENCE:
+        raise ValueError("GSI tile licence does not match the CC BY 4.0 statement")
+    return licence_text.strip()
 
 
 def itm_bounds_from_tile_name(tile_name: str) -> tuple[float, float, float, float]:

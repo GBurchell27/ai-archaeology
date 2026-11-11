@@ -16,8 +16,11 @@ from ai_archaeology.train.patches import LabelledPatch, patch_is_usable
 
 
 def test_gsi_licence_comes_from_the_record():
-    recorded = "Creative Commons Attribution 4.0 International (CC BY 4.0)"
-    assert require_gsi_licence(recorded) == recorded
+    from ai_archaeology.ingest.adapters.ireland_gsi import EXPECTED_LICENCE
+
+    assert require_gsi_licence(EXPECTED_LICENCE) == EXPECTED_LICENCE
+    with pytest.raises(ValueError):
+        require_gsi_licence("Creative Commons Attribution 4.0")
     with pytest.raises(ValueError):
         require_gsi_licence("all rights reserved")
 

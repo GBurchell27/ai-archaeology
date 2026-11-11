@@ -15,6 +15,11 @@ PUBLISHED_SITE_FILES = {
     # These tests pin the published files above. They are not candidate locations.
     "tests/test_atlas_sites.py",
     "tests/test_sites_geojson.py",
+    # Published atlas context (rivers, lakes, roads), not candidate sites.
+    "Anatolia/atlas/public/context/lakes.geojson",
+    "Anatolia/atlas/public/context/rivers.geojson",
+    "Anatolia/atlas/public/context/roads.geojson",
+    "Anatolia/atlas/scripts/build_context.py",
 }
 BINARY_SUFFIXES = {".png", ".jpg", ".jpeg", ".gif", ".webp", ".u16", ".tif", ".tiff", ".woff", ".woff2"}
 

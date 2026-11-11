@@ -98,7 +98,14 @@ def _cross_validate(prepared: list[PreparedRegion], config: RunConfig, review_db
     return rows
 
 
+def _require_training_source(item) -> None:
+    region = item.region
+    if region.role != "source":
+        raise AssertionError(f"{region.region_id} is not a training source")
+
+
 def _one_fold(item: PreparedRegion, config: RunConfig, hard, fold: int) -> dict:
+    _require_training_source(item)
     common = _patch_kwargs(item, config)
     training = collect_training_patches(**common, seed=config.seed + fold, held_out_fold=fold, hard_negatives=hard)
     evaluation = collect_fold_patches(**common, seed=config.seed, fold=fold)
@@ -121,6 +128,7 @@ def _transfer(prepared: list[PreparedRegion], config: RunConfig, review_db: Path
         return {"status": "skipped", "reason": "need a source region and a transfer target"}
     pooled = []
     for item in sources:
+        _require_training_source(item)
         pooled.extend(
             collect_training_patches(
                 **_patch_kwargs(item, config),
