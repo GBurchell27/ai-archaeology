@@ -1,0 +1,521 @@
+{
+  "crs": "EPSG:3857",
+  "bounds": [
+    2838647.015228476,
+    4273136.462385056,
+    5009377.085697311,
+    5190985.714725111
+  ],
+  "width": 1700,
+  "height": 719,
+  "pixelSizeM": 1276.900041452256,
+  "elevation": {
+    "min": -3.1610023975372314,
+    "max": 4761.83447265625
+  },
+  "rasters": {
+    "relief": "national/hillshade.jpg",
+    "hypsometric": "national/hypsometric.jpg",
+    "satellite": "national/satellite.jpg"
+  },
+  "attribution": {
+    "dem": "Contains modified Copernicus DEM data \u00a9 DLR e.V. 2010-2014 and \u00a9 Airbus Defence and Space GmbH 2014-2018 provided under COPERNICUS by the European Union and ESA",
+    "satellite": "Sentinel-2 cloudless 2020 by EOX IT Services GmbH (CC BY 4.0). Contains modified Copernicus Sentinel data 2020. https://s2maps.eu"
+  },
+  "honestNote": "National terrain cells are about 1277 m. They show ranges and plains, not buildings. \u015eanl\u0131urfa site tiles are 30 m and still cannot resolve individual enclosures.",
+  "details": {
+    "gobekli-tepe": {
+      "bounds": [
+        4329677.2509119855,
+        4467116.719333755,
+        4335956.364352341,
+        4473422.663967751
+      ],
+      "width": 167,
+      "height": 167,
+      "pixelSizeM": 29.940119760479043,
+      "elevation": {
+        "min": 566.9337158203125,
+        "max": 800.84716796875
+      },
+      "rasters": {
+        "hillshade": "details/gobekli-tepe/hillshade.jpg",
+        "multidirectional-hillshade": "details/gobekli-tepe/multidirectional-hillshade.jpg",
+        "slope": "details/gobekli-tepe/slope.jpg",
+        "local-relief": "details/gobekli-tepe/local-relief.jpg",
+        "sky-view-factor": "details/gobekli-tepe/sky-view-factor.jpg",
+        "true-colour": "details/gobekli-tepe/true-colour.jpg",
+        "false-colour": "details/gobekli-tepe/false-colour.jpg",
+        "ndvi": "details/gobekli-tepe/ndvi.jpg"
+      }
+    },
+    "karahan-tepe": {
+      "bounds": [
+        4372117.223890786,
+        4448852.930664545,
+        4378400.333713082,
+        4455162.981808818
+      ],
+      "width": 167,
+      "height": 167,
+      "pixelSizeM": 29.940119760479043,
+      "elevation": {
+        "min": 632.9981689453125,
+        "max": 741.7283325195312
+      },
+      "rasters": {
+        "hillshade": "details/karahan-tepe/hillshade.jpg",
+        "multidirectional-hillshade": "details/karahan-tepe/multidirectional-hillshade.jpg",
+        "slope": "details/karahan-tepe/slope.jpg",
+        "local-relief": "details/karahan-tepe/local-relief.jpg",
+        "sky-view-factor": "details/karahan-tepe/sky-view-factor.jpg",
+        "true-colour": "details/karahan-tepe/true-colour.jpg",
+        "false-colour": "details/karahan-tepe/false-colour.jpg",
+        "ndvi": "details/karahan-tepe/ndvi.jpg"
+      }
+    },
+    "sayburc": {
+      "bounds": [
+        4296090.613130467,
+        4451465.145264101,
+        4302380.223453067,
+        4457781.711446694
+      ],
+      "width": 167,
+      "height": 167,
+      "pixelSizeM": 29.940119760479043,
+      "elevation": {
+        "min": 603.977783203125,
+        "max": 762.5409545898438
+      },
+      "rasters": {
+        "hillshade": "details/sayburc/hillshade.jpg",
+        "multidirectional-hillshade": "details/sayburc/multidirectional-hillshade.jpg",
+        "slope": "details/sayburc/slope.jpg",
+        "local-relief": "details/sayburc/local-relief.jpg",
+        "sky-view-factor": "details/sayburc/sky-view-factor.jpg",
+        "true-colour": "details/sayburc/true-colour.jpg",
+        "false-colour": "details/sayburc/false-colour.jpg",
+        "ndvi": "details/sayburc/ndvi.jpg"
+      }
+    },
+    "harbetsuvan-tepesi": {
+      "bounds": [
+        4366423.745628378,
+        4442742.094960872,
+        4372699.879631159,
+        4449045.171494531
+      ],
+      "width": 167,
+      "height": 167,
+      "pixelSizeM": 29.940119760479043,
+      "elevation": {
+        "min": 530.57568359375,
+        "max": 727.3045043945312
+      },
+      "rasters": {
+        "hillshade": "details/harbetsuvan-tepesi/hillshade.jpg",
+        "multidirectional-hillshade": "details/harbetsuvan-tepesi/multidirectional-hillshade.jpg",
+        "slope": "details/harbetsuvan-tepesi/slope.jpg",
+        "local-relief": "details/harbetsuvan-tepesi/local-relief.jpg",
+        "sky-view-factor": "details/harbetsuvan-tepesi/sky-view-factor.jpg",
+        "true-colour": "details/harbetsuvan-tepesi/true-colour.jpg",
+        "false-colour": "details/harbetsuvan-tepesi/false-colour.jpg",
+        "ndvi": "details/harbetsuvan-tepesi/ndvi.jpg"
+      }
+    },
+    "nevali-cori": {
+      "bounds": [
+        4294387.905620895,
+        4508427.860342851,
+        4300712.762483982,
+        4514779.532075941
+      ],
+      "width": 167,
+      "height": 167,
+      "pixelSizeM": 29.940119760479043,
+      "elevation": {
+        "min": 537.0,
+        "max": 618.5512084960938
+      },
+      "rasters": {
+        "hillshade": "details/nevali-cori/hillshade.jpg",
+        "multidirectional-hillshade": "details/nevali-cori/multidirectional-hillshade.jpg",
+        "slope": "details/nevali-cori/slope.jpg",
+        "local-relief": "details/nevali-cori/local-relief.jpg",
+        "sky-view-factor": "details/nevali-cori/sky-view-factor.jpg",
+        "true-colour": "details/nevali-cori/true-colour.jpg",
+        "false-colour": "details/nevali-cori/false-colour.jpg",
+        "ndvi": "details/nevali-cori/ndvi.jpg"
+      }
+    },
+    "harran": {
+      "bounds": [
+        4341120.509351754,
+        4417980.60557304,
+        4347367.382045134,
+        4424254.225715373
+      ],
+      "width": 167,
+      "height": 167,
+      "pixelSizeM": 29.940119760479043,
+      "elevation": {
+        "min": 357.482666015625,
+        "max": 392.0689697265625
+      },
+      "rasters": {
+        "hillshade": "details/harran/hillshade.jpg",
+        "multidirectional-hillshade": "details/harran/multidirectional-hillshade.jpg",
+        "slope": "details/harran/slope.jpg",
+        "local-relief": "details/harran/local-relief.jpg",
+        "sky-view-factor": "details/harran/sky-view-factor.jpg",
+        "true-colour": "details/harran/true-colour.jpg",
+        "false-colour": "details/harran/false-colour.jpg",
+        "ndvi": "details/harran/ndvi.jpg"
+      }
+    },
+    "edessa": {
+      "bounds": [
+        4310476.216371273,
+        4451426.476823326,
+        4326060.945082331,
+        4470981.477742352
+      ],
+      "width": 80,
+      "height": 80,
+      "pixelSizeM": 194.80910888822982,
+      "elevation": {
+        "min": 436.30816650390625,
+        "max": 819.5841674804688
+      },
+      "rasters": {
+        "hillshade": "details/edessa/hillshade.jpg",
+        "hypsometric": "details/edessa/hypsometric.jpg"
+      }
+    },
+    "antioch": {
+      "bounds": [
+        4017582.267385548,
+        4318868.517466003,
+        4033166.9960966064,
+        4338182.025494163
+      ],
+      "width": 80,
+      "height": 80,
+      "pixelSizeM": 194.80910888822982,
+      "elevation": {
+        "min": 36.9954719543457,
+        "max": 588.4124755859375
+      },
+      "rasters": {
+        "hillshade": "details/antioch/hillshade.jpg",
+        "hypsometric": "details/antioch/hypsometric.jpg"
+      }
+    },
+    "nicaea": {
+      "bounds": [
+        3300746.5902199764,
+        4918273.496799151,
+        3316331.318931035,
+        4938747.18135267
+      ],
+      "width": 80,
+      "height": 80,
+      "pixelSizeM": 194.80910888823564,
+      "elevation": {
+        "min": 83.0,
+        "max": 885.2832641601562
+      },
+      "rasters": {
+        "hillshade": "details/nicaea/hillshade.jpg",
+        "hypsometric": "details/nicaea/hypsometric.jpg"
+      }
+    },
+    "dorylaeum": {
+      "bounds": [
+        3389745.286349656,
+        4823411.814565124,
+        3405330.015060715,
+        4843690.08446637
+      ],
+      "width": 80,
+      "height": 80,
+      "pixelSizeM": 194.80910888823564,
+      "elevation": {
+        "min": 780.3605346679688,
+        "max": 1008.2269287109375
+      },
+      "rasters": {
+        "hillshade": "details/dorylaeum/hillshade.jpg",
+        "hypsometric": "details/dorylaeum/hypsometric.jpg"
+      }
+    },
+    "constantinople": {
+      "bounds": [
+        3218246.478833539,
+        5003864.122854284,
+        3233831.2075445973,
+        5024518.021283609
+      ],
+      "width": 80,
+      "height": 80,
+      "pixelSizeM": 194.80910888822982,
+      "elevation": {
+        "min": 0.0,
+        "max": 148.11929321289062
+      },
+      "rasters": {
+        "hillshade": "details/constantinople/hillshade.jpg",
+        "hypsometric": "details/constantinople/hypsometric.jpg"
+      }
+    },
+    "turbessel": {
+      "bounds": [
+        4171759.762134232,
+        4412501.735626636,
+        4187344.49084529,
+        4431984.950136365
+      ],
+      "width": 80,
+      "height": 80,
+      "pixelSizeM": 194.809108888224,
+      "elevation": {
+        "min": 551.1304321289062,
+        "max": 790.5216674804688
+      },
+      "rasters": {
+        "hillshade": "details/turbessel/hillshade.jpg",
+        "hypsometric": "details/turbessel/hypsometric.jpg"
+      }
+    },
+    "ravendel": {
+      "bounds": [
+        4117006.42901221,
+        4411707.31511132,
+        4132591.157723268,
+        4431189.072108121
+      ],
+      "width": 80,
+      "height": 80,
+      "pixelSizeM": 194.809108888224,
+      "elevation": {
+        "min": 400.85699462890625,
+        "max": 959.9374389648438
+      },
+      "rasters": {
+        "hillshade": "details/ravendel/hillshade.jpg",
+        "hypsometric": "details/ravendel/hypsometric.jpg"
+      }
+    },
+    "rumkale": {
+      "bounds": [
+        4204320.713191264,
+        4467292.743443944,
+        4219905.441902324,
+        4486877.214872247
+      ],
+      "width": 80,
+      "height": 80,
+      "pixelSizeM": 194.80910888824147,
+      "elevation": {
+        "min": 380.0,
+        "max": 744.1699829101562
+      },
+      "rasters": {
+        "hillshade": "details/rumkale/hillshade.jpg",
+        "hypsometric": "details/rumkale/hypsometric.jpg"
+      }
+    },
+    "birecik": {
+      "bounds": [
+        4219781.752589713,
+        4432836.222334347,
+        4235366.48130077,
+        4452356.847493229
+      ],
+      "width": 80,
+      "height": 80,
+      "pixelSizeM": 194.8091088882182,
+      "elevation": {
+        "min": 336.0,
+        "max": 550.26025390625
+      },
+      "rasters": {
+        "hillshade": "details/birecik/hillshade.jpg",
+        "hypsometric": "details/birecik/hypsometric.jpg"
+      }
+    },
+    "samosata": {
+      "bounds": [
+        4275936.251897206,
+        4510356.674887237,
+        4291520.980608264,
+        4530021.747739624
+      ],
+      "width": 80,
+      "height": 80,
+      "pixelSizeM": 194.80910888822982,
+      "elevation": {
+        "min": 537.0,
+        "max": 708.8306274414062
+      },
+      "rasters": {
+        "hillshade": "details/samosata/hillshade.jpg",
+        "hypsometric": "details/samosata/hypsometric.jpg"
+      }
+    },
+    "marash": {
+      "bounds": [
+        4103607.49523831,
+        4510902.428312038,
+        4119192.223949368,
+        4530568.528395066
+      ],
+      "width": 80,
+      "height": 80,
+      "pixelSizeM": 194.809108888224,
+      "elevation": {
+        "min": 331.88055419921875,
+        "max": 1976.1253662109375
+      },
+      "rasters": {
+        "hillshade": "details/marash/hillshade.jpg",
+        "hypsometric": "details/marash/hypsometric.jpg"
+      }
+    },
+    "baghras": {
+      "bounds": [
+        4024756.189630806,
+        4349848.186103544,
+        4040340.9183418644,
+        4369217.3797555715
+      ],
+      "width": 80,
+      "height": 80,
+      "pixelSizeM": 194.80910888822982,
+      "elevation": {
+        "min": 75.9659423828125,
+        "max": 1214.32177734375
+      },
+      "rasters": {
+        "hillshade": "details/baghras/hillshade.jpg",
+        "hypsometric": "details/baghras/hypsometric.jpg"
+      }
+    },
+    "tarsus": {
+      "bounds": [
+        3876712.398824831,
+        4417732.4096356705,
+        3892297.12753589,
+        4437225.22836325
+      ],
+      "width": 80,
+      "height": 80,
+      "pixelSizeM": 194.80910888823564,
+      "elevation": {
+        "min": 1.758813500404358,
+        "max": 215.90573120117188
+      },
+      "rasters": {
+        "hillshade": "details/tarsus/hillshade.jpg",
+        "hypsometric": "details/tarsus/hypsometric.jpg"
+      }
+    },
+    "mamistra": {
+      "bounds": [
+        3957840.806955427,
+        4423475.979307646,
+        3973425.5356664853,
+        4442979.359141339
+      ],
+      "width": 80,
+      "height": 80,
+      "pixelSizeM": 194.80910888822982,
+      "elevation": {
+        "min": 7.091400623321533,
+        "max": 740.62451171875
+      },
+      "rasters": {
+        "hillshade": "details/mamistra/hillshade.jpg",
+        "hypsometric": "details/mamistra/hypsometric.jpg"
+      }
+    },
+    "adana": {
+      "bounds": [
+        3924160.476079553,
+        4429354.176187223,
+        3939745.204790611,
+        4448868.381096872
+      ],
+      "width": 80,
+      "height": 80,
+      "pixelSizeM": 194.809108888224,
+      "elevation": {
+        "min": 6.340500354766846,
+        "max": 173.13409423828125
+      },
+      "rasters": {
+        "hillshade": "details/adana/hillshade.jpg",
+        "hypsometric": "details/adana/hypsometric.jpg"
+      }
+    },
+    "saleph": {
+      "bounds": [
+        3769525.3346590735,
+        4342823.950800613,
+        3785110.0633701324,
+        4362180.4783451045
+      ],
+      "width": 80,
+      "height": 80,
+      "pixelSizeM": 194.80910888823564,
+      "elevation": {
+        "min": -0.051001451909542084,
+        "max": 647.2692260742188
+      },
+      "rasters": {
+        "hillshade": "details/saleph/hillshade.jpg",
+        "hypsometric": "details/saleph/hypsometric.jpg"
+      }
+    },
+    "smyrna-hospitaller": {
+      "bounds": [
+        3013325.849902653,
+        4628790.600741782,
+        3028910.578613711,
+        4648681.9900559345
+      ],
+      "width": 80,
+      "height": 80,
+      "pixelSizeM": 194.809108888224,
+      "elevation": {
+        "min": -0.13718800246715546,
+        "max": 417.2722473144531
+      },
+      "rasters": {
+        "hillshade": "details/smyrna-hospitaller/hillshade.jpg",
+        "hypsometric": "details/smyrna-hospitaller/hypsometric.jpg"
+      }
+    },
+    "bodrum-petronion": {
+      "bounds": [
+        3045639.4234476597,
+        4433764.961455859,
+        3061224.152158718,
+        4453287.300023436
+      ],
+      "width": 80,
+      "height": 80,
+      "pixelSizeM": 194.80910888822982,
+      "elevation": {
+        "min": 0.0,
+        "max": 654.6104125976562
+      },
+      "rasters": {
+        "hillshade": "details/bodrum-petronion/hillshade.jpg",
+        "hypsometric": "details/bodrum-petronion/hypsometric.jpg"
+      }
+    }
+  },
+  "heightFile": "national/height.u16"
+}

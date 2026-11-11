@@ -49,7 +49,7 @@ Published coordinates of already protected, already famous sites are not an invi
 ```
 src/ai_archaeology/    Python package
 scripts/               download scripts (the scripts, not the data)
-Anatolia/              SE Anatolia notes, source register, and terrain explorer
+Anatolia/              SE Anatolia notes, atlas, and the earlier terrain explorer
 docs/data-sources.md   pointer to regional registers, plus a blank template
 data/                  gitignored local rasters
 outputs/               gitignored local products

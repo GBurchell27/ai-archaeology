@@ -17,6 +17,7 @@ candidates_private*
 
 # Node
 node_modules/
+.next/
 Anatolia/explorer/screenshots/
 
 # Python

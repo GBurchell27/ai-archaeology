@@ -1,0 +1,468 @@
+{
+  "type": "FeatureCollection",
+  "name": "anatolia-atlas-published-sites",
+  "features": [
+    {
+      "type": "Feature",
+      "id": "gobekli-tepe",
+      "geometry": { "type": "Point", "coordinates": [38.922364, 37.223242] },
+      "properties": {
+        "name": "Göbekli Tepe",
+        "names": ["Göbekli Tepe"],
+        "layer": "neolithic",
+        "category": "site",
+        "kind": "validation",
+        "startYear": -9600,
+        "endYear": -8200,
+        "period": "Pre-Pottery Neolithic",
+        "description": "Published Taş Tepeler site on the Germuş limestone, and a UNESCO World Heritage property. A known validation site for this project, not a discovery. The years are a filter bracket for the published occupation, not a new chronology.",
+        "source": "UNESCO World Heritage Centre, listing 1572",
+        "sourceUrl": "https://whc.unesco.org/en/list/1572/",
+        "confidence": "high",
+        "notes": "Official listing coordinates. 30 m terrain cannot resolve individual enclosures or pillars."
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "karahan-tepe",
+      "geometry": { "type": "Point", "coordinates": [39.30361, 37.0925] },
+      "properties": {
+        "name": "Karahan Tepe",
+        "names": ["Karahan Tepe", "Karahantepe"],
+        "layer": "neolithic",
+        "category": "site",
+        "kind": "validation",
+        "startYear": -9400,
+        "endYear": -8000,
+        "period": "Pre-Pottery Neolithic",
+        "description": "Published Taş Tepeler excavation on the Tektek plateau. A known validation site, not a discovery. Years are a filter bracket.",
+        "source": "Wikipedia, Karahan Tepe",
+        "sourceUrl": "https://en.wikipedia.org/wiki/Karahan_Tepe",
+        "confidence": "high",
+        "notes": "Public encyclopedia coordinates of a published excavation."
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "sayburc",
+      "geometry": { "type": "Point", "coordinates": [38.6206972, 37.1112389] },
+      "properties": {
+        "name": "Sayburç",
+        "names": ["Sayburç"],
+        "layer": "neolithic",
+        "category": "site",
+        "kind": "published",
+        "startYear": -9000,
+        "endYear": -7500,
+        "period": "Pre-Pottery Neolithic",
+        "description": "Published Pre-Pottery Neolithic site on the Şanlıurfa plateau. Years are a broad filter bracket, not a dated building sequence.",
+        "source": "Wikipedia, Sayburç",
+        "sourceUrl": "https://en.wikipedia.org/wiki/Saybur%C3%A7",
+        "confidence": "high",
+        "notes": "Public encyclopedia coordinates. The pin is not a surveyed plan."
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "harbetsuvan-tepesi",
+      "geometry": { "type": "Point", "coordinates": [39.2524333, 37.048675] },
+      "properties": {
+        "name": "Harbetsuvan Tepesi",
+        "names": ["Harbetsuvan Tepesi"],
+        "layer": "neolithic",
+        "category": "site",
+        "kind": "published",
+        "startYear": -9000,
+        "endYear": -7500,
+        "period": "Pre-Pottery Neolithic",
+        "description": "Published Pre-Pottery Neolithic site on the Tektek plateau. Years are a broad filter bracket.",
+        "source": "Turkish Wikipedia, Harbetsuvan Tepesi",
+        "sourceUrl": "https://tr.wikipedia.org/wiki/Harbetsuvan_Tepesi",
+        "confidence": "high",
+        "notes": "Public encyclopedia coordinates. The pin is not a surveyed plan."
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "nevali-cori",
+      "geometry": { "type": "Point", "coordinates": [38.60556, 37.51833] },
+      "properties": {
+        "name": "Nevalı Çori",
+        "names": ["Nevalı Çori"],
+        "layer": "neolithic",
+        "category": "site",
+        "kind": "submerged",
+        "startYear": -8600,
+        "endYear": -8000,
+        "period": "Pre-Pottery Neolithic B",
+        "description": "Published Pre-Pottery Neolithic site. It now lies under the Atatürk reservoir. Years are a filter bracket for the PPNB settlement.",
+        "source": "Wikipedia, Nevalı Çori",
+        "sourceUrl": "https://en.wikipedia.org/wiki/Neval%C4%B1_%C3%87ori",
+        "confidence": "high",
+        "notes": "The published location is submerged. The pin is not a place on dry ground, and the surface here is the reservoir, not the excavated settlement."
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "harran",
+      "geometry": { "type": "Point", "coordinates": [39.025, 36.87083] },
+      "properties": {
+        "name": "Harran",
+        "names": ["Harran", "Carrhae"],
+        "layer": "neolithic",
+        "category": "city",
+        "kind": "landmark",
+        "startYear": -3000,
+        "endYear": 1500,
+        "period": "Bronze Age through medieval",
+        "description": "Historic town on the Harran plain. Kept with the original six published points as a landscape landmark, not as a Taş Tepeler site. The date bracket is why it also appears in later periods.",
+        "source": "Wikipedia, Harran",
+        "sourceUrl": "https://en.wikipedia.org/wiki/Harran",
+        "confidence": "high",
+        "notes": "Not a Neolithic discovery and not part of the Taş Tepeler group."
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "edessa",
+      "geometry": { "type": "Point", "coordinates": [38.79166667, 37.15833333] },
+      "properties": {
+        "name": "Edessa",
+        "names": ["Edessa", "Şanlıurfa", "Urfa"],
+        "layer": "crusader",
+        "category": "city",
+        "startYear": 1098,
+        "endYear": 1144,
+        "period": "County of Edessa, 1098–1144",
+        "description": "City of the County of Edessa, taken in 1098 and lost to Zengi in 1144. The pin is the published coordinate of the historic city, now Şanlıurfa.",
+        "source": "Wikipedia, Urfa",
+        "sourceUrl": "https://en.wikipedia.org/wiki/Urfa",
+        "confidence": "high",
+        "notes": "City coordinate, not a traced circuit of the crusader walls."
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "antioch",
+      "geometry": { "type": "Point", "coordinates": [36.16055556, 36.2025] },
+      "properties": {
+        "name": "Antioch",
+        "names": ["Antioch", "Antakya"],
+        "layer": "crusader",
+        "category": "city",
+        "startYear": 1098,
+        "endYear": 1268,
+        "period": "Principality of Antioch, 1098–1268",
+        "description": "City of the Principality of Antioch after the siege of 1098, held until the Mamluk conquest of 1268. The pin is the published coordinate of Antakya.",
+        "source": "Wikipedia, Antakya",
+        "sourceUrl": "https://en.wikipedia.org/wiki/Antakya",
+        "confidence": "high",
+        "notes": "City coordinate, not a traced circuit of the walls."
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "nicaea",
+      "geometry": { "type": "Point", "coordinates": [29.72111111, 40.42916667] },
+      "properties": {
+        "name": "Nicaea",
+        "names": ["Nicaea", "İznik"],
+        "layer": "crusader",
+        "category": "city",
+        "startYear": 1097,
+        "endYear": 1097,
+        "period": "Siege of Nicaea, 1097",
+        "description": "The First Crusade besieged Nicaea in 1097. The city then returned to Byzantine control. The pin is the published coordinate of İznik.",
+        "source": "Wikipedia, İznik",
+        "sourceUrl": "https://en.wikipedia.org/wiki/%C4%B0znik",
+        "confidence": "high",
+        "notes": "Marks the published city, not a reconstructed siege line."
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "dorylaeum",
+      "geometry": { "type": "Point", "coordinates": [30.5206, 39.7767] },
+      "properties": {
+        "name": "Dorylaeum",
+        "names": ["Dorylaeum", "Dorylaion"],
+        "layer": "crusader",
+        "category": "battle",
+        "startYear": 1097,
+        "endYear": 1097,
+        "period": "Battle of Dorylaeum, 1 July 1097",
+        "description": "First Crusade battle near ancient Dorylaeum. The Wikipedia coordinate sits on the ancient city, not on a surveyed battlefield polygon.",
+        "source": "Wikipedia, Battle of Dorylaeum (1097)",
+        "sourceUrl": "https://en.wikipedia.org/wiki/Battle_of_Dorylaeum_(1097)",
+        "confidence": "approximate",
+        "notes": "Battle area. Drawn as an open ring. Do not treat this as the exact spot of the fighting."
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "constantinople",
+      "geometry": { "type": "Point", "coordinates": [28.98, 41.0125] },
+      "properties": {
+        "name": "Constantinople",
+        "names": ["Constantinople", "Istanbul"],
+        "layer": "crusader",
+        "category": "city",
+        "startYear": 1204,
+        "endYear": 1261,
+        "period": "Fourth Crusade and Latin Empire, 1204–1261",
+        "description": "The Fourth Crusade sacked Constantinople in 1204. The pin is the published coordinate of the historic city.",
+        "source": "Wikipedia, Constantinople",
+        "sourceUrl": "https://en.wikipedia.org/wiki/Constantinople",
+        "confidence": "high",
+        "notes": "City coordinate. It does not mark a single building of the 1204 sack."
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "turbessel",
+      "geometry": { "type": "Point", "coordinates": [37.54555556, 36.87888889] },
+      "properties": {
+        "name": "Turbessel",
+        "names": ["Turbessel", "Tilbaşar", "Tell Başar"],
+        "layer": "crusader",
+        "category": "castle",
+        "startYear": 1097,
+        "endYear": 1150,
+        "period": "County of Edessa stronghold",
+        "description": "Crusader stronghold of the County of Edessa. English Wikipedia identifies Turbessel and Tilbaşar with Gündoğan, Oğuzeli. The pin uses that page's coordinate.",
+        "source": "Wikipedia, Turbessel",
+        "sourceUrl": "https://en.wikipedia.org/wiki/Turbessel",
+        "confidence": "high",
+        "notes": "Published identification of the site with this village and mound. Not a traced castle plan."
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "ravendel",
+      "geometry": { "type": "Point", "coordinates": [37.053698, 36.873175] },
+      "properties": {
+        "name": "Ravendel",
+        "names": ["Ravendel", "Ravanda"],
+        "layer": "crusader",
+        "category": "castle",
+        "startYear": 1097,
+        "endYear": 1144,
+        "period": "County of Edessa castle",
+        "description": "Crusader castle of the County of Edessa. Wikidata's castle item places it in the Polateli area. Another Wikidata item sits about 12 km to the southwest, so this pin is approximate.",
+        "source": "Wikidata, Ravendel castle (Q131901862)",
+        "sourceUrl": "https://www.wikidata.org/wiki/Q131901862",
+        "confidence": "approximate",
+        "notes": "Drawn as an open ring. Q11904675 gives a different published point. Not a confirmed wall line."
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "rumkale",
+      "geometry": { "type": "Point", "coordinates": [37.83805556, 37.27194444] },
+      "properties": {
+        "name": "Rumkale",
+        "names": ["Rumkale", "Hromgla", "Ranculat"],
+        "layer": "crusader",
+        "category": "castle",
+        "startYear": 1098,
+        "endYear": 1292,
+        "period": "Frankish then Armenian castle, to 1292",
+        "description": "Castle on the Euphrates, held in the Edessa period and later an Armenian catholicos seat, taken by the Mamluks in 1292. The pin is the Wikipedia coordinate.",
+        "source": "Wikipedia, Rumkale",
+        "sourceUrl": "https://en.wikipedia.org/wiki/Rumkale",
+        "confidence": "high",
+        "notes": "Published site coordinate of the standing ruins."
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "birecik",
+      "geometry": { "type": "Point", "coordinates": [37.97694444, 37.025] },
+      "properties": {
+        "name": "Birecik",
+        "names": ["Birecik", "Bira", "al-Bira"],
+        "layer": "crusader",
+        "category": "city",
+        "startYear": 1098,
+        "endYear": 1150,
+        "period": "Euphrates crossing of the County of Edessa",
+        "description": "Euphrates town associated with the County of Edessa. The pin is the Wikipedia coordinate of the modern town, not a traced castle.",
+        "source": "Wikipedia, Birecik",
+        "sourceUrl": "https://en.wikipedia.org/wiki/Birecik",
+        "confidence": "high",
+        "notes": "Town coordinate for a historic crossing and settlement."
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "samosata",
+      "geometry": { "type": "Point", "coordinates": [38.48138889, 37.57944444] },
+      "properties": {
+        "name": "Samosata",
+        "names": ["Samosata", "Samsat"],
+        "layer": "crusader",
+        "category": "city",
+        "startYear": 1098,
+        "endYear": 1148,
+        "period": "County of Edessa possession",
+        "description": "Ancient Samosata, held for a time by the counts of Edessa. The published site is now under the Atatürk reservoir. The pin is the Wikipedia coordinate of Samsat.",
+        "source": "Wikipedia, Samsat",
+        "sourceUrl": "https://en.wikipedia.org/wiki/Samsat",
+        "confidence": "high",
+        "notes": "The historic site is submerged. This is the published location, not a place on dry ground."
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "marash",
+      "geometry": { "type": "Point", "coordinates": [36.93333333, 37.58333333] },
+      "properties": {
+        "name": "Marash",
+        "names": ["Marash", "Kahramanmaraş", "Germanikeia"],
+        "layer": "crusader",
+        "category": "city",
+        "startYear": 1098,
+        "endYear": 1149,
+        "period": "Frankish and Armenian rule, late 11th–12th century",
+        "description": "City on the edge of the County of Edessa, taken in the First Crusade period and later contested. The pin is the Wikipedia coordinate of Kahramanmaraş.",
+        "source": "Wikipedia, Kahramanmaraş",
+        "sourceUrl": "https://en.wikipedia.org/wiki/Kahramanmara%C5%9F",
+        "confidence": "high",
+        "notes": "City coordinate, not a traced citadel plan."
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "baghras",
+      "geometry": { "type": "Point", "coordinates": [36.225, 36.42694444] },
+      "properties": {
+        "name": "Baghras",
+        "names": ["Baghras", "Gaston", "Bagras"],
+        "layer": "crusader",
+        "category": "castle",
+        "startYear": 1131,
+        "endYear": 1268,
+        "period": "Templar castle above the Syrian Gates",
+        "description": "Castle guarding the Belen pass north of Antioch, held for long stretches by the Templars. The pin is the Wikipedia coordinate.",
+        "source": "Wikipedia, Bagras",
+        "sourceUrl": "https://en.wikipedia.org/wiki/Bagras",
+        "confidence": "high",
+        "notes": "Published coordinate of the castle site."
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "tarsus",
+      "geometry": { "type": "Point", "coordinates": [34.8951, 36.9165] },
+      "properties": {
+        "name": "Tarsus",
+        "names": ["Tarsus"],
+        "layer": "crusader",
+        "category": "city",
+        "startYear": 1097,
+        "endYear": 1375,
+        "period": "First Crusade and Cilician Armenia",
+        "description": "Cilician city taken during the First Crusade and later part of the Armenian kingdom of Cilicia. The pin is the Wikipedia coordinate of Tarsus.",
+        "source": "Wikipedia, Tarsus, Mersin",
+        "sourceUrl": "https://en.wikipedia.org/wiki/Tarsus,_Mersin",
+        "confidence": "high",
+        "notes": "City coordinate. The date bracket covers the crusader and Cilician connection, not every earlier century of the city."
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "mamistra",
+      "geometry": { "type": "Point", "coordinates": [35.62388889, 36.95777778] },
+      "properties": {
+        "name": "Mamistra",
+        "names": ["Mamistra", "Misis", "Mopsuestia"],
+        "layer": "crusader",
+        "category": "city",
+        "startYear": 1097,
+        "endYear": 1375,
+        "period": "First Crusade and Cilician Armenia",
+        "description": "Ancient Mopsuestia, called Mamistra in crusader sources, on the road between Tarsus and Antioch. The pin is the Wikipedia coordinate.",
+        "source": "Wikipedia, Mopsuestia",
+        "sourceUrl": "https://en.wikipedia.org/wiki/Mopsuestia",
+        "confidence": "high",
+        "notes": "Published site coordinate."
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "adana",
+      "geometry": { "type": "Point", "coordinates": [35.32133333, 37.0] },
+      "properties": {
+        "name": "Adana",
+        "names": ["Adana"],
+        "layer": "crusader",
+        "category": "city",
+        "startYear": 1097,
+        "endYear": 1375,
+        "period": "First Crusade and Cilician Armenia",
+        "description": "Cilician city contested in the First Crusade and later under the Armenian kingdom. The pin is the Wikipedia coordinate of Adana.",
+        "source": "Wikipedia, Adana",
+        "sourceUrl": "https://en.wikipedia.org/wiki/Adana",
+        "confidence": "high",
+        "notes": "Modern city coordinate. Not a traced medieval wall."
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "saleph",
+      "geometry": { "type": "Point", "coordinates": [33.93222222, 36.37611111] },
+      "properties": {
+        "name": "Saleph crossing",
+        "names": ["Saleph", "Göksu", "Silifke"],
+        "layer": "crusader",
+        "category": "event",
+        "startYear": 1190,
+        "endYear": 1190,
+        "period": "10 June 1190",
+        "description": "Frederick Barbarossa drowned in the Saleph, the Göksu, on 10 June 1190 while the German crusade was near Silifke. The ford is not precisely mapped. The pin is the Wikipedia coordinate of Silifke.",
+        "source": "Wikipedia, Silifke",
+        "sourceUrl": "https://en.wikipedia.org/wiki/Silifke",
+        "confidence": "approximate",
+        "notes": "Open ring. This is the nearby town, not a surveyed drowning spot."
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "smyrna-hospitaller",
+      "geometry": { "type": "Point", "coordinates": [27.13916667, 38.41861111] },
+      "properties": {
+        "name": "Smyrna",
+        "names": ["Smyrna", "İzmir"],
+        "layer": "crusader",
+        "category": "castle",
+        "startYear": 1344,
+        "endYear": 1402,
+        "period": "Hospitaller harbor castle, 1344–1402",
+        "description": "The Smyrniote crusade held a harbor castle at Smyrna from 1344 until Timur took it in 1402. That castle does not survive as a plan. The pin is the Wikipedia coordinate of historic Smyrna.",
+        "source": "Wikipedia, Smyrna",
+        "sourceUrl": "https://en.wikipedia.org/wiki/Smyrna",
+        "confidence": "approximate",
+        "notes": "Open ring. City coordinate, not the vanished harbor castle's footprint."
+      }
+    },
+    {
+      "type": "Feature",
+      "id": "bodrum-petronion",
+      "geometry": { "type": "Point", "coordinates": [27.42944444, 37.03166667] },
+      "properties": {
+        "name": "Bodrum Castle",
+        "names": ["Bodrum Castle", "Petronion", "Castle of St Peter"],
+        "layer": "crusader",
+        "category": "castle",
+        "startYear": 1402,
+        "endYear": 1522,
+        "period": "Hospitaller castle, begun 1402",
+        "description": "Hospitaller castle of St Peter at Bodrum, begun after the loss of Smyrna and held until 1522. Later than the 12th-century crusader states. The pin is the Wikipedia coordinate of the standing castle.",
+        "source": "Wikipedia, Bodrum Castle",
+        "sourceUrl": "https://en.wikipedia.org/wiki/Bodrum_Castle",
+        "confidence": "high",
+        "notes": "Included because it is the Hospitaller successor to Smyrna. The date is 15th century, not 1096–1200."
+      }
+    }
+  ]
+}
