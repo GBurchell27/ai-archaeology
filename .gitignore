@@ -1,0 +1,27 @@
+# Rasters, point clouds, and other large binaries
+*.tif
+*.tiff
+*.laz
+*.las
+*.vrt
+*.zip
+*.nc
+*.jp2
+
+# Local data and generated products
+data/
+outputs/
+
+# Precise candidate locations. Do not commit these (looting risk).
+candidates_private*
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+venv/
+dist/
+*.egg-info/
+.mypy_cache/
+.ruff_cache/

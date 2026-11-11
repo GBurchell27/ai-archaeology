@@ -1,0 +1,5 @@
+# Scripts
+
+Download scripts belong here. Commit the script, not the file it downloads.
+
+A script should record the dataset name, the date it was fetched, the URL or service, and the licence. It should write into `data/` and stop there. It must not write coordinates of candidate or undiscovered sites into the repository.
