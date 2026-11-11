@@ -1,12 +1,14 @@
 """Wikidata archaeological sites in Turkey.
 
-The query is CC0 data from Wikidata. Curated atlas pins keep priority:
-a Wikidata item within 1.5 km of one is not added again. Detector
-candidates are never an input.
+The query is CC0 data from Wikidata. Curated atlas pins keep priority.
+A Wikidata item is dropped only when its name matches a curated pin within
+3 km, or when it sits within 150 m of a curated pin regardless of name.
+A different monument nearby stays. Detector candidates are never an input.
 """
 
 from __future__ import annotations
 
+import hashlib
 import json
 import math
 import re
@@ -15,8 +17,8 @@ from datetime import date
 from pathlib import Path
 
 SNAPSHOT_DATE = "2026-11-11"
-DEDUPE_M = 600.0
-NAME_DEDUPE_M = 3000.0
+NEAR_M = 150.0
+NAME_MATCH_M = 3000.0
 QUERY = """
 SELECT ?item ?itemLabel ?coord ?inception ?dissolved ?enwiki WHERE {
   ?item wdt:P31/wdt:P279* wd:Q839954 .
@@ -121,7 +123,8 @@ def build_snapshot(raw_dir: Path, curated_path: Path) -> dict:
         "licence": "CC0",
         "query": QUERY,
         "sourceUrl": "https://query.wikidata.org/",
-        "dedupeMetres": DEDUPE_M,
+        "nearMetres": NEAR_M,
+        "nameMatchMetres": NAME_MATCH_M,
         "wikidataRows": len(seen),
         "droppedAsCurated": len(dropped),
         "features": features,
@@ -157,11 +160,11 @@ def assign_periods(labels: list[str], start: int | None, end: int | None) -> lis
 
 
 def matching_curated(name: str, longitude: float, latitude: float, pins: list[CuratedPin]) -> CuratedPin | None:
-    """Same place, not merely the same city. Curated pins stay on the map."""
+    """Drop the same place, not a different monument in the same city."""
     folded = _fold(name)
     for pin in pins:
         distance = _haversine_m(longitude, latitude, pin.longitude, pin.latitude)
-        if distance <= DEDUPE_M or (distance <= NAME_DEDUPE_M and _fold(pin.name) == folded):
+        if distance <= NEAR_M or (distance <= NAME_MATCH_M and _fold(pin.name) == folded):
             return pin
     return None
 
@@ -180,10 +183,12 @@ def nearest_curated(longitude: float, latitude: float, pins: list[CuratedPin], l
 def write_outputs(snapshot: dict, out_dir: Path) -> None:
     out_dir.mkdir(parents=True, exist_ok=True)
     collection = {"type": "FeatureCollection", "features": snapshot["features"]}
-    (out_dir / "sites.geojson").write_text(json.dumps(collection) + "\n")
+    encoded = (json.dumps(collection) + "\n").encode()
+    (out_dir / "sites.geojson").write_bytes(encoded)
     meta = {key: snapshot[key] for key in (
-        "snapshotDate", "licence", "query", "sourceUrl", "dedupeMetres", "wikidataRows", "droppedAsCurated",
+        "snapshotDate", "licence", "query", "sourceUrl", "nearMetres", "nameMatchMetres", "wikidataRows", "droppedAsCurated",
     )}
+    meta["sitesGeojsonSha256"] = hashlib.sha256(encoded).hexdigest()
     meta["publishedPins"] = len(snapshot["features"])
     meta["undated"] = sum(not feature["properties"]["periods"] for feature in snapshot["features"])
     meta["dropped"] = snapshot["dropped"]

@@ -3,11 +3,13 @@
   "licence": "CC0",
   "query": "SELECT ?item ?itemLabel ?coord ?inception ?dissolved ?enwiki WHERE {\n  ?item wdt:P31/wdt:P279* wd:Q839954 .\n  ?item wdt:P17 wd:Q43 .\n  ?item wdt:P625 ?coord .\n  OPTIONAL { ?item wdt:P571 ?inception }\n  OPTIONAL { ?item wdt:P576 ?dissolved }\n  OPTIONAL { ?enwiki schema:about ?item ; schema:isPartOf <https://en.wikipedia.org/> . }\n  SERVICE wikibase:label { bd:serviceParam wikibase:language \"en,tr\". }\n}",
   "sourceUrl": "https://query.wikidata.org/",
-  "dedupeMetres": 600.0,
+  "nearMetres": 150.0,
+  "nameMatchMetres": 3000.0,
   "wikidataRows": 5056,
-  "droppedAsCurated": 154,
-  "publishedPins": 4902,
-  "undated": 4772,
+  "droppedAsCurated": 70,
+  "sitesGeojsonSha256": "565c7d68be8be301315912afc6c84670a5689b4d158438566f63e0e78161068d",
+  "publishedPins": 4986,
+  "undated": 4847,
   "dropped": [
     {
       "qid": "Q272720",
@@ -18,11 +20,6 @@
       "qid": "Q739037",
       "name": "Nicaea",
       "kept": "nicaea"
-    },
-    {
-      "qid": "Q216511",
-      "name": "Basilica Cistern",
-      "kept": "constantinople"
     },
     {
       "qid": "Q232615",
@@ -50,19 +47,9 @@
       "kept": "can-hasan"
     },
     {
-      "qid": "Q4737071",
-      "name": "Alt\u0131ndan ge\u00e7me",
-      "kept": "tarsus"
-    },
-    {
       "qid": "Q558861",
       "name": "Alacah\u00f6y\u00fck",
       "kept": "alacahoyuk"
-    },
-    {
-      "qid": "Q96232770",
-      "name": "Aphrodisias Museum",
-      "kept": "aphrodisias"
     },
     {
       "qid": "Q181007",
@@ -100,11 +87,6 @@
       "kept": "hattusa"
     },
     {
-      "qid": "Q744406",
-      "name": "Library of Celsus",
-      "kept": "ephesus"
-    },
-    {
       "qid": "Q767968",
       "name": "Turbessel",
       "kept": "turbessel"
@@ -128,16 +110,6 @@
       "qid": "Q2261221",
       "name": "Hisarlik Hill",
       "kept": "troy"
-    },
-    {
-      "qid": "Q4903971",
-      "name": "Temple of Jupiter",
-      "kept": "saleph"
-    },
-    {
-      "qid": "Q5626760",
-      "name": "G\u00f6zl\u00fckule",
-      "kept": "tarsus"
     },
     {
       "qid": "Q1151606",
@@ -190,11 +162,6 @@
       "kept": "ani"
     },
     {
-      "qid": "Q555923",
-      "name": "Mopsuestia",
-      "kept": "mamistra"
-    },
-    {
       "qid": "Q941943",
       "name": "Troy VII",
       "kept": "troy"
@@ -205,19 +172,9 @@
       "kept": "samosata"
     },
     {
-      "qid": "Q16934218",
-      "name": "Temple of the Emperors (Ephesus)",
-      "kept": "ephesus"
-    },
-    {
       "qid": "Q908860",
       "name": "Hac\u0131lar Mound",
       "kept": "hacilar"
-    },
-    {
-      "qid": "Q2450228",
-      "name": "Church of Mary",
-      "kept": "ephesus"
     },
     {
       "qid": "Q2827071",
@@ -240,34 +197,9 @@
       "kept": "troy"
     },
     {
-      "qid": "Q85741784",
-      "name": "Anisa",
-      "kept": "kultepe"
-    },
-    {
-      "qid": "Q56633101",
-      "name": "Bouleuterion (Ephesus)",
-      "kept": "ephesus"
-    },
-    {
-      "qid": "Q57462249",
-      "name": "Sanctuary of Aphrodite, Aphrodisias",
-      "kept": "aphrodisias"
-    },
-    {
-      "qid": "Q67183183",
-      "name": "B\u00fcy\u00fckkale",
-      "kept": "hattusa"
-    },
-    {
       "qid": "Q47611",
       "name": "Ephesus",
       "kept": "ephesus"
-    },
-    {
-      "qid": "Q27690711",
-      "name": "Mausoleum of Danyal",
-      "kept": "tarsus"
     },
     {
       "qid": "Q959497",
@@ -275,19 +207,9 @@
       "kept": "kortik-tepe"
     },
     {
-      "qid": "Q1185404",
-      "name": "Sanctuary of Demeter (Pergamum)",
-      "kept": "pergamon"
-    },
-    {
       "qid": "Q1217141",
       "name": "Nesa",
       "kept": "kultepe"
-    },
-    {
-      "qid": "Q1575495",
-      "name": "Terrace Houses in Ephesus",
-      "kept": "ephesus"
     },
     {
       "qid": "Q1646054",
@@ -295,39 +217,14 @@
       "kept": "pergamon"
     },
     {
-      "qid": "Q2006145",
-      "name": "Nymphaeum Traiani (Ephesus)",
-      "kept": "ephesus"
-    },
-    {
-      "qid": "Q2114503",
-      "name": "Prytaneion (Ephesus)",
-      "kept": "ephesus"
-    },
-    {
       "qid": "Q2448404",
       "name": "Temple of Trajan",
       "kept": "pergamon"
     },
     {
-      "qid": "Q2581040",
-      "name": "Temple of Hadrian",
-      "kept": "ephesus"
-    },
-    {
-      "qid": "Q3360950",
-      "name": "Byzantine Palace",
-      "kept": "ephesus"
-    },
-    {
       "qid": "Q11705096",
       "name": "Ilium",
       "kept": "troy"
-    },
-    {
-      "qid": "Q14540869",
-      "name": "Scholastikia Baths (Ephesus)",
-      "kept": "ephesus"
     },
     {
       "qid": "Q15723477",
@@ -340,21 +237,6 @@
       "kept": "ephesus"
     },
     {
-      "qid": "Q56388233",
-      "name": "Kani\u015f",
-      "kept": "kultepe"
-    },
-    {
-      "qid": "Q56640662",
-      "name": "Theatre of Smyrna",
-      "kept": "smyrna-hospitaller"
-    },
-    {
-      "qid": "Q59771443",
-      "name": "Roman Theatre of Aphrodisias",
-      "kept": "aphrodisias"
-    },
-    {
       "qid": "Q64699469",
       "name": "Ephesus",
       "kept": "ephesus"
@@ -365,58 +247,8 @@
       "kept": "pergamon"
     },
     {
-      "qid": "Q76533658",
-      "name": "Basilica Stoa (Ephesus)",
-      "kept": "ephesus"
-    },
-    {
-      "qid": "Q76640593",
-      "name": "Memmius Monument (Ephesus)",
-      "kept": "ephesus"
-    },
-    {
-      "qid": "Q76737664",
-      "name": "Temenos with Double Monument",
-      "kept": "ephesus"
-    },
-    {
-      "qid": "Q76737777",
-      "name": "Temple of Serapis (Ephesus)",
-      "kept": "ephesus"
-    },
-    {
       "qid": "Q77071353",
       "name": "Tetragonos Agora (Ephesus)",
-      "kept": "ephesus"
-    },
-    {
-      "qid": "Q77071662",
-      "name": "State Agora of Ephesus",
-      "kept": "ephesus"
-    },
-    {
-      "qid": "Q89718384",
-      "name": "Sebasteion at Aphrodisias",
-      "kept": "aphrodisias"
-    },
-    {
-      "qid": "Q97341108",
-      "name": "Temple on the State Agora",
-      "kept": "ephesus"
-    },
-    {
-      "qid": "Q97341255",
-      "name": "Harbor Baths (Ephesus)",
-      "kept": "ephesus"
-    },
-    {
-      "qid": "Q97341290",
-      "name": "Terrace House 1 (Ephesus)",
-      "kept": "ephesus"
-    },
-    {
-      "qid": "Q97341291",
-      "name": "Terrace House 2 (Ephesus)",
       "kept": "ephesus"
     },
     {
@@ -430,83 +262,8 @@
       "kept": "aphrodisias"
     },
     {
-      "qid": "Q104641898",
-      "name": "Curetes Street (Ephesus)",
-      "kept": "ephesus"
-    },
-    {
-      "qid": "Q104641899",
-      "name": "Insula M1 (Ephesus)",
-      "kept": "ephesus"
-    },
-    {
-      "qid": "Q104641896",
-      "name": "Pollio Monument and Fountain of Domitian (Ephesus)",
-      "kept": "ephesus"
-    },
-    {
-      "qid": "Q104641897",
-      "name": "Hercules Gate (Ephesus)",
-      "kept": "ephesus"
-    },
-    {
-      "qid": "Q104641903",
-      "name": "Marble Street (Ephesus)",
-      "kept": "ephesus"
-    },
-    {
-      "qid": "Q104641901",
-      "name": "Hadrian's Gate (Ephesus)",
-      "kept": "ephesus"
-    },
-    {
-      "qid": "Q104641910",
-      "name": "Harbor Gymnasium (Ephesus)",
-      "kept": "ephesus"
-    },
-    {
-      "qid": "Q104641908",
-      "name": "Four-Column Monument (Ephesus)",
-      "kept": "ephesus"
-    },
-    {
-      "qid": "Q104641909",
-      "name": "Atrium Thermarum (Ephesus)",
-      "kept": "ephesus"
-    },
-    {
-      "qid": "Q104641912",
-      "name": "Halls of Verulanus (Ephesus)",
-      "kept": "ephesus"
-    },
-    {
-      "qid": "Q104641913",
-      "name": "Acropolis (Ephesus)",
-      "kept": "ephesus"
-    },
-    {
-      "qid": "Q104772346",
-      "name": "South Gate of the Agora (Ephesus)",
-      "kept": "ephesus"
-    },
-    {
-      "qid": "Q104772347",
-      "name": "Arcadiane",
-      "kept": "ephesus"
-    },
-    {
-      "qid": "Q104772344",
-      "name": "Hydrekdocheion of C. Laecanius Bassus (Ephesus)",
-      "kept": "ephesus"
-    },
-    {
       "qid": "Q105232353",
       "name": "Temple of Athena (Pergamon)",
-      "kept": "pergamon"
-    },
-    {
-      "qid": "Q105232370",
-      "name": "Temple of Demeter in Pergamon",
       "kept": "pergamon"
     },
     {
@@ -515,24 +272,9 @@
       "kept": "pergamon"
     },
     {
-      "qid": "Q105274422",
-      "name": "Temple of Hera in Pergamon",
-      "kept": "pergamon"
-    },
-    {
       "qid": "Q108784502",
       "name": "Harbetsuvan Tepesi",
       "kept": "harbetsuvan-tepesi"
-    },
-    {
-      "qid": "Q109790342",
-      "name": "Kesikkaya",
-      "kept": "hattusa"
-    },
-    {
-      "qid": "Q112208753",
-      "name": "Temple of Athena at Ilion",
-      "kept": "troy"
     },
     {
       "qid": "Q112210724",
@@ -550,16 +292,6 @@
       "kept": "pergamon"
     },
     {
-      "qid": "Q118929560",
-      "name": "Roman theater at Helikore/Nicaea",
-      "kept": "nicaea"
-    },
-    {
-      "qid": "Q125676352",
-      "name": "Haus am Hang",
-      "kept": "hattusa"
-    },
-    {
       "qid": "Q126741267",
       "name": "Ilion",
       "kept": "troy"
@@ -567,11 +299,6 @@
     {
       "qid": "Q131738906",
       "name": "Aphrodisias Hadrian Baths",
-      "kept": "aphrodisias"
-    },
-    {
-      "qid": "Q132182750",
-      "name": "Pekmez H\u00f6y\u00fc\u011f\u00fc (Geyre)",
       "kept": "aphrodisias"
     },
     {
@@ -590,89 +317,9 @@
       "kept": "pergamon"
     },
     {
-      "qid": "Q134960776",
-      "name": "Musular H\u00f6y\u00fc\u011f\u00fc",
-      "kept": "asikli-hoyuk"
-    },
-    {
-      "qid": "Q135004470",
-      "name": "Gaius Laecanius Bassus Fountain",
-      "kept": "ephesus"
-    },
-    {
-      "qid": "Q135409837",
-      "name": "Civil Basilica at Aphrodisias in Caria",
-      "kept": "aphrodisias"
-    },
-    {
-      "qid": "Q135409934",
-      "name": "Martyrion at Aphrodisias",
-      "kept": "aphrodisias"
-    },
-    {
-      "qid": "Q135428472",
-      "name": "Konstantinopolis B\u00fcy\u00fck Tiyatrosu",
-      "kept": "constantinople"
-    },
-    {
-      "qid": "Q135428473",
-      "name": "Byzantion Theater",
-      "kept": "constantinople"
-    },
-    {
       "qid": "Q135582509",
       "name": "Misis Theater",
       "kept": "mamistra"
-    },
-    {
-      "qid": "Q135582853",
-      "name": "Zeugma Theater",
-      "kept": "zeugma"
-    },
-    {
-      "qid": "Q135671890",
-      "name": "Aphrodisias Stadium",
-      "kept": "aphrodisias"
-    },
-    {
-      "qid": "Q135960675",
-      "name": "Gordion Tumulus S-I",
-      "kept": "gordion"
-    },
-    {
-      "qid": "Q139422393",
-      "name": "Canhasan H\u00f6y\u00fck 1",
-      "kept": "can-hasan"
-    },
-    {
-      "qid": "Q139427488",
-      "name": "T\u00fcm\u00fcl\u00fcs 2 (Gordion)",
-      "kept": "gordion"
-    },
-    {
-      "qid": "Q139429765",
-      "name": "\u0130znik Nekropol\u00fc",
-      "kept": "nicaea"
-    },
-    {
-      "qid": "Q139432688",
-      "name": "Pergamon Krallar K\u00fclt\u00fc Heroonu",
-      "kept": "pergamon"
-    },
-    {
-      "qid": "Q139436567",
-      "name": "Aphrodisias Stadium",
-      "kept": "aphrodisias"
-    },
-    {
-      "qid": "Q139437280",
-      "name": "Pergamon Akropol\u00fc",
-      "kept": "pergamon"
-    },
-    {
-      "qid": "Q140421903",
-      "name": "Mount Nemrut Da\u011f\u0131",
-      "kept": "nemrut"
     },
     {
       "qid": "Q141503930",
@@ -687,66 +334,6 @@
     {
       "qid": "Q141877321",
       "name": "Lower City of \u1e2aattu\u0161a",
-      "kept": "hattusa"
-    },
-    {
-      "qid": "Q141901908",
-      "name": "City Walls of \u1e2aattu\u0161a",
-      "kept": "hattusa"
-    },
-    {
-      "qid": "Q141912805",
-      "name": "Building B (\u1e2aattu\u0161a)",
-      "kept": "hattusa"
-    },
-    {
-      "qid": "Q141912854",
-      "name": "Building C (\u1e2aattu\u0161a)",
-      "kept": "hattusa"
-    },
-    {
-      "qid": "Q141912900",
-      "name": "Building D (\u1e2aattu\u0161a)",
-      "kept": "hattusa"
-    },
-    {
-      "qid": "Q141912910",
-      "name": "Building E (\u1e2aattu\u0161a)",
-      "kept": "hattusa"
-    },
-    {
-      "qid": "Q141913159",
-      "name": "Building F (\u1e2aattu\u0161a)",
-      "kept": "hattusa"
-    },
-    {
-      "qid": "Q141913192",
-      "name": "Building H (\u1e2aattu\u0161a)",
-      "kept": "hattusa"
-    },
-    {
-      "qid": "Q141913231",
-      "name": "Building M (\u1e2aattu\u0161a)",
-      "kept": "hattusa"
-    },
-    {
-      "qid": "Q141913246",
-      "name": "Building N (\u1e2aattu\u0161a)",
-      "kept": "hattusa"
-    },
-    {
-      "qid": "Q141913253",
-      "name": "Citadel gate (\u1e2aattu\u0161a)",
-      "kept": "hattusa"
-    },
-    {
-      "qid": "Q141913545",
-      "name": "Verbindungsbau (\u1e2aattu\u0161a)",
-      "kept": "hattusa"
-    },
-    {
-      "qid": "Q141913564",
-      "name": "Q141913564",
       "kept": "hattusa"
     },
     {
@@ -772,11 +359,6 @@
     {
       "qid": "Q141926459",
       "name": "Pithoshaus (\u1e2aattu\u0161a)",
-      "kept": "hattusa"
-    },
-    {
-      "qid": "Q141927026",
-      "name": "Q141927026",
       "kept": "hattusa"
     }
   ]

@@ -1,40 +1,40 @@
 {
   "design": "Wikidata pins scored against the curated leave-one-region-out candidates. Labels were not used for tuning.",
   "snapshot": "Anatolia/atlas/public/wikidata/snapshot.json",
-  "n_published_pins": 4902,
-  "n_inside_windows": 1594,
+  "n_published_pins": 4986,
+  "n_inside_windows": 1678,
   "n_outside_windows": 3308,
-  "recall_250": 0.157,
-  "recall_500": 0.281,
-  "recall_1000": 0.484,
-  "recall_250_count": 250,
-  "recall_500_count": 448,
-  "recall_1000_count": 772,
+  "recall_250": 0.155,
+  "recall_500": 0.277,
+  "recall_1000": 0.48,
+  "recall_250_count": 260,
+  "recall_500_count": 465,
+  "recall_1000_count": 806,
   "recall_250_ci95": [
-    0.14,
-    0.176
+    0.138,
+    0.173
   ],
   "by_period": {
     "undated": {
-      "n": 1531,
-      "recall_250": 0.157,
-      "recall_500": 0.278,
-      "recall_1000": 0.481,
-      "recall_250_count": 240,
+      "n": 1606,
+      "recall_250": 0.155,
+      "recall_500": 0.274,
+      "recall_1000": 0.476,
+      "recall_250_count": 249,
       "recall_250_ci95": [
-        0.139,
-        0.176
+        0.138,
+        0.174
       ]
     },
     "classical": {
-      "n": 47,
-      "recall_250": 0.149,
-      "recall_500": 0.383,
-      "recall_1000": 0.553,
-      "recall_250_count": 7,
+      "n": 56,
+      "recall_250": 0.143,
+      "recall_500": 0.357,
+      "recall_1000": 0.589,
+      "recall_250_count": 8,
       "recall_250_ci95": [
         0.074,
-        0.277
+        0.257
       ]
     },
     "neolithic": {
@@ -72,25 +72,25 @@
     }
   },
   "mound_like": {
-    "n": 717,
-    "recall_250": 0.241,
-    "recall_500": 0.378,
-    "recall_1000": 0.59,
-    "recall_250_count": 173,
+    "n": 723,
+    "recall_250": 0.242,
+    "recall_500": 0.38,
+    "recall_1000": 0.591,
+    "recall_250_count": 175,
     "recall_250_ci95": [
-      0.211,
-      0.274
+      0.212,
+      0.275
     ]
   },
   "other": {
-    "n": 877,
-    "recall_250": 0.088,
-    "recall_500": 0.202,
-    "recall_1000": 0.398,
-    "recall_250_count": 77,
+    "n": 955,
+    "recall_250": 0.089,
+    "recall_500": 0.199,
+    "recall_1000": 0.397,
+    "recall_250_count": 85,
     "recall_250_ci95": [
-      0.071,
-      0.108
+      0.073,
+      0.109
     ]
   },
   "sites": [
@@ -170,6 +170,17 @@
       "mound_like": false,
       "band": "miss",
       "recovered_250": false
+    },
+    {
+      "qid": "Q104641913",
+      "name": "Acropolis (Ephesus)",
+      "region": "aegean-south",
+      "periods": [
+        "undated"
+      ],
+      "mound_like": false,
+      "band": "250",
+      "recovered_250": true
     },
     {
       "qid": "Q132182795",
@@ -854,6 +865,17 @@
       "recovered_250": false
     },
     {
+      "qid": "Q4737071",
+      "name": "Alt\u0131ndan ge\u00e7me",
+      "region": "cukurova",
+      "periods": [
+        "undated"
+      ],
+      "mound_like": false,
+      "band": "500",
+      "recovered_250": false
+    },
+    {
       "qid": "Q134960442",
       "name": "Alt\u0131nta\u015f H\u00f6y\u00fck",
       "region": "cappadocia",
@@ -1063,6 +1085,17 @@
       "recovered_250": false
     },
     {
+      "qid": "Q85741784",
+      "name": "Anisa",
+      "region": "cappadocia",
+      "periods": [
+        "undated"
+      ],
+      "mound_like": false,
+      "band": "miss",
+      "recovered_250": false
+    },
+    {
       "qid": "Q11905687",
       "name": "Anquiale",
       "region": "cukurova",
@@ -1162,6 +1195,39 @@
       "recovered_250": false
     },
     {
+      "qid": "Q96232770",
+      "name": "Aphrodisias Museum",
+      "region": "aegean-south",
+      "periods": [
+        "undated"
+      ],
+      "mound_like": false,
+      "band": "miss",
+      "recovered_250": false
+    },
+    {
+      "qid": "Q135671890",
+      "name": "Aphrodisias Stadium",
+      "region": "aegean-south",
+      "periods": [
+        "undated"
+      ],
+      "mound_like": false,
+      "band": "miss",
+      "recovered_250": false
+    },
+    {
+      "qid": "Q139436567",
+      "name": "Aphrodisias Stadium",
+      "region": "aegean-south",
+      "periods": [
+        "undated"
+      ],
+      "mound_like": false,
+      "band": "miss",
+      "recovered_250": false
+    },
+    {
       "qid": "Q24915773",
       "name": "Apollonos-Hieron",
       "region": "aegean-south",
@@ -1236,6 +1302,17 @@
       ],
       "mound_like": false,
       "band": "miss",
+      "recovered_250": false
+    },
+    {
+      "qid": "Q104772347",
+      "name": "Arcadiane",
+      "region": "aegean-south",
+      "periods": [
+        "undated"
+      ],
+      "mound_like": false,
+      "band": "1000",
       "recovered_250": false
     },
     {
@@ -1666,6 +1743,17 @@
       ],
       "mound_like": false,
       "band": "miss",
+      "recovered_250": false
+    },
+    {
+      "qid": "Q104641909",
+      "name": "Atrium Thermarum (Ephesus)",
+      "region": "aegean-south",
+      "periods": [
+        "undated"
+      ],
+      "mound_like": false,
+      "band": "1000",
       "recovered_250": false
     },
     {
@@ -2164,6 +2252,17 @@
       "recovered_250": false
     },
     {
+      "qid": "Q216511",
+      "name": "Basilica Cistern",
+      "region": "marmara",
+      "periods": [
+        "undated"
+      ],
+      "mound_like": false,
+      "band": "500",
+      "recovered_250": false
+    },
+    {
       "qid": "Q104641895",
       "name": "Basilica in the East Gymnasium",
       "region": "aegean-south",
@@ -2181,6 +2280,17 @@
       "periods": [
         "classical",
         "crusader"
+      ],
+      "mound_like": false,
+      "band": "miss",
+      "recovered_250": false
+    },
+    {
+      "qid": "Q76533658",
+      "name": "Basilica Stoa (Ephesus)",
+      "region": "aegean-south",
+      "periods": [
+        "undated"
       ],
       "mound_like": false,
       "band": "miss",
@@ -3452,6 +3562,17 @@
       "recovered_250": true
     },
     {
+      "qid": "Q56633101",
+      "name": "Bouleuterion (Ephesus)",
+      "region": "aegean-south",
+      "periods": [
+        "undated"
+      ],
+      "mound_like": false,
+      "band": "miss",
+      "recovered_250": false
+    },
+    {
       "qid": "Q17623230",
       "name": "Boutheia",
       "region": "aegean-north",
@@ -3606,8 +3727,74 @@
       "recovered_250": false
     },
     {
+      "qid": "Q141912805",
+      "name": "Building B (\u1e2aattu\u0161a)",
+      "region": "hattusa",
+      "periods": [
+        "undated"
+      ],
+      "mound_like": false,
+      "band": "miss",
+      "recovered_250": false
+    },
+    {
+      "qid": "Q141912854",
+      "name": "Building C (\u1e2aattu\u0161a)",
+      "region": "hattusa",
+      "periods": [
+        "undated"
+      ],
+      "mound_like": false,
+      "band": "miss",
+      "recovered_250": false
+    },
+    {
+      "qid": "Q141912900",
+      "name": "Building D (\u1e2aattu\u0161a)",
+      "region": "hattusa",
+      "periods": [
+        "undated"
+      ],
+      "mound_like": false,
+      "band": "miss",
+      "recovered_250": false
+    },
+    {
+      "qid": "Q141912910",
+      "name": "Building E (\u1e2aattu\u0161a)",
+      "region": "hattusa",
+      "periods": [
+        "undated"
+      ],
+      "mound_like": false,
+      "band": "miss",
+      "recovered_250": false
+    },
+    {
+      "qid": "Q141913159",
+      "name": "Building F (\u1e2aattu\u0161a)",
+      "region": "hattusa",
+      "periods": [
+        "undated"
+      ],
+      "mound_like": false,
+      "band": "miss",
+      "recovered_250": false
+    },
+    {
       "qid": "Q141913173",
       "name": "Building G (\u1e2aattu\u0161a)",
+      "region": "hattusa",
+      "periods": [
+        "undated"
+      ],
+      "mound_like": false,
+      "band": "miss",
+      "recovered_250": false
+    },
+    {
+      "qid": "Q141913192",
+      "name": "Building H (\u1e2aattu\u0161a)",
       "region": "hattusa",
       "periods": [
         "undated"
@@ -3639,6 +3826,28 @@
       "recovered_250": false
     },
     {
+      "qid": "Q141913231",
+      "name": "Building M (\u1e2aattu\u0161a)",
+      "region": "hattusa",
+      "periods": [
+        "undated"
+      ],
+      "mound_like": false,
+      "band": "miss",
+      "recovered_250": false
+    },
+    {
+      "qid": "Q141913246",
+      "name": "Building N (\u1e2aattu\u0161a)",
+      "region": "hattusa",
+      "periods": [
+        "undated"
+      ],
+      "mound_like": false,
+      "band": "miss",
+      "recovered_250": false
+    },
+    {
       "qid": "Q135960555",
       "name": "Burgaztepe",
       "region": "aegean-south",
@@ -3659,6 +3868,28 @@
       "mound_like": false,
       "band": "1000",
       "recovered_250": false
+    },
+    {
+      "qid": "Q3360950",
+      "name": "Byzantine Palace",
+      "region": "aegean-south",
+      "periods": [
+        "undated"
+      ],
+      "mound_like": false,
+      "band": "250",
+      "recovered_250": true
+    },
+    {
+      "qid": "Q135428473",
+      "name": "Byzantion Theater",
+      "region": "marmara",
+      "periods": [
+        "undated"
+      ],
+      "mound_like": false,
+      "band": "250",
+      "recovered_250": true
     },
     {
       "qid": "Q65046390",
@@ -3741,6 +3972,17 @@
       "qid": "Q139430451",
       "name": "B\u00fcy\u00fckhusun Dolmen B\u00f6lgesi",
       "region": "aegean-north",
+      "periods": [
+        "undated"
+      ],
+      "mound_like": false,
+      "band": "miss",
+      "recovered_250": false
+    },
+    {
+      "qid": "Q67183183",
+      "name": "B\u00fcy\u00fckkale",
+      "region": "hattusa",
       "periods": [
         "undated"
       ],
@@ -3857,6 +4099,17 @@
       "mound_like": false,
       "band": "1000",
       "recovered_250": false
+    },
+    {
+      "qid": "Q139422393",
+      "name": "Canhasan H\u00f6y\u00fck 1",
+      "region": "konya",
+      "periods": [
+        "undated"
+      ],
+      "mound_like": true,
+      "band": "250",
+      "recovered_250": true
     },
     {
       "qid": "Q139422394",
@@ -4134,6 +4387,17 @@
       "recovered_250": true
     },
     {
+      "qid": "Q2450228",
+      "name": "Church of Mary",
+      "region": "aegean-south",
+      "periods": [
+        "classical"
+      ],
+      "mound_like": false,
+      "band": "500",
+      "recovered_250": false
+    },
+    {
       "qid": "Q17627967",
       "name": "Chytrium",
       "region": "aegean-north",
@@ -4244,9 +4508,42 @@
       "recovered_250": false
     },
     {
+      "qid": "Q141913253",
+      "name": "Citadel gate (\u1e2aattu\u0161a)",
+      "region": "hattusa",
+      "periods": [
+        "undated"
+      ],
+      "mound_like": false,
+      "band": "miss",
+      "recovered_250": false
+    },
+    {
+      "qid": "Q141901908",
+      "name": "City Walls of \u1e2aattu\u0161a",
+      "region": "hattusa",
+      "periods": [
+        "undated"
+      ],
+      "mound_like": false,
+      "band": "miss",
+      "recovered_250": false
+    },
+    {
       "qid": "Q377863",
       "name": "Cius",
       "region": "marmara",
+      "periods": [
+        "undated"
+      ],
+      "mound_like": false,
+      "band": "miss",
+      "recovered_250": false
+    },
+    {
+      "qid": "Q135409837",
+      "name": "Civil Basilica at Aphrodisias in Caria",
+      "region": "aegean-south",
       "periods": [
         "undated"
       ],
@@ -4318,6 +4615,17 @@
       ],
       "mound_like": true,
       "band": "miss",
+      "recovered_250": false
+    },
+    {
+      "qid": "Q104641898",
+      "name": "Curetes Street (Ephesus)",
+      "region": "aegean-south",
+      "periods": [
+        "undated"
+      ],
+      "mound_like": false,
+      "band": "1000",
       "recovered_250": false
     },
     {
@@ -5542,6 +5850,17 @@
       "recovered_250": false
     },
     {
+      "qid": "Q104641908",
+      "name": "Four-Column Monument (Ephesus)",
+      "region": "aegean-south",
+      "periods": [
+        "classical"
+      ],
+      "mound_like": false,
+      "band": "1000",
+      "recovered_250": false
+    },
+    {
       "qid": "Q139422259",
       "name": "F\u0131rlaz H\u00f6y\u00fck",
       "region": "euphrates",
@@ -5560,6 +5879,17 @@
         "undated"
       ],
       "mound_like": true,
+      "band": "miss",
+      "recovered_250": false
+    },
+    {
+      "qid": "Q135004470",
+      "name": "Gaius Laecanius Bassus Fountain",
+      "region": "aegean-south",
+      "periods": [
+        "classical"
+      ],
+      "mound_like": false,
       "band": "miss",
       "recovered_250": false
     },
@@ -6048,6 +6378,17 @@
       "recovered_250": false
     },
     {
+      "qid": "Q135960675",
+      "name": "Gordion Tumulus S-I",
+      "region": "phrygia",
+      "periods": [
+        "undated"
+      ],
+      "mound_like": true,
+      "band": "500",
+      "recovered_250": false
+    },
+    {
       "qid": "Q135960690",
       "name": "Gordion Tumulus T1",
       "region": "phrygia",
@@ -6488,6 +6829,17 @@
       "recovered_250": false
     },
     {
+      "qid": "Q5626760",
+      "name": "G\u00f6zl\u00fckule",
+      "region": "cukurova",
+      "periods": [
+        "undated"
+      ],
+      "mound_like": true,
+      "band": "250",
+      "recovered_250": true
+    },
+    {
       "qid": "Q18639253",
       "name": "G\u00f6zne Castle",
       "region": "cukurova",
@@ -6697,6 +7049,17 @@
       "recovered_250": false
     },
     {
+      "qid": "Q104641901",
+      "name": "Hadrian's Gate (Ephesus)",
+      "region": "aegean-south",
+      "periods": [
+        "undated"
+      ],
+      "mound_like": false,
+      "band": "1000",
+      "recovered_250": false
+    },
+    {
       "qid": "Q1567560",
       "name": "Hadrianoi",
       "region": "marmara",
@@ -6782,6 +7145,17 @@
       ],
       "mound_like": true,
       "band": "miss",
+      "recovered_250": false
+    },
+    {
+      "qid": "Q104641912",
+      "name": "Halls of Verulanus (Ephesus)",
+      "region": "aegean-south",
+      "periods": [
+        "undated"
+      ],
+      "mound_like": false,
+      "band": "500",
       "recovered_250": false
     },
     {
@@ -6884,6 +7258,28 @@
       "recovered_250": false
     },
     {
+      "qid": "Q97341255",
+      "name": "Harbor Baths (Ephesus)",
+      "region": "aegean-south",
+      "periods": [
+        "classical"
+      ],
+      "mound_like": false,
+      "band": "1000",
+      "recovered_250": false
+    },
+    {
+      "qid": "Q104641910",
+      "name": "Harbor Gymnasium (Ephesus)",
+      "region": "aegean-south",
+      "periods": [
+        "classical"
+      ],
+      "mound_like": false,
+      "band": "1000",
+      "recovered_250": false
+    },
+    {
       "qid": "Q3288771",
       "name": "Harbour of Eleutherios",
       "region": "marmara",
@@ -6974,6 +7370,17 @@
     {
       "qid": "Q139436179",
       "name": "Hattu\u015fa Hiyeroglifli Oda 2",
+      "region": "hattusa",
+      "periods": [
+        "undated"
+      ],
+      "mound_like": false,
+      "band": "miss",
+      "recovered_250": false
+    },
+    {
+      "qid": "Q125676352",
+      "name": "Haus am Hang",
       "region": "hattusa",
       "periods": [
         "undated"
@@ -7134,6 +7541,17 @@
       ],
       "mound_like": false,
       "band": "1000",
+      "recovered_250": false
+    },
+    {
+      "qid": "Q104641897",
+      "name": "Hercules Gate (Ephesus)",
+      "region": "aegean-south",
+      "periods": [
+        "undated"
+      ],
+      "mound_like": false,
+      "band": "miss",
       "recovered_250": false
     },
     {
@@ -7409,6 +7827,17 @@
       ],
       "mound_like": false,
       "band": "500",
+      "recovered_250": false
+    },
+    {
+      "qid": "Q104772344",
+      "name": "Hydrekdocheion of C. Laecanius Bassus (Ephesus)",
+      "region": "aegean-south",
+      "periods": [
+        "undated"
+      ],
+      "mound_like": false,
+      "band": "miss",
       "recovered_250": false
     },
     {
@@ -7797,6 +8226,17 @@
       "recovered_250": false
     },
     {
+      "qid": "Q104641899",
+      "name": "Insula M1 (Ephesus)",
+      "region": "aegean-south",
+      "periods": [
+        "undated"
+      ],
+      "mound_like": false,
+      "band": "1000",
+      "recovered_250": false
+    },
+    {
       "qid": "Q65067041",
       "name": "Ioniapolis",
       "region": "aegean-south",
@@ -8116,6 +8556,17 @@
       "recovered_250": false
     },
     {
+      "qid": "Q139429765",
+      "name": "\u0130znik Nekropol\u00fc",
+      "region": "marmara",
+      "periods": [
+        "undated"
+      ],
+      "mound_like": false,
+      "band": "250",
+      "recovered_250": true
+    },
+    {
       "qid": "Q132182865",
       "name": "\u0130\u00e7mesutepe H\u00f6y\u00fc\u011f\u00fc",
       "region": "malatya",
@@ -8323,6 +8774,17 @@
       "mound_like": false,
       "band": "250",
       "recovered_250": true
+    },
+    {
+      "qid": "Q56388233",
+      "name": "Kani\u015f",
+      "region": "cappadocia",
+      "periods": [
+        "undated"
+      ],
+      "mound_like": false,
+      "band": "miss",
+      "recovered_250": false
     },
     {
       "qid": "Q202974",
@@ -9106,6 +9568,17 @@
       "recovered_250": false
     },
     {
+      "qid": "Q109790342",
+      "name": "Kesikkaya",
+      "region": "hattusa",
+      "periods": [
+        "undated"
+      ],
+      "mound_like": false,
+      "band": "miss",
+      "recovered_250": false
+    },
+    {
       "qid": "Q132182458",
       "name": "Keskin H\u00f6y\u00fck",
       "region": "marmara",
@@ -9412,6 +9885,17 @@
       "mound_like": false,
       "band": "1000",
       "recovered_250": false
+    },
+    {
+      "qid": "Q135428472",
+      "name": "Konstantinopolis B\u00fcy\u00fck Tiyatrosu",
+      "region": "marmara",
+      "periods": [
+        "undated"
+      ],
+      "mound_like": false,
+      "band": "250",
+      "recovered_250": true
     },
     {
       "qid": "Q65068709",
@@ -10558,6 +11042,17 @@
       "recovered_250": false
     },
     {
+      "qid": "Q744406",
+      "name": "Library of Celsus",
+      "region": "aegean-south",
+      "periods": [
+        "undated"
+      ],
+      "mound_like": false,
+      "band": "1000",
+      "recovered_250": false
+    },
+    {
       "qid": "Q65045287",
       "name": "Libum",
       "region": "marmara",
@@ -10943,6 +11438,17 @@
       "recovered_250": false
     },
     {
+      "qid": "Q104641903",
+      "name": "Marble Street (Ephesus)",
+      "region": "aegean-south",
+      "periods": [
+        "undated"
+      ],
+      "mound_like": false,
+      "band": "1000",
+      "recovered_250": false
+    },
+    {
       "qid": "Q132182436",
       "name": "Marmarac\u0131k H\u00f6y\u00fc\u011f\u00fc",
       "region": "marmara",
@@ -10987,6 +11493,17 @@
       "recovered_250": false
     },
     {
+      "qid": "Q135409934",
+      "name": "Martyrion at Aphrodisias",
+      "region": "aegean-south",
+      "periods": [
+        "undated"
+      ],
+      "mound_like": false,
+      "band": "miss",
+      "recovered_250": false
+    },
+    {
       "qid": "Q11939018",
       "name": "Martyropolis",
       "region": "tigris",
@@ -11019,6 +11536,17 @@
       ],
       "mound_like": false,
       "band": "1000",
+      "recovered_250": false
+    },
+    {
+      "qid": "Q27690711",
+      "name": "Mausoleum of Danyal",
+      "region": "cukurova",
+      "periods": [
+        "undated"
+      ],
+      "mound_like": false,
+      "band": "500",
       "recovered_250": false
     },
     {
@@ -11074,6 +11602,17 @@
       ],
       "mound_like": false,
       "band": "1000",
+      "recovered_250": false
+    },
+    {
+      "qid": "Q76640593",
+      "name": "Memmius Monument (Ephesus)",
+      "region": "aegean-south",
+      "periods": [
+        "undated"
+      ],
+      "mound_like": false,
+      "band": "miss",
       "recovered_250": false
     },
     {
@@ -11343,6 +11882,17 @@
       "recovered_250": false
     },
     {
+      "qid": "Q555923",
+      "name": "Mopsuestia",
+      "region": "cukurova",
+      "periods": [
+        "undated"
+      ],
+      "mound_like": false,
+      "band": "250",
+      "recovered_250": true
+    },
+    {
       "qid": "Q65070498",
       "name": "Mormonda",
       "region": "aegean-north",
@@ -11409,6 +11959,17 @@
       "recovered_250": false
     },
     {
+      "qid": "Q140421903",
+      "name": "Mount Nemrut Da\u011f\u0131",
+      "region": "malatya",
+      "periods": [
+        "undated"
+      ],
+      "mound_like": false,
+      "band": "miss",
+      "recovered_250": false
+    },
+    {
       "qid": "Q85786778",
       "name": "Moutalaske",
       "region": "cappadocia",
@@ -11423,6 +11984,17 @@
       "qid": "Q134960582",
       "name": "Muhac\u0131rosman H\u00f6y\u00fc\u011f\u00fc",
       "region": "euphrates",
+      "periods": [
+        "undated"
+      ],
+      "mound_like": true,
+      "band": "miss",
+      "recovered_250": false
+    },
+    {
+      "qid": "Q134960776",
+      "name": "Musular H\u00f6y\u00fc\u011f\u00fc",
+      "region": "cappadocia",
       "periods": [
         "undated"
       ],
@@ -11951,6 +12523,17 @@
       "qid": "Q13089982",
       "name": "Nova Roma",
       "region": "marmara",
+      "periods": [
+        "undated"
+      ],
+      "mound_like": false,
+      "band": "1000",
+      "recovered_250": false
+    },
+    {
+      "qid": "Q2006145",
+      "name": "Nymphaeum Traiani (Ephesus)",
+      "region": "aegean-south",
       "periods": [
         "undated"
       ],
@@ -12795,9 +13378,31 @@
       "recovered_250": true
     },
     {
+      "qid": "Q132182750",
+      "name": "Pekmez H\u00f6y\u00fc\u011f\u00fc (Geyre)",
+      "region": "aegean-south",
+      "periods": [
+        "undated"
+      ],
+      "mound_like": true,
+      "band": "miss",
+      "recovered_250": false
+    },
+    {
       "qid": "Q65046428",
       "name": "Pentephyle",
       "region": "marmara",
+      "periods": [
+        "undated"
+      ],
+      "mound_like": false,
+      "band": "miss",
+      "recovered_250": false
+    },
+    {
+      "qid": "Q139437280",
+      "name": "Pergamon Akropol\u00fc",
+      "region": "aegean-north",
       "periods": [
         "undated"
       ],
@@ -12830,6 +13435,17 @@
     {
       "qid": "Q105232481",
       "name": "Pergamon gymnasium",
+      "region": "aegean-north",
+      "periods": [
+        "undated"
+      ],
+      "mound_like": false,
+      "band": "miss",
+      "recovered_250": false
+    },
+    {
+      "qid": "Q139432688",
+      "name": "Pergamon Krallar K\u00fclt\u00fc Heroonu",
       "region": "aegean-north",
       "periods": [
         "undated"
@@ -13180,6 +13796,17 @@
       "recovered_250": false
     },
     {
+      "qid": "Q104641896",
+      "name": "Pollio Monument and Fountain of Domitian (Ephesus)",
+      "region": "aegean-south",
+      "periods": [
+        "undated"
+      ],
+      "mound_like": false,
+      "band": "miss",
+      "recovered_250": false
+    },
+    {
       "qid": "Q65072494",
       "name": "Polymedium",
       "region": "aegean-north",
@@ -13345,6 +13972,17 @@
       "recovered_250": false
     },
     {
+      "qid": "Q2114503",
+      "name": "Prytaneion (Ephesus)",
+      "region": "aegean-south",
+      "periods": [
+        "undated"
+      ],
+      "mound_like": false,
+      "band": "miss",
+      "recovered_250": false
+    },
+    {
       "qid": "Q65046389",
       "name": "Psarela",
       "region": "marmara",
@@ -13499,6 +14137,28 @@
       "recovered_250": false
     },
     {
+      "qid": "Q141913564",
+      "name": "Q141913564",
+      "region": "hattusa",
+      "periods": [
+        "undated"
+      ],
+      "mound_like": false,
+      "band": "miss",
+      "recovered_250": false
+    },
+    {
+      "qid": "Q141927026",
+      "name": "Q141927026",
+      "region": "hattusa",
+      "periods": [
+        "undated"
+      ],
+      "mound_like": false,
+      "band": "miss",
+      "recovered_250": false
+    },
+    {
       "qid": "Q135960044",
       "name": "Racingova Tumulus",
       "region": "aegean-south",
@@ -13557,6 +14217,28 @@
       "qid": "Q7362324",
       "name": "Roman road in Cilicia",
       "region": "cukurova",
+      "periods": [
+        "undated"
+      ],
+      "mound_like": false,
+      "band": "miss",
+      "recovered_250": false
+    },
+    {
+      "qid": "Q118929560",
+      "name": "Roman theater at Helikore/Nicaea",
+      "region": "marmara",
+      "periods": [
+        "undated"
+      ],
+      "mound_like": false,
+      "band": "250",
+      "recovered_250": true
+    },
+    {
+      "qid": "Q59771443",
+      "name": "Roman Theatre of Aphrodisias",
+      "region": "aegean-south",
       "periods": [
         "undated"
       ],
@@ -13653,6 +14335,17 @@
       "recovered_250": false
     },
     {
+      "qid": "Q57462249",
+      "name": "Sanctuary of Aphrodite, Aphrodisias",
+      "region": "aegean-south",
+      "periods": [
+        "undated"
+      ],
+      "mound_like": false,
+      "band": "miss",
+      "recovered_250": false
+    },
+    {
       "qid": "Q137667964",
       "name": "sanctuary of Artemis Kindyas, Bargylia",
       "region": "aegean-south",
@@ -13678,6 +14371,17 @@
       "qid": "Q135283715",
       "name": "Sanctuary of Athena",
       "region": "aegean-south",
+      "periods": [
+        "undated"
+      ],
+      "mound_like": false,
+      "band": "miss",
+      "recovered_250": false
+    },
+    {
+      "qid": "Q1185404",
+      "name": "Sanctuary of Demeter (Pergamum)",
+      "region": "aegean-north",
       "periods": [
         "undated"
       ],
@@ -13969,6 +14673,28 @@
       ],
       "mound_like": false,
       "band": "1000",
+      "recovered_250": false
+    },
+    {
+      "qid": "Q14540869",
+      "name": "Scholastikia Baths (Ephesus)",
+      "region": "aegean-south",
+      "periods": [
+        "undated"
+      ],
+      "mound_like": false,
+      "band": "1000",
+      "recovered_250": false
+    },
+    {
+      "qid": "Q89718384",
+      "name": "Sebasteion at Aphrodisias",
+      "region": "aegean-south",
+      "periods": [
+        "undated"
+      ],
+      "mound_like": false,
+      "band": "miss",
       "recovered_250": false
     },
     {
@@ -14357,6 +15083,17 @@
       "recovered_250": false
     },
     {
+      "qid": "Q104772346",
+      "name": "South Gate of the Agora (Ephesus)",
+      "region": "aegean-south",
+      "periods": [
+        "classical"
+      ],
+      "mound_like": false,
+      "band": "1000",
+      "recovered_250": false
+    },
+    {
       "qid": "Q131934430",
       "name": "South Necropolis (Pergamon)",
       "region": "aegean-north",
@@ -14447,6 +15184,17 @@
     {
       "qid": "Q97201473",
       "name": "Stadium of Priene",
+      "region": "aegean-south",
+      "periods": [
+        "undated"
+      ],
+      "mound_like": false,
+      "band": "miss",
+      "recovered_250": false
+    },
+    {
+      "qid": "Q77071662",
+      "name": "State Agora of Ephesus",
       "region": "aegean-south",
       "periods": [
         "undated"
@@ -15017,6 +15765,17 @@
       "recovered_250": false
     },
     {
+      "qid": "Q76737664",
+      "name": "Temenos with Double Monument",
+      "region": "aegean-south",
+      "periods": [
+        "undated"
+      ],
+      "mound_like": false,
+      "band": "miss",
+      "recovered_250": false
+    },
+    {
       "qid": "Q6097245",
       "name": "Temenye H\u00f6y\u00fc\u011f\u00fc",
       "region": "marmara",
@@ -15127,6 +15886,17 @@
       "recovered_250": false
     },
     {
+      "qid": "Q112208753",
+      "name": "Temple of Athena at Ilion",
+      "region": "aegean-north",
+      "periods": [
+        "classical"
+      ],
+      "mound_like": false,
+      "band": "250",
+      "recovered_250": true
+    },
+    {
       "qid": "Q78210835",
       "name": "Temple of Athena at Miletus",
       "region": "aegean-south",
@@ -15160,6 +15930,17 @@
       "recovered_250": false
     },
     {
+      "qid": "Q105232370",
+      "name": "Temple of Demeter in Pergamon",
+      "region": "aegean-north",
+      "periods": [
+        "undated"
+      ],
+      "mound_like": false,
+      "band": "miss",
+      "recovered_250": false
+    },
+    {
       "qid": "Q43018",
       "name": "Temple of Ephesian Artemis",
       "region": "aegean-south",
@@ -15171,11 +15952,55 @@
       "recovered_250": false
     },
     {
+      "qid": "Q2581040",
+      "name": "Temple of Hadrian",
+      "region": "aegean-south",
+      "periods": [
+        "undated"
+      ],
+      "mound_like": false,
+      "band": "1000",
+      "recovered_250": false
+    },
+    {
+      "qid": "Q105274422",
+      "name": "Temple of Hera in Pergamon",
+      "region": "aegean-north",
+      "periods": [
+        "undated"
+      ],
+      "mound_like": false,
+      "band": "miss",
+      "recovered_250": false
+    },
+    {
+      "qid": "Q4903971",
+      "name": "Temple of Jupiter",
+      "region": "cukurova",
+      "periods": [
+        "undated"
+      ],
+      "mound_like": false,
+      "band": "1000",
+      "recovered_250": false
+    },
+    {
       "qid": "Q78211158",
       "name": "Temple of Kalabak Tepe",
       "region": "aegean-south",
       "periods": [
         "bronze"
+      ],
+      "mound_like": false,
+      "band": "1000",
+      "recovered_250": false
+    },
+    {
+      "qid": "Q76737777",
+      "name": "Temple of Serapis (Ephesus)",
+      "region": "aegean-south",
+      "periods": [
+        "classical"
       ],
       "mound_like": false,
       "band": "1000",
@@ -15193,8 +16018,30 @@
       "recovered_250": false
     },
     {
+      "qid": "Q16934218",
+      "name": "Temple of the Emperors (Ephesus)",
+      "region": "aegean-south",
+      "periods": [
+        "undated"
+      ],
+      "mound_like": false,
+      "band": "miss",
+      "recovered_250": false
+    },
+    {
       "qid": "Q97202122",
       "name": "Temple of Zeus (Priene)",
+      "region": "aegean-south",
+      "periods": [
+        "undated"
+      ],
+      "mound_like": false,
+      "band": "miss",
+      "recovered_250": false
+    },
+    {
+      "qid": "Q97341108",
+      "name": "Temple on the State Agora",
       "region": "aegean-south",
       "periods": [
         "undated"
@@ -15327,6 +16174,39 @@
     {
       "qid": "Q6556832",
       "name": "Termera",
+      "region": "aegean-south",
+      "periods": [
+        "undated"
+      ],
+      "mound_like": false,
+      "band": "miss",
+      "recovered_250": false
+    },
+    {
+      "qid": "Q97341290",
+      "name": "Terrace House 1 (Ephesus)",
+      "region": "aegean-south",
+      "periods": [
+        "undated"
+      ],
+      "mound_like": false,
+      "band": "miss",
+      "recovered_250": false
+    },
+    {
+      "qid": "Q97341291",
+      "name": "Terrace House 2 (Ephesus)",
+      "region": "aegean-south",
+      "periods": [
+        "undated"
+      ],
+      "mound_like": false,
+      "band": "1000",
+      "recovered_250": false
+    },
+    {
+      "qid": "Q1575495",
+      "name": "Terrace Houses in Ephesus",
       "region": "aegean-south",
       "periods": [
         "undated"
@@ -15487,6 +16367,17 @@
       ],
       "mound_like": false,
       "band": "1000",
+      "recovered_250": false
+    },
+    {
+      "qid": "Q56640662",
+      "name": "Theatre of Smyrna",
+      "region": "aegean-north",
+      "periods": [
+        "classical"
+      ],
+      "mound_like": false,
+      "band": "miss",
       "recovered_250": false
     },
     {
@@ -15963,6 +16854,17 @@
       "recovered_250": true
     },
     {
+      "qid": "Q139427488",
+      "name": "T\u00fcm\u00fcl\u00fcs 2 (Gordion)",
+      "region": "phrygia",
+      "periods": [
+        "undated"
+      ],
+      "mound_like": true,
+      "band": "500",
+      "recovered_250": false
+    },
+    {
       "qid": "Q139433831",
       "name": "T\u00fcm\u00fcl\u00fcs 2 (Karaba\u011f)",
       "region": "aegean-south",
@@ -16203,6 +17105,17 @@
       "mound_like": false,
       "band": "250",
       "recovered_250": true
+    },
+    {
+      "qid": "Q141913545",
+      "name": "Verbindungsbau (\u1e2aattu\u0161a)",
+      "region": "hattusa",
+      "periods": [
+        "undated"
+      ],
+      "mound_like": false,
+      "band": "miss",
+      "recovered_250": false
     },
     {
       "qid": "Q16963933",
@@ -16900,6 +17813,17 @@
     {
       "qid": "Q139429449",
       "name": "Zeugma Akropolis",
+      "region": "euphrates",
+      "periods": [
+        "undated"
+      ],
+      "mound_like": false,
+      "band": "miss",
+      "recovered_250": false
+    },
+    {
+      "qid": "Q135582853",
+      "name": "Zeugma Theater",
       "region": "euphrates",
       "periods": [
         "undated"

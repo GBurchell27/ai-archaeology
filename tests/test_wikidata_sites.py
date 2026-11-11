@@ -1,9 +1,10 @@
 """Curated pins win deduplication, and periods come only from Wikidata dates or labels."""
 
 import json
+import math
 from pathlib import Path
 
-from ai_archaeology.sites.wikidata import assign_periods, build_snapshot, nearest_curated, load_curated
+from ai_archaeology.sites.wikidata import assign_periods, build_snapshot, load_curated, matching_curated
 
 
 def test_years_and_labels_map_onto_atlas_periods():
@@ -13,36 +14,45 @@ def test_years_and_labels_map_onto_atlas_periods():
     assert "classical" in assign_periods([], -200, 400)
 
 
-def test_a_nearby_wikidata_item_is_dropped(tmp_path: Path):
-    curated = {
-        "type": "FeatureCollection",
-        "features": [{
-            "type": "Feature",
-            "id": "catalhoyuk",
-            "geometry": {"type": "Point", "coordinates": [32.82806, 37.66667]},
-            "properties": {"name": "Çatalhöyük"},
-        }],
-    }
-    curated_path = tmp_path / "sites.geojson"
-    curated_path.write_text(json.dumps(curated))
+def test_name_match_within_3_km_drops_and_a_different_monument_stays(tmp_path: Path):
+    pin_lon, pin_lat = 32.82806, 37.66667
+    curated_path = _curated(tmp_path, pin_lon, pin_lat, "Çatalhöyük", "catalhoyuk")
     raw = tmp_path / "raw"
     raw.mkdir()
     (raw / "core.json").write_text(json.dumps({"results": {"bindings": [
-        _row("Q1", "Duplicate mound", 32.830, 37.668, "-7000-01-01T00:00:00Z"),
-        _row("Q2", "Somewhere else", 35.0, 38.0, None),
+        _row("Qsame", "Catalhoyuk", pin_lon, _north(pin_lat, 2500), None),
+        _row("Qnear", "Library of Celsus", pin_lon, _north(pin_lat, 100), None),
+        _row("Qkeep", "Basilica Cistern", pin_lon, _north(pin_lat, 400), None),
+        _row("Qfar", "Catalhoyuk", pin_lon, _north(pin_lat, 3500), None),
     ]}}))
     for name in ("types", "periods", "heritage"):
         (raw / f"{name}.json").write_text(json.dumps({"results": {"bindings": []}}))
-    (raw / "periods.json").write_text(json.dumps({"results": {"bindings": [
-        {"item": {"value": "http://www.wikidata.org/entity/Q2"}, "periodLabel": {"value": "Neolithic"}},
-    ]}}))
     snapshot = build_snapshot(raw, curated_path)
-    assert [feature["id"] for feature in snapshot["features"]] == ["Q2"]
-    assert snapshot["dropped"][0]["kept"] == "catalhoyuk"
-    assert snapshot["features"][0]["properties"]["periods"] == ["neolithic"]
+    assert {item["qid"] for item in snapshot["dropped"]} == {"Qsame", "Qnear"}
+    assert {feature["id"] for feature in snapshot["features"]} == {"Qkeep", "Qfar"}
     pins = load_curated(curated_path)
-    assert nearest_curated(32.83, 37.668, pins, 1500) is not None
-    assert nearest_curated(35.0, 38.0, pins, 1500) is None
+    assert matching_curated("Library of Celsus", pin_lon, _north(pin_lat, 150), pins) is not None
+    assert matching_curated("Library of Celsus", pin_lon, _north(pin_lat, 151), pins) is None
+    assert matching_curated("Çatalhöyük", pin_lon, _north(pin_lat, 3000), pins) is not None
+    assert matching_curated("Çatalhöyük", pin_lon, _north(pin_lat, 3001), pins) is None
+
+
+def _north(latitude: float, metres: float) -> float:
+    return latitude + math.degrees(metres / 6_371_000.0)
+
+
+def _curated(tmp_path: Path, lon: float, lat: float, name: str, site_id: str) -> Path:
+    path = tmp_path / "sites.geojson"
+    path.write_text(json.dumps({
+        "type": "FeatureCollection",
+        "features": [{
+            "type": "Feature",
+            "id": site_id,
+            "geometry": {"type": "Point", "coordinates": [lon, lat]},
+            "properties": {"name": name},
+        }],
+    }))
+    return path
 
 
 def _row(qid: str, name: str, lon: float, lat: float, inception: str | None) -> dict:
