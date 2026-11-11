@@ -472,3 +472,21 @@ These rows are only for the toggleable context layers in `Anatolia/atlas`. They 
 - **Shifted Tigris, Euphrates, or Harran-plain channels.** No open vector was found. None was invented.
 - **Geology drape.** Not shipped. A licence-clean geology raster at 1:1,000,000 or better, covering Turkey, was not obtained on this run. The PANGAEA GLiM grid that was considered is about 0.5° and too coarse for that bar. OneGeology and Turkish MTA reuse terms were not confirmed, so they were not copied. SoilGrids is the land layer that is actually draped.
 - **Nar Gölü.** Not in the open NOAA Turkey paleolimnology or speleothem folders checked on this run. It is not a marker.
+
+---
+
+## Atlas CORONA windows (added 11 November 2026)
+
+No account and no payment. The atlas clips three site windows from the CAST orthorectified GeoTIFFs on `https://cast-ftp1.cast.uark.edu/coronaftp2/`. The full frames (about 500–800 MB) are not in git. The NITF scans on `coronaftp/` are the raw frames and were not used.
+
+The site licence line is CC BY-SA 4.0. The page says reproductions should be credited to the Center for Advanced Spatial Technologies, University of Arkansas/U.S. Geological Survey. https://corona.cast.uark.edu/
+
+| Place | Frame | Date | File used | Ground pixel |
+| --- | --- | --- | --- | --- |
+| Göbekli Tepe | 1105-1009A009 | 4 Nov 1968 | `1105-1009d/1105-1009da/ds1105-1009da009.tif` | about 2.0 m |
+| Karahan Tepe | 1105-1025A059 | 5 Nov 1968 | `1105-1025d/1105-1025da/ds1105-1025da059.tif` | about 1.9 m |
+| Harran | 1105-1009A012 | 4 Nov 1968 | `1105-1009d/1105-1009da/ds1105-1009da012.tif` | about 2.0 m |
+
+Each GeoTIFF is EPSG:4326 and already orthorectified by CAST. The atlas resamples that grid onto the existing Web Mercator site window. No control points were added, and the orthorectification residual was not measured. The JPEG is a 2nd–98th percentile display stretch.
+
+Harran’s point also falls inside the envelopes of 1105-1009A010 and A011, and of 1107-2138A064 and A066, but those scans are black across the Harran window. A012 is the frame that actually shows it. USGS EarthExplorer was not used: already-scanned film there needs a login, and unscanned film is a paid order.

@@ -9,7 +9,7 @@ import type { ContextFeature } from "@/lib/contextGeometry";
 import { boundsCenter, boundsContain, lonLatToMercator, sampleHeight, toLocal } from "@/lib/geo";
 import { LAYER_STYLE, PERIODS, formatYear, periodOverlaps } from "@/lib/periods";
 import { decodeHeight } from "@/lib/terrain";
-import type { AtlasMetadata, BaseMap, LayerId, SiteCollection, SiteFeature } from "@/lib/types";
+import type { AtlasMetadata, BaseMap, CoronaRecord, LayerId, SiteCollection, SiteFeature } from "@/lib/types";
 import type { TerrainGrid } from "@/lib/terrain";
 
 const RASTER_TITLES: Record<string, string> = {
@@ -23,6 +23,7 @@ const RASTER_TITLES: Record<string, string> = {
   ndvi: "NDVI",
   hypsometric: "Hypsometric tint",
   satellite: "Sentinel-2 cloudless",
+  corona: "CORONA, 1968–69",
 };
 
 export function AtlasApp() {
@@ -416,6 +417,7 @@ export function AtlasApp() {
           onCompareLayer={setCompareLayer}
           onSplit={setSplit}
           onOpacity={setOpacity}
+          corona={detail?.corona}
         />
       ) : null}
       {climateRecord ? (
@@ -580,6 +582,7 @@ function SitePanel(props: {
   onCompareLayer: (layer: string) => void;
   onSplit: (value: number) => void;
   onOpacity: (value: number) => void;
+  corona?: CoronaRecord;
 }) {
   const properties = props.site.properties;
   return (
@@ -612,6 +615,13 @@ function SitePanel(props: {
             {props.rasters.map(([id]) => <option key={id} value={id}>{RASTER_TITLES[id] ?? id}</option>)}
           </select>
           <label>Swipe <input type="range" min={0} max={100} value={props.split * 100} data-role="swipe" onChange={(event) => props.onSplit(Number(event.target.value) / 100)} /></label>
+          {props.corona && (props.detailLayer === "corona" || (props.compare && props.compareLayer === "corona")) ? (
+            <p className="source-line" data-role="corona-credit">
+              {props.corona.credit}. Frame {props.corona.frame} ({props.corona.date}), about {props.corona.pixelSizeM.toFixed(1)} m.
+              {" "}{props.corona.licence}. {props.corona.note}{" "}
+              <a href={props.corona.sourceUrl} target="_blank" rel="noreferrer">CORONA Atlas</a>
+            </p>
+          ) : null}
         </section>
       ) : null}
     </aside>
