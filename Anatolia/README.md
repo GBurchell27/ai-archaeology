@@ -5,6 +5,7 @@ Focus region: southeastern Anatolia and Upper Mesopotamia. That means Göbekli T
 ## Current phase
 
 Data gathering, before a direction is chosen. Sources, licences, coverage, and what is still unverified are in [data-sources.md](data-sources.md). Nothing in that register has been downloaded for analysis.
+GitHub repositories and X accounts from the same pass are in [github-and-x.md](github-and-x.md).
 
 ## Candidate directions
 
