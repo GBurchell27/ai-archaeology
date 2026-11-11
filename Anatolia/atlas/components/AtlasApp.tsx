@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { AtlasScene, type CameraPose } from "@/components/AtlasScene";
+import { WikidataPanel } from "@/components/WikidataPanel";
 import { Legend, PeriodDock, ShortcutOverlay, readLegendOpen, storeLegend, useAtlasKeys, useTheme, type AtlasKeyHandlers } from "@/components/AtlasChrome";
 import { naturalExaggeration } from "@/lib/exaggeration";
 import type { ClimatePoint, ContextLineLayer, ContextRasterLayer } from "@/components/ContextLayers";
@@ -10,6 +11,7 @@ import { boundsCenter, boundsContain, lonLatToMercator, sampleHeight, toLocal } 
 import { LAYER_STYLE, PERIODS, formatYear, periodOverlaps } from "@/lib/periods";
 import { decodeHeight } from "@/lib/terrain";
 import type { AtlasMetadata, BaseMap, CoronaRecord, LayerId, SiteCollection, SiteFeature } from "@/lib/types";
+import { wikiInPeriod, type WikiFeature } from "@/lib/wikidata";
 import type { TerrainGrid } from "@/lib/terrain";
 
 const RASTER_TITLES: Record<string, string> = {
@@ -73,6 +75,9 @@ export function AtlasApp() {
   const [climateRecords, setClimateRecords] = useState<ClimateRecord[]>([]);
   const [climateId, setClimateId] = useState<string | null>(null);
   const [detailToken, setDetailToken] = useState(0);
+  const [wikiSites, setWikiSites] = useState<WikiFeature[]>([]);
+  const [wikiOn, setWikiOn] = useState(true);
+  const [wikiId, setWikiId] = useState<string | null>(null);
   const readoutRef = useRef<HTMLDivElement>(null);
   const searchRef = useRef<HTMLInputElement>(null);
   const keys = useRef<AtlasKeyHandlers>({
@@ -87,6 +92,12 @@ export function AtlasApp() {
   });
   useAtlasKeys(keys);
   useEffect(() => setLegendOpen(readLegendOpen()), []);
+  useEffect(() => {
+    fetch("/wikidata/sites.geojson")
+      .then((response) => response.json())
+      .then((collection: { features: WikiFeature[] }) => setWikiSites(collection.features))
+      .catch(() => undefined);
+  }, []);
 
   useEffect(() => {
     const files: Record<string, string> = {
@@ -221,16 +232,20 @@ export function AtlasApp() {
     return <p className="status">Loading the Turkey terrain…</p>;
   }
 
-  const matches = query.trim().length < 2 ? [] : sites.filter((site) => {
-    const needle = query.trim().toLowerCase();
-    return site.properties.names.some((name) => name.toLowerCase().includes(needle));
-  }).slice(0, 8);
+  const needle = query.trim().toLowerCase();
+  const matches = needle.length < 2 ? [] : sites.filter((site) => (
+    site.properties.names.some((name) => name.toLowerCase().includes(needle))
+  )).slice(0, 6);
+  const wikiMatches = needle.length < 2 ? [] : wikiSites.filter((site) => (
+    site.properties.name.toLowerCase().includes(needle)
+  )).slice(0, 4);
 
   function flyTo(site: SiteFeature) {
     const token = detailToken + 1;
     document.body.dataset.detail = "loading";
     document.body.dataset.detailToken = String(token);
     setDetailToken(token);
+    setWikiId(null);
     const windowSize = metadata!.details[site.id]?.pixelSizeM ?? metadata!.pixelSizeM;
     const scale = naturalExaggeration(windowSize);
     setExaggeration(scale);
@@ -245,6 +260,17 @@ export function AtlasApp() {
     const rasters = metadata!.details[site.id]?.rasters ?? {};
     setDetailLayer(preferredLayer(rasters, baseMap));
     setCompare(false);
+  }
+
+  function openWiki(site: WikiFeature) {
+    setWikiId(site.id);
+    setSelectedId(null);
+    setPanelShown(false);
+    setReveal(false);
+    setQuery("");
+    document.body.dataset.detail = "";
+    const [longitude, latitude] = site.geometry.coordinates;
+    setPose(lookPose(longitude, latitude, metadata!, metres!, exaggeration, pose!.token + 1));
   }
 
   function backToTurkey() {
@@ -280,6 +306,8 @@ export function AtlasApp() {
   };
 
   const rasterEntries = Object.entries(detail?.rasters ?? {});
+  const wikiVisible = wikiOn ? wikiSites.filter((site) => wikiInPeriod(site, period.id)) : [];
+  const wikiSite = wikiSites.find((site) => site.id === wikiId) ?? null;
   const roadsInPeriod = period.id === "all" || (period.start <= 700 && period.end >= -300);
   const lineColor: Record<string, string> = theme === "dark"
     ? { rivers: "#8ec8d8", lakes: "#8ec8d8", "paleo-water": "#e2b07a", roads: "#f0d7a4" }
@@ -337,6 +365,18 @@ export function AtlasApp() {
           setSettingsOpen(false);
         }}
         detailToken={detailToken}
+        wikiSites={wikiVisible}
+        onOpenWiki={(siteId) => {
+          setWikiId(siteId);
+          setSelectedId(null);
+          setPanelShown(false);
+          setReveal(false);
+          document.body.dataset.detail = "";
+        }}
+        onApproachWiki={(longitude, latitude) => {
+          setPose(lookPose(longitude, latitude, metadata, metres, exaggeration, pose.token + 1));
+          setWikiId(null);
+        }}
         onSelect={(siteId) => {
           const site = sites.find((item) => item.id === siteId);
           if (site) {
@@ -355,11 +395,16 @@ export function AtlasApp() {
             data-role="search"
             onChange={(event) => setQuery(event.target.value)}
           />
-          {matches.length > 0 ? (
+          {matches.length > 0 || wikiMatches.length > 0 ? (
             <ul>
               {matches.map((site) => (
                 <li key={site.id}>
                   <button type="button" data-result={site.id} onClick={() => flyTo(site)}>{site.properties.name}</button>
+                </li>
+              ))}
+              {wikiMatches.map((site) => (
+                <li key={site.id}>
+                  <button type="button" data-result={site.id} onClick={() => openWiki(site)}>{site.properties.name}</button>
                 </li>
               ))}
             </ul>
@@ -392,6 +437,8 @@ export function AtlasApp() {
           onAzimuth={setAzimuth}
           onAltitude={setAltitude}
           onLabels={setLabels}
+          wikiOn={wikiOn}
+          onWiki={setWikiOn}
           contextOn={contextOn}
           contextOpacity={contextOpacity}
           roadsInPeriod={roadsInPeriod}
@@ -427,6 +474,7 @@ export function AtlasApp() {
           corona={detail?.corona}
         />
       ) : null}
+      {wikiSite ? <WikidataPanel site={wikiSite} onClose={() => setWikiId(null)} /> : null}
       {climateRecord ? (
         <ClimateChart record={climateRecord} onClose={() => setClimateId(null)} />
       ) : null}
@@ -464,6 +512,8 @@ function SettingsMenu(props: {
   onAzimuth: (value: number) => void;
   onAltitude: (value: number) => void;
   onLabels: (value: boolean) => void;
+  wikiOn: boolean;
+  onWiki: (enabled: boolean) => void;
   contextOn: Record<string, boolean>;
   contextOpacity: number;
   roadsInPeriod: boolean;
@@ -494,6 +544,10 @@ function SettingsMenu(props: {
       <label className="check">
         <input type="checkbox" checked={props.labels} data-role="labels" onChange={(event) => props.onLabels(event.target.checked)} />
         Place names
+      </label>
+      <label className="check">
+        <input type="checkbox" checked={props.wikiOn} data-layer-toggle="wikidata" onChange={(event) => props.onWiki(event.target.checked)} />
+        Wikidata places
       </label>
       <h2>Context</h2>
       {CONTEXT_TOGGLES.map((layer) => (
@@ -680,6 +734,27 @@ function pinFocus(places: SiteFeature[], origin: [number, number]): { x: number;
   const xCoord = used.reduce((sum, point) => sum + point.x, 0) / used.length;
   const zCoord = used.reduce((sum, point) => sum + point.z, 0) / used.length;
   return { x: xCoord, z: zCoord };
+}
+
+function lookPose(
+  longitude: number,
+  latitude: number,
+  metadata: AtlasMetadata,
+  metres: Float32Array,
+  exaggeration: number,
+  token: number,
+): CameraPose {
+  const origin = boundsCenter(metadata.bounds);
+  const [east, north] = lonLatToMercator(longitude, latitude);
+  const elevation = sampleHeight(metres, metadata.width, metadata.height, metadata.bounds, east, north);
+  const [xCoord, zCoord] = toLocal(longitude, latitude, origin);
+  const yCoord = (elevation - metadata.elevation.min) * exaggeration;
+  const distance = 70000;
+  return {
+    position: [xCoord + distance * 0.16, yCoord + distance * 0.34, zCoord + distance * 0.58],
+    target: [xCoord, yCoord + 24, zCoord - distance * 0.05],
+    token,
+  };
 }
 
 function sitePose(site: SiteFeature, metadata: AtlasMetadata, metres: Float32Array, exaggeration: number, token: number): CameraPose {

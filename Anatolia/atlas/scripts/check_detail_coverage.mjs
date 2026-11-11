@@ -15,6 +15,14 @@ await page.setViewport({ width: 1440, height: 900 });
 await page.goto("http://127.0.0.1:43127/", { waitUntil: "networkidle0" });
 await page.waitForSelector("body[data-ready='true']");
 await new Promise((resolve) => setTimeout(resolve, 1600));
+await page.$eval("[data-action='settings']", (element) => element.click());
+const wikiToggle = await page.$("[data-layer-toggle='wikidata']");
+if (wikiToggle) {
+  await page.$eval("[data-layer-toggle='wikidata']", (element) => {
+    if (element.checked) element.click();
+  });
+}
+await page.$eval("[data-action='settings']", (element) => element.click());
 
 const overview = await page.evaluate(() => {
   const camera = window.__atlasCamera;

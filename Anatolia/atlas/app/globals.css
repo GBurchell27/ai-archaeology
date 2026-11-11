@@ -129,6 +129,24 @@ html, body { margin: 0; height: 100%; overflow: hidden; }
 
 .chart text { fill: #f3ebdf; font-size: 11px; }
 
+.wiki-count {
+  display: block;
+  min-width: 1.2em;
+  color: #1b140f;
+  font: 600 11px/1.4 "Avenir Next", "Segoe UI", sans-serif;
+  text-align: center;
+}
+
+.timeline {
+  position: relative;
+  height: 12px;
+  margin: 12px 0 6px;
+  border-radius: 99px;
+  background: rgba(246, 236, 220, 0.14);
+}
+
+.timeline i { position: absolute; top: 0; bottom: 0; border-radius: 99px; }
+
 .panel {
   right: 12px;
   bottom: 36px;
