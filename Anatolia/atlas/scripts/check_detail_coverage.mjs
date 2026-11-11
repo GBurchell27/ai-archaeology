@@ -33,8 +33,7 @@ if (process.env.ARTIFACT_DIR) {
 
 async function flyTo(name, resultId) {
   if (await page.$("[data-action='close-panel']")) {
-    await page.click("[data-action='close-panel']");
-    await new Promise((resolve) => setTimeout(resolve, 200));
+    await page.$eval("[data-action='close-panel']", (element) => element.click());
   }
   await page.$eval("[data-role='search']", (element, value) => {
     const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set;
@@ -42,10 +41,18 @@ async function flyTo(name, resultId) {
     element.dispatchEvent(new Event("input", { bubbles: true }));
   }, name);
   await page.waitForSelector(`[data-result='${resultId}']`);
-  await page.click(`[data-result='${resultId}']`);
-  await page.waitForSelector(`body[data-site='${resultId}']`);
-  await page.waitForFunction(() => document.body.dataset.flying === "false");
-  await new Promise((resolve) => setTimeout(resolve, 1400));
+  await page.evaluate(() => {
+    document.body.dataset.detail = "pending";
+  });
+  await page.$eval(`[data-result='${resultId}']`, (element) => element.click());
+  await page.waitForFunction(
+    (siteId) => document.body.dataset.site === siteId && document.body.dataset.detail === "ready",
+    { timeout: 25000 },
+    resultId,
+  );
+  await page.evaluate(() => new Promise((resolve) => {
+    requestAnimationFrame(() => requestAnimationFrame(resolve));
+  }));
 }
 
 for (const [name, id, file] of [

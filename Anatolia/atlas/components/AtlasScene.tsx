@@ -46,6 +46,7 @@ interface AtlasSceneProps {
   climatePoints: ClimatePoint[];
   climateId: string | null;
   onClimate: (recordId: string) => void;
+  detailToken: number;
 }
 
 export function AtlasScene(props: AtlasSceneProps) {
@@ -99,6 +100,7 @@ export function AtlasScene(props: AtlasSceneProps) {
           split={props.split}
           opacity={props.opacity}
           night={props.night}
+          detailToken={props.detailToken}
         />
       ) : null}
       <ContextDrapes
@@ -221,6 +223,7 @@ function DetailSurface(props: {
   split: number;
   opacity: number;
   night: boolean;
+  detailToken: number;
 }) {
   const stitched = useMemo(
     () => stitchDetailToNational(props.grid, props.national),
@@ -245,6 +248,7 @@ function DetailSurface(props: {
       lift
       night={props.night}
       fade
+      detailToken={props.detailToken}
     />
   );
 }
@@ -262,6 +266,7 @@ function ShadedMesh(props: {
   clip?: ClipRect | null;
   night?: boolean;
   fade?: boolean;
+  detailToken?: number;
 }) {
   const material = useMemo(() => createSurfaceMaterial(), []);
   const { size, gl } = useThree();
@@ -285,6 +290,9 @@ function ShadedMesh(props: {
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     fade.current = reduced ? 1 : Math.min(1, fade.current + 0.08);
     material.uniforms.opacity.value = props.opacity * fade.current;
+    if (fade.current >= 1 && document.body.dataset.detailToken === String(props.detailToken)) {
+      document.body.dataset.detail = "ready";
+    }
   });
   material.uniforms.night.value = props.night ? 1 : 0;
   material.uniforms.clipOn.value = props.clip ? 1 : 0;

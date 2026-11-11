@@ -72,6 +72,7 @@ export function AtlasApp() {
   const [vectorCache, setVectorCache] = useState<Record<string, ContextFeature[]>>({});
   const [climateRecords, setClimateRecords] = useState<ClimateRecord[]>([]);
   const [climateId, setClimateId] = useState<string | null>(null);
+  const [detailToken, setDetailToken] = useState(0);
   const readoutRef = useRef<HTMLDivElement>(null);
   const searchRef = useRef<HTMLInputElement>(null);
   const keys = useRef<AtlasKeyHandlers>({
@@ -226,6 +227,10 @@ export function AtlasApp() {
   }).slice(0, 8);
 
   function flyTo(site: SiteFeature) {
+    const token = detailToken + 1;
+    document.body.dataset.detail = "loading";
+    document.body.dataset.detailToken = String(token);
+    setDetailToken(token);
     const windowSize = metadata!.details[site.id]?.pixelSizeM ?? metadata!.pixelSizeM;
     const scale = naturalExaggeration(windowSize);
     setExaggeration(scale);
@@ -243,6 +248,7 @@ export function AtlasApp() {
   }
 
   function backToTurkey() {
+    document.body.dataset.detail = "";
     setSelectedId(null);
     setPanelShown(false);
     setReveal(false);
@@ -330,6 +336,7 @@ export function AtlasApp() {
           setClimateId(recordId);
           setSettingsOpen(false);
         }}
+        detailToken={detailToken}
         onSelect={(siteId) => {
           const site = sites.find((item) => item.id === siteId);
           if (site) {

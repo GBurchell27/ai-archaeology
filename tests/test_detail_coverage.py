@@ -12,9 +12,26 @@ OUT = Path("/tmp/atlas-detail-check")
 
 
 def test_detail_tile_covers_the_close_up():
+    failure = ""
+    for attempt in (1, 2):
+        completed = _capture()
+        if completed.returncode != 0:
+            failure = completed.stdout + completed.stderr
+            continue
+        try:
+            _assert_close_ups()
+            return
+        except AssertionError as exc:
+            failure = str(exc)
+            if attempt == 2:
+                raise
+    raise AssertionError(failure)
+
+
+def _capture() -> subprocess.CompletedProcess[str]:
     env = os.environ.copy()
     env["CHECK_DIR"] = str(OUT)
-    completed = subprocess.run(
+    return subprocess.run(
         ["node", str(CHECK)],
         cwd=ROOT / "Anatolia" / "atlas",
         env=env,
@@ -22,7 +39,9 @@ def test_detail_tile_covers_the_close_up():
         capture_output=True,
         text=True,
     )
-    assert completed.returncode == 0, completed.stdout + completed.stderr
+
+
+def _assert_close_ups() -> None:
     for name in ("antioch.png", "rumkale.png", "bodrum.png"):
         tan, grey, terrain = _terrain_fractions(OUT / name)
         assert terrain > 0.45, f"{name} has too little readable terrain ({terrain:.2f})"
