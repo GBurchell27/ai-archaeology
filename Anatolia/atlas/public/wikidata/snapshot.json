@@ -14,352 +14,422 @@
     {
       "qid": "Q272720",
       "name": "\u00c7ay\u00f6n\u00fc",
-      "kept": "cayonu"
+      "kept": "cayonu",
+      "reason": "within 150 m; same name within 3 km"
     },
     {
       "qid": "Q739037",
       "name": "Nicaea",
-      "kept": "nicaea"
+      "kept": "nicaea",
+      "reason": "within 150 m; same name within 3 km"
     },
     {
       "qid": "Q232615",
       "name": "Sardis",
-      "kept": "sardis"
+      "kept": "sardis",
+      "reason": "within 150 m; same name within 3 km"
     },
     {
       "qid": "Q214944",
       "name": "G\u00f6bekli Tepe",
-      "kept": "gobekli-tepe"
+      "kept": "gobekli-tepe",
+      "reason": "within 150 m; same name within 3 km"
     },
     {
       "qid": "Q705132",
       "name": "Arslantepe",
-      "kept": "arslantepe"
+      "kept": "arslantepe",
+      "reason": "within 150 m; same name within 3 km"
     },
     {
       "qid": "Q1340632",
       "name": "Hallan \u00c7emi",
-      "kept": "hallan-cemi"
+      "kept": "hallan-cemi",
+      "reason": "within 150 m; same name within 3 km"
     },
     {
       "qid": "Q4159913",
       "name": "Can Hasan",
-      "kept": "can-hasan"
+      "kept": "can-hasan",
+      "reason": "within 150 m; same name within 3 km"
     },
     {
       "qid": "Q558861",
       "name": "Alacah\u00f6y\u00fck",
-      "kept": "alacahoyuk"
+      "kept": "alacahoyuk",
+      "reason": "within 150 m; same name within 3 km"
     },
     {
       "qid": "Q181007",
       "name": "Hattusa",
-      "kept": "hattusa"
+      "kept": "hattusa",
+      "reason": "within 150 m; same name within 3 km"
     },
     {
       "qid": "Q192522",
       "name": "\u00c7atalh\u00f6y\u00fck",
-      "kept": "catalhoyuk"
+      "kept": "catalhoyuk",
+      "reason": "within 150 m; same name within 3 km"
     },
     {
       "qid": "Q196987",
       "name": "Zeugma",
-      "kept": "zeugma"
+      "kept": "zeugma",
+      "reason": "within 150 m; same name within 3 km"
     },
     {
       "qid": "Q200441",
       "name": "Antioch",
-      "kept": "antioch"
+      "kept": "antioch",
+      "reason": "same name within 3 km"
     },
     {
       "qid": "Q207917",
       "name": "Mount Nemrut",
-      "kept": "nemrut"
+      "kept": "nemrut",
+      "reason": "within 150 m; same name within 3 km"
     },
     {
       "qid": "Q1250866",
       "name": "Dorylaeum",
-      "kept": "dorylaeum"
+      "kept": "dorylaeum",
+      "reason": "same name within 3 km"
     },
     {
       "qid": "Q391125",
       "name": "\u0160inahuttum",
-      "kept": "hattusa"
+      "kept": "hattusa",
+      "reason": "within 150 m"
     },
     {
       "qid": "Q767968",
       "name": "Turbessel",
-      "kept": "turbessel"
+      "kept": "turbessel",
+      "reason": "same name within 3 km"
     },
     {
       "qid": "Q794830",
       "name": "A\u015f\u0131kl\u0131 H\u00f6y\u00fck",
-      "kept": "asikli-hoyuk"
+      "kept": "asikli-hoyuk",
+      "reason": "within 150 m; same name within 3 km"
     },
     {
       "qid": "Q799921",
       "name": "Bagras",
-      "kept": "baghras"
+      "kept": "baghras",
+      "reason": "within 150 m"
     },
     {
       "qid": "Q1477613",
       "name": "Rumkale",
-      "kept": "rumkale"
+      "kept": "rumkale",
+      "reason": "within 150 m; same name within 3 km"
     },
     {
       "qid": "Q2261221",
       "name": "Hisarlik Hill",
-      "kept": "troy"
+      "kept": "troy",
+      "reason": "within 150 m"
     },
     {
       "qid": "Q1151606",
       "name": "Neval\u0131 \u00c7ori",
-      "kept": "nevali-cori"
+      "kept": "nevali-cori",
+      "reason": "within 150 m; same name within 3 km"
     },
     {
       "qid": "Q6099672",
       "name": "Boncuklu H\u00f6y\u00fck",
-      "kept": "boncuklu-hoyuk"
+      "kept": "boncuklu-hoyuk",
+      "reason": "within 150 m; same name within 3 km"
     },
     {
       "qid": "Q115679382",
       "name": "Saybur\u00e7 site",
-      "kept": "sayburc"
+      "kept": "sayburc",
+      "reason": "within 150 m"
     },
     {
       "qid": "Q618495",
       "name": "Aphrodisias",
-      "kept": "aphrodisias"
+      "kept": "aphrodisias",
+      "reason": "within 150 m; same name within 3 km"
     },
     {
       "qid": "Q1190403",
       "name": "Edessa",
-      "kept": "edessa"
+      "kept": "edessa",
+      "reason": "same name within 3 km"
     },
     {
       "qid": "Q283680",
       "name": "Carchemish",
-      "kept": "karkemish"
+      "kept": "karkemish",
+      "reason": "within 150 m"
     },
     {
       "qid": "Q5996986",
       "name": "Karahan Tepe",
-      "kept": "karahan-tepe"
+      "kept": "karahan-tepe",
+      "reason": "within 150 m; same name within 3 km"
     },
     {
       "qid": "Q538605",
       "name": "K\u00fcltepe",
-      "kept": "kultepe"
+      "kept": "kultepe",
+      "reason": "within 150 m; same name within 3 km"
     },
     {
       "qid": "Q542854",
       "name": "Gordion",
-      "kept": "gordion"
+      "kept": "gordion",
+      "reason": "same name within 3 km"
     },
     {
       "qid": "Q546010",
       "name": "Ani",
-      "kept": "ani"
+      "kept": "ani",
+      "reason": "same name within 3 km"
     },
     {
       "qid": "Q941943",
       "name": "Troy VII",
-      "kept": "troy"
+      "kept": "troy",
+      "reason": "within 150 m"
     },
     {
       "qid": "Q1026347",
       "name": "Samosata",
-      "kept": "samosata"
+      "kept": "samosata",
+      "reason": "within 150 m; same name within 3 km"
     },
     {
       "qid": "Q908860",
       "name": "Hac\u0131lar Mound",
-      "kept": "hacilar"
+      "kept": "hacilar",
+      "reason": "within 150 m"
     },
     {
       "qid": "Q2827071",
       "name": "Agora of Smyrna",
-      "kept": "smyrna-hospitaller"
+      "kept": "smyrna-hospitaller",
+      "reason": "within 150 m"
     },
     {
       "qid": "Q16869",
       "name": "Constantinople",
-      "kept": "constantinople"
+      "kept": "constantinople",
+      "reason": "same name within 3 km"
     },
     {
       "qid": "Q18986",
       "name": "Pergamon",
-      "kept": "pergamon"
+      "kept": "pergamon",
+      "reason": "same name within 3 km"
     },
     {
       "qid": "Q22647",
       "name": "Troy",
-      "kept": "troy"
+      "kept": "troy",
+      "reason": "within 150 m; same name within 3 km"
     },
     {
       "qid": "Q47611",
       "name": "Ephesus",
-      "kept": "ephesus"
+      "kept": "ephesus",
+      "reason": "same name within 3 km"
     },
     {
       "qid": "Q959497",
       "name": "K\u00f6rtik Tepe",
-      "kept": "kortik-tepe"
+      "kept": "kortik-tepe",
+      "reason": "same name within 3 km"
     },
     {
       "qid": "Q1217141",
       "name": "Nesa",
-      "kept": "kultepe"
+      "kept": "kultepe",
+      "reason": "within 150 m"
     },
     {
       "qid": "Q1646054",
       "name": "Ancient Greek theatre of Pergamon",
-      "kept": "pergamon"
+      "kept": "pergamon",
+      "reason": "within 150 m"
     },
     {
       "qid": "Q2448404",
       "name": "Temple of Trajan",
-      "kept": "pergamon"
+      "kept": "pergamon",
+      "reason": "within 150 m"
     },
     {
       "qid": "Q11705096",
       "name": "Ilium",
-      "kept": "troy"
+      "kept": "troy",
+      "reason": "within 150 m"
     },
     {
       "qid": "Q15723477",
       "name": "Theater (Ephesus)",
-      "kept": "ephesus"
+      "kept": "ephesus",
+      "reason": "within 150 m"
     },
     {
       "qid": "Q16676981",
       "name": "Archaeological site of Ephesus",
-      "kept": "ephesus"
+      "kept": "ephesus",
+      "reason": "within 150 m"
     },
     {
       "qid": "Q64699469",
       "name": "Ephesus",
-      "kept": "ephesus"
+      "kept": "ephesus",
+      "reason": "same name within 3 km"
     },
     {
       "qid": "Q69567912",
       "name": "Acropolis of Pergamon",
-      "kept": "pergamon"
+      "kept": "pergamon",
+      "reason": "within 150 m"
     },
     {
       "qid": "Q77071353",
       "name": "Tetragonos Agora (Ephesus)",
-      "kept": "ephesus"
+      "kept": "ephesus",
+      "reason": "within 150 m"
     },
     {
       "qid": "Q97341288",
       "name": "Theatre Gymnasium",
-      "kept": "ephesus"
+      "kept": "ephesus",
+      "reason": "within 150 m"
     },
     {
       "qid": "Q98649674",
       "name": "Odeion or Bouleuterion of Aphrodisias",
-      "kept": "aphrodisias"
+      "kept": "aphrodisias",
+      "reason": "within 150 m"
     },
     {
       "qid": "Q105232353",
       "name": "Temple of Athena (Pergamon)",
-      "kept": "pergamon"
+      "kept": "pergamon",
+      "reason": "within 150 m"
     },
     {
       "qid": "Q105232430",
       "name": "Temple of Dionysos in Pergamon",
-      "kept": "pergamon"
+      "kept": "pergamon",
+      "reason": "within 150 m"
     },
     {
       "qid": "Q108784502",
       "name": "Harbetsuvan Tepesi",
-      "kept": "harbetsuvan-tepesi"
+      "kept": "harbetsuvan-tepesi",
+      "reason": "within 150 m; same name within 3 km"
     },
     {
       "qid": "Q112210724",
       "name": "Bouleuterion (Troy)",
-      "kept": "troy"
+      "kept": "troy",
+      "reason": "within 150 m"
     },
     {
       "qid": "Q115779157",
       "name": "Sanctuary of Troy",
-      "kept": "troy"
+      "kept": "troy",
+      "reason": "within 150 m"
     },
     {
       "qid": "Q116671676",
       "name": "Agora of Pergamon",
-      "kept": "pergamon"
+      "kept": "pergamon",
+      "reason": "within 150 m"
     },
     {
       "qid": "Q126741267",
       "name": "Ilion",
-      "kept": "troy"
+      "kept": "troy",
+      "reason": "within 150 m"
     },
     {
       "qid": "Q131738906",
       "name": "Aphrodisias Hadrian Baths",
-      "kept": "aphrodisias"
+      "kept": "aphrodisias",
+      "reason": "within 150 m"
     },
     {
       "qid": "Q134038460",
       "name": "Sanctuary of the Nemeses in Smyrna",
-      "kept": "smyrna-hospitaller"
+      "kept": "smyrna-hospitaller",
+      "reason": "within 150 m"
     },
     {
       "qid": "Q134038465",
       "name": "Sanctuary of Kl\u00eadones outside Smyrna",
-      "kept": "smyrna-hospitaller"
+      "kept": "smyrna-hospitaller",
+      "reason": "within 150 m"
     },
     {
       "qid": "Q134038469",
       "name": "Pythion of Pergamon",
-      "kept": "pergamon"
+      "kept": "pergamon",
+      "reason": "within 150 m"
     },
     {
       "qid": "Q135582509",
       "name": "Misis Theater",
-      "kept": "mamistra"
+      "kept": "mamistra",
+      "reason": "within 150 m"
     },
     {
       "qid": "Q141503930",
       "name": "South Agora of Aphrodisias",
-      "kept": "aphrodisias"
+      "kept": "aphrodisias",
+      "reason": "within 150 m"
     },
     {
       "qid": "Q141742808",
       "name": "North Agora of Aphrodisias",
-      "kept": "aphrodisias"
+      "kept": "aphrodisias",
+      "reason": "within 150 m"
     },
     {
       "qid": "Q141877321",
       "name": "Lower City of \u1e2aattu\u0161a",
-      "kept": "hattusa"
+      "kept": "hattusa",
+      "reason": "within 150 m"
     },
     {
       "qid": "Q141913731",
       "name": "S\u00fcdareal (\u1e2aattu\u0161a)",
-      "kept": "hattusa"
+      "kept": "hattusa",
+      "reason": "within 150 m"
     },
     {
       "qid": "Q141914831",
       "name": "Q141914831",
-      "kept": "hattusa"
+      "kept": "hattusa",
+      "reason": "within 150 m"
     },
     {
       "qid": "Q141915093",
       "name": "Q141915093",
-      "kept": "hattusa"
+      "kept": "hattusa",
+      "reason": "within 150 m"
     },
     {
       "qid": "Q141926355",
       "name": "Altbau (\u1e2aattu\u0161a)",
-      "kept": "hattusa"
+      "kept": "hattusa",
+      "reason": "within 150 m"
     },
     {
       "qid": "Q141926459",
       "name": "Pithoshaus (\u1e2aattu\u0161a)",
-      "kept": "hattusa"
+      "kept": "hattusa",
+      "reason": "within 150 m"
     }
   ]
 }

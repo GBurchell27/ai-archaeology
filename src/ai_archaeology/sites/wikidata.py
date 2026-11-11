@@ -114,7 +114,12 @@ def build_snapshot(raw_dir: Path, curated_path: Path) -> dict:
         }
         match = matching_curated(feature["properties"]["name"], longitude, latitude, curated)
         if match is not None:
-            dropped.append({"qid": qid, "name": feature["properties"]["name"], "kept": match.id})
+            dropped.append({
+                "qid": qid,
+                "name": feature["properties"]["name"],
+                "kept": match.pin.id,
+                "reason": match.reason,
+            })
             continue
         features.append(feature)
     features.sort(key=lambda feature: feature["properties"]["name"].lower())
@@ -159,13 +164,28 @@ def assign_periods(labels: list[str], start: int | None, end: int | None) -> lis
     return [period for period in ("neolithic", "bronze", "classical", "crusader") if period in found]
 
 
-def matching_curated(name: str, longitude: float, latitude: float, pins: list[CuratedPin]) -> CuratedPin | None:
+@dataclass(frozen=True)
+class CuratedMatch:
+    pin: CuratedPin
+    reason: str
+
+
+def matching_curated(name: str, longitude: float, latitude: float, pins: list[CuratedPin]) -> CuratedMatch | None:
     """Drop the same place, not a different monument in the same city."""
     folded = _fold(name)
     for pin in pins:
         distance = _haversine_m(longitude, latitude, pin.longitude, pin.latitude)
-        if distance <= NEAR_M or (distance <= NAME_MATCH_M and _fold(pin.name) == folded):
-            return pin
+        same_name = _fold(pin.name) == folded
+        near = distance <= NEAR_M
+        named = same_name and distance <= NAME_MATCH_M
+        if not near and not named:
+            continue
+        reasons = []
+        if near:
+            reasons.append("within 150 m")
+        if named:
+            reasons.append("same name within 3 km")
+        return CuratedMatch(pin, "; ".join(reasons))
     return None
 
 
@@ -262,8 +282,28 @@ def _value(node) -> str | None:
 
 
 def _fold(name: str) -> str:
-    table = str.maketrans({"ç": "c", "ğ": "g", "ı": "i", "ö": "o", "ş": "s", "ü": "u", "â": "a", "î": "i"})
-    return "".join(ch for ch in name.lower().translate(table) if ch.isalnum())
+    # İ lowercases to "i" plus a combining dot, so replace it before lower().
+    table = str.maketrans({
+        "İ": "i",
+        "I": "i",
+        "ı": "i",
+        "Ç": "c",
+        "ç": "c",
+        "Ğ": "g",
+        "ğ": "g",
+        "Ö": "o",
+        "ö": "o",
+        "Ş": "s",
+        "ş": "s",
+        "Ü": "u",
+        "ü": "u",
+        "Â": "a",
+        "â": "a",
+        "Î": "i",
+        "î": "i",
+    })
+    folded = name.translate(table).lower().replace("\u0307", "")
+    return "".join(ch for ch in folded if ch.isalnum())
 
 
 def _haversine_m(lon1: float, lat1: float, lon2: float, lat2: float) -> float:

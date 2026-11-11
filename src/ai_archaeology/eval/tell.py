@@ -202,10 +202,12 @@ def ranker_scores(
 def select_top(table: PeakTable, score: np.ndarray, limit: int) -> list[tuple[float, float]]:
     if len(table) == 0 or limit <= 0:
         return []
-    order = np.argsort(score)[::-1]
+    # NaN compares false against zero and sorts to the front of a reversed argsort.
+    safe = np.where(np.isfinite(score), score, -np.inf)
+    order = np.argsort(safe)[::-1]
     chosen: list[tuple[float, float]] = []
     for index in order:
-        if score[index] < 0:
+        if not np.isfinite(score[index]) or score[index] < 0:
             break
         chosen.append((float(table.longitude[index]), float(table.latitude[index])))
         if len(chosen) >= limit:
