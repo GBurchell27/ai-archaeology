@@ -1,0 +1,672 @@
+{
+  "design": {
+    "detector": "residual relief and multi-scale LoG, 80\u2013600 m, height 3\u201340 m, slope and elongation gates; keep the strongest blobs up to the density cap",
+    "validation": "leave-one-region-out; thresholds chosen on the other regions only",
+    "density_cap_per_100km2": 15,
+    "recovery_m": [
+      250,
+      500,
+      1000
+    ]
+  },
+  "n_sites": 47,
+  "n_candidates": 24334,
+  "area_km2": 162381.0,
+  "density_per_100km2": 14.99,
+  "recall_250": 0.085,
+  "recall_500": 0.085,
+  "recall_1000": 0.362,
+  "random_recall_250": 0.029,
+  "monte_carlo_recall_250": 0.025,
+  "by_period": {
+    "neolithic": {
+      "n": 14,
+      "recall_250": 0.214,
+      "recall_500": 0.214,
+      "recall_1000": 0.357
+    },
+    "crusader": {
+      "n": 18,
+      "recall_250": 0.056,
+      "recall_500": 0.056,
+      "recall_1000": 0.389
+    },
+    "bronze": {
+      "n": 8,
+      "recall_250": 0.0,
+      "recall_500": 0.0,
+      "recall_1000": 0.25
+    },
+    "classical": {
+      "n": 7,
+      "recall_250": 0.0,
+      "recall_500": 0.0,
+      "recall_1000": 0.429
+    }
+  },
+  "by_terrain": {
+    "mound": {
+      "n": 19,
+      "recall_250": 0.158,
+      "recall_500": 0.158,
+      "recall_1000": 0.263
+    },
+    "urban": {
+      "n": 28,
+      "recall_250": 0.036,
+      "recall_500": 0.036,
+      "recall_1000": 0.429
+    }
+  },
+  "folds": [
+    {
+      "region": "urfa",
+      "n_sites": 6,
+      "n_candidates": 805,
+      "pixel_m": 30.0,
+      "relief_radius_m": 1000.0,
+      "min_height_m": 8.0,
+      "response_percentile": 0.0
+    },
+    {
+      "region": "euphrates",
+      "n_sites": 8,
+      "n_candidates": 2607,
+      "pixel_m": 56.7,
+      "relief_radius_m": 1000.0,
+      "min_height_m": 8.0,
+      "response_percentile": 0.0
+    },
+    {
+      "region": "tigris",
+      "n_sites": 3,
+      "n_candidates": 1658,
+      "pixel_m": 55.0,
+      "relief_radius_m": 1000.0,
+      "min_height_m": 8.0,
+      "response_percentile": 0.0
+    },
+    {
+      "region": "malatya",
+      "n_sites": 2,
+      "n_candidates": 576,
+      "pixel_m": 30.0,
+      "relief_radius_m": 1000.0,
+      "min_height_m": 8.0,
+      "response_percentile": 0.0
+    },
+    {
+      "region": "amanus",
+      "n_sites": 3,
+      "n_candidates": 2423,
+      "pixel_m": 64.0,
+      "relief_radius_m": 1000.0,
+      "min_height_m": 8.0,
+      "response_percentile": 0.0
+    },
+    {
+      "region": "cukurova",
+      "n_sites": 4,
+      "n_candidates": 2469,
+      "pixel_m": 61.6,
+      "relief_radius_m": 1000.0,
+      "min_height_m": 8.0,
+      "response_percentile": 0.0
+    },
+    {
+      "region": "konya",
+      "n_sites": 3,
+      "n_candidates": 777,
+      "pixel_m": 30.0,
+      "relief_radius_m": 1000.0,
+      "min_height_m": 8.0,
+      "response_percentile": 0.0
+    },
+    {
+      "region": "burdur",
+      "n_sites": 1,
+      "n_candidates": 114,
+      "pixel_m": 30.0,
+      "relief_radius_m": 1000.0,
+      "min_height_m": 8.0,
+      "response_percentile": 0.0
+    },
+    {
+      "region": "cappadocia",
+      "n_sites": 3,
+      "n_candidates": 1756,
+      "pixel_m": 51.1,
+      "relief_radius_m": 1000.0,
+      "min_height_m": 8.0,
+      "response_percentile": 0.0
+    },
+    {
+      "region": "hattusa",
+      "n_sites": 2,
+      "n_candidates": 205,
+      "pixel_m": 30.0,
+      "relief_radius_m": 1000.0,
+      "min_height_m": 8.0,
+      "response_percentile": 0.0
+    },
+    {
+      "region": "phrygia",
+      "n_sites": 1,
+      "n_candidates": 111,
+      "pixel_m": 30.0,
+      "relief_radius_m": 1000.0,
+      "min_height_m": 8.0,
+      "response_percentile": 0.0
+    },
+    {
+      "region": "aegean-north",
+      "n_sites": 3,
+      "n_candidates": 3014,
+      "pixel_m": 70.2,
+      "relief_radius_m": 1000.0,
+      "min_height_m": 8.0,
+      "response_percentile": 0.0
+    },
+    {
+      "region": "aegean-south",
+      "n_sites": 4,
+      "n_candidates": 4015,
+      "pixel_m": 67.0,
+      "relief_radius_m": 1000.0,
+      "min_height_m": 8.0,
+      "response_percentile": 0.0
+    },
+    {
+      "region": "marmara",
+      "n_sites": 3,
+      "n_candidates": 3694,
+      "pixel_m": 58.3,
+      "relief_radius_m": 1000.0,
+      "min_height_m": 8.0,
+      "response_percentile": 0.0
+    },
+    {
+      "region": "kars",
+      "n_sites": 1,
+      "n_candidates": 110,
+      "pixel_m": 30.0,
+      "relief_radius_m": 1000.0,
+      "min_height_m": 8.0,
+      "response_percentile": 0.0
+    }
+  ],
+  "sites": [
+    {
+      "id": "gobekli-tepe",
+      "name": "G\u00f6bekli Tepe",
+      "period": "neolithic",
+      "terrain": "mound",
+      "region": "urfa",
+      "band": "1000",
+      "recovered_250": false,
+      "source": "UNESCO World Heritage Centre, listing 1572"
+    },
+    {
+      "id": "karahan-tepe",
+      "name": "Karahan Tepe",
+      "period": "neolithic",
+      "terrain": "mound",
+      "region": "urfa",
+      "band": "250",
+      "recovered_250": true,
+      "source": "Wikipedia, Karahan Tepe"
+    },
+    {
+      "id": "sayburc",
+      "name": "Saybur\u00e7",
+      "period": "neolithic",
+      "terrain": "mound",
+      "region": "urfa",
+      "band": "miss",
+      "recovered_250": false,
+      "source": "Wikipedia, Saybur\u00e7"
+    },
+    {
+      "id": "harbetsuvan-tepesi",
+      "name": "Harbetsuvan Tepesi",
+      "period": "neolithic",
+      "terrain": "mound",
+      "region": "urfa",
+      "band": "250",
+      "recovered_250": true,
+      "source": "Turkish Wikipedia, Harbetsuvan Tepesi"
+    },
+    {
+      "id": "harran",
+      "name": "Harran",
+      "period": "neolithic",
+      "terrain": "urban",
+      "region": "urfa",
+      "band": "miss",
+      "recovered_250": false,
+      "source": "Wikipedia, Harran"
+    },
+    {
+      "id": "edessa",
+      "name": "Edessa",
+      "period": "crusader",
+      "terrain": "urban",
+      "region": "urfa",
+      "band": "1000",
+      "recovered_250": false,
+      "source": "Wikipedia, Urfa"
+    },
+    {
+      "id": "nevali-cori",
+      "name": "Neval\u0131 \u00c7ori",
+      "period": "neolithic",
+      "terrain": "urban",
+      "region": "euphrates",
+      "band": "1000",
+      "recovered_250": false,
+      "source": "Wikipedia, Neval\u0131 \u00c7ori"
+    },
+    {
+      "id": "turbessel",
+      "name": "Turbessel",
+      "period": "crusader",
+      "terrain": "urban",
+      "region": "euphrates",
+      "band": "miss",
+      "recovered_250": false,
+      "source": "Wikipedia, Turbessel"
+    },
+    {
+      "id": "ravendel",
+      "name": "Ravendel",
+      "period": "crusader",
+      "terrain": "urban",
+      "region": "euphrates",
+      "band": "1000",
+      "recovered_250": false,
+      "source": "Wikidata, Ravendel castle (Q131901862)"
+    },
+    {
+      "id": "rumkale",
+      "name": "Rumkale",
+      "period": "crusader",
+      "terrain": "urban",
+      "region": "euphrates",
+      "band": "1000",
+      "recovered_250": false,
+      "source": "Wikipedia, Rumkale"
+    },
+    {
+      "id": "birecik",
+      "name": "Birecik",
+      "period": "crusader",
+      "terrain": "urban",
+      "region": "euphrates",
+      "band": "1000",
+      "recovered_250": false,
+      "source": "Wikipedia, Birecik"
+    },
+    {
+      "id": "samosata",
+      "name": "Samosata",
+      "period": "crusader",
+      "terrain": "urban",
+      "region": "euphrates",
+      "band": "miss",
+      "recovered_250": false,
+      "source": "Wikipedia, Samsat"
+    },
+    {
+      "id": "karkemish",
+      "name": "Karkemish",
+      "period": "bronze",
+      "terrain": "mound",
+      "region": "euphrates",
+      "band": "miss",
+      "recovered_250": false,
+      "source": "Wikipedia, Carchemish"
+    },
+    {
+      "id": "zeugma",
+      "name": "Zeugma",
+      "period": "classical",
+      "terrain": "urban",
+      "region": "euphrates",
+      "band": "miss",
+      "recovered_250": false,
+      "source": "Wikipedia, Zeugma (Commagene)"
+    },
+    {
+      "id": "cayonu",
+      "name": "\u00c7ay\u00f6n\u00fc",
+      "period": "neolithic",
+      "terrain": "mound",
+      "region": "tigris",
+      "band": "miss",
+      "recovered_250": false,
+      "source": "Wikipedia, \u00c7ay\u00f6n\u00fc"
+    },
+    {
+      "id": "hallan-cemi",
+      "name": "Hallan \u00c7emi",
+      "period": "neolithic",
+      "terrain": "mound",
+      "region": "tigris",
+      "band": "miss",
+      "recovered_250": false,
+      "source": "Wikipedia, Hallan \u00c7emi"
+    },
+    {
+      "id": "kortik-tepe",
+      "name": "K\u00f6rtik Tepe",
+      "period": "neolithic",
+      "terrain": "mound",
+      "region": "tigris",
+      "band": "miss",
+      "recovered_250": false,
+      "source": "Wikipedia, K\u00f6rtik Tepe"
+    },
+    {
+      "id": "arslantepe",
+      "name": "Arslantepe",
+      "period": "bronze",
+      "terrain": "mound",
+      "region": "malatya",
+      "band": "1000",
+      "recovered_250": false,
+      "source": "UNESCO World Heritage Centre, listing 1622"
+    },
+    {
+      "id": "nemrut",
+      "name": "Mount Nemrut",
+      "period": "classical",
+      "terrain": "mound",
+      "region": "malatya",
+      "band": "miss",
+      "recovered_250": false,
+      "source": "UNESCO World Heritage Centre, listing 448"
+    },
+    {
+      "id": "antioch",
+      "name": "Antioch",
+      "period": "crusader",
+      "terrain": "urban",
+      "region": "amanus",
+      "band": "miss",
+      "recovered_250": false,
+      "source": "Wikipedia, Antakya"
+    },
+    {
+      "id": "marash",
+      "name": "Marash",
+      "period": "crusader",
+      "terrain": "urban",
+      "region": "amanus",
+      "band": "250",
+      "recovered_250": true,
+      "source": "Wikipedia, Kahramanmara\u015f"
+    },
+    {
+      "id": "baghras",
+      "name": "Baghras",
+      "period": "crusader",
+      "terrain": "urban",
+      "region": "amanus",
+      "band": "miss",
+      "recovered_250": false,
+      "source": "Wikipedia, Bagras"
+    },
+    {
+      "id": "tarsus",
+      "name": "Tarsus",
+      "period": "crusader",
+      "terrain": "urban",
+      "region": "cukurova",
+      "band": "miss",
+      "recovered_250": false,
+      "source": "Wikipedia, Tarsus, Mersin"
+    },
+    {
+      "id": "mamistra",
+      "name": "Mamistra",
+      "period": "crusader",
+      "terrain": "urban",
+      "region": "cukurova",
+      "band": "miss",
+      "recovered_250": false,
+      "source": "Wikipedia, Mopsuestia"
+    },
+    {
+      "id": "adana",
+      "name": "Adana",
+      "period": "crusader",
+      "terrain": "urban",
+      "region": "cukurova",
+      "band": "miss",
+      "recovered_250": false,
+      "source": "Wikipedia, Adana"
+    },
+    {
+      "id": "saleph",
+      "name": "Saleph crossing",
+      "period": "crusader",
+      "terrain": "urban",
+      "region": "cukurova",
+      "band": "1000",
+      "recovered_250": false,
+      "source": "Wikipedia, Silifke"
+    },
+    {
+      "id": "catalhoyuk",
+      "name": "\u00c7atalh\u00f6y\u00fck",
+      "period": "neolithic",
+      "terrain": "mound",
+      "region": "konya",
+      "band": "250",
+      "recovered_250": true,
+      "source": "UNESCO World Heritage Centre, listing 1405"
+    },
+    {
+      "id": "boncuklu-hoyuk",
+      "name": "Boncuklu H\u00f6y\u00fck",
+      "period": "neolithic",
+      "terrain": "mound",
+      "region": "konya",
+      "band": "miss",
+      "recovered_250": false,
+      "source": "Wikipedia, Boncuklu H\u00f6y\u00fck"
+    },
+    {
+      "id": "can-hasan",
+      "name": "Can Hasan",
+      "period": "neolithic",
+      "terrain": "mound",
+      "region": "konya",
+      "band": "miss",
+      "recovered_250": false,
+      "source": "Wikipedia, Can Hasan 1"
+    },
+    {
+      "id": "hacilar",
+      "name": "Hac\u0131lar",
+      "period": "neolithic",
+      "terrain": "mound",
+      "region": "burdur",
+      "band": "miss",
+      "recovered_250": false,
+      "source": "Wikipedia, Hac\u0131lar H\u00f6y\u00fck"
+    },
+    {
+      "id": "asikli-hoyuk",
+      "name": "A\u015f\u0131kl\u0131 H\u00f6y\u00fck",
+      "period": "neolithic",
+      "terrain": "mound",
+      "region": "cappadocia",
+      "band": "miss",
+      "recovered_250": false,
+      "source": "Wikipedia, A\u015f\u0131kl\u0131 H\u00f6y\u00fck"
+    },
+    {
+      "id": "kultepe",
+      "name": "K\u00fcltepe",
+      "period": "bronze",
+      "terrain": "mound",
+      "region": "cappadocia",
+      "band": "miss",
+      "recovered_250": false,
+      "source": "Wikipedia, K\u00fcltepe"
+    },
+    {
+      "id": "goreme",
+      "name": "G\u00f6reme",
+      "period": "classical",
+      "terrain": "urban",
+      "region": "cappadocia",
+      "band": "1000",
+      "recovered_250": false,
+      "source": "Wikipedia, G\u00f6reme"
+    },
+    {
+      "id": "hattusa",
+      "name": "Hattusa",
+      "period": "bronze",
+      "terrain": "urban",
+      "region": "hattusa",
+      "band": "1000",
+      "recovered_250": false,
+      "source": "Wikipedia, Hattusa"
+    },
+    {
+      "id": "alacahoyuk",
+      "name": "Alacah\u00f6y\u00fck",
+      "period": "bronze",
+      "terrain": "mound",
+      "region": "hattusa",
+      "band": "miss",
+      "recovered_250": false,
+      "source": "Wikipedia, Alaca H\u00f6y\u00fck"
+    },
+    {
+      "id": "gordion",
+      "name": "Gordion",
+      "period": "bronze",
+      "terrain": "mound",
+      "region": "phrygia",
+      "band": "miss",
+      "recovered_250": false,
+      "source": "UNESCO World Heritage Centre, listing 1669"
+    },
+    {
+      "id": "smyrna-hospitaller",
+      "name": "Smyrna",
+      "period": "crusader",
+      "terrain": "urban",
+      "region": "aegean-north",
+      "band": "miss",
+      "recovered_250": false,
+      "source": "Wikipedia, Smyrna"
+    },
+    {
+      "id": "troy",
+      "name": "Troy",
+      "period": "bronze",
+      "terrain": "mound",
+      "region": "aegean-north",
+      "band": "miss",
+      "recovered_250": false,
+      "source": "UNESCO World Heritage Centre, listing 849"
+    },
+    {
+      "id": "pergamon",
+      "name": "Pergamon",
+      "period": "classical",
+      "terrain": "urban",
+      "region": "aegean-north",
+      "band": "1000",
+      "recovered_250": false,
+      "source": "Wikipedia, Pergamon"
+    },
+    {
+      "id": "bodrum-petronion",
+      "name": "Bodrum Castle",
+      "period": "crusader",
+      "terrain": "urban",
+      "region": "aegean-south",
+      "band": "1000",
+      "recovered_250": false,
+      "source": "Wikipedia, Bodrum Castle"
+    },
+    {
+      "id": "sardis",
+      "name": "Sardis",
+      "period": "bronze",
+      "terrain": "urban",
+      "region": "aegean-south",
+      "band": "miss",
+      "recovered_250": false,
+      "source": "Wikipedia, Sardis"
+    },
+    {
+      "id": "ephesus",
+      "name": "Ephesus",
+      "period": "classical",
+      "terrain": "urban",
+      "region": "aegean-south",
+      "band": "miss",
+      "recovered_250": false,
+      "source": "Wikipedia, Ephesus"
+    },
+    {
+      "id": "aphrodisias",
+      "name": "Aphrodisias",
+      "period": "classical",
+      "terrain": "urban",
+      "region": "aegean-south",
+      "band": "miss",
+      "recovered_250": false,
+      "source": "Wikipedia, Aphrodisias"
+    },
+    {
+      "id": "nicaea",
+      "name": "Nicaea",
+      "period": "crusader",
+      "terrain": "urban",
+      "region": "marmara",
+      "band": "miss",
+      "recovered_250": false,
+      "source": "Wikipedia, \u0130znik"
+    },
+    {
+      "id": "dorylaeum",
+      "name": "Dorylaeum",
+      "period": "crusader",
+      "terrain": "urban",
+      "region": "marmara",
+      "band": "miss",
+      "recovered_250": false,
+      "source": "Wikipedia, Battle of Dorylaeum (1097)"
+    },
+    {
+      "id": "constantinople",
+      "name": "Constantinople",
+      "period": "crusader",
+      "terrain": "urban",
+      "region": "marmara",
+      "band": "miss",
+      "recovered_250": false,
+      "source": "Wikipedia, Constantinople"
+    },
+    {
+      "id": "ani",
+      "name": "Ani",
+      "period": "classical",
+      "terrain": "urban",
+      "region": "kars",
+      "band": "1000",
+      "recovered_250": false,
+      "source": "UNESCO World Heritage Centre, listing 1518"
+    }
+  ],
+  "runtime_seconds": 450.0,
+  "note": "A recovered pin is a candidate within the distance band. It is not a discovery. Buried and urban places are not expected to appear as 3\u201340 m mounds."
+}
