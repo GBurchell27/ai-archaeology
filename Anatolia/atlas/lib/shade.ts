@@ -28,6 +28,8 @@ uniform float hazeNear;
 uniform float hazeFar;
 uniform float hazeStrength;
 uniform vec3 hazeColor;
+uniform vec4 clipRect;
+uniform float clipOn;
 varying vec3 vNormal;
 varying vec2 vUv;
 varying vec3 vWorld;
@@ -37,6 +39,9 @@ vec3 toLinear(vec3 value) {
 }
 
 void main() {
+  if (clipOn > 0.5 && vWorld.x > clipRect.x && vWorld.x < clipRect.z && vWorld.z > clipRect.y && vWorld.z < clipRect.w) {
+    discard;
+  }
   vec3 baseColor = vec3(0.72, 0.64, 0.52);
   vec3 colorA = mix(baseColor, toLinear(texture2D(mapA, vUv).rgb), opacity);
   vec3 colorB = mix(baseColor, toLinear(texture2D(mapB, vUv).rgb), opacity);
@@ -87,6 +92,8 @@ export function createSurfaceMaterial(): THREE.ShaderMaterial {
       hazeFar: { value: 1450000 },
       hazeStrength: { value: 0.5 },
       hazeColor: { value: new THREE.Vector3(203 / 255, 184 / 255, 154 / 255) },
+      clipRect: { value: new THREE.Vector4(0, 0, 0, 0) },
+      clipOn: { value: 0 },
     },
     vertexShader: SURFACE_VERTEX,
     fragmentShader: SURFACE_FRAGMENT,

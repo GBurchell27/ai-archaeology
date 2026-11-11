@@ -5,7 +5,7 @@ import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { Suspense, useEffect, useMemo, useRef, useState, type MutableRefObject } from "react";
 import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
 import * as THREE from "three";
-import { boundsCenter, boundsContain, lonLatToMercator, sampleMeshHeight, toLocal } from "@/lib/geo";
+import { boundsCenter, boundsContain, detailClipRect, lonLatToMercator, sampleMeshHeight, toLocal, type ClipRect } from "@/lib/geo";
 import { LAYER_STYLE } from "@/lib/periods";
 import { createSurfaceMaterial, prepareTexture, sunDirection } from "@/lib/shade";
 import { HAZE_FAR, HAZE_NEAR, HAZE_STRENGTH, hazeBackground } from "@/lib/sky";
@@ -64,6 +64,7 @@ export function AtlasScene(props: AtlasSceneProps) {
         exaggeration={props.exaggeration}
         azimuth={props.azimuth}
         altitude={props.altitude}
+        clip={props.detail ? detailClipRect(props.detail.bounds, origin) : null}
       />
       {props.detail && props.detailUrl ? (
         <DetailSurface
@@ -106,6 +107,7 @@ function NationalSurface({
   exaggeration,
   azimuth,
   altitude,
+  clip,
 }: {
   metadata: AtlasMetadata;
   metres: Float32Array;
@@ -114,6 +116,7 @@ function NationalSurface({
   exaggeration: number;
   azimuth: number;
   altitude: number;
+  clip: ClipRect | null;
 }) {
   const geometry = useMemo(
     () => buildTerrainGeometry(
@@ -139,6 +142,7 @@ function NationalSurface({
       azimuth={azimuth}
       altitude={altitude}
       lift={false}
+      clip={clip}
     />
   );
 }
@@ -206,6 +210,7 @@ function ShadedMesh(props: {
   azimuth: number;
   altitude: number;
   lift: boolean;
+  clip?: ClipRect | null;
 }) {
   const material = useMemo(() => createSurfaceMaterial(), []);
   const { size, gl } = useThree();
@@ -222,6 +227,10 @@ function ShadedMesh(props: {
   material.uniforms.hazeFar.value = HAZE_FAR;
   material.uniforms.hazeStrength.value = HAZE_STRENGTH;
   material.uniforms.hazeColor.value.set(203 / 255, 184 / 255, 154 / 255);
+  material.uniforms.clipOn.value = props.clip ? 1 : 0;
+  if (props.clip) {
+    material.uniforms.clipRect.value.set(props.clip.minX, props.clip.minZ, props.clip.maxX, props.clip.maxZ);
+  }
   if (props.lift) {
     material.polygonOffset = true;
     material.polygonOffsetFactor = -1;

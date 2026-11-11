@@ -19,6 +19,30 @@ export function boundsCenter(bounds: [number, number, number, number]): [number,
   return [(bounds[0] + bounds[2]) / 2, (bounds[1] + bounds[3]) / 2];
 }
 
+export interface ClipRect {
+  minX: number;
+  minZ: number;
+  maxX: number;
+  maxZ: number;
+}
+
+/** Local XZ rectangle where the national mesh should not draw, inset from a detail window.
+ *  X grows east. Z grows south, matching the terrain mesh. */
+export function detailClipRect(
+  bounds: [number, number, number, number],
+  origin: [number, number],
+  inset = 0.035,
+): ClipRect {
+  const [left, bottom, right, top] = bounds;
+  const minX = left - origin[0];
+  const maxX = right - origin[0];
+  const minZ = -(top - origin[1]);
+  const maxZ = -(bottom - origin[1]);
+  const padX = (maxX - minX) * inset;
+  const padZ = (maxZ - minZ) * inset;
+  return { minX: minX + padX, maxX: maxX - padX, minZ: minZ + padZ, maxZ: maxZ - padZ };
+}
+
 export function sampleHeight(
   metres: Float32Array,
   width: number,

@@ -66,7 +66,7 @@ export function AtlasApp() {
       setSites(collection.features);
       setMetres(grid);
       setExaggeration(naturalExaggeration(atlas.pixelSizeM));
-      setPose(overviewPose(atlas, 0));
+      setPose(overviewPose(atlas, collection.features, 0));
       document.body.dataset.ready = "true";
     }).catch((reason: unknown) => {
       setError(reason instanceof Error ? reason.message : "The atlas failed to load");
@@ -150,7 +150,7 @@ export function AtlasApp() {
   function backToTurkey() {
     setSelectedId(null);
     setExaggeration(naturalExaggeration(metadata!.pixelSizeM));
-    setPose(overviewPose(metadata!, pose!.token + 1));
+    setPose(overviewPose(metadata!, sites, pose!.token + 1));
     setSettingsOpen(false);
   }
 
@@ -368,13 +368,27 @@ function GearIcon() {
   );
 }
 
-function overviewPose(metadata: AtlasMetadata, token: number): CameraPose {
+function overviewPose(metadata: AtlasMetadata, places: SiteFeature[], token: number): CameraPose {
+  const origin = boundsCenter(metadata.bounds);
   const depth = metadata.bounds[3] - metadata.bounds[1];
+  const focus = pinFocus(places, origin);
   return {
-    position: [depth * 0.02, depth * 0.42, depth * 0.55],
-    target: [0, depth * 0.02, -depth * 0.02],
+    position: [focus.x * 0.35, depth * 0.38, focus.z + depth * 0.5],
+    target: [focus.x * 0.7, depth * 0.012, focus.z - depth * 0.02],
     token,
   };
+}
+
+function pinFocus(places: SiteFeature[], origin: [number, number]): { x: number; z: number } {
+  const points = places.map((site) => {
+    const [xCoord, zCoord] = toLocal(site.geometry.coordinates[0], site.geometry.coordinates[1], origin);
+    return { x: xCoord, z: zCoord };
+  });
+  const cluster = points.filter((point) => point.x > 150000 && point.z > 180000 && point.z < 340000);
+  const used = cluster.length >= 4 ? cluster : points;
+  const xCoord = used.reduce((sum, point) => sum + point.x, 0) / used.length;
+  const zCoord = used.reduce((sum, point) => sum + point.z, 0) / used.length;
+  return { x: xCoord, z: zCoord };
 }
 
 function sitePose(site: SiteFeature, metadata: AtlasMetadata, metres: Float32Array, exaggeration: number, token: number): CameraPose {
