@@ -475,6 +475,12 @@ These rows are only for the toggleable context layers in `Anatolia/atlas`. They 
 
 ---
 
+## Wikidata archaeological places (snapshot 11 November 2026)
+
+Published catalogue pins only. Queried from the public SPARQL endpoint, no account. Wikidata is CC0. The query is `P31/P279*` archaeological site, `P17` Turkey, with coordinate, inception, dissolution, time period, heritage designation, and the English Wikipedia sitelink where one exists. An item is left off this layer only when its name matches one of the 47 curated pins within 3 km, or when it sits within 150 m of a curated pin regardless of name. A different monument nearby stays. Detector candidates are not in this layer.
+
+---
+
 ## Atlas CORONA windows (added 11 November 2026)
 
 No account and no payment. The atlas clips three site windows from the CAST orthorectified GeoTIFFs on `https://cast-ftp1.cast.uark.edu/coronaftp2/`. The full frames (about 500–800 MB) are not in git. The NITF scans on `coronaftp/` are the raw frames and were not used.

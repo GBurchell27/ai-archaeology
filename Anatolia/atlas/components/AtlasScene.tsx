@@ -6,6 +6,8 @@ import { Suspense, useEffect, useMemo, useRef, useState, type MutableRefObject, 
 import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
 import * as THREE from "three";
 import { ClimatePins, ContextDrapes, ContextLines, type ClimatePoint, type ContextLineLayer, type ContextRasterLayer } from "@/components/ContextLayers";
+import { WikidataLayer } from "@/components/WikidataLayer";
+import type { WikiFeature } from "@/lib/wikidata";
 import { boundsCenter, boundsContain, detailClipRect, lonLatToMercator, sampleMeshHeight, toLocal, type ClipRect } from "@/lib/geo";
 import { LAYER_STYLE } from "@/lib/periods";
 import { createSurfaceMaterial, prepareTexture, sunDirection } from "@/lib/shade";
@@ -47,6 +49,9 @@ interface AtlasSceneProps {
   climateId: string | null;
   onClimate: (recordId: string) => void;
   detailToken: number;
+  wikiSites: WikiFeature[];
+  onOpenWiki: (siteId: string) => void;
+  onApproachWiki: (longitude: number, latitude: number) => void;
 }
 
 export function AtlasScene(props: AtlasSceneProps) {
@@ -127,6 +132,15 @@ export function AtlasScene(props: AtlasSceneProps) {
         exaggeration={props.exaggeration}
         selectedId={props.climateId}
         onSelect={props.onClimate}
+      />
+      <WikidataLayer
+        sites={props.wikiSites}
+        metadata={props.metadata}
+        metres={props.metres}
+        origin={origin}
+        exaggeration={props.exaggeration}
+        onOpen={props.onOpenWiki}
+        onApproach={props.onApproachWiki}
       />
       <SitePins
         sites={props.sites}

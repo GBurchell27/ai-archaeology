@@ -20,6 +20,8 @@ PUBLISHED_SITE_FILES = {
     "Anatolia/atlas/public/context/rivers.geojson",
     "Anatolia/atlas/public/context/roads.geojson",
     "Anatolia/atlas/scripts/build_context.py",
+    "Anatolia/atlas/public/wikidata/sites.geojson",
+    "tests/test_wikidata_sites.py",
 }
 BINARY_SUFFIXES = {".png", ".jpg", ".jpeg", ".gif", ".webp", ".u16", ".tif", ".tiff", ".woff", ".woff2"}
 

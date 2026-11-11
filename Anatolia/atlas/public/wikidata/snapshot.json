@@ -1,0 +1,365 @@
+{
+  "snapshotDate": "2026-11-11",
+  "licence": "CC0",
+  "query": "SELECT ?item ?itemLabel ?coord ?inception ?dissolved ?enwiki WHERE {\n  ?item wdt:P31/wdt:P279* wd:Q839954 .\n  ?item wdt:P17 wd:Q43 .\n  ?item wdt:P625 ?coord .\n  OPTIONAL { ?item wdt:P571 ?inception }\n  OPTIONAL { ?item wdt:P576 ?dissolved }\n  OPTIONAL { ?enwiki schema:about ?item ; schema:isPartOf <https://en.wikipedia.org/> . }\n  SERVICE wikibase:label { bd:serviceParam wikibase:language \"en,tr\". }\n}",
+  "sourceUrl": "https://query.wikidata.org/",
+  "nearMetres": 150.0,
+  "nameMatchMetres": 3000.0,
+  "wikidataRows": 5056,
+  "droppedAsCurated": 70,
+  "sitesGeojsonSha256": "565c7d68be8be301315912afc6c84670a5689b4d158438566f63e0e78161068d",
+  "publishedPins": 4986,
+  "undated": 4847,
+  "dropped": [
+    {
+      "qid": "Q272720",
+      "name": "\u00c7ay\u00f6n\u00fc",
+      "kept": "cayonu"
+    },
+    {
+      "qid": "Q739037",
+      "name": "Nicaea",
+      "kept": "nicaea"
+    },
+    {
+      "qid": "Q232615",
+      "name": "Sardis",
+      "kept": "sardis"
+    },
+    {
+      "qid": "Q214944",
+      "name": "G\u00f6bekli Tepe",
+      "kept": "gobekli-tepe"
+    },
+    {
+      "qid": "Q705132",
+      "name": "Arslantepe",
+      "kept": "arslantepe"
+    },
+    {
+      "qid": "Q1340632",
+      "name": "Hallan \u00c7emi",
+      "kept": "hallan-cemi"
+    },
+    {
+      "qid": "Q4159913",
+      "name": "Can Hasan",
+      "kept": "can-hasan"
+    },
+    {
+      "qid": "Q558861",
+      "name": "Alacah\u00f6y\u00fck",
+      "kept": "alacahoyuk"
+    },
+    {
+      "qid": "Q181007",
+      "name": "Hattusa",
+      "kept": "hattusa"
+    },
+    {
+      "qid": "Q192522",
+      "name": "\u00c7atalh\u00f6y\u00fck",
+      "kept": "catalhoyuk"
+    },
+    {
+      "qid": "Q196987",
+      "name": "Zeugma",
+      "kept": "zeugma"
+    },
+    {
+      "qid": "Q200441",
+      "name": "Antioch",
+      "kept": "antioch"
+    },
+    {
+      "qid": "Q207917",
+      "name": "Mount Nemrut",
+      "kept": "nemrut"
+    },
+    {
+      "qid": "Q1250866",
+      "name": "Dorylaeum",
+      "kept": "dorylaeum"
+    },
+    {
+      "qid": "Q391125",
+      "name": "\u0160inahuttum",
+      "kept": "hattusa"
+    },
+    {
+      "qid": "Q767968",
+      "name": "Turbessel",
+      "kept": "turbessel"
+    },
+    {
+      "qid": "Q794830",
+      "name": "A\u015f\u0131kl\u0131 H\u00f6y\u00fck",
+      "kept": "asikli-hoyuk"
+    },
+    {
+      "qid": "Q799921",
+      "name": "Bagras",
+      "kept": "baghras"
+    },
+    {
+      "qid": "Q1477613",
+      "name": "Rumkale",
+      "kept": "rumkale"
+    },
+    {
+      "qid": "Q2261221",
+      "name": "Hisarlik Hill",
+      "kept": "troy"
+    },
+    {
+      "qid": "Q1151606",
+      "name": "Neval\u0131 \u00c7ori",
+      "kept": "nevali-cori"
+    },
+    {
+      "qid": "Q6099672",
+      "name": "Boncuklu H\u00f6y\u00fck",
+      "kept": "boncuklu-hoyuk"
+    },
+    {
+      "qid": "Q115679382",
+      "name": "Saybur\u00e7 site",
+      "kept": "sayburc"
+    },
+    {
+      "qid": "Q618495",
+      "name": "Aphrodisias",
+      "kept": "aphrodisias"
+    },
+    {
+      "qid": "Q1190403",
+      "name": "Edessa",
+      "kept": "edessa"
+    },
+    {
+      "qid": "Q283680",
+      "name": "Carchemish",
+      "kept": "karkemish"
+    },
+    {
+      "qid": "Q5996986",
+      "name": "Karahan Tepe",
+      "kept": "karahan-tepe"
+    },
+    {
+      "qid": "Q538605",
+      "name": "K\u00fcltepe",
+      "kept": "kultepe"
+    },
+    {
+      "qid": "Q542854",
+      "name": "Gordion",
+      "kept": "gordion"
+    },
+    {
+      "qid": "Q546010",
+      "name": "Ani",
+      "kept": "ani"
+    },
+    {
+      "qid": "Q941943",
+      "name": "Troy VII",
+      "kept": "troy"
+    },
+    {
+      "qid": "Q1026347",
+      "name": "Samosata",
+      "kept": "samosata"
+    },
+    {
+      "qid": "Q908860",
+      "name": "Hac\u0131lar Mound",
+      "kept": "hacilar"
+    },
+    {
+      "qid": "Q2827071",
+      "name": "Agora of Smyrna",
+      "kept": "smyrna-hospitaller"
+    },
+    {
+      "qid": "Q16869",
+      "name": "Constantinople",
+      "kept": "constantinople"
+    },
+    {
+      "qid": "Q18986",
+      "name": "Pergamon",
+      "kept": "pergamon"
+    },
+    {
+      "qid": "Q22647",
+      "name": "Troy",
+      "kept": "troy"
+    },
+    {
+      "qid": "Q47611",
+      "name": "Ephesus",
+      "kept": "ephesus"
+    },
+    {
+      "qid": "Q959497",
+      "name": "K\u00f6rtik Tepe",
+      "kept": "kortik-tepe"
+    },
+    {
+      "qid": "Q1217141",
+      "name": "Nesa",
+      "kept": "kultepe"
+    },
+    {
+      "qid": "Q1646054",
+      "name": "Ancient Greek theatre of Pergamon",
+      "kept": "pergamon"
+    },
+    {
+      "qid": "Q2448404",
+      "name": "Temple of Trajan",
+      "kept": "pergamon"
+    },
+    {
+      "qid": "Q11705096",
+      "name": "Ilium",
+      "kept": "troy"
+    },
+    {
+      "qid": "Q15723477",
+      "name": "Theater (Ephesus)",
+      "kept": "ephesus"
+    },
+    {
+      "qid": "Q16676981",
+      "name": "Archaeological site of Ephesus",
+      "kept": "ephesus"
+    },
+    {
+      "qid": "Q64699469",
+      "name": "Ephesus",
+      "kept": "ephesus"
+    },
+    {
+      "qid": "Q69567912",
+      "name": "Acropolis of Pergamon",
+      "kept": "pergamon"
+    },
+    {
+      "qid": "Q77071353",
+      "name": "Tetragonos Agora (Ephesus)",
+      "kept": "ephesus"
+    },
+    {
+      "qid": "Q97341288",
+      "name": "Theatre Gymnasium",
+      "kept": "ephesus"
+    },
+    {
+      "qid": "Q98649674",
+      "name": "Odeion or Bouleuterion of Aphrodisias",
+      "kept": "aphrodisias"
+    },
+    {
+      "qid": "Q105232353",
+      "name": "Temple of Athena (Pergamon)",
+      "kept": "pergamon"
+    },
+    {
+      "qid": "Q105232430",
+      "name": "Temple of Dionysos in Pergamon",
+      "kept": "pergamon"
+    },
+    {
+      "qid": "Q108784502",
+      "name": "Harbetsuvan Tepesi",
+      "kept": "harbetsuvan-tepesi"
+    },
+    {
+      "qid": "Q112210724",
+      "name": "Bouleuterion (Troy)",
+      "kept": "troy"
+    },
+    {
+      "qid": "Q115779157",
+      "name": "Sanctuary of Troy",
+      "kept": "troy"
+    },
+    {
+      "qid": "Q116671676",
+      "name": "Agora of Pergamon",
+      "kept": "pergamon"
+    },
+    {
+      "qid": "Q126741267",
+      "name": "Ilion",
+      "kept": "troy"
+    },
+    {
+      "qid": "Q131738906",
+      "name": "Aphrodisias Hadrian Baths",
+      "kept": "aphrodisias"
+    },
+    {
+      "qid": "Q134038460",
+      "name": "Sanctuary of the Nemeses in Smyrna",
+      "kept": "smyrna-hospitaller"
+    },
+    {
+      "qid": "Q134038465",
+      "name": "Sanctuary of Kl\u00eadones outside Smyrna",
+      "kept": "smyrna-hospitaller"
+    },
+    {
+      "qid": "Q134038469",
+      "name": "Pythion of Pergamon",
+      "kept": "pergamon"
+    },
+    {
+      "qid": "Q135582509",
+      "name": "Misis Theater",
+      "kept": "mamistra"
+    },
+    {
+      "qid": "Q141503930",
+      "name": "South Agora of Aphrodisias",
+      "kept": "aphrodisias"
+    },
+    {
+      "qid": "Q141742808",
+      "name": "North Agora of Aphrodisias",
+      "kept": "aphrodisias"
+    },
+    {
+      "qid": "Q141877321",
+      "name": "Lower City of \u1e2aattu\u0161a",
+      "kept": "hattusa"
+    },
+    {
+      "qid": "Q141913731",
+      "name": "S\u00fcdareal (\u1e2aattu\u0161a)",
+      "kept": "hattusa"
+    },
+    {
+      "qid": "Q141914831",
+      "name": "Q141914831",
+      "kept": "hattusa"
+    },
+    {
+      "qid": "Q141915093",
+      "name": "Q141915093",
+      "kept": "hattusa"
+    },
+    {
+      "qid": "Q141926355",
+      "name": "Altbau (\u1e2aattu\u0161a)",
+      "kept": "hattusa"
+    },
+    {
+      "qid": "Q141926459",
+      "name": "Pithoshaus (\u1e2aattu\u0161a)",
+      "kept": "hattusa"
+    }
+  ]
+}
