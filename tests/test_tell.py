@@ -4,7 +4,7 @@ import numpy as np
 
 from ai_archaeology.eval.cv import leave_one_out, select_tell
 from ai_archaeology.eval.metrics import wilson_interval
-from ai_archaeology.eval.tell import TellWeights, hand_scores
+from ai_archaeology.eval.tell import PeakTable, TellWeights, hand_scores, select_top
 
 
 def _landscape() -> np.ndarray:
@@ -61,6 +61,16 @@ def test_wilson_interval_covers_a_known_proportion():
     assert low < 4 / 47 < high
     assert high - low < 0.25
     assert wilson_interval(0, 0) == (0.0, 0.0)
+
+
+def test_select_top_ignores_nan_scores():
+    table = PeakTable(
+        np.array([30.0, 31.0, 32.0]),
+        np.array([37.0, 38.0, 39.0]),
+        np.zeros((3, 9), dtype=np.float32),
+    )
+    chosen = select_top(table, np.array([np.nan, 0.4, -1.0]), 3)
+    assert chosen == [(31.0, 38.0)]
 
 
 def test_nodata_does_not_enter_the_wide_mean_as_zero():

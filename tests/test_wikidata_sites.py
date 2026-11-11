@@ -1,10 +1,27 @@
 """Curated pins win deduplication, and periods come only from Wikidata dates or labels."""
 
+import hashlib
 import json
 import math
 from pathlib import Path
 
-from ai_archaeology.sites.wikidata import assign_periods, build_snapshot, load_curated, matching_curated
+from ai_archaeology.sites.wikidata import _fold, assign_periods, build_snapshot, load_curated, matching_curated
+
+
+def test_sites_geojson_matches_the_snapshot_sha256():
+    root = Path("Anatolia/atlas/public/wikidata")
+    meta = json.loads((root / "snapshot.json").read_text())
+    digest = hashlib.sha256((root / "sites.geojson").read_bytes()).hexdigest()
+    assert digest == meta["sitesGeojsonSha256"]
+    assert meta["dropped"]
+    assert all(item["qid"].startswith("Q") and item["reason"] for item in meta["dropped"])
+
+
+def test_dotted_capital_i_matches_a_plain_i():
+    assert _fold("İznik") == _fold("Iznik") == "iznik"
+    pins = load_curated_memory("Iznik", 29.7, 40.4)
+    assert matching_curated("İznik", 29.7, _north(40.4, 2000), pins) is not None
+    assert matching_curated("İznik", 29.7, _north(40.4, 2000), pins).reason == "same name within 3 km"
 
 
 def test_years_and_labels_map_onto_atlas_periods():
@@ -35,6 +52,11 @@ def test_name_match_within_3_km_drops_and_a_different_monument_stays(tmp_path: P
     assert matching_curated("Library of Celsus", pin_lon, _north(pin_lat, 151), pins) is None
     assert matching_curated("Çatalhöyük", pin_lon, _north(pin_lat, 3000), pins) is not None
     assert matching_curated("Çatalhöyük", pin_lon, _north(pin_lat, 3001), pins) is None
+
+
+def load_curated_memory(name: str, lon: float, lat: float):
+    from ai_archaeology.sites.wikidata import CuratedPin
+    return [CuratedPin("iznik", name, lon, lat)]
 
 
 def _north(latitude: float, metres: float) -> float:
