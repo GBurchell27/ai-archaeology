@@ -1,7 +1,8 @@
 {
   "design": {
-    "detector": "residual relief and multi-scale LoG, 80\u2013600 m, height 3\u201340 m, slope and elongation gates; keep the strongest blobs up to the density cap",
-    "validation": "leave-one-region-out; thresholds chosen on the other regions only",
+    "detector": "tell score on the same 80\u2013600 m blobs: radial symmetry, flat top with steeper flanks, isolation from regional relief, low surrounding slope, and penalties for rugged ground and elongation. A hand-weight grid and a small logistic ranker compete inside each training fold. The strongest scores are kept up to the density cap",
+    "validation": "leave-one-region-out; the score is chosen on the other regions only, with an inner holdout so the outer region is never a label",
+    "baseline": "LoG strength ranking from the committed run, same density cap",
     "density_cap_per_100km2": 15,
     "recovery_m": [
       250,
@@ -10,52 +11,142 @@
     ]
   },
   "n_sites": 47,
-  "n_candidates": 24334,
+  "n_candidates": 24350,
   "area_km2": 162381.0,
-  "density_per_100km2": 14.99,
-  "recall_250": 0.085,
-  "recall_500": 0.085,
-  "recall_1000": 0.362,
+  "density_per_100km2": 15.0,
+  "recall_250": 0.149,
+  "recall_500": 0.255,
+  "recall_1000": 0.468,
   "random_recall_250": 0.029,
-  "monte_carlo_recall_250": 0.025,
+  "monte_carlo_recall_250": 0.023,
   "by_period": {
     "neolithic": {
       "n": 14,
-      "recall_250": 0.214,
+      "recall_250": 0.143,
+      "recall_250_count": 2,
+      "recall_250_ci95": [
+        0.04,
+        0.399
+      ],
       "recall_500": 0.214,
-      "recall_1000": 0.357
+      "recall_500_count": 3,
+      "recall_500_ci95": [
+        0.076,
+        0.476
+      ],
+      "recall_1000": 0.5,
+      "recall_1000_count": 7,
+      "recall_1000_ci95": [
+        0.268,
+        0.732
+      ]
     },
     "crusader": {
       "n": 18,
-      "recall_250": 0.056,
-      "recall_500": 0.056,
-      "recall_1000": 0.389
+      "recall_250": 0.111,
+      "recall_250_count": 2,
+      "recall_250_ci95": [
+        0.031,
+        0.328
+      ],
+      "recall_500": 0.333,
+      "recall_500_count": 6,
+      "recall_500_ci95": [
+        0.163,
+        0.563
+      ],
+      "recall_1000": 0.5,
+      "recall_1000_count": 9,
+      "recall_1000_ci95": [
+        0.29,
+        0.71
+      ]
     },
     "bronze": {
       "n": 8,
-      "recall_250": 0.0,
-      "recall_500": 0.0,
-      "recall_1000": 0.25
+      "recall_250": 0.375,
+      "recall_250_count": 3,
+      "recall_250_ci95": [
+        0.137,
+        0.694
+      ],
+      "recall_500": 0.375,
+      "recall_500_count": 3,
+      "recall_500_ci95": [
+        0.137,
+        0.694
+      ],
+      "recall_1000": 0.625,
+      "recall_1000_count": 5,
+      "recall_1000_ci95": [
+        0.306,
+        0.863
+      ]
     },
     "classical": {
       "n": 7,
       "recall_250": 0.0,
+      "recall_250_count": 0,
+      "recall_250_ci95": [
+        0.0,
+        0.354
+      ],
       "recall_500": 0.0,
-      "recall_1000": 0.429
+      "recall_500_count": 0,
+      "recall_500_ci95": [
+        0.0,
+        0.354
+      ],
+      "recall_1000": 0.143,
+      "recall_1000_count": 1,
+      "recall_1000_ci95": [
+        0.026,
+        0.513
+      ]
     }
   },
   "by_terrain": {
     "mound": {
       "n": 19,
-      "recall_250": 0.158,
-      "recall_500": 0.158,
-      "recall_1000": 0.263
+      "recall_250": 0.263,
+      "recall_250_count": 5,
+      "recall_250_ci95": [
+        0.118,
+        0.488
+      ],
+      "recall_500": 0.263,
+      "recall_500_count": 5,
+      "recall_500_ci95": [
+        0.118,
+        0.488
+      ],
+      "recall_1000": 0.474,
+      "recall_1000_count": 9,
+      "recall_1000_ci95": [
+        0.273,
+        0.683
+      ]
     },
     "urban": {
       "n": 28,
-      "recall_250": 0.036,
-      "recall_500": 0.036,
-      "recall_1000": 0.429
+      "recall_250": 0.071,
+      "recall_250_count": 2,
+      "recall_250_ci95": [
+        0.02,
+        0.226
+      ],
+      "recall_500": 0.25,
+      "recall_500_count": 7,
+      "recall_500_ci95": [
+        0.127,
+        0.434
+      ],
+      "recall_1000": 0.464,
+      "recall_1000_count": 13,
+      "recall_1000_ci95": [
+        0.295,
+        0.642
+      ]
     }
   },
   "folds": [
@@ -64,135 +155,150 @@
       "n_sites": 6,
       "n_candidates": 805,
       "pixel_m": 30.0,
-      "relief_radius_m": 1000.0,
-      "min_height_m": 8.0,
-      "response_percentile": 0.0
+      "score": "hand r=600 h>=3 sym=0.6 flat=0.6 iso=0.5",
+      "kind": "hand",
+      "relief_radius_m": 600.0,
+      "min_height_m": 3.0
     },
     {
       "region": "euphrates",
       "n_sites": 8,
       "n_candidates": 2607,
       "pixel_m": 56.7,
-      "relief_radius_m": 1000.0,
-      "min_height_m": 8.0,
-      "response_percentile": 0.0
+      "score": "hand r=600 h>=3 sym=0.6 flat=0.6 iso=0.5",
+      "kind": "hand",
+      "relief_radius_m": 600.0,
+      "min_height_m": 3.0
     },
     {
       "region": "tigris",
       "n_sites": 3,
       "n_candidates": 1658,
       "pixel_m": 55.0,
-      "relief_radius_m": 1000.0,
-      "min_height_m": 8.0,
-      "response_percentile": 0.0
+      "score": "hand r=600 h>=3 sym=0.6 flat=0.6 iso=0.5",
+      "kind": "hand",
+      "relief_radius_m": 600.0,
+      "min_height_m": 3.0
     },
     {
       "region": "malatya",
       "n_sites": 2,
       "n_candidates": 576,
       "pixel_m": 30.0,
-      "relief_radius_m": 1000.0,
-      "min_height_m": 8.0,
-      "response_percentile": 0.0
+      "score": "hand r=600 h>=3 sym=0.6 flat=0.6 iso=0.5",
+      "kind": "hand",
+      "relief_radius_m": 600.0,
+      "min_height_m": 3.0
     },
     {
       "region": "amanus",
       "n_sites": 3,
       "n_candidates": 2423,
       "pixel_m": 64.0,
-      "relief_radius_m": 1000.0,
-      "min_height_m": 8.0,
-      "response_percentile": 0.0
+      "score": "hand r=600 h>=3 sym=0.6 flat=0.6 iso=0.5",
+      "kind": "hand",
+      "relief_radius_m": 600.0,
+      "min_height_m": 3.0
     },
     {
       "region": "cukurova",
       "n_sites": 4,
       "n_candidates": 2469,
       "pixel_m": 61.6,
-      "relief_radius_m": 1000.0,
-      "min_height_m": 8.0,
-      "response_percentile": 0.0
+      "score": "hand r=600 h>=3 sym=0.6 flat=0.6 iso=0.5",
+      "kind": "hand",
+      "relief_radius_m": 600.0,
+      "min_height_m": 3.0
     },
     {
       "region": "konya",
       "n_sites": 3,
-      "n_candidates": 777,
+      "n_candidates": 793,
       "pixel_m": 30.0,
-      "relief_radius_m": 1000.0,
-      "min_height_m": 8.0,
-      "response_percentile": 0.0
+      "score": "hand r=600 h>=3 sym=0.6 flat=0.6 iso=0.5",
+      "kind": "hand",
+      "relief_radius_m": 600.0,
+      "min_height_m": 3.0
     },
     {
       "region": "burdur",
       "n_sites": 1,
       "n_candidates": 114,
       "pixel_m": 30.0,
-      "relief_radius_m": 1000.0,
-      "min_height_m": 8.0,
-      "response_percentile": 0.0
+      "score": "ranker r=600 h>=3 sym=1.0 flat=1.0 iso=1.0",
+      "kind": "ranker",
+      "relief_radius_m": 600.0,
+      "min_height_m": 3.0
     },
     {
       "region": "cappadocia",
       "n_sites": 3,
       "n_candidates": 1756,
       "pixel_m": 51.1,
-      "relief_radius_m": 1000.0,
-      "min_height_m": 8.0,
-      "response_percentile": 0.0
+      "score": "hand r=600 h>=3 sym=0.6 flat=0.6 iso=0.5",
+      "kind": "hand",
+      "relief_radius_m": 600.0,
+      "min_height_m": 3.0
     },
     {
       "region": "hattusa",
       "n_sites": 2,
       "n_candidates": 205,
       "pixel_m": 30.0,
-      "relief_radius_m": 1000.0,
-      "min_height_m": 8.0,
-      "response_percentile": 0.0
+      "score": "hand r=600 h>=3 sym=0.6 flat=0.6 iso=0.5",
+      "kind": "hand",
+      "relief_radius_m": 600.0,
+      "min_height_m": 3.0
     },
     {
       "region": "phrygia",
       "n_sites": 1,
       "n_candidates": 111,
       "pixel_m": 30.0,
-      "relief_radius_m": 1000.0,
-      "min_height_m": 8.0,
-      "response_percentile": 0.0
+      "score": "hand r=600 h>=3 sym=0.6 flat=0.6 iso=0.5",
+      "kind": "hand",
+      "relief_radius_m": 600.0,
+      "min_height_m": 3.0
     },
     {
       "region": "aegean-north",
       "n_sites": 3,
       "n_candidates": 3014,
       "pixel_m": 70.2,
-      "relief_radius_m": 1000.0,
-      "min_height_m": 8.0,
-      "response_percentile": 0.0
+      "score": "hand r=600 h>=3 sym=0.6 flat=0.6 iso=0.5",
+      "kind": "hand",
+      "relief_radius_m": 600.0,
+      "min_height_m": 3.0
     },
     {
       "region": "aegean-south",
       "n_sites": 4,
       "n_candidates": 4015,
       "pixel_m": 67.0,
-      "relief_radius_m": 1000.0,
-      "min_height_m": 8.0,
-      "response_percentile": 0.0
+      "score": "hand r=600 h>=3 sym=0.6 flat=0.6 iso=0.5",
+      "kind": "hand",
+      "relief_radius_m": 600.0,
+      "min_height_m": 3.0
     },
     {
       "region": "marmara",
       "n_sites": 3,
       "n_candidates": 3694,
       "pixel_m": 58.3,
-      "relief_radius_m": 1000.0,
-      "min_height_m": 8.0,
-      "response_percentile": 0.0
+      "score": "hand r=600 h>=3 sym=0.6 flat=0.6 iso=0.5",
+      "kind": "hand",
+      "relief_radius_m": 600.0,
+      "min_height_m": 3.0
     },
     {
       "region": "kars",
       "n_sites": 1,
       "n_candidates": 110,
       "pixel_m": 30.0,
-      "relief_radius_m": 1000.0,
-      "min_height_m": 8.0,
-      "response_percentile": 0.0
+      "score": "hand r=600 h>=3 sym=0.6 flat=0.6 iso=0.5",
+      "kind": "hand",
+      "relief_radius_m": 600.0,
+      "min_height_m": 3.0
     }
   ],
   "sites": [
@@ -202,7 +308,7 @@
       "period": "neolithic",
       "terrain": "mound",
       "region": "urfa",
-      "band": "1000",
+      "band": "miss",
       "recovered_250": false,
       "source": "UNESCO World Heritage Centre, listing 1572"
     },
@@ -212,8 +318,8 @@
       "period": "neolithic",
       "terrain": "mound",
       "region": "urfa",
-      "band": "250",
-      "recovered_250": true,
+      "band": "miss",
+      "recovered_250": false,
       "source": "Wikipedia, Karahan Tepe"
     },
     {
@@ -222,7 +328,7 @@
       "period": "neolithic",
       "terrain": "mound",
       "region": "urfa",
-      "band": "miss",
+      "band": "1000",
       "recovered_250": false,
       "source": "Wikipedia, Saybur\u00e7"
     },
@@ -232,8 +338,8 @@
       "period": "neolithic",
       "terrain": "mound",
       "region": "urfa",
-      "band": "250",
-      "recovered_250": true,
+      "band": "miss",
+      "recovered_250": false,
       "source": "Turkish Wikipedia, Harbetsuvan Tepesi"
     },
     {
@@ -242,7 +348,7 @@
       "period": "neolithic",
       "terrain": "urban",
       "region": "urfa",
-      "band": "miss",
+      "band": "1000",
       "recovered_250": false,
       "source": "Wikipedia, Harran"
     },
@@ -252,7 +358,7 @@
       "period": "crusader",
       "terrain": "urban",
       "region": "urfa",
-      "band": "1000",
+      "band": "miss",
       "recovered_250": false,
       "source": "Wikipedia, Urfa"
     },
@@ -262,7 +368,7 @@
       "period": "neolithic",
       "terrain": "urban",
       "region": "euphrates",
-      "band": "1000",
+      "band": "500",
       "recovered_250": false,
       "source": "Wikipedia, Neval\u0131 \u00c7ori"
     },
@@ -282,7 +388,7 @@
       "period": "crusader",
       "terrain": "urban",
       "region": "euphrates",
-      "band": "1000",
+      "band": "miss",
       "recovered_250": false,
       "source": "Wikidata, Ravendel castle (Q131901862)"
     },
@@ -292,7 +398,7 @@
       "period": "crusader",
       "terrain": "urban",
       "region": "euphrates",
-      "band": "1000",
+      "band": "miss",
       "recovered_250": false,
       "source": "Wikipedia, Rumkale"
     },
@@ -302,7 +408,7 @@
       "period": "crusader",
       "terrain": "urban",
       "region": "euphrates",
-      "band": "1000",
+      "band": "miss",
       "recovered_250": false,
       "source": "Wikipedia, Birecik"
     },
@@ -322,8 +428,8 @@
       "period": "bronze",
       "terrain": "mound",
       "region": "euphrates",
-      "band": "miss",
-      "recovered_250": false,
+      "band": "250",
+      "recovered_250": true,
       "source": "Wikipedia, Carchemish"
     },
     {
@@ -342,7 +448,7 @@
       "period": "neolithic",
       "terrain": "mound",
       "region": "tigris",
-      "band": "miss",
+      "band": "1000",
       "recovered_250": false,
       "source": "Wikipedia, \u00c7ay\u00f6n\u00fc"
     },
@@ -372,8 +478,8 @@
       "period": "bronze",
       "terrain": "mound",
       "region": "malatya",
-      "band": "1000",
-      "recovered_250": false,
+      "band": "250",
+      "recovered_250": true,
       "source": "UNESCO World Heritage Centre, listing 1622"
     },
     {
@@ -402,8 +508,8 @@
       "period": "crusader",
       "terrain": "urban",
       "region": "amanus",
-      "band": "250",
-      "recovered_250": true,
+      "band": "miss",
+      "recovered_250": false,
       "source": "Wikipedia, Kahramanmara\u015f"
     },
     {
@@ -422,8 +528,8 @@
       "period": "crusader",
       "terrain": "urban",
       "region": "cukurova",
-      "band": "miss",
-      "recovered_250": false,
+      "band": "250",
+      "recovered_250": true,
       "source": "Wikipedia, Tarsus, Mersin"
     },
     {
@@ -432,8 +538,8 @@
       "period": "crusader",
       "terrain": "urban",
       "region": "cukurova",
-      "band": "miss",
-      "recovered_250": false,
+      "band": "250",
+      "recovered_250": true,
       "source": "Wikipedia, Mopsuestia"
     },
     {
@@ -442,7 +548,7 @@
       "period": "crusader",
       "terrain": "urban",
       "region": "cukurova",
-      "band": "miss",
+      "band": "500",
       "recovered_250": false,
       "source": "Wikipedia, Adana"
     },
@@ -482,8 +588,8 @@
       "period": "neolithic",
       "terrain": "mound",
       "region": "konya",
-      "band": "miss",
-      "recovered_250": false,
+      "band": "250",
+      "recovered_250": true,
       "source": "Wikipedia, Can Hasan 1"
     },
     {
@@ -492,7 +598,7 @@
       "period": "neolithic",
       "terrain": "mound",
       "region": "burdur",
-      "band": "miss",
+      "band": "1000",
       "recovered_250": false,
       "source": "Wikipedia, Hac\u0131lar H\u00f6y\u00fck"
     },
@@ -522,7 +628,7 @@
       "period": "classical",
       "terrain": "urban",
       "region": "cappadocia",
-      "band": "1000",
+      "band": "miss",
       "recovered_250": false,
       "source": "Wikipedia, G\u00f6reme"
     },
@@ -532,7 +638,7 @@
       "period": "bronze",
       "terrain": "urban",
       "region": "hattusa",
-      "band": "1000",
+      "band": "miss",
       "recovered_250": false,
       "source": "Wikipedia, Hattusa"
     },
@@ -552,7 +658,7 @@
       "period": "bronze",
       "terrain": "mound",
       "region": "phrygia",
-      "band": "miss",
+      "band": "1000",
       "recovered_250": false,
       "source": "UNESCO World Heritage Centre, listing 1669"
     },
@@ -562,7 +668,7 @@
       "period": "crusader",
       "terrain": "urban",
       "region": "aegean-north",
-      "band": "miss",
+      "band": "1000",
       "recovered_250": false,
       "source": "Wikipedia, Smyrna"
     },
@@ -572,8 +678,8 @@
       "period": "bronze",
       "terrain": "mound",
       "region": "aegean-north",
-      "band": "miss",
-      "recovered_250": false,
+      "band": "250",
+      "recovered_250": true,
       "source": "UNESCO World Heritage Centre, listing 849"
     },
     {
@@ -582,7 +688,7 @@
       "period": "classical",
       "terrain": "urban",
       "region": "aegean-north",
-      "band": "1000",
+      "band": "miss",
       "recovered_250": false,
       "source": "Wikipedia, Pergamon"
     },
@@ -602,7 +708,7 @@
       "period": "bronze",
       "terrain": "urban",
       "region": "aegean-south",
-      "band": "miss",
+      "band": "1000",
       "recovered_250": false,
       "source": "Wikipedia, Sardis"
     },
@@ -612,7 +718,7 @@
       "period": "classical",
       "terrain": "urban",
       "region": "aegean-south",
-      "band": "miss",
+      "band": "1000",
       "recovered_250": false,
       "source": "Wikipedia, Ephesus"
     },
@@ -632,7 +738,7 @@
       "period": "crusader",
       "terrain": "urban",
       "region": "marmara",
-      "band": "miss",
+      "band": "500",
       "recovered_250": false,
       "source": "Wikipedia, \u0130znik"
     },
@@ -642,7 +748,7 @@
       "period": "crusader",
       "terrain": "urban",
       "region": "marmara",
-      "band": "miss",
+      "band": "500",
       "recovered_250": false,
       "source": "Wikipedia, Battle of Dorylaeum (1097)"
     },
@@ -652,7 +758,7 @@
       "period": "crusader",
       "terrain": "urban",
       "region": "marmara",
-      "band": "miss",
+      "band": "500",
       "recovered_250": false,
       "source": "Wikipedia, Constantinople"
     },
@@ -662,11 +768,319 @@
       "period": "classical",
       "terrain": "urban",
       "region": "kars",
-      "band": "1000",
+      "band": "miss",
       "recovered_250": false,
       "source": "UNESCO World Heritage Centre, listing 1518"
     }
   ],
-  "runtime_seconds": 450.0,
-  "note": "A recovered pin is a candidate within the distance band. It is not a discovery. Buried and urban places are not expected to appear as 3\u201340 m mounds."
+  "runtime_seconds": 346.0,
+  "comparison": {
+    "log_strength": {
+      "n_sites": 47,
+      "n_candidates": 24334,
+      "density_per_100km2": 14.99,
+      "recall_250": 0.085,
+      "recall_500": 0.085,
+      "recall_1000": 0.362,
+      "random_recall_250": 0.029,
+      "by_period": {
+        "neolithic": {
+          "n": 14,
+          "recall_250": 0.214,
+          "recall_500": 0.214,
+          "recall_1000": 0.357,
+          "recall_250_count": 3,
+          "recall_250_ci95": [
+            0.076,
+            0.476
+          ],
+          "recall_500_count": 3,
+          "recall_500_ci95": [
+            0.076,
+            0.476
+          ],
+          "recall_1000_count": 5,
+          "recall_1000_ci95": [
+            0.163,
+            0.612
+          ]
+        },
+        "crusader": {
+          "n": 18,
+          "recall_250": 0.056,
+          "recall_500": 0.056,
+          "recall_1000": 0.389,
+          "recall_250_count": 1,
+          "recall_250_ci95": [
+            0.01,
+            0.258
+          ],
+          "recall_500_count": 1,
+          "recall_500_ci95": [
+            0.01,
+            0.258
+          ],
+          "recall_1000_count": 7,
+          "recall_1000_ci95": [
+            0.203,
+            0.614
+          ]
+        },
+        "bronze": {
+          "n": 8,
+          "recall_250": 0.0,
+          "recall_500": 0.0,
+          "recall_1000": 0.25,
+          "recall_250_count": 0,
+          "recall_250_ci95": [
+            0.0,
+            0.324
+          ],
+          "recall_500_count": 0,
+          "recall_500_ci95": [
+            0.0,
+            0.324
+          ],
+          "recall_1000_count": 2,
+          "recall_1000_ci95": [
+            0.071,
+            0.591
+          ]
+        },
+        "classical": {
+          "n": 7,
+          "recall_250": 0.0,
+          "recall_500": 0.0,
+          "recall_1000": 0.429,
+          "recall_250_count": 0,
+          "recall_250_ci95": [
+            0.0,
+            0.354
+          ],
+          "recall_500_count": 0,
+          "recall_500_ci95": [
+            0.0,
+            0.354
+          ],
+          "recall_1000_count": 3,
+          "recall_1000_ci95": [
+            0.158,
+            0.75
+          ]
+        }
+      },
+      "by_terrain": {
+        "mound": {
+          "n": 19,
+          "recall_250": 0.158,
+          "recall_500": 0.158,
+          "recall_1000": 0.263,
+          "recall_250_count": 3,
+          "recall_250_ci95": [
+            0.055,
+            0.376
+          ],
+          "recall_500_count": 3,
+          "recall_500_ci95": [
+            0.055,
+            0.376
+          ],
+          "recall_1000_count": 5,
+          "recall_1000_ci95": [
+            0.118,
+            0.488
+          ]
+        },
+        "urban": {
+          "n": 28,
+          "recall_250": 0.036,
+          "recall_500": 0.036,
+          "recall_1000": 0.429,
+          "recall_250_count": 1,
+          "recall_250_ci95": [
+            0.006,
+            0.177
+          ],
+          "recall_500_count": 1,
+          "recall_500_ci95": [
+            0.006,
+            0.177
+          ],
+          "recall_1000_count": 12,
+          "recall_1000_ci95": [
+            0.265,
+            0.609
+          ]
+        }
+      },
+      "recall_250_count": 4,
+      "recall_250_ci95": [
+        0.034,
+        0.199
+      ],
+      "recall_500_ci95": [
+        0.034,
+        0.199
+      ],
+      "recall_1000_ci95": [
+        0.24,
+        0.505
+      ]
+    },
+    "tell_score": {
+      "n_sites": 47,
+      "n_candidates": 24350,
+      "density_per_100km2": 15.0,
+      "recall_250": 0.149,
+      "recall_500": 0.255,
+      "recall_1000": 0.468,
+      "random_recall_250": 0.029,
+      "by_period": {
+        "neolithic": {
+          "n": 14,
+          "recall_250": 0.143,
+          "recall_250_count": 2,
+          "recall_250_ci95": [
+            0.04,
+            0.399
+          ],
+          "recall_500": 0.214,
+          "recall_500_count": 3,
+          "recall_500_ci95": [
+            0.076,
+            0.476
+          ],
+          "recall_1000": 0.5,
+          "recall_1000_count": 7,
+          "recall_1000_ci95": [
+            0.268,
+            0.732
+          ]
+        },
+        "crusader": {
+          "n": 18,
+          "recall_250": 0.111,
+          "recall_250_count": 2,
+          "recall_250_ci95": [
+            0.031,
+            0.328
+          ],
+          "recall_500": 0.333,
+          "recall_500_count": 6,
+          "recall_500_ci95": [
+            0.163,
+            0.563
+          ],
+          "recall_1000": 0.5,
+          "recall_1000_count": 9,
+          "recall_1000_ci95": [
+            0.29,
+            0.71
+          ]
+        },
+        "bronze": {
+          "n": 8,
+          "recall_250": 0.375,
+          "recall_250_count": 3,
+          "recall_250_ci95": [
+            0.137,
+            0.694
+          ],
+          "recall_500": 0.375,
+          "recall_500_count": 3,
+          "recall_500_ci95": [
+            0.137,
+            0.694
+          ],
+          "recall_1000": 0.625,
+          "recall_1000_count": 5,
+          "recall_1000_ci95": [
+            0.306,
+            0.863
+          ]
+        },
+        "classical": {
+          "n": 7,
+          "recall_250": 0.0,
+          "recall_250_count": 0,
+          "recall_250_ci95": [
+            0.0,
+            0.354
+          ],
+          "recall_500": 0.0,
+          "recall_500_count": 0,
+          "recall_500_ci95": [
+            0.0,
+            0.354
+          ],
+          "recall_1000": 0.143,
+          "recall_1000_count": 1,
+          "recall_1000_ci95": [
+            0.026,
+            0.513
+          ]
+        }
+      },
+      "by_terrain": {
+        "mound": {
+          "n": 19,
+          "recall_250": 0.263,
+          "recall_250_count": 5,
+          "recall_250_ci95": [
+            0.118,
+            0.488
+          ],
+          "recall_500": 0.263,
+          "recall_500_count": 5,
+          "recall_500_ci95": [
+            0.118,
+            0.488
+          ],
+          "recall_1000": 0.474,
+          "recall_1000_count": 9,
+          "recall_1000_ci95": [
+            0.273,
+            0.683
+          ]
+        },
+        "urban": {
+          "n": 28,
+          "recall_250": 0.071,
+          "recall_250_count": 2,
+          "recall_250_ci95": [
+            0.02,
+            0.226
+          ],
+          "recall_500": 0.25,
+          "recall_500_count": 7,
+          "recall_500_ci95": [
+            0.127,
+            0.434
+          ],
+          "recall_1000": 0.464,
+          "recall_1000_count": 13,
+          "recall_1000_ci95": [
+            0.295,
+            0.642
+          ]
+        }
+      }
+    }
+  },
+  "note": "A recovered pin is a candidate within the distance band. It is not a discovery. Buried and urban places are not expected to appear as 3\u201340 m mounds.",
+  "recall_250_count": 7,
+  "recall_250_ci95": [
+    0.074,
+    0.277
+  ],
+  "recall_500_count": 12,
+  "recall_500_ci95": [
+    0.153,
+    0.395
+  ],
+  "recall_1000_count": 22,
+  "recall_1000_ci95": [
+    0.333,
+    0.608
+  ]
 }

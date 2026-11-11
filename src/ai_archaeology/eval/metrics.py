@@ -56,6 +56,22 @@ def recall_at(hits: list[Hit], radius_m: float) -> float:
     return sum(hit.distance_m <= radius_m for hit in hits) / len(hits)
 
 
+def recall_count(hits: list[Hit], radius_m: float) -> int:
+    return sum(hit.distance_m <= radius_m for hit in hits)
+
+
+def wilson_interval(successes: int, total: int, z: float = 1.96) -> tuple[float, float]:
+    """95% Wilson interval for a recall proportion. Wide when ``total`` is small."""
+    if total <= 0:
+        return (0.0, 0.0)
+    proportion = successes / total
+    z2 = z * z
+    denominator = 1.0 + z2 / total
+    centre = (proportion + z2 / (2.0 * total)) / denominator
+    margin = z * math.sqrt(proportion * (1.0 - proportion) / total + z2 / (4.0 * total * total)) / denominator
+    return (max(0.0, centre - margin), min(1.0, centre + margin))
+
+
 def density_per_100km2(n_candidates: int, area_km2: float) -> float:
     if area_km2 <= 0:
         raise ValueError("area must be positive")
