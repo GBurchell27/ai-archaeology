@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { AtlasScene, type CameraPose } from "@/components/AtlasScene";
+import { naturalExaggeration } from "@/lib/exaggeration";
 import { boundsCenter, lonLatToMercator, sampleHeight, toLocal } from "@/lib/geo";
 import { LAYER_STYLE, PERIODS, formatYear, periodOverlaps } from "@/lib/periods";
 import { decodeHeight } from "@/lib/terrain";
@@ -29,7 +30,7 @@ export function AtlasApp() {
   const [periodId, setPeriodId] = useState("all");
   const [layers, setLayers] = useState({ neolithic: true, crusader: true });
   const [baseMap, setBaseMap] = useState<BaseMap>("hypsometric");
-  const [exaggeration, setExaggeration] = useState(8);
+  const [exaggeration, setExaggeration] = useState(6.5);
   const [azimuth, setAzimuth] = useState(315);
   const [altitude, setAltitude] = useState(40);
   const [labels, setLabels] = useState(false);
@@ -64,6 +65,7 @@ export function AtlasApp() {
       setMetadata(atlas);
       setSites(collection.features);
       setMetres(grid);
+      setExaggeration(naturalExaggeration(atlas.pixelSizeM));
       setPose(overviewPose(atlas, 0));
       document.body.dataset.ready = "true";
     }).catch((reason: unknown) => {
@@ -132,7 +134,10 @@ export function AtlasApp() {
   }).slice(0, 8);
 
   function flyTo(site: SiteFeature) {
-    const next = sitePose(site, metadata!, metres!, exaggeration, pose!.token + 1);
+    const windowSize = metadata!.details[site.id]?.pixelSizeM ?? metadata!.pixelSizeM;
+    const scale = naturalExaggeration(windowSize);
+    setExaggeration(scale);
+    const next = sitePose(site, metadata!, metres!, scale, pose!.token + 1);
     setPose(next);
     setSelectedId(site.id);
     setSettingsOpen(false);
@@ -144,6 +149,7 @@ export function AtlasApp() {
 
   function backToTurkey() {
     setSelectedId(null);
+    setExaggeration(naturalExaggeration(metadata!.pixelSizeM));
     setPose(overviewPose(metadata!, pose!.token + 1));
     setSettingsOpen(false);
   }
@@ -290,7 +296,7 @@ function SettingsMenu(props: {
         <input type="checkbox" checked={props.layers.crusader} data-layer-toggle="crusader" onChange={(event) => props.onLayer("crusader", event.target.checked)} />
         <span className="swatch" style={{ background: LAYER_STYLE.crusader.color }} /> Crusader era
       </label>
-      <label>Exaggeration <input type="range" min={1} max={16} step={0.5} value={props.exaggeration} data-role="exaggeration" onChange={(event) => props.onExaggeration(Number(event.target.value))} /></label>
+      <label>Exaggeration {props.exaggeration.toFixed(1)}× <input type="range" min={1} max={8} step={0.1} value={props.exaggeration} data-role="exaggeration" onChange={(event) => props.onExaggeration(Number(event.target.value))} /></label>
       <label>Sun azimuth <input type="range" min={0} max={360} value={props.azimuth} data-role="azimuth" onChange={(event) => props.onAzimuth(Number(event.target.value))} /></label>
       <label>Sun altitude <input type="range" min={8} max={80} value={props.altitude} data-role="altitude" onChange={(event) => props.onAltitude(Number(event.target.value))} /></label>
       <label className="check">
@@ -365,8 +371,8 @@ function GearIcon() {
 function overviewPose(metadata: AtlasMetadata, token: number): CameraPose {
   const depth = metadata.bounds[3] - metadata.bounds[1];
   return {
-    position: [depth * 0.04, depth * 0.34, depth * 0.86],
-    target: [0, depth * 0.015, -depth * 0.22],
+    position: [depth * 0.02, depth * 0.42, depth * 0.55],
+    target: [0, depth * 0.02, -depth * 0.02],
     token,
   };
 }
@@ -379,11 +385,13 @@ function sitePose(site: SiteFeature, metadata: AtlasMetadata, metres: Float32Arr
   const [xCoord, zCoord] = toLocal(longitude, latitude, origin);
   const yCoord = (elevation - metadata.elevation.min) * exaggeration;
   const detail = metadata.details[site.id];
-  const fine = Boolean(detail && detail.pixelSizeM < 80);
-  const distance = fine ? 9000 : detail ? 24000 : 70000;
+  const windowSpan = detail
+    ? Math.max(detail.bounds[2] - detail.bounds[0], detail.bounds[3] - detail.bounds[1])
+    : 80000;
+  const distance = Math.max(windowSpan * 0.82, 5500);
   return {
-    position: [xCoord + distance * 0.12, yCoord + distance * 0.42, zCoord + distance * 0.72],
-    target: [xCoord, yCoord + 80, zCoord],
+    position: [xCoord + distance * 0.16, yCoord + distance * 0.34, zCoord + distance * 0.58],
+    target: [xCoord, yCoord + 24, zCoord - distance * 0.05],
     token,
   };
 }

@@ -3,10 +3,13 @@ import * as THREE from "three";
 export const SURFACE_VERTEX = `
 varying vec3 vNormal;
 varying vec2 vUv;
+varying vec3 vWorld;
 void main() {
   vNormal = normalize(normalMatrix * normal);
   vUv = uv;
-  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
+  vec4 world = modelMatrix * vec4(position, 1.0);
+  vWorld = world.xyz;
+  gl_Position = projectionMatrix * viewMatrix * world;
 }
 `;
 
@@ -21,8 +24,13 @@ uniform float opacity;
 uniform vec2 resolution;
 uniform vec3 lightDirection;
 uniform float ambient;
+uniform float hazeNear;
+uniform float hazeFar;
+uniform float hazeStrength;
+uniform vec3 hazeColor;
 varying vec3 vNormal;
 varying vec2 vUv;
+varying vec3 vWorld;
 
 vec3 toLinear(vec3 value) {
   return pow(max(value, vec3(0.0)), vec3(2.2));
@@ -42,6 +50,9 @@ void main() {
   }
   float lambert = max(dot(normalize(vNormal), normalize(lightDirection)), 0.0);
   vec3 lit = albedo * (ambient + (1.0 - ambient) * lambert);
+  float depth = distance(cameraPosition, vWorld);
+  float haze = smoothstep(hazeNear, hazeFar, depth) * hazeStrength;
+  lit = mix(lit, pow(hazeColor, vec3(2.2)), clamp(haze, 0.0, 0.8));
   gl_FragColor = vec4(pow(lit, vec3(1.0 / 2.2)), 1.0);
 }
 `;
@@ -72,6 +83,10 @@ export function createSurfaceMaterial(): THREE.ShaderMaterial {
       resolution: { value: new THREE.Vector2(1, 1) },
       lightDirection: { value: new THREE.Vector3(0.3, 0.8, -0.4) },
       ambient: { value: 0.62 },
+      hazeNear: { value: 520000 },
+      hazeFar: { value: 1450000 },
+      hazeStrength: { value: 0.5 },
+      hazeColor: { value: new THREE.Vector3(203 / 255, 184 / 255, 154 / 255) },
     },
     vertexShader: SURFACE_VERTEX,
     fragmentShader: SURFACE_FRAGMENT,

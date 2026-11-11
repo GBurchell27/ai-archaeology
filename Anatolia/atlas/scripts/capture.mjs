@@ -73,15 +73,20 @@ await page.screenshot({ path: `${outDir}/atlas-sanliurfa-cluster.png` });
 await flyTo("Antioch", "antioch");
 await page.screenshot({ path: `${outDir}/atlas-antioch.png` });
 
-await flyTo("Edessa", "edessa");
+await flyTo("Rumkale", "rumkale");
+await page.screenshot({ path: `${outDir}/atlas-rumkale.png` });
+
+await flyTo("Bodrum", "bodrum-petronion");
+await page.screenshot({ path: `${outDir}/atlas-bodrum.png` });
+
 await flyTo("Constantinople", "constantinople");
 await page.screenshot({ path: `${outDir}/atlas-constantinople.png` });
 
 await flyTo("Göbekli", "gobekli-tepe");
 await page.click("[data-action='settings']");
 await setRange("azimuth", 140);
-await setRange("exaggeration", 14);
-await setRange("exaggeration", 8);
+await setRange("exaggeration", 3);
+await setRange("exaggeration", 1.7);
 const controls = await page.evaluate(() => ({
   azimuth: document.querySelector("[data-role='azimuth']").value,
   exaggeration: document.querySelector("[data-role='exaggeration']").value,

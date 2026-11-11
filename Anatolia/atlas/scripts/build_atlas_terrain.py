@@ -35,6 +35,7 @@ from rasterio.warp import reproject, transform_bounds
 
 REPO = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(REPO / "src"))
+from ai_archaeology.dem_window import clean_elevation_window  # noqa: E402
 from ai_archaeology.relief import hillshade  # noqa: E402
 
 WEST, SOUTH, EAST, NORTH = 25.5, 35.8, 45.0, 42.2
@@ -307,22 +308,27 @@ def read_site_window(longitude: float, latitude: float):
     try:
         for dataset in datasets:
             staged = np.full_like(array, np.nan)
+            source_void = dataset.nodata if dataset.nodata is not None else -32767.0
             reproject(
                 source=rasterio.band(dataset, 1),
                 destination=staged,
                 src_transform=dataset.transform,
                 src_crs=dataset.crs,
+                src_nodata=source_void,
                 dst_transform=dst_transform,
                 dst_crs=DST,
                 dst_nodata=np.nan,
                 resampling=Resampling.bilinear,
             )
-            finite = np.isfinite(staged) & (staged > -1000)
+            finite = np.isfinite(staged) & (staged > -1000) & (staged < 5500)
             array[finite] = staged[finite]
     finally:
         for dataset in datasets:
             dataset.close()
-    array[~np.isfinite(array)] = 0
+    try:
+        array = clean_elevation_window(array)
+    except ValueError:
+        return None
     return array, left, bottom, right, top
 
 

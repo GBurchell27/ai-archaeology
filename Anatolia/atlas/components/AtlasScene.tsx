@@ -5,9 +5,11 @@ import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { Suspense, useEffect, useMemo, useRef, useState, type MutableRefObject } from "react";
 import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
 import * as THREE from "three";
-import { boundsCenter, lonLatToMercator, sampleHeight, toLocal } from "@/lib/geo";
+import { boundsCenter, boundsContain, lonLatToMercator, sampleMeshHeight, toLocal } from "@/lib/geo";
 import { LAYER_STYLE } from "@/lib/periods";
 import { createSurfaceMaterial, prepareTexture, sunDirection } from "@/lib/shade";
+import { HAZE_FAR, HAZE_NEAR, HAZE_STRENGTH, hazeBackground } from "@/lib/sky";
+import { stitchDetailToNational } from "@/lib/stitch";
 import { buildTerrainGeometry, type TerrainGrid } from "@/lib/terrain";
 import type { AtlasMetadata, BaseMap, SiteFeature } from "@/lib/types";
 
@@ -39,6 +41,10 @@ interface AtlasSceneProps {
 
 export function AtlasScene(props: AtlasSceneProps) {
   const origin = useMemo(() => boundsCenter(props.metadata.bounds), [props.metadata]);
+  const national = useMemo(
+    () => ({ ...props.metadata, metres: props.metres }),
+    [props.metadata, props.metres],
+  );
   const span = Math.max(
     props.metadata.bounds[2] - props.metadata.bounds[0],
     props.metadata.bounds[3] - props.metadata.bounds[1],
@@ -48,7 +54,7 @@ export function AtlasScene(props: AtlasSceneProps) {
       camera={{ position: props.pose.position, fov: 38, near: 40, far: span * 8 }}
       gl={{ antialias: true, outputColorSpace: THREE.LinearSRGBColorSpace }}
     >
-      <color attach="background" args={["#cbb89a"]} />
+      <SkyHaze />
       <Suspense fallback={null}>
       <NationalSurface
         metadata={props.metadata}
@@ -62,6 +68,7 @@ export function AtlasScene(props: AtlasSceneProps) {
       {props.detail && props.detailUrl ? (
         <DetailSurface
           grid={props.detail}
+          national={national}
           origin={origin}
           datum={props.metadata.elevation.min}
           exaggeration={props.exaggeration}
@@ -79,6 +86,7 @@ export function AtlasScene(props: AtlasSceneProps) {
         sites={props.sites}
         metadata={props.metadata}
         metres={props.metres}
+        detail={props.detail}
         origin={origin}
         exaggeration={props.exaggeration}
         labels={props.labels}
@@ -135,8 +143,23 @@ function NationalSurface({
   );
 }
 
+function SkyHaze() {
+  const texture = useMemo(() => hazeBackground(), []);
+  const { scene } = useThree();
+  useEffect(() => {
+    const previous = scene.background;
+    scene.background = texture;
+    return () => {
+      scene.background = previous;
+      texture.dispose();
+    };
+  }, [scene, texture]);
+  return null;
+}
+
 function DetailSurface(props: {
   grid: TerrainGrid;
+  national: TerrainGrid;
   origin: [number, number];
   datum: number;
   exaggeration: number;
@@ -148,9 +171,13 @@ function DetailSurface(props: {
   split: number;
   opacity: number;
 }) {
+  const stitched = useMemo(
+    () => stitchDetailToNational(props.grid, props.national),
+    [props.grid, props.national],
+  );
   const geometry = useMemo(
-    () => buildTerrainGeometry(props.grid, props.origin, props.datum, props.exaggeration),
-    [props.grid, props.origin, props.datum, props.exaggeration],
+    () => buildTerrainGeometry(stitched, props.origin, props.datum, props.exaggeration),
+    [stitched, props.origin, props.datum, props.exaggeration],
   );
   const textureA = useTexture(props.textureUrl);
   const textureB = useTexture(props.compareUrl ?? props.textureUrl);
@@ -191,10 +218,14 @@ function ShadedMesh(props: {
   material.uniforms.opacity.value = props.opacity;
   material.uniforms.lightDirection.value.copy(sunDirection(props.azimuth, props.altitude));
   material.uniforms.resolution.value.set(size.width * gl.getPixelRatio(), size.height * gl.getPixelRatio());
+  material.uniforms.hazeNear.value = HAZE_NEAR;
+  material.uniforms.hazeFar.value = HAZE_FAR;
+  material.uniforms.hazeStrength.value = HAZE_STRENGTH;
+  material.uniforms.hazeColor.value.set(203 / 255, 184 / 255, 154 / 255);
   if (props.lift) {
     material.polygonOffset = true;
     material.polygonOffsetFactor = -1;
-    material.polygonOffsetUnits = -8;
+    material.polygonOffsetUnits = -2;
   }
   return <mesh geometry={props.geometry} material={material} />;
 }
@@ -203,6 +234,7 @@ function SitePins(props: {
   sites: SiteFeature[];
   metadata: AtlasMetadata;
   metres: Float32Array;
+  detail: TerrainGrid | null;
   origin: [number, number];
   exaggeration: number;
   labels: boolean;
@@ -222,6 +254,7 @@ function SitePins(props: {
           site={site}
           metadata={props.metadata}
           metres={props.metres}
+          detail={props.detail}
           origin={props.origin}
           exaggeration={props.exaggeration}
           labels={props.labels}
@@ -249,6 +282,7 @@ function SitePin(props: {
   site: SiteFeature;
   metadata: AtlasMetadata;
   metres: Float32Array;
+  detail: TerrainGrid | null;
   origin: [number, number];
   exaggeration: number;
   labels: boolean;
@@ -259,16 +293,9 @@ function SitePin(props: {
   clusterCount: number;
 }) {
   const [east, north] = lonLatToMercator(props.site.geometry.coordinates[0], props.site.geometry.coordinates[1]);
-  const elevation = sampleHeight(
-    props.metres,
-    props.metadata.width,
-    props.metadata.height,
-    props.metadata.bounds,
-    east,
-    north,
-  );
+  const elevation = elevationAt(props.metadata, props.metres, props.detail, east, north);
   const [xCoord, zCoord] = toLocal(props.site.geometry.coordinates[0], props.site.geometry.coordinates[1], props.origin);
-  const yCoord = (elevation - props.metadata.elevation.min) * props.exaggeration + 40;
+  const yCoord = (elevation - props.metadata.elevation.min) * props.exaggeration + 18;
   const marker = useRef<THREE.Group>(null);
   const [hovered, setHovered] = useState(false);
   const approximate = props.site.properties.confidence === "approximate";
@@ -324,6 +351,19 @@ function SitePin(props: {
       </group>
     </group>
   );
+}
+
+function elevationAt(
+  metadata: AtlasMetadata,
+  metres: Float32Array,
+  detail: TerrainGrid | null,
+  east: number,
+  north: number,
+): number {
+  if (detail && boundsContain(detail.bounds, east, north)) {
+    return sampleMeshHeight(detail.metres, detail.width, detail.height, detail.bounds, east, north);
+  }
+  return sampleMeshHeight(metres, metadata.width, metadata.height, metadata.bounds, east, north);
 }
 
 function useMarkerTextures() {
