@@ -416,7 +416,9 @@ html[data-theme="dark"] .search ul { background: rgba(10, 14, 18, 0.96); }
   .readout { right: 8px; bottom: 92px; }
   .credit { max-height: 72px; overflow: auto; background: rgba(22, 17, 13, 0.78); padding: 6px 8px; border-radius: 8px; }
   body[data-panel="open"] .credit,
-  body[data-panel="open"] .legend { visibility: hidden; }
+  body[data-panel="open"] .legend,
+  body[data-panel="open"] .dock,
+  body[data-panel="open"] .readout { visibility: hidden; }
   .menu { max-height: 70vh; overflow: auto; }
 }
 
