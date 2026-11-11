@@ -6,6 +6,7 @@ from dataclasses import dataclass
 
 import numpy as np
 
+from ai_archaeology.ingest.constants import NODATA
 from ai_archaeology.train.boosting import InsufficientLabels, fit_boosting, predict_boosting
 from ai_archaeology.train.cnn import fit_cnn, predict_cnn
 from ai_archaeology.train.features import relief_feature_vector
@@ -23,8 +24,28 @@ def as_arrays(patches: list[LabelledPatch]) -> tuple[np.ndarray, np.ndarray, np.
     images = np.stack([patch.values for patch in patches]).astype(np.float32)
     features = np.stack([relief_feature_vector(patch.values) for patch in patches])
     labels = np.asarray([patch.label for patch in patches], dtype=np.int64)
-    images[images == -9999.0] = 0.0
-    return images, features, labels
+    return replace_nodata_for_model(images), features, labels
+
+
+def replace_nodata_for_model(images: np.ndarray) -> np.ndarray:
+    """Fill nodata with the per-channel median of finite samples.
+
+    The sentinel is not turned into 0, which would look like a flat hillshade
+    or a zero slope.
+    """
+    filled = np.array(images, dtype=np.float32, copy=True)
+    invalid = ~np.isfinite(filled) | (filled == np.float32(NODATA))
+    filled[invalid] = np.nan
+    for channel in range(filled.shape[1]):
+        _fill_channel(filled[:, channel])
+    return filled
+
+
+def _fill_channel(band: np.ndarray) -> None:
+    finite = band[np.isfinite(band)]
+    if finite.size == 0:
+        raise ValueError("relief channel has no finite samples")
+    band[~np.isfinite(band)] = np.float32(np.median(finite))
 
 
 def fit_models(patches: list[LabelledPatch], epochs: int, learning_rate: float, seed: int) -> tuple[FittedModels, dict]:

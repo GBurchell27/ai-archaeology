@@ -6,7 +6,7 @@ import numpy as np
 
 from ai_archaeology.ingest.constants import NODATA
 from ai_archaeology.train.features import relief_feature_vector
-from ai_archaeology.train.fit import FittedModels, combined_probability
+from ai_archaeology.train.fit import FittedModels, combined_probability, replace_nodata_for_model
 from ai_archaeology.train.patches import crop_patch, patch_is_usable, pixel_centre
 
 
@@ -26,7 +26,8 @@ def score_lattice(stack, elevation, transform, patch_size: int, stride: int, mod
     if models is None or (models.boosting is None and models.cnn is None):
         return np.zeros(coordinates.shape[0], dtype=np.float64), coordinates
     features = np.stack([relief_feature_vector(image) for image in images])
-    return combined_probability(models, images, features), coordinates
+    model_images = replace_nodata_for_model(images)
+    return combined_probability(models, model_images, features), coordinates
 
 
 def _lattice_patches(stack, elevation, transform, patch_size: int, stride: int):

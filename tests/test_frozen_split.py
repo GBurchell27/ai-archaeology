@@ -28,23 +28,27 @@ TRANSFORM = from_origin(0.0, 400.0, 10.0, 10.0)
 
 
 def test_training_can_read_a_western_block():
-    patch = extract_training_patch(STACK, TRANSFORM, 50.0, 50.0, 8, GRID)
+    patch = extract_training_patch(
+        STACK, TRANSFORM, 50.0, 50.0, 8, GRID, relief_radius_m=0.0
+    )
     assert patch.shape == (5, 8, 8)
 
 
 def test_training_refuses_the_frozen_column():
     with pytest.raises(FrozenSplitError):
-        extract_training_patch(STACK, TRANSFORM, 350.0, 50.0, 8, GRID)
+        extract_training_patch(STACK, TRANSFORM, 350.0, 50.0, 8, GRID, relief_radius_m=0.0)
 
 
 def test_training_refuses_the_frozen_buffer():
     with pytest.raises(FrozenSplitError):
-        extract_training_patch(STACK, TRANSFORM, 295.0, 50.0, 8, GRID)
+        extract_training_patch(STACK, TRANSFORM, 295.0, 50.0, 8, GRID, relief_radius_m=0.0)
 
 
 def test_training_refuses_the_held_out_fold():
     with pytest.raises(HeldOutFoldError):
-        extract_training_patch(STACK, TRANSFORM, 50.0, 50.0, 8, GRID, held_out_fold=0)
+        extract_training_patch(
+            STACK, TRANSFORM, 50.0, 50.0, 8, GRID, held_out_fold=0, relief_radius_m=0.0
+        )
 
 
 def test_grid_from_bounds_freezes_the_eastern_column():

@@ -32,7 +32,7 @@ The sidecar schema is `src/ai_archaeology/ingest/terrain_metadata.schema.json`. 
 
 The Ireland window is an open-data tile id. The US window is a buffer around a named public listing. The Turkey window is a buffer around atlas feature ids that are already in the atlas. Monument coordinates are fetched at run time into `data/` and are not written into the registry.
 
-Spatial blocks are a grid. The eastern column, plus a buffer, is the frozen test set. `extract_training_patch` raises before it reads a patch in that set. Cross-validation folds use the remaining blocks. Turkey is also excluded from training by its role.
+Spatial blocks are a grid. The eastern column, plus a buffer, is the frozen test set. A training patch is refused unless its whole window, widened by the relief-kernel radius, stays outside that strip. The same footprint rule applies to a held-out cross-validation fold. Training relief is rebuilt with those cells masked, so they never enter the kernels or the nodata fill. Turkey is excluded from training by its role.
 
 ## What 30 m can show
 

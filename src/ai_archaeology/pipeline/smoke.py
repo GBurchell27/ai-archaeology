@@ -25,6 +25,7 @@ from ai_archaeology.regions.load import load_registry
 from ai_archaeology.transfer.recall import candidate_count, random_baseline_recall, recall_at_radii, top_density_indices
 from ai_archaeology.transfer.scales import PHYSICS_NOTE, scale_rows
 from ai_archaeology.transfer.score import score_lattice, stride_pixels, valid_area_km2
+from ai_archaeology.ingest.relief_stack import relief_radius_m
 from ai_archaeology.ingest.schema import utc_now
 
 _COORDINATE = re.compile(r"\d+\.\d{4,}")
@@ -180,15 +181,18 @@ def _one_target(item: PreparedRegion, models, config: RunConfig, review_db: Path
 
 def _patch_kwargs(item: PreparedRegion, config: RunConfig) -> dict:
     return {
-        "stack": item.stack,
         "elevation": item.elevation,
         "transform": item.transform,
         "crs": item.crs,
         "sites": item.sites,
         "grid": item.grid,
+        "resolution_m": item.rung.resolution_m,
+        "relief_radius_m": relief_radius_m(item.rung.resolution_m, config.relief_radius_m),
         "patch_size": config.patch_size,
         "negatives_per_positive": config.negatives_per_positive,
         "buffer_m": config.negative_buffer_m,
+        "multi_directions": config.multi_directions,
+        "svf_directions": config.svf_directions,
     }
 
 

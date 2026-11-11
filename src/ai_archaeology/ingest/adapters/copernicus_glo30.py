@@ -8,7 +8,6 @@ are outside the public tile set; this adapter is used for a Turkey window.
 from __future__ import annotations
 
 import math
-import os
 from pathlib import Path
 
 import numpy as np
@@ -27,6 +26,13 @@ ATTRIBUTION = (
     "provided under COPERNICUS by the European Union and ESA."
 )
 NATIVE_RESOLUTION_M = 30.0
+GDAL_HTTP = {
+    "AWS_NO_SIGN_REQUEST": "YES",
+    "GDAL_DISABLE_READDIR_ON_OPEN": "EMPTY_DIR",
+    "CPL_VSIL_CURL_ALLOWED_EXTENSIONS": ".tif,.TIF,.tiff",
+    "GDAL_HTTP_CONNECTTIMEOUT": "15",
+    "GDAL_HTTP_TIMEOUT": "60",
+}
 
 
 class CopernicusGlo30Adapter:
@@ -39,7 +45,6 @@ class CopernicusGlo30Adapter:
         repo_root: Path,
     ) -> SourceTerrain:
         assert_untracked_product(destination, repo_root)
-        _prepare_gdal_http()
         _write_window(bounds_wgs84, destination)
         return SourceTerrain(
             path=destination,
@@ -69,20 +74,15 @@ def tiles_for_bounds(bounds_wgs84: tuple[float, float, float, float]) -> list[tu
     return [(latitude, longitude) for latitude in latitudes for longitude in longitudes]
 
 
-def _prepare_gdal_http() -> None:
-    os.environ.setdefault("AWS_NO_SIGN_REQUEST", "YES")
-    os.environ.setdefault("GDAL_DISABLE_READDIR_ON_OPEN", "EMPTY_DIR")
-    os.environ.setdefault("CPL_VSIL_CURL_ALLOWED_EXTENSIONS", ".tif,.TIF,.tiff")
-
-
 def _write_window(bounds_wgs84, destination: Path) -> None:
-    datasets = [rasterio.open(tile_url(lat, lon)) for lat, lon in tiles_for_bounds(bounds_wgs84)]
-    try:
-        declared_nodata = datasets[0].nodata
-        mosaic, transform = merge(datasets, bounds=bounds_wgs84, dtype="float32", nodata=NODATA)
-    finally:
-        for dataset in datasets:
-            dataset.close()
+    with rasterio.Env(**GDAL_HTTP):
+        datasets = [rasterio.open(tile_url(lat, lon)) for lat, lon in tiles_for_bounds(bounds_wgs84)]
+        try:
+            declared_nodata = datasets[0].nodata
+            mosaic, transform = merge(datasets, bounds=bounds_wgs84, dtype="float32", nodata=NODATA)
+        finally:
+            for dataset in datasets:
+                dataset.close()
     elevation = mask_voids(mosaic[0], declared_nodata)
     _write_geographic(destination, elevation, transform)
 

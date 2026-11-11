@@ -44,6 +44,7 @@ def hillshade(
     *,
     north_up: bool = True,
     columns_east: bool = True,
+    propagate_nan: bool = False,
 ) -> np.ndarray:
     """Lambert cosine hillshade in ``[0, 1]``.
 
@@ -54,7 +55,7 @@ def hillshade(
     """
     _check_altitude(altitude)
     _check_azimuth(azimuth)
-    filled, invalid = _finite_work_array(dem)
+    filled, invalid = _finite_work_array(dem, propagate_nan=propagate_nan)
     shaded = _shade_array(
         filled, pixel_size, azimuth, altitude, north_up, columns_east
     )
@@ -70,6 +71,7 @@ def multidirectional_hillshade(
     *,
     north_up: bool = True,
     columns_east: bool = True,
+    propagate_nan: bool = False,
 ) -> np.ndarray:
     """Mean of hillshades from equally spaced azimuths, still in ``[0, 1]``.
 
@@ -82,7 +84,7 @@ def multidirectional_hillshade(
         azimuths = [index * (360.0 / n_directions) for index in range(n_directions)]
     if len(azimuths) < 1:
         raise ValueError("azimuths must not be empty")
-    filled, invalid = _finite_work_array(dem)
+    filled, invalid = _finite_work_array(dem, propagate_nan=propagate_nan)
     row_spacing, col_spacing = _spacing(pixel_size)
     dz_north, dz_east = _gradients(
         filled, row_spacing, col_spacing, north_up, columns_east
@@ -97,9 +99,11 @@ def multidirectional_hillshade(
 def slope(
     dem: np.ndarray,
     pixel_size: float | tuple[float, float],
+    *,
+    propagate_nan: bool = False,
 ) -> np.ndarray:
     """Slope magnitude in degrees from horizontal (central differences)."""
-    filled, invalid = _finite_work_array(dem)
+    filled, invalid = _finite_work_array(dem, propagate_nan=propagate_nan)
     row_spacing, col_spacing = _spacing(pixel_size)
     dz_row, dz_col = np.gradient(filled, row_spacing, col_spacing)
     degrees = np.degrees(np.arctan(np.hypot(dz_col, dz_row)))
@@ -110,6 +114,8 @@ def local_relief(
     dem: np.ndarray,
     pixel_size: float | tuple[float, float],
     radius: float,
+    *,
+    propagate_nan: bool = False,
 ) -> np.ndarray:
     """DEM minus a circular moving mean of the given radius.
 
@@ -117,7 +123,7 @@ def local_relief(
     low (a ditch). This is the simple residual, not Hesse's full local-relief
     model.
     """
-    filled, invalid = _finite_work_array(dem)
+    filled, invalid = _finite_work_array(dem, propagate_nan=propagate_nan)
     smoothed = ndimage.convolve(
         filled, _disk_kernel(radius, *_spacing(pixel_size)), mode="nearest"
     )
@@ -129,6 +135,8 @@ def sky_view_factor(
     pixel_size: float | tuple[float, float],
     radius: float,
     n_directions: int = 16,
+    *,
+    propagate_nan: bool = False,
 ) -> np.ndarray:
     """Sky-view factor in ``[0, 1]`` from a horizon search.
 
@@ -141,7 +149,7 @@ def sky_view_factor(
     """
     if n_directions < 4:
         raise ValueError("n_directions must be at least 4")
-    filled, invalid = _finite_work_array(dem)
+    filled, invalid = _finite_work_array(dem, propagate_nan=propagate_nan)
     row_spacing, col_spacing = _spacing(pixel_size)
     step = min(row_spacing, col_spacing)
     _check_radius(radius, step)
@@ -329,12 +337,14 @@ def _horizon_angle(grid, rows, cols, north, east, row_spacing, col_spacing, step
     return max_angle
 
 
-def _finite_work_array(dem):
+def _finite_work_array(dem, propagate_nan: bool = False):
     grid = np.asarray(dem, dtype=np.float64)
     if grid.ndim != 2 or grid.size == 0:
         raise ValueError("DEM must be a non-empty 2-D array")
     invalid = ~np.isfinite(grid)
-    if not np.any(invalid):
+    # propagate_nan keeps masked cells out of the median fill and out of the
+    # kernels. The default fill is for ordinary nodata holes in a preview.
+    if propagate_nan or not np.any(invalid):
         return grid, invalid
     filled = grid.copy()
     median = np.nanmedian(grid)

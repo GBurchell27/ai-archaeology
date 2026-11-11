@@ -10,12 +10,12 @@ def assert_untracked_product(path: Path, repo_root: Path) -> None:
     allowed_roots = (
         (repo_root / "data").resolve(),
         (repo_root / "outputs").resolve(),
-        Path.home().resolve(),
+        (Path.home() / ".ai-archaeology").resolve(),
     )
     if any(_is_relative_to(resolved, root) for root in allowed_roots):
         return
     raise ValueError(
-        f"{resolved} is outside data/, outputs/, and the home directory"
+        f"{resolved} is outside data/, outputs/, and ~/.ai-archaeology"
     )
 
 

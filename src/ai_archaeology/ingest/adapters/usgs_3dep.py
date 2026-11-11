@@ -40,14 +40,14 @@ class Usgs3depAdapter:
         target_resolution_m: float = 1.0,
     ) -> SourceTerrain:
         assert_untracked_product(destination, repo_root)
-        _export(bounds_wgs84, destination, target_resolution_m)
+        expected_epsg = _export(bounds_wgs84, destination, target_resolution_m)
         return SourceTerrain(
             path=destination,
             source="USGS 3DEP Elevation ImageServer",
             licence="US-public-domain",
             attribution=ATTRIBUTION,
             acquisition_date=None,
-            native_resolution_m=_pixel_metres(destination),
+            native_resolution_m=_pixel_metres(destination, expected_epsg),
             vertical_datum="NAVD88",
             bare_earth=True,
             source_url=EXPORT_URL,
@@ -55,19 +55,19 @@ class Usgs3depAdapter:
         )
 
 
-def _export(bounds_wgs84, destination: Path, target_resolution_m: float) -> None:
+def _export(bounds_wgs84, destination: Path, target_resolution_m: float) -> int:
     west, south, east, north = bounds_wgs84
     centre_lon = (west + east) / 2.0
     centre_lat = (south + north) / 2.0
     width_m, height_m = _span_metres(west, south, east, north, centre_lat)
     pixels_x = max(2, int(round(width_m / target_resolution_m)))
     pixels_y = max(2, int(round(height_m / target_resolution_m)))
-    image_sr = str(utm_epsg(centre_lon, centre_lat))
+    image_sr = utm_epsg(centre_lon, centre_lat)
     query = urllib.parse.urlencode(
         {
             "bbox": f"{west},{south},{east},{north}",
             "bboxSR": "4326",
-            "imageSR": image_sr,
+            "imageSR": str(image_sr),
             "size": f"{pixels_x},{pixels_y}",
             "format": "tiff",
             "pixelType": "F32",
@@ -77,6 +77,7 @@ def _export(bounds_wgs84, destination: Path, target_resolution_m: float) -> None
         }
     )
     download_file(f"{EXPORT_URL}?{query}", destination, timeout=180)
+    return image_sr
 
 
 def _span_metres(west, south, east, north, centre_lat) -> tuple[float, float]:
@@ -86,9 +87,14 @@ def _span_metres(west, south, east, north, centre_lat) -> tuple[float, float]:
     return abs(width), abs(height)
 
 
-def _pixel_metres(path: Path) -> float:
+def _pixel_metres(path: Path, expected_epsg: int) -> float:
     with rasterio.open(path) as dataset:
+        actual = None if dataset.crs is None else dataset.crs.to_epsg()
+        if actual != expected_epsg or dataset.crs is None or not dataset.crs.is_projected:
+            raise ValueError(
+                f"3DEP export CRS {actual} does not match requested EPSG:{expected_epsg}"
+            )
         pixel = abs(float(dataset.res[0]))
-    if pixel <= 0:
-        raise ValueError("3DEP export has a zero pixel size")
+        if pixel <= 0 or not math.isclose(abs(float(dataset.res[1])), pixel, rel_tol=1e-3):
+            raise ValueError("3DEP export pixels are not square metres")
     return pixel

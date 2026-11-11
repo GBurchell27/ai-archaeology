@@ -7,6 +7,19 @@
 *.zip
 *.nc
 *.jp2
+*.npy
+*.npz
+*.pt
+*.pkl
+*.gpkg
+*.shp
+*.csv
+*.u16
+
+# Inventory dumps stay out of git. The atlas's published site files are the exception.
+*.geojson
+!Anatolia/atlas/public/sites.geojson
+!Anatolia/explorer/public/sites.geojson
 
 # Local data and generated products
 data/

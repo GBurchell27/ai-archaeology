@@ -20,6 +20,7 @@ COVERAGE_QUERY = (
     "IE_GSI_LiDAR_Coverage_GSI_Phase2_IE26_ITM/MapServer/12/query"
 )
 TILE_NAME = re.compile(r"^P_(\d{3})(\d{3})$")
+EXPECTED_LICENCE = "Creative Commons Attribution 4.0"
 ATTRIBUTION = (
     "Contains Irish Public Sector Data (Geological Survey Ireland) licensed "
     "under a Creative Commons Attribution 4.0 International (CC BY 4.0) licence."
@@ -32,13 +33,14 @@ class IrelandGsiAdapter:
     def fetch(self, tile_name: str, destination_dir: Path, repo_root: Path) -> SourceTerrain:
         assert_untracked_product(destination_dir, repo_root)
         record = _coverage_record(tile_name)
+        licence = require_gsi_licence(str(record.get("LICENCE") or ""))
         archive_path = destination_dir / f"{tile_name}.7z"
         download_file(record["DATA_URL"], archive_path)
         elevation_path = _extract_geotiff(archive_path, destination_dir, tile_name)
         return SourceTerrain(
             path=elevation_path,
             source="Geological Survey Ireland Phase 2 LiDAR DTM",
-            licence="CC-BY-4.0",
+            licence=licence,
             attribution=ATTRIBUTION,
             acquisition_date=record.get("DATECAPTUR"),
             native_resolution_m=float(record.get("RESOLUTION") or 1.0),
@@ -47,6 +49,13 @@ class IrelandGsiAdapter:
             source_url=record["DATA_URL"],
             adapter=self.adapter_id,
         )
+
+
+def require_gsi_licence(licence_text: str) -> str:
+    """Use the coverage record's licence text, and refuse a different licence."""
+    if EXPECTED_LICENCE not in licence_text:
+        raise ValueError("GSI tile licence is not Creative Commons Attribution 4.0")
+    return licence_text
 
 
 def itm_bounds_from_tile_name(tile_name: str) -> tuple[float, float, float, float]:

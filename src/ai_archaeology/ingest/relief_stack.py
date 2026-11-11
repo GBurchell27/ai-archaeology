@@ -31,15 +31,17 @@ def build_relief_stack(
     radius_m: float,
     multi_directions: int,
     svf_directions: int,
+    propagate_nan: bool = False,
 ) -> np.ndarray:
     work = np.array(elevation, dtype=np.float64, copy=True)
     work[work == NODATA] = np.nan
+    shared = {"propagate_nan": propagate_nan}
     layers = (
-        hillshade(work, resolution_m),
-        multidirectional_hillshade(work, resolution_m, n_directions=multi_directions),
-        slope(work, resolution_m),
-        local_relief(work, resolution_m, radius_m),
-        sky_view_factor(work, resolution_m, radius_m, svf_directions),
+        hillshade(work, resolution_m, **shared),
+        multidirectional_hillshade(work, resolution_m, n_directions=multi_directions, **shared),
+        slope(work, resolution_m, **shared),
+        local_relief(work, resolution_m, radius_m, **shared),
+        sky_view_factor(work, resolution_m, radius_m, svf_directions, **shared),
     )
     stack = np.stack([_finite_or_nodata(layer) for layer in layers], axis=0)
     return stack
