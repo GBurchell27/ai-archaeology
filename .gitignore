@@ -20,6 +20,7 @@
 *.geojson
 !Anatolia/atlas/public/sites.geojson
 !Anatolia/explorer/public/sites.geojson
+!Anatolia/atlas/public/wikidata/sites.geojson
 
 # Local data and generated products
 data/
