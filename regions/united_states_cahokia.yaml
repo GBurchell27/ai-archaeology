@@ -1,0 +1,31 @@
+region_id: united_states_cahokia
+role: source
+title: Public National Register polygon for Cahokia Mounds, in a 2 km window on the listing
+aoi:
+  kind: nrhp_polygon_buffer
+  name: Cahokia Mounds
+  buffer_m: 1000
+dataset:
+  adapter: usgs_3dep
+  requested_resolution_m: 1
+inventory:
+  adapter: nps_nrhp_public
+  licence: US-public-domain
+  attribution: National Park Service, National Register of Historic Places, unrestricted records only
+  note: >
+    The label is the centroid of the public NHL polygon. It is not a surveyed
+    mound plan, and this registry does not use state archaeological site files
+    or any restricted location set.
+feature_classes:
+  - id: platform_mound_complex
+    diameter_m: [200, 1000]
+    note: >
+      Cahokia as a listed complex is hundreds of metres across, so broad relief
+      can exist at 30 m. Individual small mounds are not separate labels here.
+validation:
+  block_size_m: 500
+  n_folds: 3
+  frozen:
+    method: eastern_columns
+    columns: 1
+    buffer_m: 150

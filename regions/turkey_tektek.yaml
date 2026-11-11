@@ -1,0 +1,33 @@
+region_id: turkey_tektek
+role: transfer_target
+title: Small GLO-30 window on two published atlas neolithic sites
+aoi:
+  kind: atlas_sites_buffer
+  sites_path: Anatolia/atlas/public/sites.geojson
+  site_ids:
+    - karahan-tepe
+    - harbetsuvan-tepesi
+  buffer_m: 2500
+dataset:
+  adapter: copernicus_glo30
+inventory:
+  adapter: atlas_published
+  licence: see Anatolia/atlas/public/sites.geojson sources
+  sites_path: Anatolia/atlas/public/sites.geojson
+  site_ids:
+    - karahan-tepe
+    - harbetsuvan-tepesi
+feature_classes:
+  - id: published_neolithic_site
+    diameter_m: [10, 30]
+    note: >
+      These atlas pins are published Taş Tepeler sites. The enclosures are
+      mostly 10–30 m. They are not classic höyüks, and 30 m GLO-30 does not
+      resolve them. Recall against them is a hard check, not a tell detector.
+validation:
+  block_size_m: 500
+  n_folds: 3
+  frozen:
+    method: eastern_columns
+    columns: 1
+    buffer_m: 150

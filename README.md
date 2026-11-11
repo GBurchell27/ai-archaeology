@@ -105,6 +105,14 @@ from ai_archaeology.relief import hillshade, local_relief, sky_view_factor
 
 `pytest` builds synthetic DEMs in memory: a flat plane, ramps with a known slope, and a circular mound inside a ring ditch. It checks value ranges, that the mound and ditch separate cleanly in local relief, that the ditch darkens in sky-view factor, and that written GeoTIFFs keep the CRS and transform. The test grids use an arbitrary origin. They are not placed on a real site.
 
+## Cross-region training
+
+A later slice standardises public terrain from Ireland, the United States, and Turkey, then trains only on the first two and checks recall on published atlas sites. The notes, the metadata schema, and the frozen-split rule are in [`docs/cross-region-pipeline.md`](docs/cross-region-pipeline.md). Licences are in [`docs/data-sources.md`](docs/data-sources.md). Rasters stay out of git.
+
+```bash
+python scripts/run_cross_region_smoke.py
+```
+
 ## What this does not do
 
 - It does not download elevation, LiDAR, or satellite scenes.
