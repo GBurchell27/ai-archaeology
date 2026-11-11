@@ -73,10 +73,20 @@ def context_rasters(dem: np.ndarray, pixel_m: float) -> dict[str, np.ndarray]:
     gradient[~np.isfinite(gradient)] = 90.0
     # A square mean is the regional background. A disk convolution at this
     # radius is the same idea and much slower on a full region.
+    elevation = dem.astype(np.float32)
+    invalid = ~np.isfinite(elevation)
     wide_px = max(1, int(round(2500.0 / pixel_m)))
-    background = ndimage.uniform_filter(np.nan_to_num(dem, nan=0.0).astype(np.float32), size=wide_px * 2 + 1)
-    wide = (dem.astype(np.float32) - background).astype(np.float32)
-    wide[~np.isfinite(wide)] = 0.0
+    size = wide_px * 2 + 1
+    area = float(size * size)
+    # Voids stay out of the mean. Treating them as 0 m pulls a plain down toward sea level.
+    filled = np.where(invalid, 0.0, elevation)
+    total = ndimage.uniform_filter(filled, size=size) * area
+    count = ndimage.uniform_filter((~invalid).astype(np.float32), size=size) * area
+    background = np.full(elevation.shape, np.nan, dtype=np.float32)
+    present = count > 0
+    background[present] = total[present] / count[present]
+    wide = elevation - background
+    wide[invalid] = np.nan
     radius_px = max(1, int(round(2000.0 / pixel_m)))
     size = radius_px * 2 + 1
     regional_slope = ndimage.uniform_filter(gradient, size=size).astype(np.float32)

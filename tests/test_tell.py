@@ -63,6 +63,49 @@ def test_wilson_interval_covers_a_known_proportion():
     assert wilson_interval(0, 0) == (0.0, 0.0)
 
 
+def test_nodata_does_not_enter_the_wide_mean_as_zero():
+    from ai_archaeology.eval.tell import context_rasters
+
+    dem = np.full((5, 5), 100.0, dtype=np.float32)
+    dem[:, 0] = np.nan
+    wide = context_rasters(dem, 2500.0)["wide"]
+    assert np.isnan(wide[2, 0])
+    assert abs(float(wide[2, 2])) < 1.0
+
+
+def test_select_tell_does_not_read_the_held_out_region(monkeypatch):
+    monkeypatch.setattr("ai_archaeology.eval.cv.hand_scores", lambda table, weights: np.ones(len(table), dtype=np.float32))
+    monkeypatch.setattr("ai_archaeology.eval.cv.HAND_GRID", (TellWeights(600.0, 3.0, 1.0, 1.0, 1.0),))
+
+    class Table:
+        longitude = np.array([30.0])
+        latitude = np.array([37.0])
+        features = np.ones((1, 9), dtype=np.float32)
+
+        def __len__(self):
+            return 1
+
+    class Site:
+        id = "tell"
+        longitude = 30.0
+        latitude = 37.0
+        terrain = "mound"
+
+    class Grid:
+        area_m2 = 20_000_000.0
+
+    class Train:
+        tables = {600.0: Table(), 1000.0: Table()}
+        sites = [Site()]
+        grid = Grid()
+
+    class Held:
+        def __getattribute__(self, name):
+            raise AssertionError(f"held-out region {name} was read")
+
+    select_tell({"urfa": Train(), "konya": Held()}, ["urfa"])
+
+
 def test_select_tell_uses_only_the_regions_it_is_given(monkeypatch):
     calls = []
 
