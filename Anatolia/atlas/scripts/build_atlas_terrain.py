@@ -10,6 +10,7 @@ Does not write raw GeoTIFFs. Web images go to Anatolia/atlas/public/terrain.
 
 from __future__ import annotations
 
+import argparse
 import json
 import math
 import os
@@ -29,7 +30,6 @@ import numpy as np
 import rasterio
 from PIL import Image
 from rasterio.enums import Resampling
-from rasterio.merge import merge
 from rasterio.transform import from_bounds
 from rasterio.warp import reproject, transform_bounds
 
@@ -57,6 +57,12 @@ SAT_CREDIT = (
 
 
 def main() -> None:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--details-only", action="store_true")
+    args = parser.parse_args()
+    if args.details_only:
+        refresh_site_details()
+        return
     print("mosaic GLO-90", flush=True)
     geographic, geo_transform = mosaic_glo90()
     print(f"  geographic {geographic.shape[1]} x {geographic.shape[0]}", flush=True)
@@ -71,7 +77,7 @@ def main() -> None:
     Image.fromarray(hypsometric(grid), "RGB").save(national / "hypsometric.jpg", quality=80, optimize=True)
     left, bottom, right, top = bounds_of(dst_transform, grid.shape[1], grid.shape[0])
     print("satellite mosaic", flush=True)
-    satellite(left, bottom, right, top, grid.shape[1], grid.shape[0], national / "satellite.jpg")
+    satellite(left, bottom, right, top, grid.shape[1], grid.shape[0], national / "satellite.jpg", zoom=7)
     sites = json.loads(SITES.read_text())
     details = {}
     details.update(copy_sanliurfa())
@@ -173,8 +179,23 @@ def warp_national(grid: np.ndarray, transform: rasterio.Affine):
     return destination, dst_transform, actual
 
 
-def satellite(left: float, bottom: float, right: float, top: float, width: int, height: int, path: Path) -> None:
-    zoom = 7
+def refresh_site_details() -> None:
+    """Replace Crusader windows with ~10 km GLO-30 tiles. Keeps the national mosaic."""
+    metadata_path = OUT / "metadata.json"
+    metadata = json.loads(metadata_path.read_text())
+    sites = json.loads(SITES.read_text())
+    details = {key: value for key, value in metadata["details"].items() if key not in {
+        feature["id"] for feature in sites["features"] if feature["properties"]["layer"] == "crusader"
+    }}
+    details.update(copy_sanliurfa())
+    details.update(crusader_details(sites))
+    metadata["details"] = details
+    metadata_path.write_text(json.dumps(metadata, indent=2) + "\n")
+    total = sum(path.stat().st_size for path in OUT.rglob("*") if path.is_file())
+    print(f"updated details in {OUT} ({total / 1_048_576:.1f} MB)", flush=True)
+
+
+def satellite(left: float, bottom: float, right: float, top: float, width: int, height: int, path: Path, zoom: int = 7) -> None:
     x0, y_north = world_to_tile(mercator_to_lon(left), mercator_to_lat(top), zoom)
     x1, y_south = world_to_tile(mercator_to_lon(right), mercator_to_lat(bottom), zoom)
     xs = range(math.floor(min(x0, x1)), math.floor(max(x0, x1)) + 1)
@@ -224,8 +245,8 @@ def copy_sanliurfa() -> dict:
     return copied
 
 
-def crusader_details(sites: dict, geographic: np.ndarray, transform: rasterio.Affine) -> dict:
-    """Finer GLO-90 windows for crusader pins. Şanlıurfa tiles already cover the Neolithic set."""
+def crusader_details(sites: dict, geographic: np.ndarray | None = None, transform: rasterio.Affine | None = None) -> dict:
+    """About 10 km of GLO-30 around each Crusader pin, plus an EOX cloudless drape."""
     del geographic, transform
     details = {}
     for feature in sites["features"]:
@@ -244,8 +265,9 @@ def crusader_details(sites: dict, geographic: np.ndarray, transform: rasterio.Af
         elevation = write_height(out_dir / "height.u16", array)
         pixel = (right - left) / array.shape[1]
         shade = hillshade(array, (abs((top - bottom) / array.shape[0]), pixel), azimuth=315, altitude=45)
-        Image.fromarray(gray(shade), "RGB").save(out_dir / "hillshade.jpg", quality=82, optimize=True)
-        Image.fromarray(hypsometric(array), "RGB").save(out_dir / "hypsometric.jpg", quality=82, optimize=True)
+        Image.fromarray(gray(shade), "RGB").save(out_dir / "hillshade.jpg", quality=86, optimize=True)
+        Image.fromarray(hypsometric(array), "RGB").save(out_dir / "hypsometric.jpg", quality=86, optimize=True)
+        satellite(left, bottom, right, top, array.shape[1], array.shape[0], out_dir / "satellite.jpg", zoom=11)
         details[site_id] = {
             "bounds": [left, bottom, right, top],
             "width": int(array.shape[1]),
@@ -255,46 +277,67 @@ def crusader_details(sites: dict, geographic: np.ndarray, transform: rasterio.Af
             "rasters": {
                 "hillshade": f"details/{site_id}/hillshade.jpg",
                 "hypsometric": f"details/{site_id}/hypsometric.jpg",
+                "satellite": f"details/{site_id}/satellite.jpg",
             },
         }
     return details
 
 
 def read_site_window(longitude: float, latitude: float):
-    """About 15 km of GLO-90 around a published point, including tiles the box crosses."""
-    span = 0.14
-    left, right = longitude - span / 2, longitude + span / 2
-    bottom, top = latitude - span / 2, latitude + span / 2
+    """A 10 km GLO-30 window, about 40 m cells, including any tile the box crosses."""
+    centre_x, centre_y = _mercator(longitude, latitude)
+    half = 5000.0
+    left, bottom, right, top = centre_x - half, centre_y - half, centre_x + half, centre_y + half
+    west, south = _inverse(left, bottom)
+    east, north = _inverse(right, top)
     datasets = []
-    for lat_tile in range(math.floor(bottom), math.floor(top) + 1):
-        for lon_tile in range(math.floor(left), math.floor(right) + 1):
-            name = f"Copernicus_DSM_COG_30_N{lat_tile}_00_E{lon_tile:03d}_00_DEM"
-            url = f"https://copernicus-dem-90m.s3.amazonaws.com/{name}/{name}.tif"
+    for lat_tile in range(math.floor(south), math.floor(north) + 1):
+        for lon_tile in range(math.floor(west), math.floor(east) + 1):
+            name = f"Copernicus_DSM_COG_10_N{lat_tile}_00_E{lon_tile:03d}_00_DEM"
+            url = f"https://copernicus-dem-30m.s3.amazonaws.com/{name}/{name}.tif"
             try:
                 datasets.append(rasterio.open(url))
             except Exception:
                 continue
     if not datasets:
         return None
+    pixels = 256
+    array = np.full((pixels, pixels), np.nan, dtype=np.float32)
+    dst_transform = from_bounds(left, bottom, right, top, pixels, pixels)
     try:
-        mosaic, _mosaic_transform = merge(datasets, bounds=(left, bottom, right, top), nodata=-9999, dtype="float32")
+        for dataset in datasets:
+            staged = np.full_like(array, np.nan)
+            reproject(
+                source=rasterio.band(dataset, 1),
+                destination=staged,
+                src_transform=dataset.transform,
+                src_crs=dataset.crs,
+                dst_transform=dst_transform,
+                dst_crs=DST,
+                dst_nodata=np.nan,
+                resampling=Resampling.bilinear,
+            )
+            finite = np.isfinite(staged) & (staged > -1000)
+            array[finite] = staged[finite]
     finally:
         for dataset in datasets:
             dataset.close()
-    source = mosaic[0].astype(np.float32)
-    source[source < -1000] = np.nan
-    array = np.zeros((80, 80), dtype=np.float32)
-    reproject(
-        source=np.where(np.isfinite(source), source, 0),
-        destination=array,
-        src_transform=from_bounds(left, bottom, right, top, source.shape[1], source.shape[0]),
-        src_crs="EPSG:4326",
-        dst_transform=from_bounds(left, bottom, right, top, 80, 80),
-        dst_crs="EPSG:4326",
-        resampling=Resampling.bilinear,
-    )
-    mercator = transform_bounds("EPSG:4326", DST, left, bottom, right, top)
-    return array, mercator[0], mercator[1], mercator[2], mercator[3]
+    array[~np.isfinite(array)] = 0
+    return array, left, bottom, right, top
+
+
+def _mercator(longitude: float, latitude: float) -> tuple[float, float]:
+    radius = 6378137.0
+    x_coord = radius * math.radians(longitude)
+    y_coord = radius * math.log(math.tan(math.pi / 4 + math.radians(latitude) / 2))
+    return x_coord, y_coord
+
+
+def _inverse(x_coord: float, y_coord: float) -> tuple[float, float]:
+    radius = 6378137.0
+    longitude = math.degrees(x_coord / radius)
+    latitude = math.degrees(2 * math.atan(math.exp(y_coord / radius)) - math.pi / 2)
+    return longitude, latitude
 
 
 def write_height(path: Path, grid: np.ndarray) -> dict[str, float]:

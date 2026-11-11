@@ -2,7 +2,7 @@
 
 import { Html, OrbitControls, useTexture } from "@react-three/drei";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { Suspense, useEffect, useMemo, useRef } from "react";
+import { Suspense, useEffect, useMemo, useRef, useState, type MutableRefObject } from "react";
 import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
 import * as THREE from "three";
 import { boundsCenter, lonLatToMercator, sampleHeight, toLocal } from "@/lib/geo";
@@ -209,6 +209,11 @@ function SitePins(props: {
   selectedId: string | null;
   onSelect: (siteId: string) => void;
 }) {
+  const spread = useRef(0);
+  const clusterIds = useMemo(() => clusteredSiteIds(props.sites), [props.sites]);
+  useFrame(({ camera }) => {
+    spread.current = THREE.MathUtils.clamp((camera.position.length() - 140000) / 420000, 0, 1);
+  });
   return (
     <group>
       {props.sites.map((site) => (
@@ -222,10 +227,22 @@ function SitePins(props: {
           labels={props.labels}
           selected={site.id === props.selectedId}
           onSelect={props.onSelect}
+          spread={spread}
+          clusterIndex={clusterIds.indexOf(site.id)}
+          clusterCount={clusterIds.length}
         />
       ))}
     </group>
   );
+}
+
+function clusteredSiteIds(sites: SiteFeature[]): string[] {
+  return sites
+    .filter((site) => {
+      const [longitude, latitude] = site.geometry.coordinates;
+      return (longitude - 38.95) ** 2 + (latitude - 37.15) ** 2 < 0.55 ** 2;
+    })
+    .map((site) => site.id);
 }
 
 function SitePin(props: {
@@ -237,6 +254,9 @@ function SitePin(props: {
   labels: boolean;
   selected: boolean;
   onSelect: (siteId: string) => void;
+  spread: MutableRefObject<number>;
+  clusterIndex: number;
+  clusterCount: number;
 }) {
   const [east, north] = lonLatToMercator(props.site.geometry.coordinates[0], props.site.geometry.coordinates[1]);
   const elevation = sampleHeight(
@@ -248,45 +268,111 @@ function SitePin(props: {
     north,
   );
   const [xCoord, zCoord] = toLocal(props.site.geometry.coordinates[0], props.site.geometry.coordinates[1], props.origin);
-  const yCoord = (elevation - props.metadata.elevation.min) * props.exaggeration + 30;
-  const mesh = useRef<THREE.Mesh>(null);
-  const worldPoint = useRef(new THREE.Vector3());
+  const yCoord = (elevation - props.metadata.elevation.min) * props.exaggeration + 40;
+  const marker = useRef<THREE.Group>(null);
+  const [hovered, setHovered] = useState(false);
   const approximate = props.site.properties.confidence === "approximate";
   const color = LAYER_STYLE[props.site.properties.layer].color;
-  useFrame(({ camera }) => {
-    if (!mesh.current) {
+  const textures = useMarkerTextures();
+  useFrame(() => {
+    if (!marker.current) {
       return;
     }
-    mesh.current.getWorldPosition(worldPoint.current);
-    const distance = camera.position.distanceTo(worldPoint.current);
-    const boost = props.selected ? 1.25 : 1;
-    const scale = Math.min(6000, Math.max(280, distance * 0.0032)) * boost;
-    mesh.current.scale.setScalar(scale);
+    const amount = props.selected || props.clusterIndex < 0 ? 0 : props.spread.current;
+    const angle = props.clusterCount > 0 ? (props.clusterIndex / props.clusterCount) * Math.PI * 2 : 0;
+    const radius = 78000 * amount;
+    marker.current.position.set(Math.cos(angle) * radius, 0, Math.sin(angle) * radius);
   });
+  const scale = props.selected ? 0.046 : 0.032;
   return (
     <group position={[xCoord, yCoord, zCoord]}>
-      <mesh
-        ref={mesh}
-        rotation={approximate ? [-Math.PI / 2, 0, 0] : [0, 0, 0]}
-        onClick={(event) => {
-          event.stopPropagation();
-          props.onSelect(props.site.id);
-        }}
-      >
-        {approximate ? <ringGeometry args={[0.55, 0.9, 28]} /> : <sphereGeometry args={[0.55, 18, 14]} />}
-        <meshBasicMaterial color={color} side={THREE.DoubleSide} />
-      </mesh>
-      {props.labels ? <PinLabel name={props.site.properties.name} /> : null}
+      {props.selected ? (
+        <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 140, 0]} renderOrder={3}>
+          <ringGeometry args={[420, 680, 48]} />
+          <meshBasicMaterial color={color} transparent opacity={0.85} side={THREE.DoubleSide} depthTest={false} />
+        </mesh>
+      ) : null}
+      <group ref={marker}>
+        <sprite
+          scale={[scale * 1.45, scale * 1.45, 1]}
+          onClick={(event) => {
+            event.stopPropagation();
+            props.onSelect(props.site.id);
+          }}
+          onPointerOver={(event) => {
+            event.stopPropagation();
+            setHovered(true);
+          }}
+          onPointerOut={() => setHovered(false)}
+        >
+          <spriteMaterial map={textures.halo} color={color} transparent depthTest={false} sizeAttenuation={false} />
+        </sprite>
+        <sprite scale={[scale, scale, 1]}>
+          <spriteMaterial
+            map={approximate ? textures.open : textures.filled}
+            color={color}
+            transparent
+            depthTest={false}
+            sizeAttenuation={false}
+          />
+        </sprite>
+        {hovered || props.selected || props.labels ? (
+          <Html center zIndexRange={[20, 0]} style={{ pointerEvents: "none" }}>
+            <span className="tip is-shown">{props.site.properties.name}</span>
+          </Html>
+        ) : null}
+      </group>
     </group>
   );
 }
 
-function PinLabel({ name }: { name: string }) {
-  return (
-    <Html center distanceFactor={90000} style={{ pointerEvents: "none" }}>
-      <span className="pin-name">{name}</span>
-    </Html>
-  );
+function useMarkerTextures() {
+  return useMemo(() => ({
+    filled: paintMarker(true),
+    open: paintMarker(false),
+    halo: paintHalo(),
+  }), []);
+}
+
+function paintMarker(filled: boolean): THREE.CanvasTexture {
+  const canvas = document.createElement("canvas");
+  canvas.width = 64;
+  canvas.height = 64;
+  const context = canvas.getContext("2d");
+  if (!context) {
+    throw new Error("Could not draw a site marker");
+  }
+  context.clearRect(0, 0, 64, 64);
+  context.beginPath();
+  context.arc(32, 32, 18, 0, Math.PI * 2);
+  context.lineWidth = 8;
+  context.strokeStyle = "#fff8ee";
+  context.stroke();
+  if (filled) {
+    context.fillStyle = "#ffffff";
+    context.fill();
+  }
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.colorSpace = THREE.NoColorSpace;
+  return texture;
+}
+
+function paintHalo(): THREE.CanvasTexture {
+  const canvas = document.createElement("canvas");
+  canvas.width = 64;
+  canvas.height = 64;
+  const context = canvas.getContext("2d");
+  if (!context) {
+    throw new Error("Could not draw a site halo");
+  }
+  const gradient = context.createRadialGradient(32, 32, 8, 32, 32, 30);
+  gradient.addColorStop(0, "rgba(255,255,255,0.9)");
+  gradient.addColorStop(1, "rgba(255,255,255,0)");
+  context.fillStyle = gradient;
+  context.fillRect(0, 0, 64, 64);
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.colorSpace = THREE.NoColorSpace;
+  return texture;
 }
 
 function CameraRig({ pose, span }: { pose: CameraPose; span: number }) {
@@ -314,6 +400,14 @@ function CameraRig({ pose, span }: { pose: CameraPose; span: number }) {
 
   useFrame(() => {
     const orbit = controls.current;
+    if (orbit) {
+      const debugWindow = window as Window & {
+        __atlasCamera?: typeof camera;
+        __atlasControls?: typeof orbit;
+      };
+      debugWindow.__atlasCamera = camera;
+      debugWindow.__atlasControls = orbit;
+    }
     const current = flight.current;
     if (!orbit || !current) {
       return;
@@ -335,9 +429,13 @@ function CameraRig({ pose, span }: { pose: CameraPose; span: number }) {
       ref={controls}
       makeDefault
       enableDamping
-      maxPolarAngle={Math.PI / 2 - 0.04}
-      minDistance={800}
-      maxDistance={span * 2}
+      dampingFactor={0.08}
+      zoomSpeed={0.65}
+      panSpeed={0.7}
+      rotateSpeed={0.5}
+      maxPolarAngle={Math.PI / 2 - 0.03}
+      minDistance={600}
+      maxDistance={span * 2.4}
     />
   );
 }

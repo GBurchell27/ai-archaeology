@@ -18,6 +18,7 @@ const RASTER_TITLES: Record<string, string> = {
   "false-colour": "Sentinel-2 false colour",
   ndvi: "NDVI",
   hypsometric: "Hypsometric tint",
+  satellite: "Sentinel-2 cloudless",
 };
 
 export function AtlasApp() {
@@ -325,16 +326,18 @@ function SitePanel(props: {
       <p>{properties.period}. {formatYear(properties.startYear)} – {formatYear(properties.endYear)}.</p>
       <p>{properties.description}</p>
       <p>{properties.notes}</p>
-      <p><a href={properties.sourceUrl} target="_blank" rel="noreferrer">{properties.source}</a></p>
+      <p className="source-line"><a href={properties.sourceUrl} target="_blank" rel="noreferrer">{properties.source}</a></p>
       {props.rasters.length > 0 ? (
-        <>
+        <section className="place-layers">
           <h2>This place</h2>
+          <div className="layer-pills">
           {props.rasters.map(([id]) => (
             <label className="check" key={id}>
               <input type="radio" name="detail" checked={props.detailLayer === id} data-detail-layer={id} onChange={() => props.onLayer(id)} />
               {RASTER_TITLES[id] ?? id}
             </label>
           ))}
+          </div>
           <label>Opacity <input type="range" min={0.2} max={1} step={0.05} value={props.opacity} data-role="opacity" onChange={(event) => props.onOpacity(Number(event.target.value))} /></label>
           <label className="check">
             <input type="checkbox" checked={props.compare} data-role="compare" onChange={(event) => props.onCompare(event.target.checked)} />
@@ -344,7 +347,7 @@ function SitePanel(props: {
             {props.rasters.map(([id]) => <option key={id} value={id}>{RASTER_TITLES[id] ?? id}</option>)}
           </select>
           <label>Swipe <input type="range" min={0} max={100} value={props.split * 100} data-role="swipe" onChange={(event) => props.onSplit(Number(event.target.value) / 100)} /></label>
-        </>
+        </section>
       ) : null}
     </aside>
   );
@@ -360,11 +363,10 @@ function GearIcon() {
 }
 
 function overviewPose(metadata: AtlasMetadata, token: number): CameraPose {
-  const width = metadata.bounds[2] - metadata.bounds[0];
   const depth = metadata.bounds[3] - metadata.bounds[1];
   return {
-    position: [0, width * 0.62, depth * 0.22],
-    target: [0, 0, -depth * 0.04],
+    position: [depth * 0.04, depth * 0.34, depth * 0.86],
+    target: [0, depth * 0.015, -depth * 0.22],
     token,
   };
 }
@@ -390,8 +392,8 @@ function preferredLayer(rasters: Record<string, string>, baseMap: BaseMap): stri
   if (baseMap === "satellite" && rasters["true-colour"]) {
     return "true-colour";
   }
-  if (baseMap === "hypsometric" && rasters.hypsometric) {
-    return "hypsometric";
+  if (baseMap === "satellite" && rasters.satellite) {
+    return "satellite";
   }
   if (rasters.hillshade) {
     return "hillshade";

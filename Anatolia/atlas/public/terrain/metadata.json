@@ -176,344 +176,362 @@
     },
     "edessa": {
       "bounds": [
-        4310476.216371273,
-        4451426.476823326,
-        4326060.945082331,
-        4470981.477742352
+        4313268.580726801,
+        4456199.450569973,
+        4323268.580726801,
+        4466199.450569973
       ],
-      "width": 80,
-      "height": 80,
-      "pixelSizeM": 194.80910888822982,
+      "width": 256,
+      "height": 256,
+      "pixelSizeM": 39.0625,
       "elevation": {
-        "min": 436.30816650390625,
-        "max": 819.5841674804688
+        "min": 457.18603515625,
+        "max": 769.239990234375
       },
       "rasters": {
         "hillshade": "details/edessa/hillshade.jpg",
-        "hypsometric": "details/edessa/hypsometric.jpg"
+        "hypsometric": "details/edessa/hypsometric.jpg",
+        "satellite": "details/edessa/satellite.jpg"
       }
     },
     "antioch": {
       "bounds": [
-        4017582.267385548,
-        4318868.517466003,
-        4033166.9960966064,
-        4338182.025494163
+        4020374.631741077,
+        4323520.953685321,
+        4030374.631741077,
+        4333520.953685321
       ],
-      "width": 80,
-      "height": 80,
-      "pixelSizeM": 194.80910888822982,
+      "width": 256,
+      "height": 256,
+      "pixelSizeM": 39.0625,
       "elevation": {
-        "min": 36.9954719543457,
-        "max": 588.4124755859375
+        "min": 51.97039031982422,
+        "max": 597.7279663085938
       },
       "rasters": {
         "hillshade": "details/antioch/hillshade.jpg",
-        "hypsometric": "details/antioch/hypsometric.jpg"
+        "hypsometric": "details/antioch/hypsometric.jpg",
+        "satellite": "details/antioch/satellite.jpg"
       }
     },
     "nicaea": {
       "bounds": [
-        3300746.5902199764,
-        4918273.496799151,
-        3316331.318931035,
-        4938747.18135267
+        3303538.9545755056,
+        4923505.011579681,
+        3313538.9545755056,
+        4933505.011579681
       ],
-      "width": 80,
-      "height": 80,
-      "pixelSizeM": 194.80910888823564,
+      "width": 256,
+      "height": 256,
+      "pixelSizeM": 39.0625,
       "elevation": {
         "min": 83.0,
-        "max": 885.2832641601562
+        "max": 565.0721435546875
       },
       "rasters": {
         "hillshade": "details/nicaea/hillshade.jpg",
-        "hypsometric": "details/nicaea/hypsometric.jpg"
+        "hypsometric": "details/nicaea/hypsometric.jpg",
+        "satellite": "details/nicaea/satellite.jpg"
       }
     },
     "dorylaeum": {
       "bounds": [
-        3389745.286349656,
-        4823411.814565124,
-        3405330.015060715,
-        4843690.08446637
+        3392537.6507051857,
+        4828545.793428087,
+        3402537.6507051857,
+        4838545.793428087
       ],
-      "width": 80,
-      "height": 80,
-      "pixelSizeM": 194.80910888823564,
+      "width": 256,
+      "height": 256,
+      "pixelSizeM": 39.0625,
       "elevation": {
-        "min": 780.3605346679688,
-        "max": 1008.2269287109375
+        "min": 781.0,
+        "max": 950.3179931640625
       },
       "rasters": {
         "hillshade": "details/dorylaeum/hillshade.jpg",
-        "hypsometric": "details/dorylaeum/hypsometric.jpg"
+        "hypsometric": "details/dorylaeum/hypsometric.jpg",
+        "satellite": "details/dorylaeum/satellite.jpg"
       }
     },
     "constantinople": {
       "bounds": [
-        3218246.478833539,
-        5003864.122854284,
-        3233831.2075445973,
-        5024518.021283609
+        3221038.8431890686,
+        5009185.585863031,
+        3231038.8431890686,
+        5019185.585863031
       ],
-      "width": 80,
-      "height": 80,
-      "pixelSizeM": 194.80910888822982,
+      "width": 256,
+      "height": 256,
+      "pixelSizeM": 39.0625,
       "elevation": {
-        "min": 0.0,
-        "max": 148.11929321289062
+        "min": -11.05123519897461,
+        "max": 101.36245727539062
       },
       "rasters": {
         "hillshade": "details/constantinople/hillshade.jpg",
-        "hypsometric": "details/constantinople/hypsometric.jpg"
+        "hypsometric": "details/constantinople/hypsometric.jpg",
+        "satellite": "details/constantinople/satellite.jpg"
       }
     },
     "turbessel": {
       "bounds": [
-        4171759.762134232,
-        4412501.735626636,
-        4187344.49084529,
-        4431984.950136365
+        4174552.126489761,
+        4417238.878312982,
+        4184552.126489761,
+        4427238.878312982
       ],
-      "width": 80,
-      "height": 80,
-      "pixelSizeM": 194.809108888224,
+      "width": 256,
+      "height": 256,
+      "pixelSizeM": 39.0625,
       "elevation": {
-        "min": 551.1304321289062,
-        "max": 790.5216674804688
+        "min": 575.7195434570312,
+        "max": 736.4408569335938
       },
       "rasters": {
         "hillshade": "details/turbessel/hillshade.jpg",
-        "hypsometric": "details/turbessel/hypsometric.jpg"
+        "hypsometric": "details/turbessel/hypsometric.jpg",
+        "satellite": "details/turbessel/satellite.jpg"
       }
     },
     "ravendel": {
       "bounds": [
-        4117006.42901221,
-        4411707.31511132,
-        4132591.157723268,
-        4431189.072108121
+        4119798.793367739,
+        4416443.73030254,
+        4129798.793367739,
+        4426443.73030254
       ],
-      "width": 80,
-      "height": 80,
-      "pixelSizeM": 194.809108888224,
+      "width": 256,
+      "height": 256,
+      "pixelSizeM": 39.0625,
       "elevation": {
-        "min": 400.85699462890625,
-        "max": 959.9374389648438
+        "min": 426.6090087890625,
+        "max": 968.6846313476562
       },
       "rasters": {
         "hillshade": "details/ravendel/hillshade.jpg",
-        "hypsometric": "details/ravendel/hypsometric.jpg"
+        "hypsometric": "details/ravendel/hypsometric.jpg",
+        "satellite": "details/ravendel/satellite.jpg"
       }
     },
     "rumkale": {
       "bounds": [
-        4204320.713191264,
-        4467292.743443944,
-        4219905.441902324,
-        4486877.214872247
+        4207113.077546794,
+        4472080.426920858,
+        4217113.077546794,
+        4482080.426920858
       ],
-      "width": 80,
-      "height": 80,
-      "pixelSizeM": 194.80910888824147,
+      "width": 256,
+      "height": 256,
+      "pixelSizeM": 39.0625,
       "elevation": {
         "min": 380.0,
-        "max": 744.1699829101562
+        "max": 678.7093505859375
       },
       "rasters": {
         "hillshade": "details/rumkale/hillshade.jpg",
-        "hypsometric": "details/rumkale/hypsometric.jpg"
+        "hypsometric": "details/rumkale/hypsometric.jpg",
+        "satellite": "details/rumkale/satellite.jpg"
       }
     },
     "birecik": {
       "bounds": [
-        4219781.752589713,
-        4432836.222334347,
-        4235366.48130077,
-        4452356.847493229
+        4222574.116945242,
+        4437592.037964527,
+        4232574.116945242,
+        4447592.037964527
       ],
-      "width": 80,
-      "height": 80,
-      "pixelSizeM": 194.8091088882182,
+      "width": 256,
+      "height": 256,
+      "pixelSizeM": 39.0625,
       "elevation": {
-        "min": 336.0,
-        "max": 550.26025390625
+        "min": 335.94927978515625,
+        "max": 520.546142578125
       },
       "rasters": {
         "hillshade": "details/birecik/hillshade.jpg",
-        "hypsometric": "details/birecik/hypsometric.jpg"
+        "hypsometric": "details/birecik/hypsometric.jpg",
+        "satellite": "details/birecik/satellite.jpg"
       }
     },
     "samosata": {
       "bounds": [
-        4275936.251897206,
-        4510356.674887237,
-        4291520.980608264,
-        4530021.747739624
+        4278728.616252735,
+        4515184.58922707,
+        4288728.616252735,
+        4525184.58922707
       ],
-      "width": 80,
-      "height": 80,
-      "pixelSizeM": 194.80910888822982,
+      "width": 256,
+      "height": 256,
+      "pixelSizeM": 39.0625,
       "elevation": {
         "min": 537.0,
-        "max": 708.8306274414062
+        "max": 668.205078125
       },
       "rasters": {
         "hillshade": "details/samosata/hillshade.jpg",
-        "hypsometric": "details/samosata/hypsometric.jpg"
+        "hypsometric": "details/samosata/hypsometric.jpg",
+        "satellite": "details/samosata/satellite.jpg"
       }
     },
     "marash": {
       "bounds": [
-        4103607.49523831,
-        4510902.428312038,
-        4119192.223949368,
-        4530568.528395066
+        4106399.85959384,
+        4515730.855376591,
+        4116399.85959384,
+        4525730.855376591
       ],
-      "width": 80,
-      "height": 80,
-      "pixelSizeM": 194.809108888224,
+      "width": 256,
+      "height": 256,
+      "pixelSizeM": 39.0625,
       "elevation": {
-        "min": 331.88055419921875,
-        "max": 1976.1253662109375
+        "min": 446.4582824707031,
+        "max": 1450.9521484375
       },
       "rasters": {
         "hillshade": "details/marash/hillshade.jpg",
-        "hypsometric": "details/marash/hypsometric.jpg"
+        "hypsometric": "details/marash/hypsometric.jpg",
+        "satellite": "details/marash/satellite.jpg"
       }
     },
     "baghras": {
       "bounds": [
-        4024756.189630806,
-        4349848.186103544,
-        4040340.9183418644,
-        4369217.3797555715
+        4027548.5539863356,
+        4354528.4169922685,
+        4037548.5539863356,
+        4364528.4169922685
       ],
-      "width": 80,
-      "height": 80,
-      "pixelSizeM": 194.80910888822982,
+      "width": 256,
+      "height": 256,
+      "pixelSizeM": 39.0625,
       "elevation": {
-        "min": 75.9659423828125,
-        "max": 1214.32177734375
+        "min": 78.75129699707031,
+        "max": 947.3778076171875
       },
       "rasters": {
         "hillshade": "details/baghras/hillshade.jpg",
-        "hypsometric": "details/baghras/hypsometric.jpg"
+        "hypsometric": "details/baghras/hypsometric.jpg",
+        "satellite": "details/baghras/satellite.jpg"
       }
     },
     "tarsus": {
       "bounds": [
-        3876712.398824831,
-        4417732.4096356705,
-        3892297.12753589,
-        4437225.22836325
+        3879504.7631803607,
+        4422474.346119029,
+        3889504.7631803607,
+        4432474.346119029
       ],
-      "width": 80,
-      "height": 80,
-      "pixelSizeM": 194.80910888823564,
+      "width": 256,
+      "height": 256,
+      "pixelSizeM": 39.0625,
       "elevation": {
-        "min": 1.758813500404358,
-        "max": 215.90573120117188
+        "min": 6.319052219390869,
+        "max": 147.5831756591797
       },
       "rasters": {
         "hillshade": "details/tarsus/hillshade.jpg",
-        "hypsometric": "details/tarsus/hypsometric.jpg"
+        "hypsometric": "details/tarsus/hypsometric.jpg",
+        "satellite": "details/tarsus/satellite.jpg"
       }
     },
     "mamistra": {
       "bounds": [
-        3957840.806955427,
-        4423475.979307646,
-        3973425.5356664853,
-        4442979.359141339
+        3960633.1713109557,
+        4428223.18720322,
+        3970633.1713109557,
+        4438223.18720322
       ],
-      "width": 80,
-      "height": 80,
-      "pixelSizeM": 194.80910888822982,
+      "width": 256,
+      "height": 256,
+      "pixelSizeM": 39.0625,
       "elevation": {
-        "min": 7.091400623321533,
-        "max": 740.62451171875
+        "min": 11.5,
+        "max": 644.2808837890625
       },
       "rasters": {
         "hillshade": "details/mamistra/hillshade.jpg",
-        "hypsometric": "details/mamistra/hypsometric.jpg"
+        "hypsometric": "details/mamistra/hypsometric.jpg",
+        "satellite": "details/mamistra/satellite.jpg"
       }
     },
     "adana": {
       "bounds": [
-        3924160.476079553,
-        4429354.176187223,
-        3939745.204790611,
-        4448868.381096872
+        3926952.8404350826,
+        4434106.787250583,
+        3936952.8404350826,
+        4444106.787250583
       ],
-      "width": 80,
-      "height": 80,
-      "pixelSizeM": 194.809108888224,
+      "width": 256,
+      "height": 256,
+      "pixelSizeM": 39.0625,
       "elevation": {
-        "min": 6.340500354766846,
-        "max": 173.13409423828125
+        "min": 14.26073169708252,
+        "max": 87.21824645996094
       },
       "rasters": {
         "hillshade": "details/adana/hillshade.jpg",
-        "hypsometric": "details/adana/hypsometric.jpg"
+        "hypsometric": "details/adana/hypsometric.jpg",
+        "satellite": "details/adana/satellite.jpg"
       }
     },
     "saleph": {
       "bounds": [
-        3769525.3346590735,
-        4342823.950800613,
-        3785110.0633701324,
-        4362180.4783451045
+        3772317.6990146027,
+        4347497.859587312,
+        3782317.6990146027,
+        4357497.859587312
       ],
-      "width": 80,
-      "height": 80,
-      "pixelSizeM": 194.80910888823564,
+      "width": 256,
+      "height": 256,
+      "pixelSizeM": 39.0625,
       "elevation": {
-        "min": -0.051001451909542084,
-        "max": 647.2692260742188
+        "min": 1.571075677871704,
+        "max": 401.9090270996094
       },
       "rasters": {
         "hillshade": "details/saleph/hillshade.jpg",
-        "hypsometric": "details/saleph/hypsometric.jpg"
+        "hypsometric": "details/saleph/hypsometric.jpg",
+        "satellite": "details/saleph/satellite.jpg"
       }
     },
     "smyrna-hospitaller": {
       "bounds": [
-        3013325.849902653,
-        4628790.600741782,
-        3028910.578613711,
-        4648681.9900559345
+        3016118.2142581823,
+        4633731.476816853,
+        3026118.2142581823,
+        4643731.476816853
       ],
-      "width": 80,
-      "height": 80,
-      "pixelSizeM": 194.809108888224,
+      "width": 256,
+      "height": 256,
+      "pixelSizeM": 39.0625,
       "elevation": {
-        "min": -0.13718800246715546,
-        "max": 417.2722473144531
+        "min": -8.47083854675293,
+        "max": 266.6581726074219
       },
       "rasters": {
         "hillshade": "details/smyrna-hospitaller/hillshade.jpg",
-        "hypsometric": "details/smyrna-hospitaller/hypsometric.jpg"
+        "hypsometric": "details/smyrna-hospitaller/hypsometric.jpg",
+        "satellite": "details/smyrna-hospitaller/satellite.jpg"
       }
     },
     "bodrum-petronion": {
       "bounds": [
-        3045639.4234476597,
-        4433764.961455859,
-        3061224.152158718,
-        4453287.300023436
+        3048431.7878031894,
+        4438521.632307085,
+        3058431.7878031894,
+        4448521.632307085
       ],
-      "width": 80,
-      "height": 80,
-      "pixelSizeM": 194.80910888822982,
+      "width": 256,
+      "height": 256,
+      "pixelSizeM": 39.0625,
       "elevation": {
-        "min": 0.0,
-        "max": 654.6104125976562
+        "min": -0.0929931253194809,
+        "max": 407.1934814453125
       },
       "rasters": {
         "hillshade": "details/bodrum-petronion/hillshade.jpg",
-        "hypsometric": "details/bodrum-petronion/hypsometric.jpg"
+        "hypsometric": "details/bodrum-petronion/hypsometric.jpg",
+        "satellite": "details/bodrum-petronion/satellite.jpg"
       }
     }
   },
