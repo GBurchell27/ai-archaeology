@@ -2,6 +2,8 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { AtlasScene, type CameraPose } from "@/components/AtlasScene";
+import { OccupationBar } from "@/components/OccupationBar";
+import { PlaceMaps } from "@/components/PlaceMaps";
 import { WikidataPanel } from "@/components/WikidataPanel";
 import { Legend, PeriodDock, ShortcutOverlay, readLegendOpen, storeLegend, useAtlasKeys, useTheme, type AtlasKeyHandlers } from "@/components/AtlasChrome";
 import { naturalExaggeration } from "@/lib/exaggeration";
@@ -163,9 +165,27 @@ export function AtlasApp() {
   const detail = selected && metadata ? metadata.details[selected.id] : undefined;
 
   useEffect(() => {
-    if (!metadata || !detail || !selected) {
+    if (!selected) {
       setDetailGrid(null);
       return;
+    }
+    if (!metadata || !detail) {
+      setDetailGrid(null);
+      setReveal(false);
+      setBusy(false);
+      let cancel = false;
+      const show = () => {
+        if (cancel) return;
+        if (document.body.dataset.flying !== "true") {
+          setPanelShown(true);
+          return;
+        }
+        window.requestAnimationFrame(show);
+      };
+      show();
+      return () => {
+        cancel = true;
+      };
     }
     let cancel = false;
     setBusy(true);
@@ -260,6 +280,7 @@ export function AtlasApp() {
     const rasters = metadata!.details[site.id]?.rasters ?? {};
     setDetailLayer(preferredLayer(rasters, baseMap));
     setCompare(false);
+    if (!metadata!.details[site.id]) setBaseMap("relief");
   }
 
   function openWiki(site: WikiFeature) {
@@ -269,8 +290,9 @@ export function AtlasApp() {
     setReveal(false);
     setQuery("");
     document.body.dataset.detail = "";
+    setBaseMap("relief");
     const [longitude, latitude] = site.geometry.coordinates;
-    setPose(lookPose(longitude, latitude, metadata!, metres!, exaggeration, pose!.token + 1));
+    setPose(lookPose(longitude, latitude, metadata!, metres!, exaggeration, pose!.token + 1, 16000));
   }
 
   function backToTurkey() {
@@ -367,11 +389,8 @@ export function AtlasApp() {
         detailToken={detailToken}
         wikiSites={wikiVisible}
         onOpenWiki={(siteId) => {
-          setWikiId(siteId);
-          setSelectedId(null);
-          setPanelShown(false);
-          setReveal(false);
-          document.body.dataset.detail = "";
+          const site = wikiSites.find((item) => item.id === siteId);
+          if (site) openWiki(site);
         }}
         onApproachWiki={(longitude, latitude) => {
           setPose(lookPose(longitude, latitude, metadata, metres, exaggeration, pose.token + 1));
@@ -472,9 +491,22 @@ export function AtlasApp() {
           onSplit={setSplit}
           onOpacity={setOpacity}
           corona={detail?.corona}
+          baseMap={baseMap}
+          onBase={setBaseMap}
+          contextOn={contextOn}
+          onContext={(id, enabled) => setContextOn((current) => ({ ...current, [id]: enabled }))}
         />
       ) : null}
-      {wikiSite ? <WikidataPanel site={wikiSite} onClose={() => setWikiId(null)} /> : null}
+      {wikiSite ? (
+        <WikidataPanel
+          site={wikiSite}
+          baseMap={baseMap}
+          onBase={setBaseMap}
+          contextOn={contextOn}
+          onContext={(id, enabled) => setContextOn((current) => ({ ...current, [id]: enabled }))}
+          onClose={() => setWikiId(null)}
+        />
+      ) : null}
       {climateRecord ? (
         <ClimateChart record={climateRecord} onClose={() => setClimateId(null)} />
       ) : null}
@@ -644,8 +676,17 @@ function SitePanel(props: {
   onSplit: (value: number) => void;
   onOpacity: (value: number) => void;
   corona?: CoronaRecord;
+  baseMap: BaseMap;
+  onBase: (base: BaseMap) => void;
+  contextOn: Record<string, boolean>;
+  onContext: (id: string, enabled: boolean) => void;
 }) {
   const properties = props.site.properties;
+  const ids = new Set(props.rasters.map(([id]) => id));
+  const reliefId = ids.has("hillshade") ? "hillshade" : ids.has("hypsometric") ? "hypsometric" : null;
+  const sentinelId = ids.has("true-colour") ? "true-colour" : ids.has("satellite") ? "satellite" : null;
+  const coronaId = ids.has("corona") ? "corona" : null;
+  const local = reliefId != null || sentinelId != null || coronaId != null;
   return (
     <aside className={props.shown ? "panel is-in" : "panel"} aria-label="Selected place">
       <button type="button" className="close" data-action="close-panel" onClick={props.onClose}>Close</button>
@@ -653,9 +694,24 @@ function SitePanel(props: {
       <p className="muted">{properties.names.join(" · ")}</p>
       <p className="badge">{properties.confidence === "approximate" ? "Approximate location" : "Published location"} · {properties.category}</p>
       <p>{properties.period}. {formatYear(properties.startYear)} – {formatYear(properties.endYear)}.</p>
+      <OccupationBar segments={[{ id: properties.layer, start: properties.startYear, end: properties.endYear }]} />
       <p>{properties.description}</p>
       <p>{properties.notes}</p>
       <p className="source-line"><a href={properties.sourceUrl} target="_blank" rel="noreferrer">{properties.source}</a></p>
+      <PlaceMaps
+        reliefOn={local ? props.detailLayer === reliefId : props.baseMap === "relief"}
+        sentinelOn={local ? props.detailLayer === sentinelId : props.baseMap === "satellite"}
+        coronaOn={local && props.detailLayer === coronaId}
+        coronaAvailable={coronaId != null}
+        onRelief={() => (local && reliefId ? props.onLayer(reliefId) : props.onBase("relief"))}
+        onSentinel={() => (local && sentinelId ? props.onLayer(sentinelId) : props.onBase("satellite"))}
+        onCorona={() => {
+          if (coronaId) props.onLayer(coronaId);
+        }}
+        contextOn={props.contextOn}
+        onContext={props.onContext}
+        note={local ? undefined : "National relief and Sentinel-2. This place has no separate close-up window."}
+      />
       {props.rasters.length > 0 ? (
         <section className="place-layers">
           <h2>This place</h2>
@@ -743,13 +799,13 @@ function lookPose(
   metres: Float32Array,
   exaggeration: number,
   token: number,
+  distance = 70000,
 ): CameraPose {
   const origin = boundsCenter(metadata.bounds);
   const [east, north] = lonLatToMercator(longitude, latitude);
   const elevation = sampleHeight(metres, metadata.width, metadata.height, metadata.bounds, east, north);
   const [xCoord, zCoord] = toLocal(longitude, latitude, origin);
   const yCoord = (elevation - metadata.elevation.min) * exaggeration;
-  const distance = 70000;
   return {
     position: [xCoord + distance * 0.16, yCoord + distance * 0.34, zCoord + distance * 0.58],
     target: [xCoord, yCoord + 24, zCoord - distance * 0.05],
