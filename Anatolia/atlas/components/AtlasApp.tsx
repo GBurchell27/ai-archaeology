@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { AtlasScene, type CameraPose } from "@/components/AtlasScene";
 import { OccupationBar } from "@/components/OccupationBar";
-import { PlaceMaps } from "@/components/PlaceMaps";
+import { PlaceMaps, closeupCreditNote } from "@/components/PlaceMaps";
 import { SafeLink } from "@/components/SafeLink";
 import { WikidataPanel } from "@/components/WikidataPanel";
 import { Legend, PeriodDock, ShortcutOverlay, readLegendOpen, storeLegend, useAtlasKeys, useTheme, type AtlasKeyHandlers } from "@/components/AtlasChrome";
@@ -82,6 +82,7 @@ export function AtlasApp() {
   const [wikiOn, setWikiOn] = useState(true);
   const [wikiId, setWikiId] = useState<string | null>(null);
   const [flightCancel, setFlightCancel] = useState(0);
+  const [closeupCredit, setCloseupCredit] = useState<{ relief: string; satellite: string } | null>(null);
   const readoutRef = useRef<HTMLDivElement>(null);
   const searchRef = useRef<HTMLInputElement>(null);
   const keys = useRef<AtlasKeyHandlers>({
@@ -170,6 +171,7 @@ export function AtlasApp() {
     const wiki = wikiSites.find((site) => site.id === wikiId) ?? null;
     if (!selected && !wiki) {
       setDetailGrid(null);
+      setCloseupCredit(null);
       return;
     }
     document.body.dataset.detail = "loading";
@@ -179,29 +181,33 @@ export function AtlasApp() {
       return next;
     });
     if (!detail) {
-      const point = selected?.geometry.coordinates ?? wiki?.geometry.coordinates;
-      if (!point) {
+      const siteId = selected?.id ?? wiki?.id;
+      if (!siteId) {
         setDetailGrid(null);
         return;
       }
-      const [longitude, latitude] = point;
-      const query = `lon=${longitude}&lat=${latitude}`;
+      const query = `id=${encodeURIComponent(siteId)}`;
       let cancel = false;
       setBusy(true);
       setReveal(false);
       setPanelShown(false);
+      setCloseupCredit(null);
       const layer = detailLayer === "satellite" ? "satellite" : "hillshade";
       const image = new Image();
       image.src = `/api/closeup?${query}&part=${layer}`;
       const decoded = image.decode ? image.decode().catch(() => undefined) : Promise.resolve();
       fetch(`/api/closeup?${query}&part=meta`).then(async (response) => {
-        if (!response.ok) throw new Error(await response.text());
-        const meta = await response.json() as DetailRecord;
+        if (!response.ok) throw new Error("close-up-failed");
+        const meta = await response.json() as DetailRecord & { attribution?: { relief?: string; satellite?: string } };
         const height = await fetch(`/api/closeup?${query}&part=height`);
-        if (!height.ok) throw new Error(await height.text());
+        if (!height.ok) throw new Error("close-up-failed");
         const grid = decodeHeight(await height.arrayBuffer(), meta.width, meta.height, meta.elevation.min, meta.elevation.max);
         await decoded;
         if (cancel) return;
+        setCloseupCredit({
+          relief: meta.attribution?.relief ?? "",
+          satellite: meta.attribution?.satellite ?? "",
+        });
         setDetailGrid({ width: meta.width, height: meta.height, bounds: meta.bounds, metres: grid });
         const show = () => {
           if (cancel) return;
@@ -226,6 +232,7 @@ export function AtlasApp() {
       };
     }
     if (!selected) return;
+    setCloseupCredit(null);
     const siteId = selected.id;
     let cancel = false;
     setBusy(true);
@@ -405,13 +412,11 @@ export function AtlasApp() {
     }))
     : [];
   const climateRecord = climateRecords.find((record) => record.id === climateId) ?? null;
-  const liveQuery = !detail && (selected || wikiSite)
-    ? `lon=${(selected ?? wikiSite)!.geometry.coordinates[0]}&lat=${(selected ?? wikiSite)!.geometry.coordinates[1]}`
-    : null;
+  const liveId = !detail && (selected || wikiSite) ? (selected ?? wikiSite)!.id : null;
   const detailUrl = detail?.rasters[detailLayer]
     ? `/terrain/${detail.rasters[detailLayer]}`
-    : liveQuery
-      ? `/api/closeup?${liveQuery}&part=${detailLayer === "satellite" ? "satellite" : "hillshade"}`
+    : liveId
+      ? `/api/closeup?id=${encodeURIComponent(liveId)}&part=${detailLayer === "satellite" ? "satellite" : "hillshade"}`
       : null;
   const compareUrl = detail?.rasters[compareLayer] ? `/terrain/${detail.rasters[compareLayer]}` : null;
 
@@ -545,6 +550,7 @@ export function AtlasApp() {
             setSelectedId(null);
             setPanelShown(false);
             setReveal(false);
+            stopFlight();
           }}
           onLayer={setDetailLayer}
           onCompare={setCompare}
@@ -557,6 +563,7 @@ export function AtlasApp() {
           contextOn={contextOn}
           onContext={(id, enabled) => setContextOn((current) => ({ ...current, [id]: enabled }))}
           closeup={!detail}
+          credit={closeupCredit}
         />
       ) : null}
       {wikiSite ? (
@@ -566,6 +573,7 @@ export function AtlasApp() {
           onLayer={setDetailLayer}
           contextOn={contextOn}
           onContext={(id, enabled) => setContextOn((current) => ({ ...current, [id]: enabled }))}
+          credit={closeupCredit}
           onClose={() => {
             setWikiId(null);
             stopFlight();
@@ -746,6 +754,7 @@ function SitePanel(props: {
   contextOn: Record<string, boolean>;
   onContext: (id: string, enabled: boolean) => void;
   closeup?: boolean;
+  credit?: { relief: string; satellite: string } | null;
 }) {
   const properties = props.site.properties;
   const ids = new Set(props.rasters.map(([id]) => id));
@@ -778,7 +787,7 @@ function SitePanel(props: {
         }}
         contextOn={props.contextOn}
         onContext={props.onContext}
-        note={props.closeup ? "Sentinel-2 cloudless 2020 by EOX (CC BY 4.0). Relief is Copernicus GLO-30, fetched for this place and not stored in git." : undefined}
+        note={props.closeup ? closeupCreditNote(props.credit) : undefined}
       />
       {props.rasters.length > 0 ? (
         <section className="place-layers">

@@ -16,14 +16,21 @@ import math
 import os
 import shutil
 import sys
+import tempfile
+import urllib.error
+import urllib.parse
 import urllib.request
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
+
+USER_AGENT = "ai-archaeology-atlas/0.1"
+DEM_HOST = "copernicus-dem-30m.s3.amazonaws.com"
 
 os.environ.setdefault("AWS_NO_SIGN_REQUEST", "YES")
 os.environ.setdefault("GDAL_DISABLE_READDIR_ON_OPEN", "EMPTY_DIR")
 os.environ.setdefault("GDAL_HTTP_TIMEOUT", "40")
 os.environ.setdefault("GDAL_HTTP_MAX_RETRY", "2")
+os.environ.setdefault("GDAL_HTTP_USERAGENT", USER_AGENT)
 os.environ.setdefault("CPL_VSIL_CURL_ALLOWED_EXTENSIONS", ".tif,.TIF,.tiff")
 
 import numpy as np
@@ -52,8 +59,8 @@ DEM_CREDIT = (
     "and Space GmbH 2014-2018 provided under COPERNICUS by the European Union and ESA"
 )
 SAT_CREDIT = (
-    "Sentinel-2 cloudless 2020 by EOX IT Services GmbH (CC BY 4.0). "
-    "Contains modified Copernicus Sentinel data 2020. https://s2maps.eu"
+    "EOxCloudless https://cloudless.eox.at by EOX IT Services GmbH "
+    "(Contains modified Copernicus Sentinel data 2020)"
 )
 
 
@@ -284,6 +291,56 @@ def crusader_details(sites: dict, geographic: np.ndarray | None = None, transfor
     return details
 
 
+class SameHostRedirectHandler(urllib.request.HTTPRedirectHandler):
+    """Follow a redirect only when it stays on the same host."""
+
+    def redirect_request(self, req, fp, code, msg, headers, newurl):
+        original = urllib.parse.urlsplit(req.full_url)
+        target = urllib.parse.urlsplit(newurl)
+        same = (
+            target.scheme == "https"
+            and target.hostname is not None
+            and original.hostname is not None
+            and target.hostname.lower() == original.hostname.lower()
+        )
+        if not same:
+            raise urllib.error.URLError("redirect left the original host")
+        return super().redirect_request(req, fp, code, msg, headers, newurl)
+
+
+def urlopen_pinned(url: str, timeout: float = 40):
+    request = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
+    opener = urllib.request.build_opener(SameHostRedirectHandler)
+    return opener.open(request, timeout=timeout)
+
+
+def open_dem_tile(url: str):
+    """Fetch one Copernicus COG with a pinned redirect, then let GDAL read the local file.
+
+    This GDAL follows redirects inside libcurl and has no same-host switch, so the
+    GeoTIFF request itself is the pinned urlopen. GDAL never sees the remote URL.
+    """
+    parts = urllib.parse.urlsplit(url)
+    if parts.scheme != "https" or (parts.hostname or "").lower() != DEM_HOST:
+        raise ValueError("unexpected DEM host")
+    temporary = tempfile.NamedTemporaryFile(prefix="glo30-", suffix=".tif", delete=False)
+    path = Path(temporary.name)
+    try:
+        os.chmod(path, 0o600)
+        with urlopen_pinned(url, timeout=90) as response:
+            while True:
+                chunk = response.read(1024 * 1024)
+                if not chunk:
+                    break
+                temporary.write(chunk)
+        temporary.close()
+        return rasterio.open(path), path
+    except Exception:
+        temporary.close()
+        path.unlink(missing_ok=True)
+        raise
+
+
 def read_site_window(longitude: float, latitude: float):
     """A 10 km GLO-30 window, about 40 m cells, including any tile the box crosses."""
     centre_x, centre_y = _mercator(longitude, latitude)
@@ -292,14 +349,17 @@ def read_site_window(longitude: float, latitude: float):
     west, south = _inverse(left, bottom)
     east, north = _inverse(right, top)
     datasets = []
+    local_copies = []
     for lat_tile in range(math.floor(south), math.floor(north) + 1):
         for lon_tile in range(math.floor(west), math.floor(east) + 1):
             name = f"Copernicus_DSM_COG_10_N{lat_tile}_00_E{lon_tile:03d}_00_DEM"
-            url = f"https://copernicus-dem-30m.s3.amazonaws.com/{name}/{name}.tif"
+            url = f"https://{DEM_HOST}/{name}/{name}.tif"
             try:
-                datasets.append(rasterio.open(url))
+                dataset, local = open_dem_tile(url)
             except Exception:
                 continue
+            datasets.append(dataset)
+            local_copies.append(local)
     if not datasets:
         return None
     pixels = 256
@@ -325,6 +385,8 @@ def read_site_window(longitude: float, latitude: float):
     finally:
         for dataset in datasets:
             dataset.close()
+        for local in local_copies:
+            local.unlink(missing_ok=True)
     try:
         array = clean_elevation_window(array)
     except ValueError:
@@ -412,8 +474,7 @@ def mercator_to_lat(y_coord: float) -> float:
 
 
 def fetch_jpeg(url: str) -> Image.Image:
-    request = urllib.request.Request(url, headers={"User-Agent": "ai-archaeology-atlas/0.1"})
-    with urllib.request.urlopen(request, timeout=40) as response:
+    with urlopen_pinned(url, timeout=40) as response:
         return Image.open(response).convert("RGB")
 
 

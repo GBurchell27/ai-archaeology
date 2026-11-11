@@ -10,6 +10,12 @@ const CONTEXT = [
   ["climate", "Palaeoclimate records"],
 ] as const;
 
+export function closeupCreditNote(credit?: { relief: string; satellite: string } | null): string {
+  const lines = [credit?.satellite, credit?.relief].filter((line): line is string => Boolean(line));
+  if (lines.length === 0) return "Fetching relief and Sentinel-2 for this published place.";
+  return lines.join(" ");
+}
+
 export function PlaceMaps(props: {
   reliefOn: boolean;
   sentinelOn: boolean;

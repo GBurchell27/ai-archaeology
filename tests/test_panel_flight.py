@@ -1,10 +1,18 @@
-"""Panel flights can be retargeted, dismissed, and cancelled."""
+"""Panel flights can be retargeted, dismissed, and cancelled.
+
+The browser check needs the atlas dependencies (`npm install` in
+Anatolia/atlas, which provides puppeteer-core) and a dev server on
+http://127.0.0.1:43127/. It skips when puppeteer-core is not installed.
+"""
 
 import subprocess
 from pathlib import Path
 
+import pytest
+
 ROOT = Path(__file__).resolve().parents[1]
 CHECK = ROOT / "Anatolia" / "atlas" / "scripts" / "check_panel_flight.mjs"
+PUPPETEER = ROOT / "Anatolia" / "atlas" / "node_modules" / "puppeteer-core"
 
 
 def test_external_hrefs_are_https_allowlist():
@@ -25,6 +33,7 @@ const cases = [
   ["https://corona.cast.uark.edu/", true],
   ["http://en.wikipedia.org/wiki/X", false],
   ["javascript:alert(1)", false],
+  ["data:text/html,hello", false],
   ["https://evil.example/phish", false],
   ["https://wikipedia.org.evil.com/", false],
 ];
@@ -46,6 +55,8 @@ for (const [value, ok] of cases) {
 
 
 def test_rapid_clicks_escape_and_midflight_close():
+    if not PUPPETEER.exists():
+        pytest.skip("puppeteer-core is missing. Run npm install in Anatolia/atlas, then start the dev server.")
     completed = subprocess.run(
         ["node", str(CHECK)],
         cwd=ROOT / "Anatolia" / "atlas",

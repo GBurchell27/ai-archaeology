@@ -1,7 +1,7 @@
 "use client";
 
 import { OccupationBar } from "@/components/OccupationBar";
-import { PlaceMaps } from "@/components/PlaceMaps";
+import { PlaceMaps, closeupCreditNote } from "@/components/PlaceMaps";
 import { SafeLink } from "@/components/SafeLink";
 import { PERIOD_SPAN, type WikiFeature } from "@/lib/wikidata";
 
@@ -11,6 +11,7 @@ export function WikidataPanel(props: {
   onLayer: (layer: string) => void;
   contextOn: Record<string, boolean>;
   onContext: (id: string, enabled: boolean) => void;
+  credit?: { relief: string; satellite: string } | null;
   onClose: () => void;
 }) {
   const properties = props.site.properties;
@@ -47,7 +48,7 @@ export function WikidataPanel(props: {
         onCorona={() => undefined}
         contextOn={props.contextOn}
         onContext={props.onContext}
-        note="Sentinel-2 cloudless 2020 by EOX (CC BY 4.0). Relief is Copernicus GLO-30, fetched for this place and not stored in git."
+        note={closeupCreditNote(props.credit)}
       />
       <p className="muted">This is a published catalogue pin, not a discovery and not a candidate from the terrain search.</p>
     </aside>
