@@ -103,7 +103,31 @@ html, body { margin: 0; height: 100%; overflow: hidden; }
   font-size: 13px;
 }
 
-.menu { left: 12px; }
+.menu { left: 12px; max-height: calc(100vh - 70px); overflow: auto; }
+
+.hint { margin: 8px 0 0; font-size: 12px; line-height: 1.4; opacity: 0.82; }
+
+.climate-list { display: grid; gap: 4px; margin-top: 8px; }
+
+.climate-list button {
+  text-align: left;
+  padding: 6px 8px;
+  border-radius: 8px;
+  border: 1px solid rgba(246, 236, 220, 0.16);
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+
+.chart { width: min(420px, calc(100vw - 24px)); }
+
+.chart svg { width: 100%; height: auto; margin-top: 8px; }
+
+.chart path { fill: none; stroke: #f6d7a8; stroke-width: 1.5; }
+
+.chart line { stroke: rgba(246, 215, 168, 0.75); stroke-dasharray: 3 3; }
+
+.chart text { fill: #f3ebdf; font-size: 11px; }
 
 .panel {
   right: 12px;

@@ -1,0 +1,124 @@
+{
+  "layers": [
+    {
+      "id": "rivers",
+      "title": "Present-day rivers",
+      "group": "water",
+      "kind": "line",
+      "file": "rivers.geojson",
+      "source": "Natural Earth 1:10m rivers and lake centerlines",
+      "sourceUrl": "https://www.naturalearthdata.com/downloads/10m-physical-vectors/10m-rivers-lake-centerlines/",
+      "licence": "Public domain",
+      "resolution": "1:10,000,000",
+      "coverage": "Major rivers across Turkey. Not a full drainage network.",
+      "time": "present-day",
+      "features": 17
+    },
+    {
+      "id": "lakes",
+      "title": "Present-day lakes",
+      "group": "water",
+      "kind": "polygon",
+      "file": "lakes.geojson",
+      "source": "Natural Earth 1:10m lakes",
+      "sourceUrl": "https://www.naturalearthdata.com/downloads/10m-physical-vectors/10m-lakes/",
+      "licence": "Public domain",
+      "resolution": "1:10,000,000",
+      "coverage": "Larger lakes in and beside Turkey, including Van and Tuz. Small lakes are omitted.",
+      "time": "present-day",
+      "features": 4
+    },
+    {
+      "id": "paleo-water",
+      "title": "Approximate paleolakes",
+      "group": "water",
+      "kind": "polygon",
+      "file": "paleo.geojson",
+      "source": "Roberts 1983, Quaternary Research 19; Wick, Lemcke and Sturm 2003, Quaternary Science Reviews 22",
+      "sourceUrl": "https://doi.org/10.1016/0033-5894(83)90002-9",
+      "licence": "Approximate outlines drawn for this atlas from the published descriptions. Not a reproduced figure.",
+      "resolution": "coarse sketch, tens of kilometres",
+      "coverage": "Konya basin and a high-stand sketch around Lake Van. Harran canals were not drawn: no open vector was found.",
+      "time": "late Pleistocene, not modern",
+      "features": 2
+    },
+    {
+      "id": "roads",
+      "title": "Roman roads",
+      "group": "roads",
+      "kind": "line",
+      "file": "roads.geojson",
+      "source": "Itiner-e static version 2024, de Soto et al. 2025, Zenodo",
+      "sourceUrl": "https://doi.org/10.5281/zenodo.17122148",
+      "licence": "CC BY 4.0",
+      "resolution": "segment geometries simplified to about 2 km",
+      "coverage": "Itiner-e roads clipped to about 25.5\u201345\u00b0E, 35.8\u201342.2\u00b0N. Certainty is the dataset field Cons_per_e.",
+      "time": "Roman, shown with the Classical and Byzantine chip",
+      "startYear": -300,
+      "endYear": 700,
+      "features": 2172
+    },
+    {
+      "id": "clay",
+      "title": "Soil clay, 0\u20135 cm",
+      "group": "land",
+      "kind": "raster",
+      "file": "clay.png",
+      "source": "SoilGrids 2.0 clay mean, 0\u20135 cm, ISRIC",
+      "sourceUrl": "https://soilgrids.org/",
+      "licence": "CC BY 4.0",
+      "resolution": "sampled from the 250 m map to about 5 km for this drape",
+      "coverage": "Turkey window 25.5\u201345\u00b0E, 35.8\u201342.2\u00b0N. Colour is a stretch of the 5th\u201395th percentile, not a classified map.",
+      "time": "present-day soil",
+      "stretch": {
+        "min": 0.0,
+        "max": 408.0,
+        "bounds": [
+          25.5,
+          35.8,
+          45.0,
+          42.2
+        ],
+        "file": "clay.png"
+      }
+    },
+    {
+      "id": "soc",
+      "title": "Soil organic carbon, 0\u20135 cm",
+      "group": "land",
+      "kind": "raster",
+      "file": "soc.png",
+      "source": "SoilGrids 2.0 soil organic carbon mean, 0\u20135 cm, ISRIC",
+      "sourceUrl": "https://soilgrids.org/",
+      "licence": "CC BY 4.0",
+      "resolution": "sampled from the 250 m map to about 5 km for this drape",
+      "coverage": "Same Turkey window as the clay layer.",
+      "time": "present-day soil",
+      "stretch": {
+        "min": 0.0,
+        "max": 782.0,
+        "bounds": [
+          25.5,
+          35.8,
+          45.0,
+          42.2
+        ],
+        "file": "soc.png"
+      }
+    },
+    {
+      "id": "climate",
+      "title": "Palaeoclimate records",
+      "group": "climate",
+      "kind": "point",
+      "file": "climate.json",
+      "source": "NOAA World Data Service for Paleoclimatology",
+      "sourceUrl": "https://www.ncei.noaa.gov/products/paleoclimatology",
+      "licence": "NOAA World Data Service for Paleoclimatology. Open download, no account. Cite the paper and the NOAA file.",
+      "resolution": "point records; series thinned to at most 280 Holocene samples",
+      "coverage": "Sofular Cave, Lake Van, and Eski Ac\u0131g\u00f6l are inside the Turkey window. Soreq Cave (Israel) and Jeita Cave (Lebanon) are regional context and sit south of the map, so they open from the list rather than a pin. Nar G\u00f6l\u00fc was not in the open NOAA Turkey folders checked on this run.",
+      "time": "Holocene series, with 8.2 ka and 4.2 ka marks",
+      "features": 5
+    }
+  ]
+}
