@@ -2,7 +2,7 @@
 
 import { Html, OrbitControls, useTexture } from "@react-three/drei";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { Suspense, useEffect, useMemo, useRef, useState, type MutableRefObject } from "react";
+import { Suspense, useEffect, useMemo, useRef, useState, type MutableRefObject, type RefObject } from "react";
 import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
 import * as THREE from "three";
 import { boundsCenter, boundsContain, detailClipRect, lonLatToMercator, sampleMeshHeight, toLocal, type ClipRect } from "@/lib/geo";
@@ -37,6 +37,9 @@ interface AtlasSceneProps {
   split: number;
   opacity: number;
   onSelect: (siteId: string) => void;
+  night: boolean;
+  reveal: boolean;
+  readoutRef: RefObject<HTMLDivElement | null>;
 }
 
 export function AtlasScene(props: AtlasSceneProps) {
@@ -45,6 +48,14 @@ export function AtlasScene(props: AtlasSceneProps) {
     () => ({ ...props.metadata, metres: props.metres }),
     [props.metadata, props.metres],
   );
+  const [cover, setCover] = useState(false);
+  useEffect(() => {
+    setCover(false);
+    if (!props.reveal || !props.detail) return undefined;
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const timer = window.setTimeout(() => setCover(true), reduced ? 0 : 300);
+    return () => window.clearTimeout(timer);
+  }, [props.reveal, props.detail]);
   const span = Math.max(
     props.metadata.bounds[2] - props.metadata.bounds[0],
     props.metadata.bounds[3] - props.metadata.bounds[1],
@@ -54,7 +65,7 @@ export function AtlasScene(props: AtlasSceneProps) {
       camera={{ position: props.pose.position, fov: 38, near: 40, far: span * 8 }}
       gl={{ antialias: true, outputColorSpace: THREE.LinearSRGBColorSpace }}
     >
-      <SkyHaze />
+      <SkyHaze night={props.night} />
       <Suspense fallback={null}>
       <NationalSurface
         metadata={props.metadata}
@@ -64,9 +75,10 @@ export function AtlasScene(props: AtlasSceneProps) {
         exaggeration={props.exaggeration}
         azimuth={props.azimuth}
         altitude={props.altitude}
-        clip={props.detail ? detailClipRect(props.detail.bounds, origin) : null}
+        night={props.night}
+        clip={cover && props.detail ? detailClipRect(props.detail.bounds, origin) : null}
       />
-      {props.detail && props.detailUrl ? (
+      {props.reveal && props.detail && props.detailUrl ? (
         <DetailSurface
           grid={props.detail}
           national={national}
@@ -80,6 +92,7 @@ export function AtlasScene(props: AtlasSceneProps) {
           compare={props.compare}
           split={props.split}
           opacity={props.opacity}
+          night={props.night}
         />
       ) : null}
       </Suspense>
@@ -94,7 +107,7 @@ export function AtlasScene(props: AtlasSceneProps) {
         selectedId={props.selectedId}
         onSelect={props.onSelect}
       />
-      <CameraRig pose={props.pose} span={span} />
+      <CameraRig pose={props.pose} span={span} readoutRef={props.readoutRef} originY={origin[1]} />
     </Canvas>
   );
 }
@@ -107,6 +120,7 @@ function NationalSurface({
   exaggeration,
   azimuth,
   altitude,
+  night,
   clip,
 }: {
   metadata: AtlasMetadata;
@@ -116,6 +130,7 @@ function NationalSurface({
   exaggeration: number;
   azimuth: number;
   altitude: number;
+  night: boolean;
   clip: ClipRect | null;
 }) {
   const geometry = useMemo(
@@ -143,12 +158,13 @@ function NationalSurface({
       altitude={altitude}
       lift={false}
       clip={clip}
+      night={night}
     />
   );
 }
 
-function SkyHaze() {
-  const texture = useMemo(() => hazeBackground(), []);
+function SkyHaze({ night }: { night: boolean }) {
+  const texture = useMemo(() => hazeBackground(night), [night]);
   const { scene } = useThree();
   useEffect(() => {
     const previous = scene.background;
@@ -174,6 +190,7 @@ function DetailSurface(props: {
   compare: boolean;
   split: number;
   opacity: number;
+  night: boolean;
 }) {
   const stitched = useMemo(
     () => stitchDetailToNational(props.grid, props.national),
@@ -196,6 +213,8 @@ function DetailSurface(props: {
       azimuth={props.azimuth}
       altitude={props.altitude}
       lift
+      night={props.night}
+      fade
     />
   );
 }
@@ -211,6 +230,8 @@ function ShadedMesh(props: {
   altitude: number;
   lift: boolean;
   clip?: ClipRect | null;
+  night?: boolean;
+  fade?: boolean;
 }) {
   const material = useMemo(() => createSurfaceMaterial(), []);
   const { size, gl } = useThree();
@@ -220,13 +241,22 @@ function ShadedMesh(props: {
   material.uniforms.useB.value = props.textureB ? 1 : 0;
   material.uniforms.compare.value = props.compare ? 1 : 0;
   material.uniforms.split.value = props.split;
-  material.uniforms.opacity.value = props.opacity;
   material.uniforms.lightDirection.value.copy(sunDirection(props.azimuth, props.altitude));
   material.uniforms.resolution.value.set(size.width * gl.getPixelRatio(), size.height * gl.getPixelRatio());
   material.uniforms.hazeNear.value = HAZE_NEAR;
   material.uniforms.hazeFar.value = HAZE_FAR;
   material.uniforms.hazeStrength.value = HAZE_STRENGTH;
   material.uniforms.hazeColor.value.set(203 / 255, 184 / 255, 154 / 255);
+  const fade = useRef(props.fade ? 0 : 1);
+  if (!props.fade) fade.current = 1;
+  material.uniforms.opacity.value = props.opacity * fade.current;
+  useFrame(() => {
+    if (!props.fade) return;
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    fade.current = reduced ? 1 : Math.min(1, fade.current + 0.08);
+    material.uniforms.opacity.value = props.opacity * fade.current;
+  });
+  material.uniforms.night.value = props.night ? 1 : 0;
   material.uniforms.clipOn.value = props.clip ? 1 : 0;
   if (props.clip) {
     material.uniforms.clipRect.value.set(props.clip.minX, props.clip.minZ, props.clip.maxX, props.clip.maxZ);
@@ -330,7 +360,7 @@ function SitePin(props: {
       ) : null}
       <group ref={marker}>
         <sprite
-          scale={[scale * 1.45, scale * 1.45, 1]}
+          scale={[0.05, 0.05, 1]}
           onClick={(event) => {
             event.stopPropagation();
             props.onSelect(props.site.id);
@@ -341,6 +371,9 @@ function SitePin(props: {
           }}
           onPointerOut={() => setHovered(false)}
         >
+          <spriteMaterial transparent opacity={0} depthTest={false} sizeAttenuation={false} />
+        </sprite>
+        <sprite scale={[scale * 1.45, scale * 1.45, 1]}>
           <spriteMaterial map={textures.halo} color={color} transparent depthTest={false} sizeAttenuation={false} />
         </sprite>
         <sprite scale={[scale, scale, 1]}>
@@ -353,7 +386,7 @@ function SitePin(props: {
           />
         </sprite>
         {hovered || props.selected || props.labels ? (
-          <Html center zIndexRange={[20, 0]} style={{ pointerEvents: "none" }}>
+          <Html center zIndexRange={[4, 0]} style={{ pointerEvents: "none" }}>
             <span className="tip is-shown">{props.site.properties.name}</span>
           </Html>
         ) : null}
@@ -424,10 +457,11 @@ function paintHalo(): THREE.CanvasTexture {
   return texture;
 }
 
-function CameraRig({ pose, span }: { pose: CameraPose; span: number }) {
+function CameraRig({ pose, span, readoutRef, originY }: { pose: CameraPose; span: number; readoutRef: RefObject<HTMLDivElement | null>; originY: number }) {
   const controls = useRef<OrbitControlsImpl>(null);
   const camera = useThree((state) => state.camera);
-  const flight = useRef<{ started: number; fromP: THREE.Vector3; toP: THREE.Vector3; fromT: THREE.Vector3; toT: THREE.Vector3 } | null>(null);
+  const size = useThree((state) => state.size);
+  const flight = useRef<{ started: number; duration: number; fromP: THREE.Vector3; toP: THREE.Vector3; fromT: THREE.Vector3; toT: THREE.Vector3 } | null>(null);
 
   useEffect(() => {
     const orbit = controls.current;
@@ -436,15 +470,22 @@ function CameraRig({ pose, span }: { pose: CameraPose; span: number }) {
       document.body.dataset.flying = "false";
       return;
     }
+    const fromP = camera.position.clone();
+    const toP = new THREE.Vector3(...pose.position);
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const duration = reduced ? 0 : THREE.MathUtils.clamp(1200 + (fromP.distanceTo(toP) / 900000) * 600, 1200, 1800);
     flight.current = {
       started: performance.now(),
-      fromP: camera.position.clone(),
-      toP: new THREE.Vector3(...pose.position),
+      duration,
+      fromP,
+      toP,
       fromT: orbit.target.clone(),
       toT: new THREE.Vector3(...pose.target),
     };
     orbit.enabled = false;
+    orbit.enableDamping = false;
     document.body.dataset.flying = "true";
+    document.body.dataset.flightMs = String(Math.round(duration));
   }, [pose, camera]);
 
   useFrame(() => {
@@ -456,18 +497,20 @@ function CameraRig({ pose, span }: { pose: CameraPose; span: number }) {
       };
       debugWindow.__atlasCamera = camera;
       debugWindow.__atlasControls = orbit;
+      writeReadout(readoutRef.current, camera, orbit.target, originY, size.width, size.height);
     }
     const current = flight.current;
     if (!orbit || !current) {
       return;
     }
-    const progress = Math.min(1, (performance.now() - current.started) / 1600);
-    const eased = progress < 0.5 ? 2 * progress * progress : 1 - ((-2 * progress + 2) ** 2) / 2;
+    const progress = current.duration === 0 ? 1 : Math.min(1, (performance.now() - current.started) / current.duration);
+    const eased = easeInOutCubic(progress);
     camera.position.lerpVectors(current.fromP, current.toP, eased);
     orbit.target.lerpVectors(current.fromT, current.toT, eased);
     orbit.update();
     if (progress >= 1) {
       flight.current = null;
+      orbit.enableDamping = true;
       orbit.enabled = true;
       document.body.dataset.flying = "false";
     }
@@ -487,6 +530,51 @@ function CameraRig({ pose, span }: { pose: CameraPose; span: number }) {
       maxDistance={span * 2.4}
     />
   );
+}
+
+function easeInOutCubic(amount: number): number {
+  return amount < 0.5 ? 4 * amount * amount * amount : 1 - ((-2 * amount + 2) ** 3) / 2;
+}
+
+function writeReadout(
+  element: HTMLDivElement | null,
+  camera: THREE.Camera,
+  target: THREE.Vector3,
+  originY: number,
+  width: number,
+  height: number,
+) {
+  if (!element) return;
+  const north = target.clone();
+  north.z -= 4000;
+  const east = target.clone();
+  east.x += 2000;
+  const here = screenPoint(target, camera, width, height);
+  const northPoint = screenPoint(north, camera, width, height);
+  const eastPoint = screenPoint(east, camera, width, height);
+  const heading = Math.atan2(northPoint.x - here.x, here.y - northPoint.y);
+  const latitude = Math.atan(Math.sinh((originY - target.z) / 6378137)) * 180 / Math.PI;
+  const pixels = Math.hypot(eastPoint.x - here.x, eastPoint.y - here.y);
+  const metresPerPixel = (2000 * Math.cos(latitude * Math.PI / 180)) / Math.max(pixels, 0.001);
+  const choices = [1000, 2000, 5000, 10000, 20000, 50000, 100000, 200000, 500000];
+  let chosen = choices[0];
+  for (const choice of choices) {
+    if (choice / metresPerPixel <= 140) chosen = choice;
+  }
+  const bar = element.querySelector("[data-role='scale-bar']") as HTMLElement | null;
+  const label = element.querySelector("[data-role='scale-label']");
+  const arrow = element.querySelector("[data-role='north']") as HTMLElement | null;
+  if (bar) bar.style.width = `${Math.max(48, chosen / metresPerPixel)}px`;
+  if (label) label.textContent = chosen >= 1000 ? `${chosen / 1000} km` : `${chosen} m`;
+  if (arrow) arrow.style.transform = `rotate(${heading}rad)`;
+  const zoomedOut = camera.position.distanceTo(target) > 160000;
+  const rotated = Math.abs(heading) > 0.18;
+  element.dataset.on = zoomedOut || rotated ? "true" : "false";
+}
+
+function screenPoint(point: THREE.Vector3, camera: THREE.Camera, width: number, height: number): THREE.Vector2 {
+  const projected = point.clone().project(camera);
+  return new THREE.Vector2((projected.x * 0.5 + 0.5) * width, (-projected.y * 0.5 + 0.5) * height);
 }
 
 function asset(path: string): string {

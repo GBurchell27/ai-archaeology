@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { AtlasScene, type CameraPose } from "@/components/AtlasScene";
+import { Legend, PeriodDock, ShortcutOverlay, readLegendOpen, storeLegend, useAtlasKeys, useTheme, type AtlasKeyHandlers } from "@/components/AtlasChrome";
 import { naturalExaggeration } from "@/lib/exaggeration";
 import { boundsCenter, lonLatToMercator, sampleHeight, toLocal } from "@/lib/geo";
 import { LAYER_STYLE, PERIODS, formatYear, periodOverlaps } from "@/lib/periods";
@@ -44,6 +45,26 @@ export function AtlasApp() {
   const [compareLayer, setCompareLayer] = useState("true-colour");
   const [split, setSplit] = useState(0.5);
   const [opacity, setOpacity] = useState(1);
+  const [reveal, setReveal] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [panelShown, setPanelShown] = useState(false);
+  const [help, setHelp] = useState(false);
+  const [legendOpen, setLegendOpen] = useState(true);
+  const [theme, toggleTheme] = useTheme();
+  const readoutRef = useRef<HTMLDivElement>(null);
+  const searchRef = useRef<HTMLInputElement>(null);
+  const keys = useRef<AtlasKeyHandlers>({
+    onPeriod: () => undefined,
+    onLayer: () => undefined,
+    onBase: () => undefined,
+    onSearch: () => undefined,
+    onEscape: () => undefined,
+    onReset: () => undefined,
+    onTheme: () => undefined,
+    onHelp: () => undefined,
+  });
+  useAtlasKeys(keys);
+  useEffect(() => setLegendOpen(readLegendOpen()), []);
 
   useEffect(() => {
     let cancel = false;
@@ -90,6 +111,13 @@ export function AtlasApp() {
       return;
     }
     let cancel = false;
+    setBusy(true);
+    setReveal(false);
+    setPanelShown(false);
+    const imageUrl = detail.rasters[detailLayer] ? `/terrain/${detail.rasters[detailLayer]}` : "";
+    const image = new Image();
+    if (imageUrl) image.src = imageUrl;
+    const decoded = imageUrl && image.decode ? image.decode().catch(() => undefined) : Promise.resolve();
     fetch(`/terrain/details/${selected.id}/height.u16`).then(async (response) => {
       const grid = decodeHeight(
         await response.arrayBuffer(),
@@ -98,28 +126,46 @@ export function AtlasApp() {
         detail.elevation.min,
         detail.elevation.max,
       );
+      await decoded;
+      if (cancel) return;
+      setDetailGrid({
+        width: detail.width,
+        height: detail.height,
+        bounds: detail.bounds,
+        metres: grid,
+      });
+      const show = () => {
+        if (cancel) return;
+        const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+        if (reduced || document.body.dataset.flying !== "true") {
+          setReveal(true);
+          setPanelShown(true);
+          setBusy(false);
+          return;
+        }
+        window.requestAnimationFrame(show);
+      };
+      show();
+    }).catch(() => {
       if (!cancel) {
-        setDetailGrid({
-          width: detail.width,
-          height: detail.height,
-          bounds: detail.bounds,
-          metres: grid,
-        });
+        setDetailGrid(null);
+        setBusy(false);
       }
-    }).catch(() => setDetailGrid(null));
+    });
     return () => {
       cancel = true;
     };
-  }, [metadata, selected, detail]);
+  }, [metadata, selected, detail, detailLayer]);
 
   useEffect(() => {
     document.body.dataset.site = selectedId ?? "";
     document.body.dataset.settings = settingsOpen ? "open" : "closed";
-    document.body.dataset.panel = selected ? "open" : "closed";
+    document.body.dataset.panel = panelShown ? "open" : "closed";
+    document.body.dataset.busy = busy ? "true" : "false";
     document.body.dataset.base = baseMap;
     document.body.dataset.neolithic = layers.neolithic ? "on" : "off";
     document.body.dataset.crusader = layers.crusader ? "on" : "off";
-  }, [selectedId, settingsOpen, selected, baseMap, layers]);
+  }, [selectedId, settingsOpen, panelShown, busy, baseMap, layers]);
 
   if (error) {
     return <p className="status">{error}</p>;
@@ -140,7 +186,10 @@ export function AtlasApp() {
     const next = sitePose(site, metadata!, metres!, scale, pose!.token + 1);
     setPose(next);
     setSelectedId(site.id);
+    setPanelShown(false);
+    setReveal(false);
     setSettingsOpen(false);
+    setHelp(false);
     setQuery("");
     const rasters = metadata!.details[site.id]?.rasters ?? {};
     setDetailLayer(preferredLayer(rasters, baseMap));
@@ -149,10 +198,33 @@ export function AtlasApp() {
 
   function backToTurkey() {
     setSelectedId(null);
+    setPanelShown(false);
+    setReveal(false);
     setExaggeration(naturalExaggeration(metadata!.pixelSizeM));
     setPose(overviewPose(metadata!, sites, pose!.token + 1));
     setSettingsOpen(false);
+    setHelp(false);
   }
+
+  keys.current = {
+    onPeriod: setPeriodId,
+    onLayer: (layer) => setLayers((current) => ({ ...current, [layer]: !current[layer] })),
+    onBase: setBaseMap,
+    onSearch: () => searchRef.current?.focus(),
+    onEscape: () => {
+      if (help) {
+        setHelp(false);
+        return;
+      }
+      setSettingsOpen(false);
+      setSelectedId(null);
+      setPanelShown(false);
+      setReveal(false);
+    },
+    onReset: backToTurkey,
+    onTheme: toggleTheme,
+    onHelp: () => setHelp((open) => !open),
+  };
 
   const rasterEntries = Object.entries(detail?.rasters ?? {});
   const detailUrl = detail?.rasters[detailLayer] ? `/terrain/${detail.rasters[detailLayer]}` : null;
@@ -160,6 +232,7 @@ export function AtlasApp() {
 
   return (
     <div className="atlas">
+      <div className={busy ? "progress is-on" : "progress"} data-busy={busy ? "true" : "false"} />
       <AtlasScene
         metadata={metadata}
         metres={metres}
@@ -177,6 +250,9 @@ export function AtlasApp() {
         compare={compare}
         split={split}
         opacity={opacity}
+        night={theme === "dark"}
+        reveal={reveal}
+        readoutRef={readoutRef}
         onSelect={(siteId) => {
           const site = sites.find((item) => item.id === siteId);
           if (site) {
@@ -185,22 +261,10 @@ export function AtlasApp() {
         }}
       />
       <header className="topbar">
-        <button type="button" className="brand" data-action="overview" aria-label="Back to Turkey" onClick={backToTurkey}>Turkey</button>
-        <div className="chips">
-          {PERIODS.map((item) => (
-            <button
-              key={item.id}
-              type="button"
-              className={item.id === periodId ? "chip is-on" : "chip"}
-              data-period={item.id}
-              onClick={() => setPeriodId(item.id)}
-            >
-              {item.label}
-            </button>
-          ))}
-        </div>
+        <button type="button" className="brand" data-action="overview" aria-label="Reset view" onClick={backToTurkey}>Turkey</button>
         <form className="search" onSubmit={(event) => event.preventDefault()}>
           <input
+            ref={searchRef}
             value={query}
             placeholder="Search places"
             aria-label="Search places"
@@ -217,10 +281,17 @@ export function AtlasApp() {
             </ul>
           ) : null}
         </form>
+        <button type="button" className="icon-button" aria-label="Dark mode" data-action="theme" onClick={toggleTheme}>{theme === "dark" ? "Light" : "Dark"}</button>
+        <button type="button" className="icon-button" aria-label="Keyboard shortcuts" data-action="help" onClick={() => setHelp((open) => !open)}>?</button>
         <button type="button" className="icon-button" aria-label="Settings" data-action="settings" onClick={() => setSettingsOpen((open) => !open)}>
           <GearIcon />
         </button>
       </header>
+      <PeriodDock periodId={periodId} onPeriod={setPeriodId} />
+      <div className="readout" ref={readoutRef} data-on="false">
+        <div className="north" data-role="north" aria-hidden="true" />
+        <div className="scale"><i data-role="scale-bar" /><span data-role="scale-label">10 km</span></div>
+      </div>
       {settingsOpen ? (
         <SettingsMenu
           baseMap={baseMap}
@@ -246,7 +317,12 @@ export function AtlasApp() {
           compareLayer={compareLayer}
           split={split}
           opacity={opacity}
-          onClose={() => setSelectedId(null)}
+          shown={panelShown}
+          onClose={() => {
+            setSelectedId(null);
+            setPanelShown(false);
+            setReveal(false);
+          }}
           onLayer={setDetailLayer}
           onCompare={setCompare}
           onCompareLayer={setCompareLayer}
@@ -254,11 +330,12 @@ export function AtlasApp() {
           onOpacity={setOpacity}
         />
       ) : null}
-      <div className="legend">
-        <span><span className="swatch" style={{ background: LAYER_STYLE.neolithic.color }} /> Neolithic</span>
-        <span><span className="swatch" style={{ background: LAYER_STYLE.crusader.color }} /> Crusader</span>
-        <span><span className="open-ring" /> approximate</span>
-      </div>
+      <Legend open={legendOpen} onToggle={() => setLegendOpen((open) => {
+        const next = !open;
+        storeLegend(next);
+        return next;
+      })} />
+      {help ? <ShortcutOverlay onClose={() => setHelp(false)} /> : null}
       <p className="credit">{metadata.attribution.dem} {metadata.attribution.satellite}</p>
     </div>
   );
@@ -315,6 +392,7 @@ function SitePanel(props: {
   compareLayer: string;
   split: number;
   opacity: number;
+  shown: boolean;
   onClose: () => void;
   onLayer: (layer: string) => void;
   onCompare: (enabled: boolean) => void;
@@ -324,7 +402,7 @@ function SitePanel(props: {
 }) {
   const properties = props.site.properties;
   return (
-    <aside className="panel" aria-label="Selected place">
+    <aside className={props.shown ? "panel is-in" : "panel"} aria-label="Selected place">
       <button type="button" className="close" data-action="close-panel" onClick={props.onClose}>Close</button>
       <h2>{properties.name}</h2>
       <p className="muted">{properties.names.join(" · ")}</p>

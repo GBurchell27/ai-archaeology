@@ -30,6 +30,7 @@ uniform float hazeStrength;
 uniform vec3 hazeColor;
 uniform vec4 clipRect;
 uniform float clipOn;
+uniform float night;
 varying vec3 vNormal;
 varying vec2 vUv;
 varying vec3 vWorld;
@@ -55,6 +56,7 @@ void main() {
   }
   float lambert = max(dot(normalize(vNormal), normalize(lightDirection)), 0.0);
   vec3 lit = albedo * (ambient + (1.0 - ambient) * lambert);
+  lit = mix(lit, lit * vec3(0.58, 0.66, 0.78), night);
   float depth = distance(cameraPosition, vWorld);
   float haze = smoothstep(hazeNear, hazeFar, depth) * hazeStrength;
   lit = mix(lit, pow(hazeColor, vec3(2.2)), clamp(haze, 0.0, 0.8));
@@ -94,6 +96,7 @@ export function createSurfaceMaterial(): THREE.ShaderMaterial {
       hazeColor: { value: new THREE.Vector3(203 / 255, 184 / 255, 154 / 255) },
       clipRect: { value: new THREE.Vector4(0, 0, 0, 0) },
       clipOn: { value: 0 },
+      night: { value: 0 },
     },
     vertexShader: SURFACE_VERTEX,
     fragmentShader: SURFACE_FRAGMENT,
