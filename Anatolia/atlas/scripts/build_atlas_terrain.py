@@ -16,6 +16,7 @@ import math
 import os
 import shutil
 import sys
+import re
 import urllib.error
 import urllib.parse
 import urllib.request
@@ -293,6 +294,17 @@ def crusader_details(sites: dict, geographic: np.ndarray | None = None, transfor
 
 
 JPEG_MAX_BYTES = 2 * 1024 * 1024
+CONTENT_RANGE = re.compile(r"bytes (\d+)-(\d+)/(\d+|\*)", re.IGNORECASE)
+RANGE_REQUEST = re.compile(r"bytes=(\d+)-(\d+)")
+
+
+def validate_content_range(header: str | None, start: int, end: int) -> None:
+    """A 206 body must be the exact byte interval that was requested."""
+    if header is None:
+        raise RuntimeError("missing content range")
+    match = CONTENT_RANGE.fullmatch(header.strip())
+    if match is None or int(match.group(1)) != start or int(match.group(2)) != end:
+        raise RuntimeError("content range does not match the request")
 
 
 def endpoint(url: str) -> tuple[str, str, int]:
@@ -331,6 +343,11 @@ def read_pinned(url: str, timeout: float = 40, max_bytes: int = JPEG_MAX_BYTES, 
         status = getattr(response, "status", None) or response.getcode()
         if require_range and status != 206:
             raise RuntimeError("server ignored the range request")
+        if require_range:
+            requested = RANGE_REQUEST.fullmatch((extra_headers or {}).get("Range", ""))
+            if requested is None:
+                raise RuntimeError("missing content range")
+            validate_content_range(response.headers.get("Content-Range"), int(requested.group(1)), int(requested.group(2)))
         declared = response.headers.get("Content-Length")
         if declared is not None and int(declared) > max_bytes:
             raise RuntimeError("download exceeded the byte cap")
