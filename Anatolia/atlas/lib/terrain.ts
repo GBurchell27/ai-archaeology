@@ -72,6 +72,10 @@ export function buildTerrainGeometry(
   geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
   geometry.setAttribute("uv", new THREE.BufferAttribute(uvs, 2));
   geometry.setIndex(buildIndices(width, height));
+  return finishGeometry(geometry);
+}
+
+function finishGeometry(geometry: THREE.BufferGeometry): THREE.BufferGeometry {
   geometry.computeVertexNormals();
   if (meanNormalY(geometry) < 0) {
     reverseWinding(geometry);
@@ -128,14 +132,49 @@ function meanNormalY(geometry: THREE.BufferGeometry): number {
 export const FAR_STRIDE = 8;
 export const TILE_CELLS = 96;
 
-/** One low-vertex mesh for the view where the whole country is on screen. */
+/**
+ * One low-vertex mesh for the view where the whole country is on screen.
+ * Each kept sample stays on its source-cell centre, so the surface does not
+ * slide when the view switches to the full-resolution tiles.
+ */
 export function coarseTerrainGeometry(
   grid: TerrainGrid,
   origin: [number, number],
   datum: number,
   exaggeration: number,
+  stride = FAR_STRIDE,
 ): THREE.BufferGeometry {
-  return buildTerrainGeometry(decimateGrid(grid, FAR_STRIDE), origin, datum, exaggeration);
+  const step = Math.max(1, Math.floor(stride));
+  const columns = Math.ceil(grid.width / step);
+  const rows = Math.ceil(grid.height / step);
+  const [left, bottom, right, top] = grid.bounds;
+  const cellWidth = (right - left) / grid.width;
+  const cellHeight = (top - bottom) / grid.height;
+  const spanX = right - left;
+  const spanY = top - bottom;
+  const positions = new Float32Array(columns * rows * 3);
+  const uvs = new Float32Array(columns * rows * 2);
+  for (let row = 0; row < rows; row += 1) {
+    const sourceRow = Math.min(grid.height - 1, row * step);
+    const north = top - (sourceRow + 0.5) * cellHeight;
+    const zValue = -(north - origin[1]);
+    const vCoord = spanY === 0 ? 0 : (north - bottom) / spanY;
+    for (let column = 0; column < columns; column += 1) {
+      const sourceColumn = Math.min(grid.width - 1, column * step);
+      const east = left + (sourceColumn + 0.5) * cellWidth;
+      const sample = row * columns + column;
+      positions[sample * 3] = east - origin[0];
+      positions[sample * 3 + 1] = (grid.metres[sourceRow * grid.width + sourceColumn] - datum) * exaggeration;
+      positions[sample * 3 + 2] = zValue;
+      uvs[sample * 2] = spanX === 0 ? 0 : (east - left) / spanX;
+      uvs[sample * 2 + 1] = vCoord;
+    }
+  }
+  const geometry = new THREE.BufferGeometry();
+  geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+  geometry.setAttribute("uv", new THREE.BufferAttribute(uvs, 2));
+  geometry.setIndex(buildIndices(columns, rows));
+  return finishGeometry(geometry);
 }
 
 /**

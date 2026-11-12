@@ -39,18 +39,17 @@ export function nextQuality(state: QualityState, meanFrameMs: number): QualitySt
 }
 
 /**
- * Far views use one coarse mesh. Near views use frustum-culled tiles unless
- * the machine is already on the cheapest buffer and still missing the budget.
+ * Far views use one coarse mesh. Inside the tile distance the full tiles load
+ * even when a software renderer never gets under the frame-time headroom.
+ * The ladder still lowers the buffer; it does not hold the coarse surface.
  */
 export function nextTerrainCoarse(
-  coarse: boolean,
+  _coarse: boolean,
   distanceM: number,
-  meanFrameMs: number,
-  dprAtFloor: boolean,
+  _meanFrameMs: number,
+  _dprAtFloor: boolean,
 ): boolean {
-  if (distanceM >= TILE_DISTANCE_M) return true;
-  if (!coarse) return dprAtFloor && meanFrameMs > FRAME_BUDGET_MS;
-  return meanFrameMs > FRAME_HEADROOM_MS;
+  return distanceM >= TILE_DISTANCE_M;
 }
 
 export function meanFrameMs(samples: readonly number[]): number {
