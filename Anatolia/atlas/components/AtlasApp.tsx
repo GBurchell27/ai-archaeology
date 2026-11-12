@@ -3,7 +3,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { AtlasScene, type CameraPose } from "@/components/AtlasScene";
 import { OccupationBar } from "@/components/OccupationBar";
-import { PlaceMaps } from "@/components/PlaceMaps";
+import { CreditLine, PlaceMaps, closeupCreditNote } from "@/components/PlaceMaps";
+import { SafeLink } from "@/components/SafeLink";
 import { WikidataPanel } from "@/components/WikidataPanel";
 import { Legend, PeriodDock, ShortcutOverlay, readLegendOpen, storeLegend, useAtlasKeys, useTheme, type AtlasKeyHandlers } from "@/components/AtlasChrome";
 import { naturalExaggeration } from "@/lib/exaggeration";
@@ -12,7 +13,7 @@ import type { ContextFeature } from "@/lib/contextGeometry";
 import { boundsCenter, boundsContain, lonLatToMercator, sampleHeight, toLocal } from "@/lib/geo";
 import { LAYER_STYLE, PERIODS, formatYear, periodOverlaps } from "@/lib/periods";
 import { decodeHeight } from "@/lib/terrain";
-import type { AtlasMetadata, BaseMap, CoronaRecord, LayerId, SiteCollection, SiteFeature } from "@/lib/types";
+import type { AtlasMetadata, BaseMap, CoronaRecord, DetailRecord, LayerId, SiteCollection, SiteFeature } from "@/lib/types";
 import { wikiInPeriod, type WikiFeature } from "@/lib/wikidata";
 import type { TerrainGrid } from "@/lib/terrain";
 
@@ -80,6 +81,8 @@ export function AtlasApp() {
   const [wikiSites, setWikiSites] = useState<WikiFeature[]>([]);
   const [wikiOn, setWikiOn] = useState(true);
   const [wikiId, setWikiId] = useState<string | null>(null);
+  const [flightCancel, setFlightCancel] = useState(0);
+  const [closeupCredit, setCloseupCredit] = useState<{ relief: string; satellite: string } | null>(null);
   const readoutRef = useRef<HTMLDivElement>(null);
   const searchRef = useRef<HTMLInputElement>(null);
   const keys = useRef<AtlasKeyHandlers>({
@@ -165,28 +168,72 @@ export function AtlasApp() {
   const detail = selected && metadata ? metadata.details[selected.id] : undefined;
 
   useEffect(() => {
-    if (!selected) {
+    const wiki = wikiSites.find((site) => site.id === wikiId) ?? null;
+    if (!selected && !wiki) {
       setDetailGrid(null);
+      setCloseupCredit(null);
       return;
     }
-    if (!metadata || !detail) {
-      setDetailGrid(null);
-      setReveal(false);
-      setBusy(false);
+    document.body.dataset.detail = "loading";
+    setDetailToken((current) => {
+      const next = current + 1;
+      document.body.dataset.detailToken = String(next);
+      return next;
+    });
+    if (!detail) {
+      const siteId = selected?.id ?? wiki?.id;
+      if (!siteId) {
+        setDetailGrid(null);
+        return;
+      }
+      const query = `id=${encodeURIComponent(siteId)}`;
       let cancel = false;
-      const show = () => {
+      setBusy(true);
+      setReveal(false);
+      setPanelShown(false);
+      setCloseupCredit(null);
+      const layer = detailLayer === "satellite" ? "satellite" : "hillshade";
+      const image = new Image();
+      image.src = `/api/closeup?${query}&part=${layer}`;
+      const decoded = image.decode ? image.decode().catch(() => undefined) : Promise.resolve();
+      fetch(`/api/closeup?${query}&part=meta`).then(async (response) => {
+        if (!response.ok) throw new Error("close-up-failed");
+        const meta = await response.json() as DetailRecord & { attribution?: { relief?: string; satellite?: string } };
+        const height = await fetch(`/api/closeup?${query}&part=height`);
+        if (!height.ok) throw new Error("close-up-failed");
+        const grid = decodeHeight(await height.arrayBuffer(), meta.width, meta.height, meta.elevation.min, meta.elevation.max);
+        await decoded;
         if (cancel) return;
-        if (document.body.dataset.flying !== "true") {
+        setCloseupCredit({
+          relief: meta.attribution?.relief ?? "",
+          satellite: meta.attribution?.satellite ?? "",
+        });
+        setDetailGrid({ width: meta.width, height: meta.height, bounds: meta.bounds, metres: grid });
+        const show = () => {
+          if (cancel) return;
+          if (document.body.dataset.flying !== "true") {
+            setReveal(true);
+            setPanelShown(true);
+            setBusy(false);
+            return;
+          }
+          window.requestAnimationFrame(show);
+        };
+        show();
+      }).catch(() => {
+        if (!cancel) {
+          setDetailGrid(null);
+          setBusy(false);
           setPanelShown(true);
-          return;
         }
-        window.requestAnimationFrame(show);
-      };
-      show();
+      });
       return () => {
         cancel = true;
       };
     }
+    if (!selected) return;
+    setCloseupCredit(null);
+    const siteId = selected.id;
     let cancel = false;
     setBusy(true);
     setReveal(false);
@@ -195,7 +242,7 @@ export function AtlasApp() {
     const image = new Image();
     if (imageUrl) image.src = imageUrl;
     const decoded = imageUrl && image.decode ? image.decode().catch(() => undefined) : Promise.resolve();
-    fetch(`/terrain/details/${selected.id}/height.u16`).then(async (response) => {
+    fetch(`/terrain/details/${siteId}/height.u16`).then(async (response) => {
       const grid = decodeHeight(
         await response.arrayBuffer(),
         detail.width,
@@ -232,7 +279,7 @@ export function AtlasApp() {
     return () => {
       cancel = true;
     };
-  }, [metadata, selected, detail, detailLayer]);
+  }, [metadata, selected, detail, detailLayer, wikiId, wikiSites]);
 
   useEffect(() => {
     document.body.dataset.site = selectedId ?? "";
@@ -266,7 +313,7 @@ export function AtlasApp() {
     document.body.dataset.detailToken = String(token);
     setDetailToken(token);
     setWikiId(null);
-    const windowSize = metadata!.details[site.id]?.pixelSizeM ?? metadata!.pixelSizeM;
+    const windowSize = metadata!.details[site.id]?.pixelSizeM ?? 39;
     const scale = naturalExaggeration(windowSize);
     setExaggeration(scale);
     const next = sitePose(site, metadata!, metres!, scale, pose!.token + 1);
@@ -289,10 +336,21 @@ export function AtlasApp() {
     setPanelShown(false);
     setReveal(false);
     setQuery("");
-    document.body.dataset.detail = "";
+    const token = detailToken + 1;
+    document.body.dataset.detail = "loading";
+    document.body.dataset.detailToken = String(token);
+    setDetailToken(token);
+    const scale = naturalExaggeration(39);
+    setExaggeration(scale);
     setBaseMap("relief");
     const [longitude, latitude] = site.geometry.coordinates;
-    setPose(lookPose(longitude, latitude, metadata!, metres!, exaggeration, pose!.token + 1, 16000));
+    setPose(lookPose(longitude, latitude, metadata!, metres!, scale, pose!.token + 1, 16000));
+  }
+
+  function stopFlight() {
+    document.body.dataset.detail = "";
+    document.body.dataset.flying = "false";
+    setFlightCancel((token) => token + 1);
   }
 
   function backToTurkey() {
@@ -318,9 +376,11 @@ export function AtlasApp() {
       }
       setSettingsOpen(false);
       setSelectedId(null);
+      setWikiId(null);
       setPanelShown(false);
       setReveal(false);
       setClimateId(null);
+      stopFlight();
     },
     onReset: backToTurkey,
     onTheme: toggleTheme,
@@ -352,7 +412,12 @@ export function AtlasApp() {
     }))
     : [];
   const climateRecord = climateRecords.find((record) => record.id === climateId) ?? null;
-  const detailUrl = detail?.rasters[detailLayer] ? `/terrain/${detail.rasters[detailLayer]}` : null;
+  const liveId = !detail && (selected || wikiSite) ? (selected ?? wikiSite)!.id : null;
+  const detailUrl = detail?.rasters[detailLayer]
+    ? `/terrain/${detail.rasters[detailLayer]}`
+    : liveId
+      ? `/api/closeup?id=${encodeURIComponent(liveId)}&part=${detailLayer === "satellite" ? "satellite" : "hillshade"}`
+      : null;
   const compareUrl = detail?.rasters[compareLayer] ? `/terrain/${detail.rasters[compareLayer]}` : null;
 
   return (
@@ -387,6 +452,7 @@ export function AtlasApp() {
           setSettingsOpen(false);
         }}
         detailToken={detailToken}
+        flightCancel={flightCancel}
         wikiSites={wikiVisible}
         onOpenWiki={(siteId) => {
           const site = wikiSites.find((item) => item.id === siteId);
@@ -484,6 +550,7 @@ export function AtlasApp() {
             setSelectedId(null);
             setPanelShown(false);
             setReveal(false);
+            stopFlight();
           }}
           onLayer={setDetailLayer}
           onCompare={setCompare}
@@ -495,16 +562,22 @@ export function AtlasApp() {
           onBase={setBaseMap}
           contextOn={contextOn}
           onContext={(id, enabled) => setContextOn((current) => ({ ...current, [id]: enabled }))}
+          closeup={!detail}
+          credit={closeupCredit}
         />
       ) : null}
       {wikiSite ? (
         <WikidataPanel
           site={wikiSite}
-          baseMap={baseMap}
-          onBase={setBaseMap}
+          detailLayer={detailLayer}
+          onLayer={setDetailLayer}
           contextOn={contextOn}
           onContext={(id, enabled) => setContextOn((current) => ({ ...current, [id]: enabled }))}
-          onClose={() => setWikiId(null)}
+          credit={closeupCredit}
+          onClose={() => {
+            setWikiId(null);
+            stopFlight();
+          }}
         />
       ) : null}
       {climateRecord ? (
@@ -516,7 +589,7 @@ export function AtlasApp() {
         return next;
       })} />
       {help ? <ShortcutOverlay onClose={() => setHelp(false)} /> : null}
-      <p className="credit">{metadata.attribution.dem} {metadata.attribution.satellite}</p>
+      <p className="credit">{metadata.attribution.dem} <CreditLine text={metadata.attribution.satellite} /></p>
     </div>
   );
 }
@@ -655,7 +728,7 @@ function ClimateChart(props: { record: ClimateRecord; onClose: () => void }) {
         <path d={path} />
       </svg>
       <p>This record shows the published measurements. The lines mark about 6200 BCE (8.2 ka) and 2200 BCE (4.2 ka). The effect of the 8.2 ka event on early farming is debated.</p>
-      <p className="source-line"><a href={props.record.sourceUrl} target="_blank" rel="noreferrer">{props.record.citation}</a></p>
+      <p className="source-line"><SafeLink href={props.record.sourceUrl}>{props.record.citation}</SafeLink></p>
     </aside>
   );
 }
@@ -680,6 +753,8 @@ function SitePanel(props: {
   onBase: (base: BaseMap) => void;
   contextOn: Record<string, boolean>;
   onContext: (id: string, enabled: boolean) => void;
+  closeup?: boolean;
+  credit?: { relief: string; satellite: string } | null;
 }) {
   const properties = props.site.properties;
   const ids = new Set(props.rasters.map(([id]) => id));
@@ -687,6 +762,8 @@ function SitePanel(props: {
   const sentinelId = ids.has("true-colour") ? "true-colour" : ids.has("satellite") ? "satellite" : null;
   const coronaId = ids.has("corona") ? "corona" : null;
   const local = reliefId != null || sentinelId != null || coronaId != null;
+  const reliefChoice = reliefId ?? (props.closeup ? "hillshade" : null);
+  const sentinelChoice = sentinelId ?? (props.closeup ? "satellite" : null);
   return (
     <aside className={props.shown ? "panel is-in" : "panel"} aria-label="Selected place">
       <button type="button" className="close" data-action="close-panel" onClick={props.onClose}>Close</button>
@@ -697,20 +774,20 @@ function SitePanel(props: {
       <OccupationBar segments={[{ id: properties.layer, start: properties.startYear, end: properties.endYear }]} />
       <p>{properties.description}</p>
       <p>{properties.notes}</p>
-      <p className="source-line"><a href={properties.sourceUrl} target="_blank" rel="noreferrer">{properties.source}</a></p>
+      <p className="source-line"><SafeLink href={properties.sourceUrl}>{properties.source}</SafeLink></p>
       <PlaceMaps
-        reliefOn={local ? props.detailLayer === reliefId : props.baseMap === "relief"}
-        sentinelOn={local ? props.detailLayer === sentinelId : props.baseMap === "satellite"}
-        coronaOn={local && props.detailLayer === coronaId}
+        reliefOn={reliefChoice ? props.detailLayer === reliefChoice : props.baseMap === "relief"}
+        sentinelOn={sentinelChoice ? props.detailLayer === sentinelChoice : props.baseMap === "satellite"}
+        coronaOn={coronaId != null && props.detailLayer === coronaId}
         coronaAvailable={coronaId != null}
-        onRelief={() => (local && reliefId ? props.onLayer(reliefId) : props.onBase("relief"))}
-        onSentinel={() => (local && sentinelId ? props.onLayer(sentinelId) : props.onBase("satellite"))}
+        onRelief={() => (reliefChoice ? props.onLayer(reliefChoice) : props.onBase("relief"))}
+        onSentinel={() => (sentinelChoice ? props.onLayer(sentinelChoice) : props.onBase("satellite"))}
         onCorona={() => {
           if (coronaId) props.onLayer(coronaId);
         }}
         contextOn={props.contextOn}
         onContext={props.onContext}
-        note={local ? undefined : "National relief and Sentinel-2. This place has no separate close-up window."}
+        note={props.closeup ? closeupCreditNote(props.credit) : undefined}
       />
       {props.rasters.length > 0 ? (
         <section className="place-layers">
@@ -736,7 +813,7 @@ function SitePanel(props: {
             <p className="source-line" data-role="corona-credit">
               {props.corona.credit}. Frame {props.corona.frame} ({props.corona.date}), about {props.corona.pixelSizeM.toFixed(1)} m.
               {" "}{props.corona.licence}. {props.corona.note}{" "}
-              <a href={props.corona.sourceUrl} target="_blank" rel="noreferrer">CORONA Atlas</a>
+              <SafeLink href={props.corona.sourceUrl}>CORONA Atlas</SafeLink>
             </p>
           ) : null}
         </section>

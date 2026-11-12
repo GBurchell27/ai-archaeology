@@ -16,6 +16,8 @@ http://127.0.0.1:43127/
 
 `npm run build` checks the production build.
 
+`tests/test_panel_flight.py` drives the page with puppeteer-core. It skips when `node_modules/puppeteer-core` is missing. Install dependencies here and leave the dev server running before that test.
+
 ## Terrain data
 
 From the repository root, with the project virtualenv:

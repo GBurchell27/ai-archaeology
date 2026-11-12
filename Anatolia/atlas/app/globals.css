@@ -350,6 +350,7 @@ html[data-theme="dark"] .search ul { background: rgba(10, 14, 18, 0.96); }
   margin-right: 4px;
 }
 
+.credit a { color: #f6d7a8; }
 .credit {
   position: absolute;
   z-index: 2;

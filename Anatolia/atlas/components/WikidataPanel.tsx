@@ -1,16 +1,17 @@
 "use client";
 
 import { OccupationBar } from "@/components/OccupationBar";
-import { PlaceMaps } from "@/components/PlaceMaps";
-import type { BaseMap } from "@/lib/types";
+import { PlaceMaps, closeupCreditNote } from "@/components/PlaceMaps";
+import { SafeLink } from "@/components/SafeLink";
 import { PERIOD_SPAN, type WikiFeature } from "@/lib/wikidata";
 
 export function WikidataPanel(props: {
   site: WikiFeature;
-  baseMap: BaseMap;
-  onBase: (base: BaseMap) => void;
+  detailLayer: string;
+  onLayer: (layer: string) => void;
   contextOn: Record<string, boolean>;
   onContext: (id: string, enabled: boolean) => void;
+  credit?: { relief: string; satellite: string } | null;
   onClose: () => void;
 }) {
   const properties = props.site.properties;
@@ -33,21 +34,21 @@ export function WikidataPanel(props: {
       <p className="muted">{properties.periodLabels.join(" · ") || "Undated"}{properties.startYear != null ? ` · ${format(properties.startYear)}` : ""}{properties.endYear != null ? ` – ${format(properties.endYear)}` : ""}</p>
       {properties.heritage.length > 0 ? <p>{properties.heritage.join(" · ")}</p> : null}
       <p className="source-line">
-        <a href={properties.sourceUrl} target="_blank" rel="noreferrer">{properties.qid}</a>
-        {properties.wikipedia ? <> · <a href={properties.wikipedia} target="_blank" rel="noreferrer">Wikipedia</a></> : null}
+        <SafeLink href={properties.sourceUrl}>{properties.qid}</SafeLink>
+        {properties.wikipedia ? <> · <SafeLink href={properties.wikipedia}>Wikipedia</SafeLink></> : null}
         {" · "}{properties.licence}
       </p>
       <PlaceMaps
-        reliefOn={props.baseMap === "relief"}
-        sentinelOn={props.baseMap === "satellite"}
+        reliefOn={props.detailLayer !== "satellite"}
+        sentinelOn={props.detailLayer === "satellite"}
         coronaOn={false}
         coronaAvailable={false}
-        onRelief={() => props.onBase("relief")}
-        onSentinel={() => props.onBase("satellite")}
+        onRelief={() => props.onLayer("hillshade")}
+        onSentinel={() => props.onLayer("satellite")}
         onCorona={() => undefined}
         contextOn={props.contextOn}
         onContext={props.onContext}
-        note="National relief and Sentinel-2. This place has no separate close-up or CORONA frame."
+        note={closeupCreditNote(props.credit)}
       />
       <p className="muted">This is a published catalogue pin, not a discovery and not a candidate from the terrain search.</p>
     </aside>

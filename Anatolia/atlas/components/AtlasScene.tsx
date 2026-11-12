@@ -52,6 +52,7 @@ interface AtlasSceneProps {
   wikiSites: WikiFeature[];
   onOpenWiki: (siteId: string) => void;
   onApproachWiki: (longitude: number, latitude: number) => void;
+  flightCancel: number;
 }
 
 export function AtlasScene(props: AtlasSceneProps) {
@@ -153,7 +154,7 @@ export function AtlasScene(props: AtlasSceneProps) {
         selectedId={props.selectedId}
         onSelect={props.onSelect}
       />
-      <CameraRig pose={props.pose} span={span} readoutRef={props.readoutRef} originY={origin[1]} />
+      <CameraRig pose={props.pose} span={span} readoutRef={props.readoutRef} originY={origin[1]} cancelToken={props.flightCancel} />
     </Canvas>
   );
 }
@@ -297,6 +298,7 @@ function ShadedMesh(props: {
   material.uniforms.hazeStrength.value = HAZE_STRENGTH;
   material.uniforms.hazeColor.value.set(203 / 255, 184 / 255, 154 / 255);
   const fade = useRef(props.fade ? 0 : 1);
+  const announced = useRef(0);
   if (!props.fade) fade.current = 1;
   material.uniforms.opacity.value = props.opacity * fade.current;
   useFrame(() => {
@@ -304,7 +306,9 @@ function ShadedMesh(props: {
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     fade.current = reduced ? 1 : Math.min(1, fade.current + 0.08);
     material.uniforms.opacity.value = props.opacity * fade.current;
-    if (fade.current >= 1 && document.body.dataset.detailToken === String(props.detailToken)) {
+    const token = props.detailToken ?? 0;
+    if (fade.current >= 1 && announced.current !== token && document.body.dataset.detailToken === String(token)) {
+      announced.current = token;
       document.body.dataset.detail = "ready";
     }
   });
@@ -509,7 +513,7 @@ function paintHalo(): THREE.CanvasTexture {
   return texture;
 }
 
-function CameraRig({ pose, span, readoutRef, originY }: { pose: CameraPose; span: number; readoutRef: RefObject<HTMLDivElement | null>; originY: number }) {
+function CameraRig({ pose, span, readoutRef, originY, cancelToken }: { pose: CameraPose; span: number; readoutRef: RefObject<HTMLDivElement | null>; originY: number; cancelToken: number }) {
   const controls = useRef<OrbitControlsImpl>(null);
   const camera = useThree((state) => state.camera);
   const size = useThree((state) => state.size);
@@ -539,6 +543,17 @@ function CameraRig({ pose, span, readoutRef, originY }: { pose: CameraPose; span
     document.body.dataset.flying = "true";
     document.body.dataset.flightMs = String(Math.round(duration));
   }, [pose, camera]);
+
+  useEffect(() => {
+    if (cancelToken === 0) return;
+    flight.current = null;
+    const orbit = controls.current;
+    if (orbit) {
+      orbit.enableDamping = true;
+      orbit.enabled = true;
+    }
+    document.body.dataset.flying = "false";
+  }, [cancelToken]);
 
   useFrame(() => {
     const orbit = controls.current;
