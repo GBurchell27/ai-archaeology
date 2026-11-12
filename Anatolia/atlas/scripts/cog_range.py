@@ -73,18 +73,23 @@ def read_window(fetch, west: float, south: float, east: float, north: float, max
     offsets = [int(item) for item in values(324)]
     counts = [int(item) for item in values(325)]
     scale_x, scale_y, _scale_z = values(33550)
-    _i, _j, _k, tie_x, tie_y, _z = values(33922)
-    origin_x = float(tie_x)
-    origin_y = float(tie_y)
+    tie_i, tie_j, _k, tie_x, tie_y, _z = values(33922)
     scale_x = float(scale_x)
     scale_y = abs(float(scale_y))
     if scale_x <= 0 or scale_y <= 0:
         raise RuntimeError("unsupported GeoTIFF layout")
+    # ModelTiepoint is the pixel centre when GTRasterTypeGeoKey is Point (2).
+    # GDAL's affine is the upper-left corner, half a pixel up and west of that.
+    origin_x = float(tie_x) - float(tie_i) * scale_x
+    origin_y = float(tie_y) + float(tie_j) * scale_y
+    if _raster_type(tags, values) == 2:
+        origin_x -= 0.5 * scale_x
+        origin_y += 0.5 * scale_y
 
-    col0 = max(0, math.floor((west - origin_x) / scale_x))
-    col1 = min(width, math.ceil((east - origin_x) / scale_x))
-    row0 = max(0, math.floor((origin_y - north) / scale_y))
-    row1 = min(height, math.ceil((origin_y - south) / scale_y))
+    col0 = max(0, math.floor(_snap_pixel((west - origin_x) / scale_x)))
+    col1 = min(width, math.ceil(_snap_pixel((east - origin_x) / scale_x)))
+    row0 = max(0, math.floor(_snap_pixel((origin_y - north) / scale_y)))
+    row1 = min(height, math.ceil(_snap_pixel((origin_y - south) / scale_y)))
     if col1 <= col0 or row1 <= row0:
         return None
     across = math.ceil(width / tile_width)
@@ -107,8 +112,40 @@ def read_window(fetch, west: float, south: float, east: float, north: float, max
     return output, (scale_x, origin_x + col0 * scale_x, scale_y, origin_y - row0 * scale_y)
 
 
+# A bound this close to an integer pixel is that pixel edge, not the next one.
+EDGE_EPS = 1e-6
+
+
+def _snap_pixel(value: float) -> float:
+    nearest = round(value)
+    if abs(value - nearest) <= EDGE_EPS:
+        return float(nearest)
+    return value
+
+
+def _raster_type(tags: dict, values) -> int:
+    """GTRasterTypeGeoKey: 1 is Area, 2 is Point. Missing means Area."""
+    if 34735 not in tags:
+        return 1
+    directory = values(34735)
+    if len(directory) < 4:
+        return 1
+    keys = int(directory[3])
+    for index in range(keys):
+        base = 4 + index * 4
+        if base + 3 >= len(directory):
+            break
+        key_id, location, _count, value = (int(item) for item in directory[base:base + 4])
+        if key_id == 1025 and location == 0:
+            return value
+    return 1
+
+
 def _decode_tile(payload: bytes, width: int, height: int, compression: int, predictor: int) -> np.ndarray:
-    raw = payload if compression == 1 else zlib.decompress(payload)
+    try:
+        raw = payload if compression == 1 else zlib.decompress(payload)
+    except zlib.error as error:
+        raise RuntimeError("unsupported GeoTIFF layout") from error
     expected = width * height * 4
     if len(raw) != expected or predictor not in {1, 3}:
         raise RuntimeError("unsupported GeoTIFF layout")

@@ -2,10 +2,13 @@
 
 import importlib.util
 import json
+import math
 import re
 import subprocess
+import threading
 import urllib.error
 import urllib.request
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
 import pytest
@@ -92,6 +95,104 @@ def test_cog_window_uses_ranges_and_a_byte_cap(tmp_path: Path):
     assert np.allclose(array[0, 0], grid[row, col])
     with pytest.raises(RuntimeError, match="byte cap"):
         cog.read_window(fetch, west, south, east, north, max_bytes=32)
+
+
+def _tiled_dem(path: Path, *, point: bool):
+    import numpy as np
+    import rasterio
+    from rasterio.transform import from_origin
+
+    grid = np.arange(64 * 64, dtype=np.float32).reshape(64, 64)
+    with rasterio.open(
+        path, "w", driver="GTiff", height=64, width=64, count=1, dtype="float32",
+        crs="EPSG:4326", transform=from_origin(30.0, 40.0, 0.001, 0.001),
+        tiled=True, blockxsize=32, blockysize=32, compress="deflate", predictor=3,
+    ) as dataset:
+        dataset.write(grid, 1)
+        if point:
+            dataset.update_tags(AREA_OR_POINT="Point")
+    return grid
+
+
+def test_point_tiepoint_uses_the_gdal_half_pixel(tmp_path: Path):
+    import rasterio
+
+    path = tmp_path / "point.tif"
+    grid = _tiled_dem(path, point=True)
+    with rasterio.open(path) as dataset:
+        assert dataset.tags().get("AREA_OR_POINT") == "Point"
+        gdal_x, gdal_y = dataset.transform.c, dataset.transform.f
+    blob = path.read_bytes()
+    cog = _load("cog_range", ATLAS / "scripts" / "cog_range.py")
+    window = cog.read_window(lambda start, end: blob[start:end + 1], 30.0, 39.9, 30.02, 40.001, max_bytes=len(blob))
+    assert window is not None
+    array, (_sx, origin_x, _sy, origin_y) = window
+    assert abs(origin_x - gdal_x) < 1e-9
+    assert abs(origin_y - gdal_y) < 1e-9
+    assert array[0, 0] == grid[0, 0]
+
+
+def test_pixel_edge_epsilon_does_not_grow_the_window(tmp_path: Path):
+    path = tmp_path / "area.tif"
+    _tiled_dem(path, point=False)
+    blob = path.read_bytes()
+    cog = _load("cog_range", ATLAS / "scripts" / "cog_range.py")
+    scale = 0.001
+    west = math.nextafter(30.0 + 20 * scale, 0.0)
+    east = 30.0 + 22 * scale
+    north = math.nextafter(40.0 - 10 * scale, 0.0)
+    south = 40.0 - 12 * scale
+    window = cog.read_window(lambda start, end: blob[start:end + 1], west, south, east, north, max_bytes=len(blob))
+    assert window is not None
+    _array, (_sx, origin_x, _sy, origin_y) = window
+    assert round((origin_x - 30.0) / scale) == 20
+    assert round((40.0 - origin_y) / scale) == 10
+    assert cog._snap_pixel(20.4) == 20.4
+
+
+def test_content_range_must_match_the_request():
+    payload = b"abcdefghijklmnopqrstuvwxyz"
+
+    class Handler(BaseHTTPRequestHandler):
+        mismatch = False
+
+        def do_GET(self):
+            header = self.headers.get("Range", "")
+            start_s, end_s = header.removeprefix("bytes=").split("-")
+            start, end = int(start_s), int(end_s)
+            if self.server.mismatch:  # type: ignore[attr-defined]
+                start, end = start + 4, end + 4
+            body = payload[start:end + 1]
+            self.send_response(206)
+            self.send_header("Content-Range", f"bytes {start}-{end}/{len(payload)}")
+            self.send_header("Content-Length", str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
+
+        def log_message(self, _format, *_args):
+            return
+
+    server = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
+    server.mismatch = False  # type: ignore[attr-defined]
+    thread = threading.Thread(target=server.serve_forever, daemon=True)
+    thread.start()
+    terrain = _load("build_atlas_terrain", ATLAS / "scripts" / "build_atlas_terrain.py")
+    url = f"http://127.0.0.1:{server.server_address[1]}/tile"
+    try:
+        body = terrain.read_pinned(url, extra_headers={"Range": "bytes=0-3"}, require_range=True, max_bytes=4)
+        assert body == payload[:4]
+        server.mismatch = True  # type: ignore[attr-defined]
+        with pytest.raises(RuntimeError, match="content range"):
+            terrain.read_pinned(url, extra_headers={"Range": "bytes=0-3"}, require_range=True, max_bytes=8)
+    finally:
+        server.shutdown()
+
+
+def test_bad_deflate_is_a_layout_error():
+    cog = _load("cog_range", ATLAS / "scripts" / "cog_range.py")
+    with pytest.raises(RuntimeError, match="layout") as caught:
+        cog._decode_tile(b"\x00\x01not-zlib", 4, 4, compression=8, predictor=1)
+    assert isinstance(caught.value.__cause__, cog.zlib.error)
 
 
 def test_closeup_write_refuses_a_symlink(tmp_path: Path):
