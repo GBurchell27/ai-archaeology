@@ -1,4 +1,4 @@
-import { buildTerrainGeometry, decimateGrid, sliceTerrainTiles } from "../lib/terrain.ts";
+import { buildTerrainGeometry, coarseTerrainGeometry, decimateGrid, sliceTerrainTiles } from "../lib/terrain.ts";
 import {
   approachDistance,
   clusterByScreen,
@@ -77,8 +77,9 @@ check("dpr index clamps", dprForIndex(99) === 0.4 && dprForIndex(-2) === 1);
 
 check("the whole country stays one mesh", nextTerrainCoarse(false, 200000, 10, false));
 check("a near view keeps tiles while frames are fine", nextTerrainCoarse(false, 50000, 40, false) === false);
-check("a near view drops to the coarse mesh when the floor is still slow", nextTerrainCoarse(false, 50000, 40, true));
-check("coarse near view returns to tiles once frames are easy", nextTerrainCoarse(true, 50000, 10, true) === false);
+check("a slow close-up still loads tiles", nextTerrainCoarse(false, 50000, 40, true) === false);
+check("software rendering at 28 ms still sharpens a zoom", nextTerrainCoarse(true, 110000, 28, true) === false);
+check("just outside the tile distance stays coarse", nextTerrainCoarse(false, 150000, 8, false) === true);
 
 const grid = {
   width: 4,
@@ -91,6 +92,14 @@ check("decimate keeps the strided samples", reduced.width === 2 && reduced.heigh
 check("decimate reads the source columns", reduced.metres[0] === 0 && reduced.metres[1] === 2);
 
 const full = buildTerrainGeometry(grid, [0, 0], 0, 1);
+const coarse = coarseTerrainGeometry(grid, [0, 0], 0, 1, 2);
+const coarsePosition = coarse.getAttribute("position");
+check("coarse samples stay on their source cells",
+  coarsePosition.getX(0) === full.getAttribute("position").getX(0)
+  && coarsePosition.getZ(0) === full.getAttribute("position").getZ(0)
+  && coarsePosition.getX(1) === full.getAttribute("position").getX(2)
+  && coarsePosition.getY(1) === full.getAttribute("position").getY(2));
+coarse.dispose();
 const tiles = sliceTerrainTiles(grid, [0, 0], 0, 1, 2);
 check("tiles cover the small grid", tiles.length === 2);
 const fullPosition = full.getAttribute("position");
