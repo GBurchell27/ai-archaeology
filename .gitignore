@@ -22,6 +22,9 @@
 !Anatolia/explorer/public/sites.geojson
 !Anatolia/atlas/public/wikidata/sites.geojson
 
+# Bulk JSON dumps. data/ is already ignored; this catches copies left elsewhere.
+*.json.gz
+
 # Local data and generated products
 data/
 outputs/

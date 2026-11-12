@@ -305,6 +305,9 @@ def validate_content_range(header: str | None, start: int, end: int) -> None:
     match = CONTENT_RANGE.fullmatch(header.strip())
     if match is None or int(match.group(1)) != start or int(match.group(2)) != end:
         raise RuntimeError("content range does not match the request")
+    total = match.group(3)
+    if total != "*" and int(total) <= end:
+        raise RuntimeError("content range does not match the request")
 
 
 def endpoint(url: str) -> tuple[str, str, int]:

@@ -17,6 +17,9 @@ export interface SiteProperties {
   sourceUrl: string;
   confidence: Confidence;
   notes: string;
+  periods?: string[];
+  pleiadesId?: string;
+  pleiadesUrl?: string;
 }
 
 export interface SiteFeature {

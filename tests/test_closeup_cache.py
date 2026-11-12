@@ -150,6 +150,14 @@ def test_pixel_edge_epsilon_does_not_grow_the_window(tmp_path: Path):
     assert cog._snap_pixel(20.4) == 20.4
 
 
+def test_content_range_total_must_extend_past_the_last_byte():
+    terrain = _load("build_atlas_terrain", ATLAS / "scripts" / "build_atlas_terrain.py")
+    terrain.validate_content_range("bytes 0-3/4", 0, 3)
+    terrain.validate_content_range("bytes 0-3/*", 0, 3)
+    with pytest.raises(RuntimeError, match="content range"):
+        terrain.validate_content_range("bytes 0-3/3", 0, 3)
+
+
 def test_content_range_must_match_the_request():
     payload = b"abcdefghijklmnopqrstuvwxyz"
 

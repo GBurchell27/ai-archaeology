@@ -3,6 +3,7 @@
 import { OccupationBar } from "@/components/OccupationBar";
 import { PlaceMaps, closeupCreditNote } from "@/components/PlaceMaps";
 import { SafeLink } from "@/components/SafeLink";
+import { PERIODS } from "@/lib/periods";
 import { PERIOD_SPAN, type WikiFeature } from "@/lib/wikidata";
 
 export function WikidataPanel(props: {
@@ -28,15 +29,17 @@ export function WikidataPanel(props: {
     <aside className="panel is-in wiki-panel" aria-label="Wikidata place" data-wiki={properties.qid}>
       <button type="button" className="close" data-action="close-wiki" onClick={props.onClose}>Close</button>
       <h2>{properties.name}</h2>
-      <p className="badge">Wikidata · {properties.confidence} confidence · published record</p>
+      <p className="badge">{properties.source} · {properties.confidence} confidence · published record</p>
       <p>{properties.types.slice(0, 4).join(" · ") || "Archaeological place"}</p>
       <OccupationBar segments={segments} />
-      <p className="muted">{properties.periodLabels.join(" · ") || "Undated"}{properties.startYear != null ? ` · ${format(properties.startYear)}` : ""}{properties.endYear != null ? ` – ${format(properties.endYear)}` : ""}</p>
+      <p className="muted">{occupationLabel(properties)}{properties.startYear != null ? ` · ${format(properties.startYear)}` : ""}{properties.endYear != null ? ` – ${format(properties.endYear)}` : ""}</p>
       {properties.heritage.length > 0 ? <p>{properties.heritage.join(" · ")}</p> : null}
       <p className="source-line">
         <SafeLink href={properties.sourceUrl}>{properties.qid}</SafeLink>
         {properties.wikipedia ? <> · <SafeLink href={properties.wikipedia}>Wikipedia</SafeLink></> : null}
+        {properties.pleiadesUrl && properties.source !== "Pleiades" ? <> · <SafeLink href={properties.pleiadesUrl}>Pleiades</SafeLink></> : null}
         {" · "}{properties.licence}
+        {properties.pleiadesUrl && properties.source !== "Pleiades" ? " · Pleiades CC BY 3.0 US" : ""}
       </p>
       <PlaceMaps
         reliefOn={props.detailLayer !== "satellite"}
@@ -53,6 +56,14 @@ export function WikidataPanel(props: {
       <p className="muted">This is a published catalogue pin, not a discovery and not a candidate from the terrain search.</p>
     </aside>
   );
+}
+
+function occupationLabel(properties: WikiFeature["properties"]): string {
+  if (properties.periodLabels.length > 0) return properties.periodLabels.join(" · ");
+  if (properties.periods.length > 0) {
+    return properties.periods.map((id) => PERIODS.find((item) => item.id === id)?.label ?? id).join(" · ");
+  }
+  return "Undated";
 }
 
 function format(year: number): string {

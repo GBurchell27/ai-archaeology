@@ -12,6 +12,8 @@ export interface WikiProperties {
   heritage: string[];
   confidence: "high" | "medium" | "low";
   licence: string;
+  pleiadesId?: string;
+  pleiadesUrl?: string;
 }
 
 export interface WikiFeature {
