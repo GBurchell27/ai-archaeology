@@ -2,7 +2,9 @@
 
 export const DPR_STEPS = [1, 0.75, 0.55, 0.4] as const;
 export const INITIAL_DPR_INDEX = 2;
-export const TILE_DISTANCE_M = 150_000;
+export const TILE_ON_M = 140_000;
+export const TILE_OFF_M = 160_000;
+export const TILE_RELEASE_MS = 10_000;
 export const FRAME_BUDGET_MS = 22;
 export const FRAME_HEADROOM_MS = 13;
 export const QUALITY_SAMPLE_COUNT = 8;
@@ -39,17 +41,31 @@ export function nextQuality(state: QualityState, meanFrameMs: number): QualitySt
 }
 
 /**
- * Far views use one coarse mesh. Inside the tile distance the full tiles load
- * even when a software renderer never gets under the frame-time headroom.
- * The ladder still lowers the buffer; it does not hold the coarse surface.
+ * Tiles turn on inside 140 km and off outside 160 km. Between those distances
+ * the current mesh stays, so the view does not flicker on the boundary.
+ * Frame time does not hold a close view on the coarse mesh.
  */
 export function nextTerrainCoarse(
-  _coarse: boolean,
+  coarse: boolean,
   distanceM: number,
   _meanFrameMs: number,
   _dprAtFloor: boolean,
 ): boolean {
-  return distanceM >= TILE_DISTANCE_M;
+  if (distanceM < TILE_ON_M) return false;
+  if (distanceM > TILE_OFF_M) return true;
+  return coarse;
+}
+
+/** Drop the tile meshes only after the camera has stayed outside the off distance. */
+export function tileReleaseDue(distanceM: number, elapsedBeyondOffMs: number): boolean {
+  if (distanceM <= TILE_OFF_M) return false;
+  return elapsedBeyondOffMs >= TILE_RELEASE_MS;
+}
+
+/** Clock for {@link tileReleaseDue}. Coming back inside the off distance resets it. */
+export function nextBeyondOffMs(distanceM: number, elapsedBeyondOffMs: number, deltaMs: number): number {
+  if (distanceM <= TILE_OFF_M) return 0;
+  return elapsedBeyondOffMs + Math.max(0, deltaMs);
 }
 
 export function meanFrameMs(samples: readonly number[]): number {
