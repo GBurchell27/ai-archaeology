@@ -304,7 +304,7 @@ export function AtlasApp() {
     site.properties.names.some((name) => name.toLowerCase().includes(needle))
   )).slice(0, 6);
   const wikiMatches = needle.length < 2 ? [] : wikiSites.filter((site) => (
-    site.properties.name.toLowerCase().includes(needle)
+    wikiInPeriod(site, period.id) && site.properties.name.toLowerCase().includes(needle)
   )).slice(0, 4);
 
   function flyTo(site: SiteFeature) {
@@ -589,7 +589,13 @@ export function AtlasApp() {
         return next;
       })} />
       {help ? <ShortcutOverlay onClose={() => setHelp(false)} /> : null}
-      <p className="credit">{metadata.attribution.dem} <CreditLine text={metadata.attribution.satellite} /></p>
+      <p className="credit">
+        {metadata.attribution.dem} <CreditLine text={metadata.attribution.satellite} />
+        {" "}
+        <SafeLink href="https://pleiades.stoa.org/">Pleiades</SafeLink>
+        {" gazetteer © the contributors, "}
+        <SafeLink href="https://creativecommons.org/licenses/by/3.0/">CC BY 3.0</SafeLink>.
+      </p>
     </div>
   );
 }

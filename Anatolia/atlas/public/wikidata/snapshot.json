@@ -7,9 +7,9 @@
   "nameMatchMetres": 3000.0,
   "wikidataRows": 5056,
   "droppedAsCurated": 70,
-  "sitesGeojsonSha256": "565c7d68be8be301315912afc6c84670a5689b4d158438566f63e0e78161068d",
-  "publishedPins": 4986,
-  "undated": 4847,
+  "sitesGeojsonSha256": "4860a54785a4558ac58c8569fd70b0f73642d26c0af58d0501fd2018cc52d151",
+  "publishedPins": 8587,
+  "undated": 4559,
   "dropped": [
     {
       "qid": "Q272720",
@@ -431,5 +431,25 @@
       "kept": "hattusa",
       "reason": "within 150 m"
     }
-  ]
+  ],
+  "pleiades": {
+    "retrieved": "2026-11-12",
+    "sourceUrl": "https://atlantides.org/downloads/pleiades/json/pleiades-places-latest.json.gz",
+    "licence": "CC BY 3.0",
+    "credit": "Pleiades: A Gazetteer of Past Places. Copyright the contributors, CC BY 3.0. https://pleiades.stoa.org/",
+    "dumpSha256": "9887a437fdfa2ff80fadb7211b22ba5cca9caa116786ec1d0c73968f944a216b",
+    "inWindow": 4928,
+    "matched": 828,
+    "ambiguous": 26,
+    "skippedNear": 473,
+    "added": 3601,
+    "datedBefore": 139,
+    "datedAfter": 4028,
+    "wikidataPins": 4986,
+    "wikidataDatedAfter": 867,
+    "publishedPins": 8587,
+    "nameMatchMetres": 3000.0,
+    "sameNameSkipMetres": 8000.0,
+    "nearMetres": 150.0
+  }
 }
