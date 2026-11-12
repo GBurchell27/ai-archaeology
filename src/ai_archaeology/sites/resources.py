@@ -9,13 +9,30 @@ from __future__ import annotations
 
 import html
 import re
+from urllib.parse import unquote, urlsplit, urlunsplit
 
-ADMINISTRATIVE_HOSTS = {
+# Official sites confirmed from the catalogue and answering on HTTPS.
+OFFICIAL_SITE_HOSTS = {
+    "www.catalhoyuk.com",
+    "catalhoyuk.com",
+    "pataraexcavations.org",
+    "www.pataraexcavations.org",
+    "sardisexpedition.org",
+    "www.sardisexpedition.org",
     "muze.gov.tr",
     "www.muze.gov.tr",
 }
 PRECISE_NUMBER = re.compile(r"-?\d{1,3}\.\d{4,}")
+DECIMAL_PAIR = re.compile(r"-?\d{1,3}\.\d{4,}\s*[, ]\s*-?\d{1,3}\.\d{4,}")
+SLASH_PAIR = re.compile(r"-?\d{1,3}\.\d{4,}\s*/\s*-?\d{1,3}\.\d{4,}")
+DMS = re.compile(
+    r"\d{1,3}°\s*\d{1,2}['′]\s*(?:\d{1,2}(?:\.\d+)?)?[\"″]?\s*[NSEW]",
+    re.IGNORECASE,
+)
+GEOHACK_DMS = re.compile(r"\d{1,3}_\d{1,2}_\d{1,2}(?:\.\d+)?_[NSEW]", re.IGNORECASE)
+GEOHACK_DECIMAL = re.compile(r"-?\d{1,3}\.\d{4,}_[NSEW]", re.IGNORECASE)
 TAG = re.compile(r"<[^>]+>")
+STRAY_BRACKET = re.compile(r"<[^>]*")
 NAME_LIMIT = 8
 REFERENCE_LIMIT = 6
 
@@ -29,10 +46,43 @@ def resource_bucket(place_id: str) -> str:
     return place_id[:2] or place_id
 
 
+def contains_precise_coordinate(value: str) -> bool:
+    """True when text still carries a precise point: decimal pair, slash pair, or DMS."""
+    text = unquote(value)
+    return any(pattern.search(text) for pattern in (DECIMAL_PAIR, SLASH_PAIR, DMS, GEOHACK_DMS, GEOHACK_DECIMAL))
+
+
 def clean_text(value: str) -> str:
-    text = TAG.sub("", html.unescape(value))
+    text = html.unescape(value)
+    text = TAG.sub("", text)
+    text = STRAY_BRACKET.sub("", text)
     text = re.sub(r"\s+", " ", text).strip()
-    return PRECISE_NUMBER.sub("…", text)
+    for pattern in (DECIMAL_PAIR, SLASH_PAIR, DMS, GEOHACK_DMS, GEOHACK_DECIMAL, PRECISE_NUMBER):
+        text = pattern.sub("…", text)
+    return text
+
+
+def strip_userinfo(url: str) -> str | None:
+    """Drop user:pass@ and any URL whose path is a precise coordinate."""
+    try:
+        parts = urlsplit(url.strip())
+    except ValueError:
+        return None
+    host = (parts.hostname or "").lower()
+    if not host:
+        return None
+    scheme = parts.scheme.lower()
+    if scheme == "http" and host in OFFICIAL_SITE_HOSTS:
+        scheme = "https"
+    if scheme != "https":
+        return None
+    netloc = host
+    if parts.port:
+        netloc = f"{host}:{parts.port}"
+    cleaned = urlunsplit((scheme, netloc, parts.path, parts.query, parts.fragment))
+    if contains_precise_coordinate(cleaned):
+        return None
+    return cleaned
 
 
 def citation_from_reference(reference: dict) -> dict | None:
@@ -50,9 +100,8 @@ def citation_from_reference(reference: dict) -> dict | None:
     citation = clean_text(citation)
     if not citation or citation.lower().startswith("osm:"):
         return None
-    url = reference.get("accessURI") or reference.get("bibliographicURI") or ""
-    if not isinstance(url, str) or not url.startswith("https://"):
-        url = None
+    raw_url = reference.get("accessURI") or reference.get("bibliographicURI") or ""
+    url = strip_userinfo(raw_url) if isinstance(raw_url, str) and raw_url else None
     return {"citation": citation[:180], "url": url}
 
 
@@ -106,9 +155,9 @@ def pleiades_record(raw: dict) -> dict:
             break
     record: dict = {}
     if names:
-        record["names"] = names[:NAME_LIMIT]
+        record["names"] = sorted(names[:NAME_LIMIT], key=str.casefold)
     if references:
-        record["references"] = references
+        record["references"] = sorted(references, key=lambda item: (item["citation"].casefold(), item.get("url") or ""))
     return record
 
 
@@ -120,3 +169,24 @@ def unesco_url(identifier: str) -> str:
 def commons_url(category: str) -> str:
     slug = category.strip().replace(" ", "_")
     return f"https://commons.wikimedia.org/wiki/Category:{slug}"
+
+
+def stable_record(record: dict) -> dict:
+    """Fixed key and list order so a rebuild is byte-identical."""
+    ordered: dict = {}
+    for key in ("commons", "directors", "heritage", "id", "names", "pleiadesUrl", "references", "website", "wikipedia"):
+        if key not in record:
+            continue
+        value = record[key]
+        if key == "names" and isinstance(value, list):
+            value = sorted(value, key=str.casefold)
+        elif key == "references" and isinstance(value, list):
+            value = sorted(value, key=lambda item: ((item.get("citation") or "").casefold(), item.get("url") or ""))
+        elif key == "wikipedia" and isinstance(value, list):
+            value = sorted(value, key=lambda item: item.get("lang") or "")
+        elif key == "heritage" and isinstance(value, list):
+            value = sorted(value, key=lambda item: (item.get("label") or "", item.get("url") or ""))
+        elif key == "directors" and isinstance(value, list):
+            value = sorted(value, key=lambda item: item.get("name") or "")
+        ordered[key] = value
+    return ordered

@@ -9,10 +9,16 @@ export function PlaceResources(props: { id: string; longitude: number; latitude:
   const [record, setRecord] = useState<PlaceResource | null>(null);
   const [state, setState] = useState<"loading" | "ready" | "missing" | "error">("loading");
   useEffect(() => {
+    const url = resourceUrl(props.id);
+    if (!url) {
+      setState("missing");
+      setRecord(null);
+      return undefined;
+    }
     let cancel = false;
     setState("loading");
     setRecord(null);
-    fetch(resourceUrl(props.id))
+    fetch(url)
       .then((response) => {
         if (response.status === 404) return null;
         if (!response.ok) throw new Error("resources failed");

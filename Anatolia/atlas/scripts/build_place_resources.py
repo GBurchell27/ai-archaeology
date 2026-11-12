@@ -18,6 +18,8 @@ from ai_archaeology.sites.resources import (
     commons_url,
     pleiades_record,
     resource_bucket,
+    stable_record,
+    strip_userinfo,
     unesco_url,
 )
 
@@ -86,9 +88,10 @@ def main() -> None:
     for place_id, record in records.items():
         shards.setdefault(resource_bucket(place_id), {})[place_id] = record
     written = 0
-    for bucket, payload in shards.items():
+    for bucket in sorted(shards):
+        payload = {place_id: stable_record(shards[bucket][place_id]) for place_id in sorted(shards[bucket])}
         path = OUT / f"{bucket}.json"
-        encoded = (json.dumps(payload, ensure_ascii=False, separators=(",", ":")) + "\n").encode()
+        encoded = (json.dumps(payload, ensure_ascii=False, sort_keys=True, separators=(",", ":")) + "\n").encode()
         path.write_bytes(encoded)
         written += len(encoded)
     after_catalogue = CURATED.stat().st_size + WIKI.stat().st_size
@@ -126,21 +129,29 @@ def _record_for(feature: dict, qid: str | None, pleiades: dict[str, dict], wikid
             record["names"] = extracted["names"]
         if extracted.get("references"):
             record["references"] = extracted["references"]
-        record["pleiadesUrl"] = properties.get("pleiadesUrl") or f"https://pleiades.stoa.org/places/{pleiades_id}"
+        pleiades_url = strip_userinfo(properties.get("pleiadesUrl") or f"https://pleiades.stoa.org/places/{pleiades_id}")
+        if pleiades_url:
+            record["pleiadesUrl"] = pleiades_url
     elif properties.get("pleiadesUrl"):
-        record["pleiadesUrl"] = properties["pleiadesUrl"]
+        pleiades_url = strip_userinfo(properties["pleiadesUrl"])
+        if pleiades_url:
+            record["pleiadesUrl"] = pleiades_url
     wiki = wikidata.get(qid or str(feature["id"]))
     if wiki:
         if wiki.get("wikipedia"):
             record["wikipedia"] = wiki["wikipedia"]
         if wiki.get("commons"):
-            record["commons"] = commons_url(wiki["commons"])
+            commons = strip_userinfo(commons_url(wiki["commons"]))
+            if commons:
+                record["commons"] = commons
         if wiki.get("heritage"):
             record["heritage"] = wiki["heritage"]
         if wiki.get("directors"):
             record["directors"] = wiki["directors"]
         if wiki.get("website"):
-            record["website"] = wiki["website"]
+            website = strip_userinfo(wiki["website"])
+            if website:
+                record["website"] = website
     if len(record) == 1:
         return None
     return record
@@ -198,8 +209,9 @@ SELECT ?item ?en ?tr ?commons ?website ?unesco ?designationLabel ?director ?dire
                 key = (text, url)
                 if key not in {(item["label"], item.get("url")) for item in slot["heritage"]}:
                     entry = {"label": text}
-                    if url:
-                        entry["url"] = url
+                    safe = strip_userinfo(url) if url else None
+                    if safe:
+                        entry["url"] = safe
                     slot["heritage"].append(entry)
             director = _value(row.get("director"))
             director_label = _value(row.get("directorLabel"))
@@ -208,7 +220,7 @@ SELECT ?item ?en ?tr ?commons ?website ?unesco ?designationLabel ?director ?dire
                 if url and "/entity/" in url:
                     url = "https://www.wikidata.org/wiki/" + url.rsplit("/", 1)[-1]
                 if not any(item["name"] == director_label for item in slot["directors"]):
-                    slot["directors"].append({"name": director_label, "url": url})
+                    slot["directors"].append({"name": director_label, "url": strip_userinfo(url) if url else None})
         time.sleep(0.4)
     for slot in found.values():
         if not slot["commons"]:
@@ -221,16 +233,23 @@ SELECT ?item ?en ?tr ?commons ?website ?unesco ?designationLabel ?director ?dire
             slot.pop("heritage")
         if not slot["directors"]:
             slot.pop("directors")
+        else:
+            slot["directors"] = sorted(slot["directors"], key=lambda item: item["name"].casefold())
+        if slot.get("wikipedia"):
+            slot["wikipedia"] = sorted(slot["wikipedia"], key=lambda item: item["lang"])
+        if slot.get("heritage"):
+            slot["heritage"] = sorted(slot["heritage"], key=lambda item: (item["label"], item.get("url") or ""))
     return found
 
 
 def _add_wiki(slot: dict, lang: str, node: dict | None) -> None:
     url = _value(node)
-    if not url or not url.startswith("https://") or "wikipedia.org" not in url:
+    cleaned = strip_userinfo(url) if url else None
+    if not cleaned or "wikipedia.org" not in cleaned:
         return
     if any(item["lang"] == lang for item in slot["wikipedia"]):
         return
-    slot["wikipedia"].append({"lang": lang, "url": url})
+    slot["wikipedia"].append({"lang": lang, "url": cleaned})
 
 
 def _value(node: dict | None) -> str | None:
