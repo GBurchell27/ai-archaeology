@@ -1,0 +1,478 @@
+{
+  "paleolithic-middle-east": [
+    -2600000,
+    -18000
+  ],
+  "stone-age-oman": [
+    -125000,
+    -3200
+  ],
+  "mesolithic-levant": [
+    -18000,
+    -9500
+  ],
+  "mesolithic-middle-east": [
+    -18000,
+    -9000
+  ],
+  "natufian-levant": [
+    -12500,
+    -9500
+  ],
+  "pre-pottery-neolithic-middle-east": [
+    -9000,
+    -6000
+  ],
+  "neolithic-middle-east": [
+    -9000,
+    -4500
+  ],
+  "chalcolithic-mesopotamia": [
+    -6200,
+    -3750
+  ],
+  "neolithic-egypt": [
+    -6000,
+    -4500
+  ],
+  "pottery-neolithic-middle-east": [
+    -6000,
+    -4500
+  ],
+  "ubaid-early-dynastic-ii-mesopotamia": [
+    -5500,
+    -2600
+  ],
+  "chalcolithic-iran": [
+    -5000,
+    -2500
+  ],
+  "predynastic-egypt": [
+    -4500,
+    -2950
+  ],
+  "uruk-mesopotamia": [
+    -4000,
+    -2950
+  ],
+  "old-nubian": [
+    -3800,
+    -2300
+  ],
+  "early-bronze-age-southern-levant": [
+    -3300,
+    -2000
+  ],
+  "elamite-western-iran": [
+    -3200,
+    -540
+  ],
+  "early-dynastic-egypt": [
+    -2950,
+    -2670
+  ],
+  "early-dynastic-mesopotamia": [
+    -2950,
+    -2350
+  ],
+  "old-kingdom-egypt": [
+    -2670,
+    -2168
+  ],
+  "bronze-age-oman": [
+    -2600,
+    -1900
+  ],
+  "early-bronze-age-iran": [
+    -2500,
+    -2000
+  ],
+  "early-middle-bronze-age-iran": [
+    -2500,
+    -1500
+  ],
+  "akkadian-ur-iii-mesopotamia": [
+    -2335,
+    -2000
+  ],
+  "middle-nubian": [
+    -2300,
+    -1600
+  ],
+  "first-intermediate-period-egypt": [
+    -2168,
+    -2010
+  ],
+  "transition-early-middle-bronze-age-southern-levant": [
+    -2100,
+    -1900
+  ],
+  "middle-kingdom-egypt": [
+    -2010,
+    -1640
+  ],
+  "early-bronze-age-anatolia": [
+    -2000,
+    -1750
+  ],
+  "old-babylonian-assyrian-mesopotamia": [
+    -2000,
+    -1600
+  ],
+  "middle-bronze-age-iran": [
+    -2000,
+    -1500
+  ],
+  "middle-bronze-age-southern-levant": [
+    -2000,
+    -1400
+  ],
+  "2nd-millennium-bc-egypt": [
+    -2000,
+    -1000
+  ],
+  "2nd-millennium-bc-levant": [
+    -2000,
+    -1000
+  ],
+  "middle-bronze-early-iron-age-iran": [
+    -2000,
+    -540
+  ],
+  "middle-bronze-age-anatolia": [
+    -1750,
+    -1450
+  ],
+  "old-hittite-anatolia": [
+    -1650,
+    -1450
+  ],
+  "second-intermediate-period-egypt": [
+    -1640,
+    -1548
+  ],
+  "later-2nd-millennium-bc-mesopotamia": [
+    -1600,
+    -1000
+  ],
+  "late-nubian": [
+    -1600,
+    -350
+  ],
+  "new-kingdom-egypt": [
+    -1548,
+    -1086
+  ],
+  "late-bronze-age-iran": [
+    -1500,
+    -1000
+  ],
+  "middle-hittite-anatolia": [
+    -1450,
+    -1200
+  ],
+  "late-bronze-age-southern-levant": [
+    -1400,
+    -1200
+  ],
+  "egyptian-hittite-levant": [
+    -1344,
+    -1212
+  ],
+  "early-iron-age-anatolia": [
+    -1200,
+    -700
+  ],
+  "neo-hittite-northern-levant": [
+    -1200,
+    -700
+  ],
+  "iron-age-southern-levant": [
+    -1200,
+    -550
+  ],
+  "third-intermediate-period-egypt": [
+    -1086,
+    -664
+  ],
+  "early-iron-age-iran": [
+    -1000,
+    -650
+  ],
+  "early-geometric": [
+    -900,
+    -850
+  ],
+  "urartian-eastern-anatolia": [
+    -900,
+    -600
+  ],
+  "middle-geometric": [
+    -850,
+    -750
+  ],
+  "archaic": [
+    -750,
+    -550
+  ],
+  "neo-assyrian-babylonian-middle-east": [
+    -720,
+    -540
+  ],
+  "middle-late-iron-age-anatolia": [
+    -700,
+    -500
+  ],
+  "late-period-egypt": [
+    -664,
+    -332
+  ],
+  "neo-babylonian-achaemenid-southern-levant": [
+    -587,
+    -330
+  ],
+  "classical": [
+    -550,
+    -330
+  ],
+  "achaemenid-middle-east": [
+    -540,
+    -330
+  ],
+  "achaemenid-roman-republic-middle-east": [
+    -540,
+    -30
+  ],
+  "achaemenid-roman-levant": [
+    -540,
+    324
+  ],
+  "macedonian-egypt": [
+    -332,
+    -304
+  ],
+  "hellenistic-middle-east": [
+    -330,
+    -140
+  ],
+  "hellenistic-republican": [
+    -330,
+    -30
+  ],
+  "hellenistic-parthian-middle-east": [
+    -330,
+    226
+  ],
+  "hellenistic-roman-early-empire": [
+    -330,
+    300
+  ],
+  "ptolemaic-egypt": [
+    -304,
+    -30
+  ],
+  "ptolemaic-roman-egypt": [
+    -304,
+    640
+  ],
+  "parthian-middle-east": [
+    -140,
+    226
+  ],
+  "roman-middle-east": [
+    -140,
+    640
+  ],
+  "roman-early-byzantine-middle-east": [
+    -140,
+    850
+  ],
+  "roman-umayyad-levant": [
+    -37,
+    1099
+  ],
+  "roman-early-empire-parthian-middle-east": [
+    -30,
+    226
+  ],
+  "roman": [
+    -30,
+    300
+  ],
+  "roman-early-empire-late-antique": [
+    -30,
+    640
+  ],
+  "sassanian-middle-east": [
+    262,
+    700
+  ],
+  "transition-roman-early-empire-late-antique": [
+    284,
+    337
+  ],
+  "late-antique-sasanian-middle-east": [
+    300,
+    640
+  ],
+  "late-antique": [
+    300,
+    640
+  ],
+  "late-antique-late-byzantine": [
+    300,
+    1450
+  ],
+  "proto-byzantine": [
+    500,
+    650
+  ],
+  "persian-medieval-caucasus": [
+    600,
+    1500
+  ],
+  "caliphate-umayyad-middle-east": [
+    632,
+    750
+  ],
+  "caliphate-fatimid-southern-levant": [
+    632,
+    1150
+  ],
+  "early-byzantine": [
+    650,
+    850
+  ],
+  "abassid-middle-east": [
+    750,
+    940
+  ],
+  "samanid-ghaznavid-iran": [
+    819,
+    1186
+  ],
+  "middle-byzantine": [
+    850,
+    1200
+  ],
+  "early-medieval-caucasus": [
+    850,
+    1200
+  ],
+  "fatimid-middle-east": [
+    950,
+    1150
+  ],
+  "seljuq-middle-east": [
+    1037,
+    1150
+  ],
+  "seljuq-khwarezmian-middle-east": [
+    1037,
+    1258
+  ],
+  "khwarezmian-middle-east": [
+    1077,
+    1258
+  ],
+  "rum-crusader-anatolia": [
+    1077,
+    1307
+  ],
+  "crusader-byzantine-seljuq-middle-east": [
+    1081,
+    1204
+  ],
+  "crusader-seljuq-ayyubid-levant": [
+    1099,
+    1291
+  ],
+  "crusader-ottoman-levant": [
+    1099,
+    1750
+  ],
+  "ayyubid-middle-east": [
+    1171,
+    1258
+  ],
+  "1200-bc-middle-east": [
+    1200,
+    1200
+  ],
+  "13th-century-ad-eastern-mediterranean": [
+    1200,
+    1300
+  ],
+  "late-byzantine": [
+    1200,
+    1450
+  ],
+  "late-byzantine-ottoman-rise": [
+    1200,
+    1453
+  ],
+  "late-medieval-caucasus": [
+    1200,
+    1500
+  ],
+  "ilkhanate-middle-east": [
+    1258,
+    1335
+  ],
+  "mongol-middle-east": [
+    1258,
+    1501
+  ],
+  "mamluk-middle-east": [
+    1258,
+    1516
+  ],
+  "ottoman-rise": [
+    1300,
+    1453
+  ],
+  "timurid-middle-east": [
+    1370,
+    1501
+  ],
+  "early-ottoman-empire": [
+    1453,
+    1683
+  ],
+  "1500-ad-middle-east": [
+    1500,
+    1500
+  ],
+  "perso-ottoman-russian-caucasus": [
+    1500,
+    1918
+  ],
+  "safavid-middle-east": [
+    1501,
+    1725
+  ],
+  "ottoman-empire": [
+    1513,
+    1918
+  ],
+  "late-ottoman-empire": [
+    1683,
+    1918
+  ],
+  "khedivate-egypt": [
+    1800,
+    1922
+  ],
+  "colonial-modern-middle-east": [
+    1800,
+    2000
+  ],
+  "ottoman-decline-mandate-middle-east": [
+    1900,
+    1950
+  ],
+  "modern-middle-east": [
+    1918,
+    2000
+  ]
+}

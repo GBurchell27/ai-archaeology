@@ -32,7 +32,7 @@ const cases = [
   ["https://www.ncei.noaa.gov/pub/data/paleo/x.txt", true],
   ["https://corona.cast.uark.edu/", true],
   ["https://creativecommons.org/licenses/by-nc-sa/4.0/", true],
-  ["https://creativecommons.org/licenses/by/3.0/", true],
+  ["https://creativecommons.org/licenses/by/3.0/us/", true],
   ["https://pleiades.stoa.org/places/599612", true],
   ["http://en.wikipedia.org/wiki/X", false],
   ["javascript:alert(1)", false],

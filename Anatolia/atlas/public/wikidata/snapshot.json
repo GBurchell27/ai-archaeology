@@ -7,9 +7,9 @@
   "nameMatchMetres": 3000.0,
   "wikidataRows": 5056,
   "droppedAsCurated": 70,
-  "sitesGeojsonSha256": "4860a54785a4558ac58c8569fd70b0f73642d26c0af58d0501fd2018cc52d151",
-  "publishedPins": 8587,
-  "undated": 4559,
+  "sitesGeojsonSha256": "6f5ab4fd8987e229924d936a5814e5506c2a36c7cae97cb6b90399005d7bff8a",
+  "publishedPins": 7920,
+  "undated": 4450,
   "dropped": [
     {
       "qid": "Q272720",
@@ -435,21 +435,25 @@
   "pleiades": {
     "retrieved": "2026-11-12",
     "sourceUrl": "https://atlantides.org/downloads/pleiades/json/pleiades-places-latest.json.gz",
-    "licence": "CC BY 3.0",
-    "credit": "Pleiades: A Gazetteer of Past Places. Copyright the contributors, CC BY 3.0. https://pleiades.stoa.org/",
+    "licence": "CC BY 3.0 US",
+    "licenceUrl": "https://creativecommons.org/licenses/by/3.0/us/",
+    "credit": "Pleiades: A Gazetteer of Past Places. Copyright the contributors, CC BY 3.0 US. https://creativecommons.org/licenses/by/3.0/us/ https://pleiades.stoa.org/",
     "dumpSha256": "9887a437fdfa2ff80fadb7211b22ba5cca9caa116786ec1d0c73968f944a216b",
     "inWindow": 4928,
-    "matched": 828,
+    "matched": 861,
     "ambiguous": 26,
-    "skippedNear": 473,
-    "added": 3601,
+    "skippedNear": 1085,
+    "added": 2934,
     "datedBefore": 139,
-    "datedAfter": 4028,
+    "datedAfter": 3470,
     "wikidataPins": 4986,
     "wikidataDatedAfter": 867,
-    "publishedPins": 8587,
+    "publishedPins": 7920,
     "nameMatchMetres": 3000.0,
     "sameNameSkipMetres": 8000.0,
-    "nearMetres": 150.0
+    "nearMetres": 150.0,
+    "vocabularyFills": 0,
+    "droppedUntitled": 22,
+    "datesChanged": 774
   }
 }

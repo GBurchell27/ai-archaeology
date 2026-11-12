@@ -13,21 +13,26 @@
         ]
       },
       "properties": {
-        "name": "Göbekli Tepe",
+        "name": "G\u00f6bekli Tepe",
         "names": [
-          "Göbekli Tepe"
+          "G\u00f6bekli Tepe"
         ],
         "layer": "neolithic",
         "category": "site",
         "kind": "validation",
-        "startYear": -9600,
-        "endYear": -8200,
+        "startYear": -10000,
+        "endYear": -3300,
         "period": "Pre-Pottery Neolithic",
-        "description": "Published Taş Tepeler site on the Germuş limestone, and a UNESCO World Heritage property. A known validation site for this project, not a discovery. The years are a filter bracket for the published occupation, not a new chronology.",
+        "description": "Published Ta\u015f Tepeler site on the Germu\u015f limestone, and a UNESCO World Heritage property. A known validation site for this project, not a discovery. The years are a filter bracket for the published occupation, not a new chronology.",
         "source": "UNESCO World Heritage Centre, listing 1572",
         "sourceUrl": "https://whc.unesco.org/en/list/1572/",
         "confidence": "high",
-        "notes": "Official listing coordinates. 30 m terrain cannot resolve individual enclosures or pillars."
+        "notes": "Official listing coordinates. 30 m terrain cannot resolve individual enclosures or pillars.",
+        "periods": [
+          "neolithic"
+        ],
+        "pleiadesId": "245438984",
+        "pleiadesUrl": "https://pleiades.stoa.org/places/245438984"
       }
     },
     {
@@ -49,14 +54,19 @@
         "layer": "neolithic",
         "category": "site",
         "kind": "validation",
-        "startYear": -9400,
-        "endYear": -8000,
+        "startYear": -10000,
+        "endYear": -3300,
         "period": "Pre-Pottery Neolithic",
-        "description": "Published Taş Tepeler excavation on the Tektek plateau. A known validation site, not a discovery. Years are a filter bracket.",
+        "description": "Published Ta\u015f Tepeler excavation on the Tektek plateau. A known validation site, not a discovery. Years are a filter bracket.",
         "source": "Wikipedia, Karahan Tepe",
         "sourceUrl": "https://en.wikipedia.org/wiki/Karahan_Tepe",
         "confidence": "high",
-        "notes": "Public encyclopedia coordinates of a published excavation."
+        "notes": "Public encyclopedia coordinates of a published excavation.",
+        "periods": [
+          "neolithic"
+        ],
+        "pleiadesId": "293884662",
+        "pleiadesUrl": "https://pleiades.stoa.org/places/293884662"
       }
     },
     {
@@ -70,9 +80,9 @@
         ]
       },
       "properties": {
-        "name": "Sayburç",
+        "name": "Saybur\u00e7",
         "names": [
-          "Sayburç"
+          "Saybur\u00e7"
         ],
         "layer": "neolithic",
         "category": "site",
@@ -80,8 +90,8 @@
         "startYear": -9000,
         "endYear": -7500,
         "period": "Pre-Pottery Neolithic",
-        "description": "Published Pre-Pottery Neolithic site on the Şanlıurfa plateau. Years are a broad filter bracket, not a dated building sequence.",
-        "source": "Wikipedia, Sayburç",
+        "description": "Published Pre-Pottery Neolithic site on the \u015eanl\u0131urfa plateau. Years are a broad filter bracket, not a dated building sequence.",
+        "source": "Wikipedia, Saybur\u00e7",
         "sourceUrl": "https://en.wikipedia.org/wiki/Saybur%C3%A7",
         "confidence": "high",
         "notes": "Public encyclopedia coordinates. The pin is not a surveyed plan."
@@ -126,21 +136,26 @@
         ]
       },
       "properties": {
-        "name": "Nevalı Çori",
+        "name": "Neval\u0131 \u00c7ori",
         "names": [
-          "Nevalı Çori"
+          "Neval\u0131 \u00c7ori"
         ],
         "layer": "neolithic",
         "category": "site",
         "kind": "submerged",
-        "startYear": -8600,
-        "endYear": -8000,
+        "startYear": -10000,
+        "endYear": -3300,
         "period": "Pre-Pottery Neolithic B",
-        "description": "Published Pre-Pottery Neolithic site. It now lies under the Atatürk reservoir. Years are a filter bracket for the PPNB settlement.",
-        "source": "Wikipedia, Nevalı Çori",
+        "description": "Published Pre-Pottery Neolithic site. It now lies under the Atat\u00fcrk reservoir. Years are a filter bracket for the PPNB settlement.",
+        "source": "Wikipedia, Neval\u0131 \u00c7ori",
         "sourceUrl": "https://en.wikipedia.org/wiki/Neval%C4%B1_%C3%87ori",
         "confidence": "high",
-        "notes": "The published location is submerged. The pin is not a place on dry ground, and the surface here is the reservoir, not the excavated settlement."
+        "notes": "The published location is submerged. The pin is not a place on dry ground, and the surface here is the reservoir, not the excavated settlement.",
+        "periods": [
+          "neolithic"
+        ],
+        "pleiadesId": "279761117",
+        "pleiadesUrl": "https://pleiades.stoa.org/places/279761117"
       }
     },
     {
@@ -162,14 +177,20 @@
         "layer": "neolithic",
         "category": "city",
         "kind": "landmark",
-        "startYear": -3000,
-        "endYear": 1500,
+        "startYear": -750,
+        "endYear": 640,
         "period": "Bronze Age through medieval",
-        "description": "Historic town on the Harran plain. Kept with the original six published points as a landscape landmark, not as a Taş Tepeler site. The date bracket is why it also appears in later periods.",
+        "description": "Historic town on the Harran plain. Kept with the original six published points as a landscape landmark, not as a Ta\u015f Tepeler site. The date bracket is why it also appears in later periods.",
         "source": "Wikipedia, Harran",
         "sourceUrl": "https://en.wikipedia.org/wiki/Harran",
         "confidence": "high",
-        "notes": "Not a Neolithic discovery and not part of the Taş Tepeler group."
+        "notes": "Not a Neolithic discovery and not part of the Ta\u015f Tepeler group.",
+        "periods": [
+          "bronze",
+          "classical"
+        ],
+        "pleiadesId": "658427",
+        "pleiadesUrl": "https://pleiades.stoa.org/places/658427"
       }
     },
     {
@@ -186,19 +207,27 @@
         "name": "Edessa",
         "names": [
           "Edessa",
-          "Şanlıurfa",
+          "\u015eanl\u0131urfa",
           "Urfa"
         ],
         "layer": "crusader",
         "category": "city",
-        "startYear": 1098,
-        "endYear": 1144,
-        "period": "County of Edessa, 1098–1144",
-        "description": "City of the County of Edessa, taken in 1098 and lost to Zengi in 1144. The pin is the published coordinate of the historic city, now Şanlıurfa.",
+        "startYear": -2600000,
+        "endYear": 1918,
+        "period": "County of Edessa, 1098\u20131144",
+        "description": "City of the County of Edessa, taken in 1098 and lost to Zengi in 1144. The pin is the published coordinate of the historic city, now \u015eanl\u0131urfa.",
         "source": "Wikipedia, Urfa",
         "sourceUrl": "https://en.wikipedia.org/wiki/Urfa",
         "confidence": "high",
-        "notes": "City coordinate, not a traced circuit of the crusader walls."
+        "notes": "City coordinate, not a traced circuit of the crusader walls.",
+        "periods": [
+          "neolithic",
+          "bronze",
+          "classical",
+          "crusader"
+        ],
+        "pleiadesId": "658457",
+        "pleiadesUrl": "https://pleiades.stoa.org/places/658457"
       }
     },
     {
@@ -219,14 +248,21 @@
         ],
         "layer": "crusader",
         "category": "city",
-        "startYear": 1098,
-        "endYear": 1268,
-        "period": "Principality of Antioch, 1098–1268",
+        "startYear": -1750,
+        "endYear": 1683,
+        "period": "Principality of Antioch, 1098\u20131268",
         "description": "City of the Principality of Antioch after the siege of 1098, held until the Mamluk conquest of 1268. The pin is the published coordinate of Antakya.",
         "source": "Wikipedia, Antakya",
         "sourceUrl": "https://en.wikipedia.org/wiki/Antakya",
         "confidence": "high",
-        "notes": "City coordinate, not a traced circuit of the walls."
+        "notes": "City coordinate, not a traced circuit of the walls.",
+        "periods": [
+          "bronze",
+          "classical",
+          "crusader"
+        ],
+        "pleiadesId": "658381",
+        "pleiadesUrl": "https://pleiades.stoa.org/places/658381"
       }
     },
     {
@@ -243,18 +279,24 @@
         "name": "Nicaea",
         "names": [
           "Nicaea",
-          "İznik"
+          "\u0130znik"
         ],
         "layer": "crusader",
         "category": "city",
-        "startYear": 1097,
-        "endYear": 1097,
+        "startYear": -550,
+        "endYear": 640,
         "period": "Siege of Nicaea, 1097",
-        "description": "The First Crusade besieged Nicaea in 1097. The city then returned to Byzantine control. The pin is the published coordinate of İznik.",
-        "source": "Wikipedia, İznik",
+        "description": "The First Crusade besieged Nicaea in 1097. The city then returned to Byzantine control. The pin is the published coordinate of \u0130znik.",
+        "source": "Wikipedia, \u0130znik",
         "sourceUrl": "https://en.wikipedia.org/wiki/%C4%B0znik",
         "confidence": "high",
-        "notes": "Marks the published city, not a reconstructed siege line."
+        "notes": "Marks the published city, not a reconstructed siege line.",
+        "periods": [
+          "bronze",
+          "classical"
+        ],
+        "pleiadesId": "511268",
+        "pleiadesUrl": "https://pleiades.stoa.org/places/511268"
       }
     },
     {
@@ -275,14 +317,21 @@
         ],
         "layer": "crusader",
         "category": "battle",
-        "startYear": 1097,
-        "endYear": 1097,
+        "startYear": -1750,
+        "endYear": 1918,
         "period": "Battle of Dorylaeum, 1 July 1097",
         "description": "First Crusade battle near ancient Dorylaeum. The Wikipedia coordinate sits on the ancient city, not on a surveyed battlefield polygon.",
         "source": "Wikipedia, Battle of Dorylaeum (1097)",
         "sourceUrl": "https://en.wikipedia.org/wiki/Battle_of_Dorylaeum_(1097)",
         "confidence": "approximate",
-        "notes": "Battle area. Drawn as an open ring. Do not treat this as the exact spot of the fighting."
+        "notes": "Battle area. Drawn as an open ring. Do not treat this as the exact spot of the fighting.",
+        "periods": [
+          "bronze",
+          "classical",
+          "crusader"
+        ],
+        "pleiadesId": "609367",
+        "pleiadesUrl": "https://pleiades.stoa.org/places/609367"
       }
     },
     {
@@ -303,14 +352,21 @@
         ],
         "layer": "crusader",
         "category": "city",
-        "startYear": 1204,
-        "endYear": 1261,
-        "period": "Fourth Crusade and Latin Empire, 1204–1261",
+        "startYear": -1200,
+        "endYear": 1683,
+        "period": "Fourth Crusade and Latin Empire, 1204\u20131261",
         "description": "The Fourth Crusade sacked Constantinople in 1204. The pin is the published coordinate of the historic city.",
         "source": "Wikipedia, Constantinople",
         "sourceUrl": "https://en.wikipedia.org/wiki/Constantinople",
         "confidence": "high",
-        "notes": "City coordinate. It does not mark a single building of the 1204 sack."
+        "notes": "City coordinate. It does not mark a single building of the 1204 sack.",
+        "periods": [
+          "bronze",
+          "classical",
+          "crusader"
+        ],
+        "pleiadesId": "77402394",
+        "pleiadesUrl": "https://pleiades.stoa.org/places/77402394"
       }
     },
     {
@@ -327,19 +383,24 @@
         "name": "Turbessel",
         "names": [
           "Turbessel",
-          "Tilbaşar",
-          "Tell Başar"
+          "Tilba\u015far",
+          "Tell Ba\u015far"
         ],
         "layer": "crusader",
         "category": "castle",
-        "startYear": 1097,
-        "endYear": 1150,
+        "startYear": -3000,
+        "endYear": -720,
         "period": "County of Edessa stronghold",
-        "description": "Crusader stronghold of the County of Edessa. English Wikipedia identifies Turbessel and Tilbaşar with Gündoğan, Oğuzeli. The pin uses that page's coordinate.",
+        "description": "Crusader stronghold of the County of Edessa. English Wikipedia identifies Turbessel and Tilba\u015far with G\u00fcndo\u011fan, O\u011fuzeli. The pin uses that page's coordinate.",
         "source": "Wikipedia, Turbessel",
         "sourceUrl": "https://en.wikipedia.org/wiki/Turbessel",
         "confidence": "high",
-        "notes": "Published identification of the site with this village and mound. Not a traced castle plan."
+        "notes": "Published identification of the site with this village and mound. Not a traced castle plan.",
+        "periods": [
+          "bronze"
+        ],
+        "pleiadesId": "404687440",
+        "pleiadesUrl": "https://pleiades.stoa.org/places/404687440"
       }
     },
     {
@@ -418,14 +479,20 @@
         ],
         "layer": "crusader",
         "category": "city",
-        "startYear": 1098,
-        "endYear": 1150,
+        "startYear": -550,
+        "endYear": 640,
         "period": "Euphrates crossing of the County of Edessa",
         "description": "Euphrates town associated with the County of Edessa. The pin is the Wikipedia coordinate of the modern town, not a traced castle.",
         "source": "Wikipedia, Birecik",
         "sourceUrl": "https://en.wikipedia.org/wiki/Birecik",
         "confidence": "high",
-        "notes": "Town coordinate for a historic crossing and settlement."
+        "notes": "Town coordinate for a historic crossing and settlement.",
+        "periods": [
+          "bronze",
+          "classical"
+        ],
+        "pleiadesId": "658412",
+        "pleiadesUrl": "https://pleiades.stoa.org/places/658412"
       }
     },
     {
@@ -449,7 +516,7 @@
         "startYear": 1098,
         "endYear": 1148,
         "period": "County of Edessa possession",
-        "description": "Ancient Samosata, held for a time by the counts of Edessa. The published site is now under the Atatürk reservoir. The pin is the Wikipedia coordinate of Samsat.",
+        "description": "Ancient Samosata, held for a time by the counts of Edessa. The published site is now under the Atat\u00fcrk reservoir. The pin is the Wikipedia coordinate of Samsat.",
         "source": "Wikipedia, Samsat",
         "sourceUrl": "https://en.wikipedia.org/wiki/Samsat",
         "confidence": "high",
@@ -470,16 +537,16 @@
         "name": "Marash",
         "names": [
           "Marash",
-          "Kahramanmaraş",
+          "Kahramanmara\u015f",
           "Germanikeia"
         ],
         "layer": "crusader",
         "category": "city",
         "startYear": 1098,
         "endYear": 1149,
-        "period": "Frankish and Armenian rule, late 11th–12th century",
-        "description": "City on the edge of the County of Edessa, taken in the First Crusade period and later contested. The pin is the Wikipedia coordinate of Kahramanmaraş.",
-        "source": "Wikipedia, Kahramanmaraş",
+        "period": "Frankish and Armenian rule, late 11th\u201312th century",
+        "description": "City on the edge of the County of Edessa, taken in the First Crusade period and later contested. The pin is the Wikipedia coordinate of Kahramanmara\u015f.",
+        "source": "Wikipedia, Kahramanmara\u015f",
         "sourceUrl": "https://en.wikipedia.org/wiki/Kahramanmara%C5%9F",
         "confidence": "high",
         "notes": "City coordinate, not a traced citadel plan."
@@ -560,14 +627,20 @@
         ],
         "layer": "crusader",
         "category": "city",
-        "startYear": 1097,
-        "endYear": 1375,
+        "startYear": -1000,
+        "endYear": 640,
         "period": "First Crusade and Cilician Armenia",
         "description": "Ancient Mopsuestia, called Mamistra in crusader sources, on the road between Tarsus and Antioch. The pin is the Wikipedia coordinate.",
         "source": "Wikipedia, Mopsuestia",
         "sourceUrl": "https://en.wikipedia.org/wiki/Mopsuestia",
         "confidence": "high",
-        "notes": "Published site coordinate."
+        "notes": "Published site coordinate.",
+        "periods": [
+          "bronze",
+          "classical"
+        ],
+        "pleiadesId": "658538",
+        "pleiadesUrl": "https://pleiades.stoa.org/places/658538"
       }
     },
     {
@@ -587,14 +660,21 @@
         ],
         "layer": "crusader",
         "category": "city",
-        "startYear": 1097,
-        "endYear": 1375,
+        "startYear": -1750,
+        "endYear": 1918,
         "period": "First Crusade and Cilician Armenia",
         "description": "Cilician city contested in the First Crusade and later under the Armenian kingdom. The pin is the Wikipedia coordinate of Adana.",
         "source": "Wikipedia, Adana",
         "sourceUrl": "https://en.wikipedia.org/wiki/Adana",
         "confidence": "high",
-        "notes": "Modern city coordinate. Not a traced medieval wall."
+        "notes": "Modern city coordinate. Not a traced medieval wall.",
+        "periods": [
+          "bronze",
+          "classical",
+          "crusader"
+        ],
+        "pleiadesId": "648548",
+        "pleiadesUrl": "https://pleiades.stoa.org/places/648548"
       }
     },
     {
@@ -611,19 +691,25 @@
         "name": "Saleph crossing",
         "names": [
           "Saleph",
-          "Göksu",
+          "G\u00f6ksu",
           "Silifke"
         ],
         "layer": "crusader",
         "category": "event",
-        "startYear": 1190,
-        "endYear": 1190,
+        "startYear": -330,
+        "endYear": 640,
         "period": "10 June 1190",
-        "description": "Frederick Barbarossa drowned in the Saleph, the Göksu, on 10 June 1190 while the German crusade was near Silifke. The ford is not precisely mapped. The pin is the Wikipedia coordinate of Silifke.",
+        "description": "Frederick Barbarossa drowned in the Saleph, the G\u00f6ksu, on 10 June 1190 while the German crusade was near Silifke. The ford is not precisely mapped. The pin is the Wikipedia coordinate of Silifke.",
         "source": "Wikipedia, Silifke",
         "sourceUrl": "https://en.wikipedia.org/wiki/Silifke",
         "confidence": "approximate",
-        "notes": "Open ring. This is the nearby town, not a surveyed drowning spot."
+        "notes": "Open ring. This is the nearby town, not a surveyed drowning spot.",
+        "periods": [
+          "bronze",
+          "classical"
+        ],
+        "pleiadesId": "648771",
+        "pleiadesUrl": "https://pleiades.stoa.org/places/648771"
       }
     },
     {
@@ -640,18 +726,24 @@
         "name": "Smyrna",
         "names": [
           "Smyrna",
-          "İzmir"
+          "\u0130zmir"
         ],
         "layer": "crusader",
         "category": "castle",
-        "startYear": 1344,
-        "endYear": 1402,
-        "period": "Hospitaller harbor castle, 1344–1402",
+        "startYear": -550,
+        "endYear": 640,
+        "period": "Hospitaller harbor castle, 1344\u20131402",
         "description": "The Smyrniote crusade held a harbor castle at Smyrna from 1344 until Timur took it in 1402. That castle does not survive as a plan. The pin is the Wikipedia coordinate of historic Smyrna.",
         "source": "Wikipedia, Smyrna",
         "sourceUrl": "https://en.wikipedia.org/wiki/Smyrna",
         "confidence": "approximate",
-        "notes": "Open ring. City coordinate, not the vanished harbor castle's footprint."
+        "notes": "Open ring. City coordinate, not the vanished harbor castle's footprint.",
+        "periods": [
+          "bronze",
+          "classical"
+        ],
+        "pleiadesId": "550893",
+        "pleiadesUrl": "https://pleiades.stoa.org/places/550893"
       }
     },
     {
@@ -680,7 +772,7 @@
         "source": "Wikipedia, Bodrum Castle",
         "sourceUrl": "https://en.wikipedia.org/wiki/Bodrum_Castle",
         "confidence": "high",
-        "notes": "Included because it is the Hospitaller successor to Smyrna. The date is 15th century, not 1096–1200."
+        "notes": "Included because it is the Hospitaller successor to Smyrna. The date is 15th century, not 1096\u20131200."
       }
     },
     {
@@ -694,21 +786,26 @@
         ]
       },
       "properties": {
-        "name": "Çatalhöyük",
+        "name": "\u00c7atalh\u00f6y\u00fck",
         "names": [
-          "Çatalhöyük",
-          "Çatal Höyük"
+          "\u00c7atalh\u00f6y\u00fck",
+          "\u00c7atal H\u00f6y\u00fck"
         ],
         "layer": "neolithic",
         "category": "site",
-        "startYear": -7400,
-        "endYear": -6200,
+        "startYear": -10000,
+        "endYear": -3300,
         "period": "Neolithic, eastern mound",
-        "description": "Neolithic settlement on the Konya plain. UNESCO dates eighteen occupation levels on the eastern mound to 7400–6200 BCE. The western mound continues into the Chalcolithic, to about 5200 BCE. A known published site, not a discovery.",
+        "description": "Neolithic settlement on the Konya plain. UNESCO dates eighteen occupation levels on the eastern mound to 7400\u20136200 BCE. The western mound continues into the Chalcolithic, to about 5200 BCE. A known published site, not a discovery.",
         "source": "UNESCO World Heritage Centre, listing 1405",
         "sourceUrl": "https://whc.unesco.org/en/list/1405/",
         "confidence": "high",
-        "notes": "Listing coordinates N37 40 0 E32 49 41. The years used for the period filter are the eastern mound."
+        "notes": "Listing coordinates N37 40 0 E32 49 41. The years used for the period filter are the eastern mound.",
+        "periods": [
+          "neolithic"
+        ],
+        "pleiadesId": "483473194",
+        "pleiadesUrl": "https://pleiades.stoa.org/places/483473194"
       }
     },
     {
@@ -722,20 +819,25 @@
         ]
       },
       "properties": {
-        "name": "Aşıklı Höyük",
+        "name": "A\u015f\u0131kl\u0131 H\u00f6y\u00fck",
         "names": [
-          "Aşıklı Höyük"
+          "A\u015f\u0131kl\u0131 H\u00f6y\u00fck"
         ],
         "layer": "neolithic",
         "category": "site",
-        "startYear": -8200,
-        "endYear": -7400,
+        "startYear": -10000,
+        "endYear": -3300,
         "period": "Aceramic Neolithic",
         "description": "Aceramic Neolithic mound on the Melendiz, southeast of Aksaray. Wikipedia records first settlement around 8200 BCE. The end year is a filter bracket for that occupation, not a new chronology.",
-        "source": "Wikipedia, Aşıklı Höyük",
+        "source": "Wikipedia, A\u015f\u0131kl\u0131 H\u00f6y\u00fck",
         "sourceUrl": "https://en.wikipedia.org/wiki/A%C5%9F%C4%B1kl%C4%B1_H%C3%B6y%C3%BCk",
         "confidence": "high",
-        "notes": "Wikipedia coordinate of the mound, about 1 km south of Kızılkaya."
+        "notes": "Wikipedia coordinate of the mound, about 1 km south of K\u0131z\u0131lkaya.",
+        "periods": [
+          "neolithic"
+        ],
+        "pleiadesId": "503406424",
+        "pleiadesUrl": "https://pleiades.stoa.org/places/503406424"
       }
     },
     {
@@ -749,17 +851,17 @@
         ]
       },
       "properties": {
-        "name": "Boncuklu Höyük",
+        "name": "Boncuklu H\u00f6y\u00fck",
         "names": [
-          "Boncuklu Höyük"
+          "Boncuklu H\u00f6y\u00fck"
         ],
         "layer": "neolithic",
         "category": "site",
         "startYear": -8300,
         "endYear": -7800,
         "period": "Neolithic",
-        "description": "Neolithic village mound about 9 km from Çatalhöyük. Wikipedia dates the occupation to about 8300–7800 BCE.",
-        "source": "Wikipedia, Boncuklu Höyük",
+        "description": "Neolithic village mound about 9 km from \u00c7atalh\u00f6y\u00fck. Wikipedia dates the occupation to about 8300\u20137800 BCE.",
+        "source": "Wikipedia, Boncuklu H\u00f6y\u00fck",
         "sourceUrl": "https://en.wikipedia.org/wiki/Boncuklu_H%C3%B6y%C3%BCk",
         "confidence": "high",
         "notes": "Wikipedia coordinate. The pin is the mound, not a building plan."
@@ -776,21 +878,26 @@
         ]
       },
       "properties": {
-        "name": "Çayönü",
+        "name": "\u00c7ay\u00f6n\u00fc",
         "names": [
-          "Çayönü",
-          "Çayönü Tepesi"
+          "\u00c7ay\u00f6n\u00fc",
+          "\u00c7ay\u00f6n\u00fc Tepesi"
         ],
         "layer": "neolithic",
         "category": "site",
-        "startYear": -8630,
-        "endYear": -6800,
+        "startYear": -10000,
+        "endYear": -3300,
         "period": "Pre-Pottery Neolithic B",
-        "description": "Pre-Pottery Neolithic settlement northwest of Diyarbakır. Wikipedia dates its prosperity to about 8630–6800 BCE.",
-        "source": "Wikipedia, Çayönü",
+        "description": "Pre-Pottery Neolithic settlement northwest of Diyarbak\u0131r. Wikipedia dates its prosperity to about 8630\u20136800 BCE.",
+        "source": "Wikipedia, \u00c7ay\u00f6n\u00fc",
         "sourceUrl": "https://en.wikipedia.org/wiki/%C3%87ay%C3%B6n%C3%BC",
         "confidence": "high",
-        "notes": "Wikipedia coordinate of the published excavation."
+        "notes": "Wikipedia coordinate of the published excavation.",
+        "periods": [
+          "neolithic"
+        ],
+        "pleiadesId": "75292543",
+        "pleiadesUrl": "https://pleiades.stoa.org/places/75292543"
       }
     },
     {
@@ -804,9 +911,9 @@
         ]
       },
       "properties": {
-        "name": "Hallan Çemi",
+        "name": "Hallan \u00c7emi",
         "names": [
-          "Hallan Çemi"
+          "Hallan \u00c7emi"
         ],
         "layer": "neolithic",
         "category": "site",
@@ -814,7 +921,7 @@
         "endYear": -9000,
         "period": "Protoneolithic",
         "description": "Protoneolithic site in southeastern Anatolia. Wikipedia says it was founded about 9500 BCE and is more than 11,000 years old. The start year is a filter bracket so the Neolithic chip can include that founding date.",
-        "source": "Wikipedia, Hallan Çemi",
+        "source": "Wikipedia, Hallan \u00c7emi",
         "sourceUrl": "https://en.wikipedia.org/wiki/Hallan_%C3%87emi",
         "confidence": "high",
         "notes": "Wikipedia coordinate. Round houses and early pigs are published; this pin is not a trench plan."
@@ -831,18 +938,18 @@
         ]
       },
       "properties": {
-        "name": "Körtik Tepe",
+        "name": "K\u00f6rtik Tepe",
         "names": [
-          "Körtik Tepe",
-          "Körtiktepe"
+          "K\u00f6rtik Tepe",
+          "K\u00f6rtiktepe"
         ],
         "layer": "neolithic",
         "category": "site",
         "startYear": -10400,
         "endYear": -9250,
         "period": "Epipalaeolithic to early Pre-Pottery Neolithic",
-        "description": "Early settled site on the Batman Çayı. Wikipedia dates occupation from about 10400 BCE to abandonment around 9250 BCE.",
-        "source": "Wikipedia, Körtik Tepe",
+        "description": "Early settled site on the Batman \u00c7ay\u0131. Wikipedia dates occupation from about 10400 BCE to abandonment around 9250 BCE.",
+        "source": "Wikipedia, K\u00f6rtik Tepe",
         "sourceUrl": "https://en.wikipedia.org/wiki/K%C3%B6rtik_Tepe",
         "confidence": "high",
         "notes": "Wikipedia coordinate. The site is published and excavated, not a discovery."
@@ -859,21 +966,26 @@
         ]
       },
       "properties": {
-        "name": "Hacılar",
+        "name": "Hac\u0131lar",
         "names": [
-          "Hacılar",
-          "Hacılar Höyük"
+          "Hac\u0131lar",
+          "Hac\u0131lar H\u00f6y\u00fck"
         ],
         "layer": "neolithic",
         "category": "site",
-        "startYear": -7040,
-        "endYear": -6000,
+        "startYear": -10000,
+        "endYear": -3300,
         "period": "Neolithic",
         "description": "Early settlement mound 23 km south of Burdur. Wikipedia dates the earliest stage to 7040 BCE and notes later abandonment and reoccupation. The end year is a filter bracket for the Neolithic chip, not a claim that occupation stopped in 6000 BCE.",
-        "source": "Wikipedia, Hacılar Höyük",
+        "source": "Wikipedia, Hac\u0131lar H\u00f6y\u00fck",
         "sourceUrl": "https://en.wikipedia.org/wiki/Hac%C4%B1lar_H%C3%B6y%C3%BCk",
         "confidence": "high",
-        "notes": "Wikipedia coordinate of the mound."
+        "notes": "Wikipedia coordinate of the mound.",
+        "periods": [
+          "neolithic"
+        ],
+        "pleiadesId": "350639157",
+        "pleiadesUrl": "https://pleiades.stoa.org/places/350639157"
       }
     },
     {
@@ -919,18 +1031,23 @@
         "names": [
           "Hattusa",
           "Hattusha",
-          "Boğazköy"
+          "Bo\u011fazk\u00f6y"
         ],
         "layer": "bronze",
         "category": "city",
-        "startYear": -1700,
-        "endYear": -1180,
+        "startYear": -2000,
+        "endYear": -1000,
         "period": "Hittite capital",
-        "description": "Hittite capital at Boğazkale. The UNESCO listing describes the city and its second-millennium influence. These years are a filter bracket for the Hittite capital, not a full occupation history.",
+        "description": "Hittite capital at Bo\u011fazkale. The UNESCO listing describes the city and its second-millennium influence. These years are a filter bracket for the Hittite capital, not a full occupation history.",
         "source": "Wikipedia, Hattusa",
         "sourceUrl": "https://en.wikipedia.org/wiki/Hattusa",
         "confidence": "high",
-        "notes": "Wikipedia coordinate. The UNESCO listing 377 page did not publish a point."
+        "notes": "Wikipedia coordinate. The UNESCO listing 377 page did not publish a point.",
+        "periods": [
+          "bronze"
+        ],
+        "pleiadesId": "283602441",
+        "pleiadesUrl": "https://pleiades.stoa.org/places/283602441"
       }
     },
     {
@@ -948,18 +1065,24 @@
         "names": [
           "Troy",
           "Troia",
-          "Hisarlık"
+          "Hisarl\u0131k"
         ],
         "layer": "bronze",
         "category": "city",
         "startYear": -3000,
-        "endYear": -950,
+        "endYear": 640,
         "period": "Bronze Age citadel",
-        "description": "The mound of Hisarlık, with a Bronze Age citadel and lower town and later Greek and Roman Ilion. The filter years cover the Bronze Age sequence. Later occupation is real and is not what this chip is selecting.",
+        "description": "The mound of Hisarl\u0131k, with a Bronze Age citadel and lower town and later Greek and Roman Ilion. The filter years cover the Bronze Age sequence. Later occupation is real and is not what this chip is selecting.",
         "source": "UNESCO World Heritage Centre, listing 849",
         "sourceUrl": "https://whc.unesco.org/en/list/849/",
         "confidence": "high",
-        "notes": "Listing coordinates N39 57 23.184 E26 14 20.4."
+        "notes": "Listing coordinates N39 57 23.184 E26 14 20.4.",
+        "periods": [
+          "bronze",
+          "classical"
+        ],
+        "pleiadesId": "550595",
+        "pleiadesUrl": "https://pleiades.stoa.org/places/550595"
       }
     },
     {
@@ -973,22 +1096,28 @@
         ]
       },
       "properties": {
-        "name": "Kültepe",
+        "name": "K\u00fcltepe",
         "names": [
-          "Kültepe",
+          "K\u00fcltepe",
           "Kanesh",
-          "Kaneš"
+          "Kane\u0161"
         ],
         "layer": "bronze",
         "category": "city",
         "startYear": -2000,
-        "endYear": -1700,
-        "period": "kārum period",
-        "description": "Bronze Age city and Assyrian trading quarter on the central plateau. Wikipedia places the settlement broadly in 3300–1200 BCE and the famous tablets in the early second millennium. The pin is only resolved to about a kilometre.",
-        "source": "Wikipedia, Kültepe",
+        "endYear": 300,
+        "period": "k\u0101rum period",
+        "description": "Bronze Age city and Assyrian trading quarter on the central plateau. Wikipedia places the settlement broadly in 3300\u20131200 BCE and the famous tablets in the early second millennium. The pin is only resolved to about a kilometre.",
+        "source": "Wikipedia, K\u00fcltepe",
         "sourceUrl": "https://en.wikipedia.org/wiki/K%C3%BCltepe",
         "confidence": "approximate",
-        "notes": "Open ring. The Wikipedia latitude is given only to 0.01 degree."
+        "notes": "Open ring. The Wikipedia latitude is given only to 0.01 degree.",
+        "periods": [
+          "bronze",
+          "classical"
+        ],
+        "pleiadesId": "58129442",
+        "pleiadesUrl": "https://pleiades.stoa.org/places/58129442"
       }
     },
     {
@@ -1002,21 +1131,27 @@
         ]
       },
       "properties": {
-        "name": "Alacahöyük",
+        "name": "Alacah\u00f6y\u00fck",
         "names": [
-          "Alacahöyük",
-          "Alaca Höyük"
+          "Alacah\u00f6y\u00fck",
+          "Alaca H\u00f6y\u00fck"
         ],
         "layer": "bronze",
         "category": "site",
-        "startYear": -2500,
-        "endYear": -1200,
+        "startYear": -10000,
+        "endYear": -850,
         "period": "Early Bronze Age and Hittite",
         "description": "Mound northeast of Hattusa with Early Bronze Age tombs and a later Hittite settlement. The years are a filter bracket for those published phases.",
-        "source": "Wikipedia, Alaca Höyük",
+        "source": "Wikipedia, Alaca H\u00f6y\u00fck",
         "sourceUrl": "https://en.wikipedia.org/wiki/Alaca_H%C3%B6y%C3%BCk",
         "confidence": "high",
-        "notes": "Wikipedia coordinate of the mound."
+        "notes": "Wikipedia coordinate of the mound.",
+        "periods": [
+          "neolithic",
+          "bronze"
+        ],
+        "pleiadesId": "991964195",
+        "pleiadesUrl": "https://pleiades.stoa.org/places/991964195"
       }
     },
     {
@@ -1037,14 +1172,19 @@
         ],
         "layer": "bronze",
         "category": "site",
-        "startYear": -3400,
-        "endYear": -2000,
+        "startYear": -4000,
+        "endYear": -540,
         "period": "Late Chalcolithic palace and Early Bronze Age",
-        "description": "Tell in the Malatya plain. UNESCO highlights the Late Chalcolithic palace, about 3400–3100 BCE, and an Early Bronze Age royal tomb. Later Hittite levels exist and are not the filter bracket used here.",
+        "description": "Tell in the Malatya plain. UNESCO highlights the Late Chalcolithic palace, about 3400\u20133100 BCE, and an Early Bronze Age royal tomb. Later Hittite levels exist and are not the filter bracket used here.",
         "source": "UNESCO World Heritage Centre, listing 1622",
         "sourceUrl": "https://whc.unesco.org/en/list/1622/",
         "confidence": "high",
-        "notes": "Listing coordinates N38 22 55.92 E38 21 39.93."
+        "notes": "Listing coordinates N38 22 55.92 E38 21 39.93.",
+        "periods": [
+          "bronze"
+        ],
+        "pleiadesId": "25078867",
+        "pleiadesUrl": "https://pleiades.stoa.org/places/25078867"
       }
     },
     {
@@ -1062,18 +1202,24 @@
         "names": [
           "Karkemish",
           "Carchemish",
-          "Karkamış"
+          "Karkam\u0131\u015f"
         ],
         "layer": "bronze",
         "category": "city",
-        "startYear": -2000,
-        "endYear": -600,
+        "startYear": -3000,
+        "endYear": 640,
         "period": "Bronze and Iron Age capital",
-        "description": "Ancient capital on the Turkish–Syrian border, held at times by Mitanni, the Hittites, and the Neo-Assyrian empire. The pin is the Wikipedia coordinate of the site. The years are a filter bracket, not a dynastic list.",
+        "description": "Ancient capital on the Turkish\u2013Syrian border, held at times by Mitanni, the Hittites, and the Neo-Assyrian empire. The pin is the Wikipedia coordinate of the site. The years are a filter bracket, not a dynastic list.",
         "source": "Wikipedia, Carchemish",
         "sourceUrl": "https://en.wikipedia.org/wiki/Carchemish",
         "confidence": "high",
-        "notes": "Wikipedia coordinate. Part of the site lies on the Syrian side of the modern border."
+        "notes": "Wikipedia coordinate. Part of the site lies on the Syrian side of the modern border.",
+        "periods": [
+          "bronze",
+          "classical"
+        ],
+        "pleiadesId": "658465",
+        "pleiadesUrl": "https://pleiades.stoa.org/places/658465"
       }
     },
     {
@@ -1094,14 +1240,20 @@
         ],
         "layer": "bronze",
         "category": "city",
-        "startYear": -900,
-        "endYear": -330,
+        "startYear": -750,
+        "endYear": 640,
         "period": "Phrygian capital",
         "description": "Phrygian capital southwest of Ankara. UNESCO describes the Early Phrygian citadel and the Midas Mound. The years are a filter bracket for that Iron Age capital.",
         "source": "UNESCO World Heritage Centre, listing 1669",
         "sourceUrl": "https://whc.unesco.org/en/list/1669/",
         "confidence": "high",
-        "notes": "Listing coordinates N39 38 36 E31 59 10. A Wikipedia point sits about a kilometre away; this pin uses the listing."
+        "notes": "Listing coordinates N39 38 36 E31 59 10. A Wikipedia point sits about a kilometre away; this pin uses the listing.",
+        "periods": [
+          "bronze",
+          "classical"
+        ],
+        "pleiadesId": "609393",
+        "pleiadesUrl": "https://pleiades.stoa.org/places/609393"
       }
     },
     {
@@ -1123,14 +1275,21 @@
         ],
         "layer": "bronze",
         "category": "city",
-        "startYear": -800,
-        "endYear": -546,
+        "startYear": -1750,
+        "endYear": 1683,
         "period": "Lydian capital",
         "description": "Capital of Lydia, near Sart in Manisa. The filter years run to the Persian takeover in 546 BCE. The city continued through the Hellenistic and Byzantine periods.",
         "source": "Wikipedia, Sardis",
         "sourceUrl": "https://en.wikipedia.org/wiki/Sardis",
         "confidence": "high",
-        "notes": "Wikipedia coordinate. UNESCO inscribed Sardis in 2025; that listing page was not used for the point."
+        "notes": "Wikipedia coordinate. UNESCO inscribed Sardis in 2025; that listing page was not used for the point.",
+        "periods": [
+          "bronze",
+          "classical",
+          "crusader"
+        ],
+        "pleiadesId": "550867",
+        "pleiadesUrl": "https://pleiades.stoa.org/places/550867"
       }
     },
     {
@@ -1151,14 +1310,21 @@
         ],
         "layer": "classical",
         "category": "city",
-        "startYear": -400,
-        "endYear": 700,
+        "startYear": -1200,
+        "endYear": 1683,
         "period": "Hellenistic and Roman city",
-        "description": "Ionian and Roman harbour city at modern Selçuk, with earlier settlement nearby. The filter years cover the Hellenistic city through the early Christian centuries. The UNESCO listing page did not publish a point.",
+        "description": "Ionian and Roman harbour city at modern Sel\u00e7uk, with earlier settlement nearby. The filter years cover the Hellenistic city through the early Christian centuries. The UNESCO listing page did not publish a point.",
         "source": "Wikipedia, Ephesus",
         "sourceUrl": "https://en.wikipedia.org/wiki/Ephesus",
         "confidence": "high",
-        "notes": "Wikipedia coordinate of the ancient city. UNESCO listing 1018."
+        "notes": "Wikipedia coordinate of the ancient city. UNESCO listing 1018.",
+        "periods": [
+          "bronze",
+          "classical",
+          "crusader"
+        ],
+        "pleiadesId": "599612",
+        "pleiadesUrl": "https://pleiades.stoa.org/places/599612"
       }
     },
     {
@@ -1180,14 +1346,21 @@
         ],
         "layer": "classical",
         "category": "city",
-        "startYear": -281,
-        "endYear": 600,
+        "startYear": -1750,
+        "endYear": 1918,
         "period": "Attalid and Roman city",
-        "description": "Attalid capital and later Roman provincial capital above Bergama. Wikipedia dates the kingdom to 281–133 BCE. The end year keeps the Roman and late antique city inside the Classical chip.",
+        "description": "Attalid capital and later Roman provincial capital above Bergama. Wikipedia dates the kingdom to 281\u2013133 BCE. The end year keeps the Roman and late antique city inside the Classical chip.",
         "source": "Wikipedia, Pergamon",
         "sourceUrl": "https://en.wikipedia.org/wiki/Pergamon",
         "confidence": "high",
-        "notes": "Wikipedia coordinate of the acropolis. The UNESCO listing 1457 page did not publish a point."
+        "notes": "Wikipedia coordinate of the acropolis. The UNESCO listing 1457 page did not publish a point.",
+        "periods": [
+          "bronze",
+          "classical",
+          "crusader"
+        ],
+        "pleiadesId": "550812",
+        "pleiadesUrl": "https://pleiades.stoa.org/places/550812"
       }
     },
     {
@@ -1207,14 +1380,20 @@
         ],
         "layer": "classical",
         "category": "city",
-        "startYear": -200,
-        "endYear": 600,
+        "startYear": -550,
+        "endYear": 640,
         "period": "Hellenistic and Roman city",
         "description": "Carian city near Geyre, with a temple of Aphrodite from the 3rd century BCE and a Roman civic centre. The years are a filter bracket for that city.",
         "source": "Wikipedia, Aphrodisias",
         "sourceUrl": "https://en.wikipedia.org/wiki/Aphrodisias",
         "confidence": "high",
-        "notes": "Wikipedia coordinate. The UNESCO listing 1519 page did not publish a point."
+        "notes": "Wikipedia coordinate. The UNESCO listing 1519 page did not publish a point.",
+        "periods": [
+          "bronze",
+          "classical"
+        ],
+        "pleiadesId": "638753",
+        "pleiadesUrl": "https://pleiades.stoa.org/places/638753"
       }
     },
     {
@@ -1234,14 +1413,20 @@
         ],
         "layer": "classical",
         "category": "city",
-        "startYear": -300,
-        "endYear": 400,
+        "startYear": -720,
+        "endYear": 640,
         "period": "Hellenistic and Roman city",
         "description": "Hellenistic and Roman city of Commagene at a Euphrates crossing in Gaziantep province. Part of the site was later flooded by the Birecik reservoir. The pin is the Wikipedia coordinate of the city.",
         "source": "Wikipedia, Zeugma (Commagene)",
         "sourceUrl": "https://en.wikipedia.org/wiki/Zeugma_(Commagene)",
         "confidence": "high",
-        "notes": "Wikipedia coordinate. Not a mosaic-by-mosaic plan."
+        "notes": "Wikipedia coordinate. Not a mosaic-by-mosaic plan.",
+        "periods": [
+          "bronze",
+          "classical"
+        ],
+        "pleiadesId": "658636",
+        "pleiadesUrl": "https://pleiades.stoa.org/places/658636"
       }
     },
     {
@@ -1258,14 +1443,14 @@
         "name": "Mount Nemrut",
         "names": [
           "Mount Nemrut",
-          "Nemrut Dağı"
+          "Nemrut Da\u011f\u0131"
         ],
         "layer": "classical",
         "category": "site",
         "startYear": -100,
         "endYear": 100,
         "period": "Commagene tumulus",
-        "description": "The hierothesion of Antiochus I of Commagene on Nemrut Dağı, a tumulus with colossal statues. The years are a filter bracket around that 1st-century BCE monument.",
+        "description": "The hierothesion of Antiochus I of Commagene on Nemrut Da\u011f\u0131, a tumulus with colossal statues. The years are a filter bracket around that 1st-century BCE monument.",
         "source": "UNESCO World Heritage Centre, listing 448",
         "sourceUrl": "https://whc.unesco.org/en/list/448/",
         "confidence": "high",
@@ -1283,9 +1468,9 @@
         ]
       },
       "properties": {
-        "name": "Göreme",
+        "name": "G\u00f6reme",
         "names": [
-          "Göreme",
+          "G\u00f6reme",
           "Cappadocia"
         ],
         "layer": "classical",
@@ -1294,10 +1479,10 @@
         "endYear": 1095,
         "period": "Byzantine rock-cut churches",
         "description": "Town in the Cappadocian valleys, a centre of Byzantine rock-cut churches and hermitages. The pin is the Wikipedia coordinate of the town, not one church. The years are a filter bracket for that Byzantine use.",
-        "source": "Wikipedia, Göreme",
+        "source": "Wikipedia, G\u00f6reme",
         "sourceUrl": "https://en.wikipedia.org/wiki/G%C3%B6reme",
         "confidence": "high",
-        "notes": "Town coordinate inside the Göreme National Park landscape. UNESCO listing 357 did not publish a point on the page checked."
+        "notes": "Town coordinate inside the G\u00f6reme National Park landscape. UNESCO listing 357 did not publish a point on the page checked."
       }
     },
     {
@@ -1317,14 +1502,20 @@
         ],
         "layer": "classical",
         "category": "city",
-        "startYear": 400,
-        "endYear": 1095,
+        "startYear": -330,
+        "endYear": 300,
         "period": "Medieval Armenian and Byzantine city",
-        "description": "Ruined medieval city in Kars province, capital of the Bagratuni kingdom in 961–1045 and occupied earlier. The end year matches the Classical and Byzantine chip. Later occupation continued after 1095.",
+        "description": "Ruined medieval city in Kars province, capital of the Bagratuni kingdom in 961\u20131045 and occupied earlier. The end year matches the Classical and Byzantine chip. Later occupation continued after 1095.",
         "source": "UNESCO World Heritage Centre, listing 1518",
         "sourceUrl": "https://whc.unesco.org/en/list/1518/",
         "confidence": "high",
-        "notes": "Listing coordinates N40 30 0 E43 34 0."
+        "notes": "Listing coordinates N40 30 0 E43 34 0.",
+        "periods": [
+          "bronze",
+          "classical"
+        ],
+        "pleiadesId": "863739",
+        "pleiadesUrl": "https://pleiades.stoa.org/places/863739"
       }
     }
   ]

@@ -4,8 +4,15 @@ import gzip
 import json
 from pathlib import Path
 
-from ai_archaeology.sites.pleiades import GazetteerPlace, apply_places, iter_places
-from ai_archaeology.sites.wikidata import CuratedPin
+from ai_archaeology.sites.pleiades import (
+    GazetteerPlace,
+    _accepted_spans,
+    apply_places,
+    iter_places,
+    place_from_dump,
+    published_periods,
+)
+from ai_archaeology.sites.wikidata import assign_periods
 
 
 def _pin(name: str, lon: float, lat: float, qid: str = "Q1") -> dict:
@@ -41,7 +48,7 @@ def test_same_name_within_3_km_fills_the_timeline_and_the_period_chip():
     counts = apply_places([place], features, [])
     props = features[0]["properties"]
     assert counts["matched"] == 1 and counts["added"] == 0
-    assert props["startYear"] == -1000 and props["endYear"] == 400
+    assert props["startYear"] == -30 and props["endYear"] == 300
     assert "classical" in props["periods"]
     assert props["pleiadesUrl"] == "https://pleiades.stoa.org/places/599612"
     assert props["confidence"] == "medium"
@@ -58,7 +65,7 @@ def test_same_name_beyond_3_km_is_not_added_and_not_dated():
 
 def test_different_name_within_150_m_is_not_a_second_pin():
     features = [_pin("Ephesos", 27.34, 37.94)]
-    place = _place("1", "Cave of the Seven Sleepers", 27.3404, 37.9402, [(400, 800, "late-antique")])
+    place = _place("1", "Cave of the Seven Sleepers", 27.341, 37.941, [(400, 800, "late-antique")])
     counts = apply_places([place], features, [])
     assert counts["added"] == 0 and counts["matched"] == 0
     assert features[0]["properties"]["startYear"] is None
@@ -72,7 +79,7 @@ def test_a_different_published_place_is_added():
     assert counts["added"] == 1
     added = next(feature for feature in features if feature["id"] == "2")
     assert added["properties"]["source"] == "Pleiades"
-    assert added["properties"]["licence"] == "CC BY 3.0"
+    assert added["properties"]["licence"] == "CC BY 3.0 US"
     assert "bronze" in added["properties"]["periods"] or "classical" in added["properties"]["periods"]
 
 
@@ -84,21 +91,100 @@ def test_two_same_name_pins_are_left_undated():
     assert all(feature["properties"]["periods"] == [] for feature in features)
 
 
-def test_modern_names_do_not_date_a_place():
+def test_modern_slug_is_not_occupation_even_when_the_years_are_ancient():
     features = [_pin("Hattusa", 34.62, 40.02)]
-    place = _place("4", "Hattusa", 34.62, 40.02, [(1700, 2100, "modern")], names=("Hattusa",))
+    # These years would date the pin if the modern- slug were not skipped.
+    place = _place("4", "Hattusa", 34.62, 40.02, [(-200, 200, "modern-middle-east")], names=("Hattusa",))
     counts = apply_places([place], features, [])
     assert counts["matched"] == 1
     assert features[0]["properties"]["startYear"] is None
+    assert features[0]["properties"]["periods"] == []
 
 
-def test_curated_pin_blocks_a_duplicate():
-    features = []
-    curated = [CuratedPin("hattusa", "Hattusa", 34.62, 40.02)]
-    place = _place("5", "Hattusa", 34.621, 40.021, [(-2000, -1000, "2nd-millenium-bce")])
-    counts = apply_places([place], features, curated)
+def test_curated_match_keeps_the_gazetteer_years():
+    curated = {
+        "type": "Feature",
+        "id": "hattusa",
+        "geometry": {"type": "Point", "coordinates": [34.62, 40.02]},
+        "properties": {
+            "name": "Hattusa",
+            "names": ["Hattusa", "Boğazköy"],
+            "startYear": -1700,
+            "endYear": -1180,
+            "layer": "bronze",
+        },
+    }
+    place = _place("5", "Hattusa", 34.621, 40.021, [(-1650, -1200, "old-hittite-anatolia")])
+    counts = apply_places([place], [], [curated])
     assert counts["matched"] == 1 and counts["added"] == 0
-    assert features == []
+    assert curated["properties"]["startYear"] == -1650
+    assert curated["properties"]["endYear"] == -1450
+    assert "bronze" in curated["properties"]["periods"]
+    assert curated["properties"]["pleiadesUrl"] == "https://pleiades.stoa.org/places/5"
+
+
+def test_new_pleiades_rows_with_the_same_name_within_3_km_collapse():
+    first = _place("10", "Klaros", 27.43, 37.99, [(-750, -550, "archaic")])
+    second = _place("11", "Klaros", 27.435, 37.99, [(-750, -550, "archaic")])
+    counts = apply_places([first, second], [], [])
+    assert counts["added"] == 1
+
+
+def test_untitled_without_a_period_is_dropped():
+    blank = _place("12", "Untitled", 30.1, 38.2, [])
+    dated = _place("13", "Untitled", 32.1, 38.2, [(None, None, "archaic")])
+    counts = apply_places([blank, dated], [], [])
+    assert counts["droppedUntitled"] == 1
+    assert counts["added"] == 1
+    assert counts["datesChanged"] == 0
+
+
+def test_yearless_periods_use_published_bounds_and_do_not_pass_them():
+    vocabulary = published_periods()
+    place = _place("20", "Archaic town", 30.2, 38.2, [(None, None, "archaic"), (None, None, "early-iron-age-anatolia")])
+    spans, filled = _accepted_spans(place, vocabulary)
+    assert filled == 2
+    assert (-750, -550, "archaic") in spans
+    assert (-1200, -700, "early-iron-age-anatolia") in spans
+    for start, end, period in spans:
+        published_start, published_end = vocabulary[period]
+        assert start >= published_start
+        assert end <= published_end
+
+
+def test_miletus_keeps_published_period_bounds():
+    raw = {
+        "id": "599799",
+        "title": "Miletus",
+        "review_state": "published",
+        "reprPoint": [27.279, 37.53],
+        "placeTypes": ["settlement"],
+        "names": [
+            {"romanized": "Millawa(n)da", "start": -1450, "end": -1200, "attestations": [{"timePeriod": "middle-hittite-anatolia", "confidence": "confident"}]},
+            {"romanized": "Miletus", "start": -750, "end": 640, "attestations": [
+                {"timePeriod": period, "confidence": "confident"}
+                for period in ("archaic", "classical", "hellenistic-republican", "roman", "late-antique")
+            ]},
+            {"romanized": "Miletos", "start": -720, "end": 1200, "attestations": [
+                {"timePeriod": "early-iron-age-anatolia", "confidence": "confident"},
+                {"timePeriod": "middle-byzantine", "confidence": "confident"},
+            ]},
+        ],
+        "locations": [],
+    }
+    place = place_from_dump(raw)
+    assert place is not None
+    vocabulary = published_periods()
+    spans, _filled = _accepted_spans(place, vocabulary)
+    iron = next(span for span in spans if span[2] == "early-iron-age-anatolia")
+    assert iron[1] == -700 and iron[0] >= -1200
+    for start, end, period in spans:
+        if period is None:
+            continue
+        published_start, published_end = vocabulary[period]
+        assert start >= published_start and end <= published_end
+    chips = assign_periods([], min(span[0] for span in spans), max(span[1] for span in spans))
+    assert chips == ["bronze", "classical", "crusader"]
 
 
 def test_dump_parser_reads_a_graph(tmp_path: Path):

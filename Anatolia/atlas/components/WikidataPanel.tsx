@@ -39,7 +39,7 @@ export function WikidataPanel(props: {
         {properties.wikipedia ? <> · <SafeLink href={properties.wikipedia}>Wikipedia</SafeLink></> : null}
         {properties.pleiadesUrl && properties.source !== "Pleiades" ? <> · <SafeLink href={properties.pleiadesUrl}>Pleiades</SafeLink></> : null}
         {" · "}{properties.licence}
-        {properties.pleiadesUrl && properties.source !== "Pleiades" ? " · Pleiades CC BY 3.0" : ""}
+        {properties.pleiadesUrl && properties.source !== "Pleiades" ? " · Pleiades CC BY 3.0 US" : ""}
       </p>
       <PlaceMaps
         reliefOn={props.detailLayer !== "satellite"}

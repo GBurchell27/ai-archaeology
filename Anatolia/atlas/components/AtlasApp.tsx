@@ -13,8 +13,8 @@ import type { ContextFeature } from "@/lib/contextGeometry";
 import { boundsCenter, boundsContain, lonLatToMercator, sampleHeight, toLocal } from "@/lib/geo";
 import { LAYER_STYLE, PERIODS, formatYear, periodOverlaps } from "@/lib/periods";
 import { decodeHeight } from "@/lib/terrain";
-import type { AtlasMetadata, BaseMap, CoronaRecord, DetailRecord, LayerId, SiteCollection, SiteFeature } from "@/lib/types";
-import { wikiInPeriod, type WikiFeature } from "@/lib/wikidata";
+import type { AtlasMetadata, BaseMap, CoronaRecord, DetailRecord, LayerId, SiteCollection, SiteFeature, SiteProperties } from "@/lib/types";
+import { PERIOD_SPAN, wikiInPeriod, type WikiFeature } from "@/lib/wikidata";
 import type { TerrainGrid } from "@/lib/terrain";
 
 const RASTER_TITLES: Record<string, string> = {
@@ -594,7 +594,7 @@ export function AtlasApp() {
         {" "}
         <SafeLink href="https://pleiades.stoa.org/">Pleiades</SafeLink>
         {" gazetteer © the contributors, "}
-        <SafeLink href="https://creativecommons.org/licenses/by/3.0/">CC BY 3.0</SafeLink>.
+        <SafeLink href="https://creativecommons.org/licenses/by/3.0/us/">CC BY 3.0 US</SafeLink>.
       </p>
     </div>
   );
@@ -739,6 +739,21 @@ function ClimateChart(props: { record: ClimateRecord; onClose: () => void }) {
   );
 }
 
+function occupationSegments(properties: SiteProperties): { id: string; start: number; end: number }[] {
+  if (properties.periods && properties.periods.length > 0) {
+    return properties.periods.flatMap((period) => {
+      const span = PERIOD_SPAN[period];
+      if (!span) return [];
+      const [periodStart, periodEnd] = span;
+      const start = Math.max(properties.startYear, periodStart);
+      const end = Math.min(properties.endYear, periodEnd);
+      if (end < start) return [];
+      return [{ id: period, start, end }];
+    });
+  }
+  return [{ id: properties.layer, start: properties.startYear, end: properties.endYear }];
+}
+
 function SitePanel(props: {
   site: SiteFeature;
   rasters: [string, string][];
@@ -777,10 +792,13 @@ function SitePanel(props: {
       <p className="muted">{properties.names.join(" · ")}</p>
       <p className="badge">{properties.confidence === "approximate" ? "Approximate location" : "Published location"} · {properties.category}</p>
       <p>{properties.period}. {formatYear(properties.startYear)} – {formatYear(properties.endYear)}.</p>
-      <OccupationBar segments={[{ id: properties.layer, start: properties.startYear, end: properties.endYear }]} />
+      <OccupationBar segments={occupationSegments(properties)} />
       <p>{properties.description}</p>
       <p>{properties.notes}</p>
-      <p className="source-line"><SafeLink href={properties.sourceUrl}>{properties.source}</SafeLink></p>
+      <p className="source-line">
+        <SafeLink href={properties.sourceUrl}>{properties.source}</SafeLink>
+        {properties.pleiadesUrl ? <> · <SafeLink href={properties.pleiadesUrl}>Pleiades</SafeLink> CC BY 3.0 US</> : null}
+      </p>
       <PlaceMaps
         reliefOn={reliefChoice ? props.detailLayer === reliefChoice : props.baseMap === "relief"}
         sentinelOn={sentinelChoice ? props.detailLayer === sentinelChoice : props.baseMap === "satellite"}
