@@ -18,6 +18,18 @@ const EXACT_HOSTS = new Set([
   "commons.wikimedia.org",
   "muze.gov.tr",
   "www.muze.gov.tr",
+  "jstor.org",
+  "www.jstor.org",
+  "zotero.org",
+  "www.zotero.org",
+  "topostext.org",
+  "www.topostext.org",
+  "www.catalhoyuk.com",
+  "catalhoyuk.com",
+  "pataraexcavations.org",
+  "www.pataraexcavations.org",
+  "sardisexpedition.org",
+  "www.sardisexpedition.org",
 ]);
 
 const HOST_SUFFIXES = ["wikipedia.org", "wikidata.org", "noaa.gov"];
@@ -35,5 +47,7 @@ export function safeExternalHref(value: string | null | undefined): string | nul
   const host = url.hostname.toLowerCase();
   const allowed = EXACT_HOSTS.has(host) || HOST_SUFFIXES.some((suffix) => host === suffix || host.endsWith(`.${suffix}`));
   if (!allowed) return null;
+  url.username = "";
+  url.password = "";
   return url.toString();
 }

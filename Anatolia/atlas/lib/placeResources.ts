@@ -23,7 +23,10 @@ export function resourceBucket(placeId: string): string {
   return placeId.slice(0, 2) || placeId;
 }
 
-export function resourceUrl(placeId: string): string {
+const PLACE_ID = /^(?:Q\d+|\d+|[a-z0-9]+(?:-[a-z0-9]+)*)$/;
+
+export function resourceUrl(placeId: string): string | null {
+  if (!PLACE_ID.test(placeId)) return null;
   return `/resources/${resourceBucket(placeId)}.json`;
 }
 
