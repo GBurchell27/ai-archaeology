@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { AtlasScene, type CameraPose } from "@/components/AtlasScene";
 import { OccupationBar } from "@/components/OccupationBar";
+import { PlaceResources } from "@/components/PlaceResources";
 import { CreditLine, PlaceMaps, closeupCreditNote } from "@/components/PlaceMaps";
 import { SafeLink } from "@/components/SafeLink";
 import { WikidataPanel } from "@/components/WikidataPanel";
@@ -855,6 +856,7 @@ function SitePanel(props: {
       <p className="badge">{properties.confidence === "approximate" ? "Approximate location" : "Published location"} · {properties.category}</p>
       <p>{properties.period}. {formatYear(properties.startYear)} – {formatYear(properties.endYear)}.</p>
       <OccupationBar segments={occupationSegments(properties)} range={props.range} />
+      <PlaceResources id={props.site.id} longitude={props.site.geometry.coordinates[0]} latitude={props.site.geometry.coordinates[1]} />
       <p>{properties.description}</p>
       <p>{properties.notes}</p>
       <p className="source-line">

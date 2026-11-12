@@ -276,6 +276,12 @@ input[type="range"] { width: 130px; accent-color: #e2b07a; }
 
 .panel p { margin: 8px 0 0; color: #f3ebdf; }
 
+.resources { margin-top: 12px; }
+.resources h2 { margin-bottom: 4px; font-size: 13px; }
+.resources ul { margin: 4px 0 0; padding: 0; list-style: none; }
+.resources li { margin-top: 4px; }
+.resources .citations { color: #d9cbb8; font-size: 12px; }
+
 .muted { color: #d9cbb8; }
 
 .close {

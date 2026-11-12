@@ -2,6 +2,7 @@
 
 import { OccupationBar } from "@/components/OccupationBar";
 import { PlaceMaps, closeupCreditNote } from "@/components/PlaceMaps";
+import { PlaceResources } from "@/components/PlaceResources";
 import { SafeLink } from "@/components/SafeLink";
 import { PERIODS } from "@/lib/periods";
 import type { YearRange } from "@/lib/timeline";
@@ -36,6 +37,7 @@ export function WikidataPanel(props: {
       <OccupationBar segments={segments} range={props.range} />
       <p className="muted">{occupationLabel(properties)}{properties.startYear != null ? ` · ${format(properties.startYear)}` : ""}{properties.endYear != null ? ` – ${format(properties.endYear)}` : ""}</p>
       {properties.heritage.length > 0 ? <p>{properties.heritage.join(" · ")}</p> : null}
+      <PlaceResources id={props.site.id} longitude={props.site.geometry.coordinates[0]} latitude={props.site.geometry.coordinates[1]} />
       <p className="source-line">
         <SafeLink href={properties.sourceUrl}>{properties.qid}</SafeLink>
         {properties.wikipedia ? <> · <SafeLink href={properties.wikipedia}>Wikipedia</SafeLink></> : null}

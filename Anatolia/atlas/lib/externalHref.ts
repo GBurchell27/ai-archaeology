@@ -13,6 +13,11 @@ const EXACT_HOSTS = new Set([
   "creativecommons.org",
   "www.creativecommons.org",
   "pleiades.stoa.org",
+  "openstreetmap.org",
+  "www.openstreetmap.org",
+  "commons.wikimedia.org",
+  "muze.gov.tr",
+  "www.muze.gov.tr",
 ]);
 
 const HOST_SUFFIXES = ["wikipedia.org", "wikidata.org", "noaa.gov"];
