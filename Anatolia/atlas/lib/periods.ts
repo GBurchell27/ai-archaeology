@@ -23,8 +23,10 @@ export function periodOverlaps(site: SiteFeature, period: PeriodChip): boolean {
 }
 
 export function formatYear(year: number): string {
-  if (year < 0) {
-    return `${Math.abs(year)} BCE`;
+  // There is no year 0. A raw 0 is the year after 1 BCE, which is 1 CE.
+  const shown = year === 0 ? 1 : year;
+  if (shown < 0) {
+    return `${Math.abs(shown)} BCE`;
   }
-  return `${year} CE`;
+  return `${shown} CE`;
 }

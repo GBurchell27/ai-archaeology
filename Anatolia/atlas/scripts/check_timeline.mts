@@ -1,13 +1,15 @@
 import { readFileSync } from "node:fs";
 import { clusterByScreen, type ScreenPin } from "../lib/pinCluster.ts";
-import { PERIODS } from "../lib/periods.ts";
+import { PERIODS, formatYear } from "../lib/periods.ts";
 import {
+  PAGE_STEP,
   RANGE_END,
   RANGE_START,
   activeChip,
   nextPlayRange,
   pinsInRange,
   rangeForChip,
+  stepYear,
   yearToTrack,
   type YearRange,
 } from "../lib/timeline.ts";
@@ -26,6 +28,7 @@ interface CatalogueFeature {
     name: string;
     startYear: number | null;
     endYear: number | null;
+    periods?: string[];
   };
 }
 
@@ -40,6 +43,34 @@ const in1100 = pinsInRange(features, { start: 1100, end: 1100 }, false);
 const in3000 = pinsInRange(features, { start: -3000, end: -3000 }, false);
 check("Miletus overlaps 1100 CE", in1100.some((feature) => feature.id === "Q169460"));
 check("Miletus is outside 3000 BCE", !in3000.some((feature) => feature.id === "Q169460"));
+const edge = pinsInRange(
+  [{ id: "edge", properties: { name: "edge", startYear: 1000, endYear: 1100 } }],
+  { start: 1100, end: 1200 },
+  false,
+);
+check("a span ending on the range start still overlaps", edge.length === 1);
+
+check("there is no year 0 between 1 BCE and 1 CE", stepYear(-1, 1) === 1 && stepYear(1, -1) === -1);
+check("a label never reads 0 CE", formatYear(0) !== "0 CE" && formatYear(-1) === "1 BCE" && formatYear(1) === "1 CE");
+check("page step is larger than one year", PAGE_STEP > 1 && stepYear(1000, PAGE_STEP) === 1000 + PAGE_STEP);
+
+const wall = features.find((feature) => feature.id === "Q487013");
+check("the Anastasian Wall has a start and no end", wall?.properties.name === "Anastasian Wall" && wall.properties.startYear === 460 && wall.properties.endYear == null);
+check("a missing end uses the latest named period", wall != null && pinsInRange([wall], { start: 1100, end: 1100 }, false).length === 1);
+check("that period end is not open-ended", wall != null && pinsInRange([wall], { start: 1600, end: 1600 }, false).length === 0);
+const classicalOnly = { id: "classical-only", properties: { name: "classical only", startYear: 460, endYear: null, periods: ["classical"] } };
+check("a classical pin with no end stops at 1095", pinsInRange([classicalOnly], { start: 1095, end: 1095 }, false).length === 1);
+check("a classical pin with no end is out of 1096", pinsInRange([classicalOnly], { start: 1096, end: 1096 }, false).length === 0);
+const hosap = features.find((feature) => feature.id === "Q1420248");
+check("Hoşap Castle keeps a single year when no period is known", hosap?.properties.startYear === 1643 && hosap.properties.endYear == null && (hosap.properties.periods ?? []).length === 0);
+check("that single year does not spill into the next", hosap != null && pinsInRange([hosap], { start: 1643, end: 1643 }, false).length === 1 && pinsInRange([hosap], { start: 1644, end: 1644 }, false).length === 0);
+
+const lateIds = ["Q3708109", "Q20474091", "Q30625593"];
+for (const id of lateIds) {
+  const pin = features.find((feature) => feature.id === id);
+  check(`${pin?.properties.name ?? id} is visible at 1923`, pin != null && pinsInRange([pin], { start: 1923, end: 1923 }, false).length === 1);
+  check(`${pin?.properties.name ?? id} is not dated to 1100`, pin != null && pinsInRange([pin], { start: 1100, end: 1100 }, false).length === 0);
+}
 
 const undated = features.find((feature) => feature.properties.startYear == null && feature.properties.endYear == null);
 check("the catalogue has an undated pin", undated != null);

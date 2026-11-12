@@ -1,13 +1,16 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, type KeyboardEvent } from "react";
 import { formatYear } from "@/lib/periods";
 import {
+  KEY_STEP,
+  PAGE_STEP,
   RANGE_END,
   RANGE_START,
   TIMELINE_STOPS,
   clampYear,
   normalizeRange,
+  stepYear,
   yearToTrack,
   trackToYear,
   type YearRange,
@@ -51,6 +54,26 @@ export function TimelineControl(props: {
       window.removeEventListener("pointerup", stop);
     };
   }, []);
+
+  function moveThumb(bound: "start" | "end", event: KeyboardEvent<HTMLButtonElement>): void {
+    const current = rangeRef.current;
+    const year = bound === "start" ? current.start : current.end;
+    let next: number | null = null;
+    if (event.key === "ArrowRight" || event.key === "ArrowUp") next = stepYear(year, KEY_STEP);
+    else if (event.key === "ArrowLeft" || event.key === "ArrowDown") next = stepYear(year, -KEY_STEP);
+    else if (event.key === "PageUp") next = stepYear(year, PAGE_STEP);
+    else if (event.key === "PageDown") next = stepYear(year, -PAGE_STEP);
+    else if (event.key === "Home") next = bound === "start" ? RANGE_START : current.start;
+    else if (event.key === "End") next = bound === "end" ? RANGE_END : current.end;
+    else return;
+    event.preventDefault();
+    event.stopPropagation();
+    if (bound === "start") {
+      onRangeRef.current(normalizeRange({ start: Math.min(next, current.end), end: current.end }));
+    } else {
+      onRangeRef.current(normalizeRange({ start: current.start, end: Math.max(next, current.start) }));
+    }
+  }
 
   const startAt = yearToTrack(props.range.start) * 100;
   const endAt = yearToTrack(props.range.end) * 100;
@@ -100,9 +123,17 @@ export function TimelineControl(props: {
           <i className="time-fill" style={{ left: `${startAt}%`, width: `${Math.max(0, endAt - startAt)}%` }} />
           <button
             type="button"
+            role="slider"
             className="time-thumb"
+            data-thumb="start"
             style={{ left: `${startAt}%` }}
             aria-label="Range start"
+            aria-orientation="horizontal"
+            aria-valuemin={RANGE_START}
+            aria-valuemax={RANGE_END}
+            aria-valuenow={props.range.start}
+            aria-valuetext={formatYear(props.range.start)}
+            onKeyDown={(event) => moveThumb("start", event)}
             onPointerDown={(event) => {
               drag.current = "start";
               event.stopPropagation();
@@ -111,9 +142,17 @@ export function TimelineControl(props: {
           />
           <button
             type="button"
+            role="slider"
             className="time-thumb is-end"
+            data-thumb="end"
             style={{ left: `${endAt}%` }}
             aria-label="Range end"
+            aria-orientation="horizontal"
+            aria-valuemin={RANGE_START}
+            aria-valuemax={RANGE_END}
+            aria-valuenow={props.range.end}
+            aria-valuetext={formatYear(props.range.end)}
+            onKeyDown={(event) => moveThumb("end", event)}
             onPointerDown={(event) => {
               drag.current = "end";
               event.stopPropagation();

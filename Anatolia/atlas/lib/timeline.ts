@@ -1,6 +1,20 @@
 /** Published atlas range: 12000 BCE through 1923 CE. */
 export const RANGE_START = -12_000;
 export const RANGE_END = 1923;
+/** Keyboard step for Arrow keys. PageUp and PageDown move this many years. */
+export const KEY_STEP = 1;
+export const PAGE_STEP = 10;
+
+/**
+ * Latest year of each period chip. A pin with a start and no end runs to the
+ * latest of these that it names. The numbers match the chips in periods.ts.
+ */
+const PERIOD_END: Record<string, number> = {
+  neolithic: -6000,
+  bronze: -330,
+  classical: 1095,
+  crusader: 1522,
+};
 
 /**
  * Piecewise track. The long prehistoric stretches keep most of the bar.
@@ -26,6 +40,8 @@ export interface YearRange {
 export interface DatedSpan {
   startYear: number | null;
   endYear: number | null;
+  /** Period chip ids. Used only when the end year is missing. */
+  periods?: readonly string[];
 }
 
 export function yearToTrack(year: number): number {
@@ -58,8 +74,29 @@ export function trackToYear(track: number): number {
   return stops[stops.length - 1].year;
 }
 
+/** Round to a historical year. 1 BCE and 1 CE are adjacent, so 0 is not a year. */
+export function historicalYear(year: number): number {
+  if (!Number.isFinite(year)) return RANGE_START;
+  const rounded = Math.round(year);
+  if (rounded !== 0) return rounded;
+  return year < 0 ? -1 : 1;
+}
+
 export function clampYear(year: number): number {
-  return Math.min(RANGE_END, Math.max(RANGE_START, Math.round(year)));
+  return Math.min(RANGE_END, Math.max(RANGE_START, historicalYear(year)));
+}
+
+/** Move by whole historical years, skipping the missing year 0. */
+export function stepYear(year: number, delta: number): number {
+  const direction = delta < 0 ? -1 : 1;
+  let next = historicalYear(year);
+  let remaining = Math.abs(Math.round(delta));
+  while (remaining > 0) {
+    next += direction;
+    if (next === 0) next += direction;
+    remaining -= 1;
+  }
+  return clampYear(next);
 }
 
 export function normalizeRange(range: YearRange): YearRange {
@@ -68,12 +105,44 @@ export function normalizeRange(range: YearRange): YearRange {
   return { start, end };
 }
 
-/** Closed spans overlap. A missing bound is not a span. */
+/**
+ * Closed span for a pin, or null when both years are missing.
+ *
+ * A missing end year runs to the end of the latest named period that still
+ * reaches the known start (the Anastasian Wall starts in 460 and is tagged
+ * classical and crusader, so it runs to 1522). With no such period it is the
+ * single known year (Hoşap Castle, 1643).
+ *
+ * A span that sits entirely after 1923 is clamped to that year. Dios Hieron,
+ * the Haji Bektash Veli complex, and İncirliin Cave are ancient or historical
+ * places; their Wikidata years are a 1933 titular see, a 1964 museum opening,
+ * and a 2008 heritage listing, so they stay visible at the top of the slider.
+ */
 export function datedSpan(span: DatedSpan): [number, number] | null {
   if (span.startYear == null && span.endYear == null) return null;
-  if (span.startYear == null) return [span.endYear as number, span.endYear as number];
-  if (span.endYear == null) return [span.startYear, span.startYear];
-  return [Math.min(span.startYear, span.endYear), Math.max(span.startYear, span.endYear)];
+  let start = span.startYear ?? span.endYear as number;
+  let end = span.endYear ?? span.startYear as number;
+  if (span.endYear == null && span.startYear != null) {
+    end = periodEndAfter(span.periods, span.startYear) ?? span.startYear;
+  }
+  if (end < start) {
+    const swap = start;
+    start = end;
+    end = swap;
+  }
+  if (start > RANGE_END) return [RANGE_END, RANGE_END];
+  return [start, end];
+}
+
+function periodEndAfter(periods: readonly string[] | undefined, startYear: number): number | null {
+  if (!periods || periods.length === 0) return null;
+  let latest: number | null = null;
+  for (const id of periods) {
+    const end = PERIOD_END[id];
+    if (end == null || end < startYear) continue;
+    if (latest == null || end > latest) latest = end;
+  }
+  return latest;
 }
 
 export function isUndatedSpan(span: DatedSpan): boolean {
@@ -137,8 +206,8 @@ export function nextPlayRange(range: YearRange): YearRange | null {
   });
   if (point) next = { start: next.end, end: next.end };
   if (next.start === current.start && next.end === current.end) {
-    const end = Math.min(RANGE_END, current.end + 1);
-    const start = point ? end : Math.min(end, current.start + 1);
+    const end = stepYear(current.end, KEY_STEP);
+    const start = point ? end : Math.min(end, stepYear(current.start, KEY_STEP));
     next = { start, end };
   }
   if (next.start === current.start && next.end === current.end) return null;
