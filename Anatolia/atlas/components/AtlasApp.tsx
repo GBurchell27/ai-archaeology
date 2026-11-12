@@ -7,15 +7,26 @@ import { CreditLine, PlaceMaps, closeupCreditNote } from "@/components/PlaceMaps
 import { SafeLink } from "@/components/SafeLink";
 import { WikidataPanel } from "@/components/WikidataPanel";
 import { Legend, PeriodDock, ShortcutOverlay, readLegendOpen, storeLegend, useAtlasKeys, useTheme, type AtlasKeyHandlers } from "@/components/AtlasChrome";
+import { TimelineControl } from "@/components/TimelineControl";
 import { naturalExaggeration } from "@/lib/exaggeration";
 import { lookPoseArgument } from "@/lib/pinCluster";
 import type { ClimatePoint, ContextLineLayer, ContextRasterLayer } from "@/components/ContextLayers";
 import type { ContextFeature } from "@/lib/contextGeometry";
 import { boundsCenter, boundsContain, lonLatToMercator, sampleHeight, toLocal } from "@/lib/geo";
-import { LAYER_STYLE, PERIODS, formatYear, periodOverlaps } from "@/lib/periods";
+import { LAYER_STYLE, PERIODS, formatYear } from "@/lib/periods";
 import { decodeHeight } from "@/lib/terrain";
+import {
+  RANGE_END,
+  RANGE_START,
+  activeChip,
+  nextPlayRange,
+  pinsInRange,
+  rangeForChip,
+  spansOverlap,
+  type YearRange,
+} from "@/lib/timeline";
 import type { AtlasMetadata, BaseMap, CoronaRecord, DetailRecord, LayerId, SiteCollection, SiteFeature, SiteProperties } from "@/lib/types";
-import { PERIOD_SPAN, wikiInPeriod, type WikiFeature } from "@/lib/wikidata";
+import { PERIOD_SPAN, type WikiFeature } from "@/lib/wikidata";
 import type { TerrainGrid } from "@/lib/terrain";
 
 const RASTER_TITLES: Record<string, string> = {
@@ -37,7 +48,9 @@ export function AtlasApp() {
   const [sites, setSites] = useState<SiteFeature[]>([]);
   const [metres, setMetres] = useState<Float32Array | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [periodId, setPeriodId] = useState("all");
+  const [range, setRange] = useState<YearRange>({ start: RANGE_START, end: RANGE_END });
+  const [showUndated, setShowUndated] = useState(true);
+  const [playing, setPlaying] = useState(false);
   const [layers, setLayers] = useState<Record<LayerId, boolean>>({
     neolithic: true,
     bronze: true,
@@ -98,6 +111,20 @@ export function AtlasApp() {
   });
   useAtlasKeys(keys);
   useEffect(() => setLegendOpen(readLegendOpen()), []);
+  useEffect(() => {
+    if (!playing) return undefined;
+    const timer = window.setInterval(() => {
+      setRange((current) => {
+        const next = nextPlayRange(current);
+        if (!next) {
+          window.setTimeout(() => setPlaying(false), 0);
+          return current;
+        }
+        return next;
+      });
+    }, 700);
+    return () => window.clearInterval(timer);
+  }, [playing]);
   useEffect(() => {
     fetch("/wikidata/sites.geojson")
       .then((response) => response.json())
@@ -160,14 +187,14 @@ export function AtlasApp() {
     };
   }, []);
 
-  const period = PERIODS.find((item) => item.id === periodId) ?? PERIODS[0];
+  const periodId = activeChip(range, PERIODS);
   const visible = useMemo(
-    () => sites.filter((site) => layers[site.properties.layer] && periodOverlaps(site, period)),
-    [sites, layers, period],
+    () => sites.filter((site) => layers[site.properties.layer] && pinsInRange([site], range, false).length === 1),
+    [sites, layers, range],
   );
   const wikiVisible = useMemo(
-    () => (wikiOn ? wikiSites.filter((site) => wikiInPeriod(site, period.id)) : []),
-    [wikiOn, wikiSites, period.id],
+    () => (wikiOn ? pinsInRange(wikiSites, range, showUndated) : []),
+    [wikiOn, wikiSites, range, showUndated],
   );
   const selected = sites.find((site) => site.id === selectedId) ?? null;
   const detail = selected && metadata ? metadata.details[selected.id] : undefined;
@@ -292,10 +319,14 @@ export function AtlasApp() {
     document.body.dataset.panel = panelShown ? "open" : "closed";
     document.body.dataset.busy = busy ? "true" : "false";
     document.body.dataset.base = baseMap;
+    document.body.dataset.yearStart = String(range.start);
+    document.body.dataset.yearEnd = String(range.end);
+    document.body.dataset.period = periodId || "custom";
+    document.body.dataset.undated = showUndated ? "show" : "hide";
     for (const [layer, enabled] of Object.entries(layers)) {
       document.body.dataset[layer] = enabled ? "on" : "off";
     }
-  }, [selectedId, settingsOpen, panelShown, busy, baseMap, layers]);
+  }, [selectedId, settingsOpen, panelShown, busy, baseMap, layers, range, periodId, showUndated]);
 
   if (error) {
     return <p className="status">{error}</p>;
@@ -308,9 +339,11 @@ export function AtlasApp() {
   const matches = needle.length < 2 ? [] : sites.filter((site) => (
     site.properties.names.some((name) => name.toLowerCase().includes(needle))
   )).slice(0, 6);
-  const wikiMatches = needle.length < 2 ? [] : wikiSites.filter((site) => (
-    wikiInPeriod(site, period.id) && site.properties.name.toLowerCase().includes(needle)
-  )).slice(0, 4);
+  const wikiMatches = needle.length < 2 ? [] : pinsInRange(
+    wikiSites.filter((site) => site.properties.name.toLowerCase().includes(needle)),
+    range,
+    showUndated,
+  ).slice(0, 4);
 
   function flyTo(site: SiteFeature) {
     const token = detailToken + 1;
@@ -370,7 +403,12 @@ export function AtlasApp() {
   }
 
   keys.current = {
-    onPeriod: setPeriodId,
+    onPeriod: (id) => {
+      const chip = PERIODS.find((item) => item.id === id);
+      if (!chip) return;
+      setPlaying(false);
+      setRange(rangeForChip(chip));
+    },
     onLayer: (layer) => setLayers((current) => ({ ...current, [layer]: !current[layer] })),
     onBase: setBaseMap,
     onSearch: () => searchRef.current?.focus(),
@@ -394,7 +432,7 @@ export function AtlasApp() {
 
   const rasterEntries = Object.entries(detail?.rasters ?? {});
   const wikiSite = wikiSites.find((site) => site.id === wikiId) ?? null;
-  const roadsInPeriod = period.id === "all" || (period.start <= 700 && period.end >= -300);
+  const roadsInPeriod = spansOverlap(-300, 700, range);
   const lineColor: Record<string, string> = theme === "dark"
     ? { rivers: "#8ec8d8", lakes: "#8ec8d8", "paleo-water": "#e2b07a", roads: "#f0d7a4" }
     : { rivers: "#1d6278", lakes: "#1d6278", "paleo-water": "#8a5a22", roads: "#6a4318" };
@@ -508,7 +546,23 @@ export function AtlasApp() {
           <SlidersIcon />
         </button>
       </header>
-      <PeriodDock periodId={periodId} onPeriod={setPeriodId} />
+      <PeriodDock periodId={periodId} onPeriod={(id) => {
+        const chip = PERIODS.find((item) => item.id === id);
+        if (!chip) return;
+        setPlaying(false);
+        setRange(rangeForChip(chip));
+      }} />
+      <TimelineControl
+        range={range}
+        playing={playing}
+        showUndated={showUndated}
+        onRange={(next) => {
+          setPlaying(false);
+          setRange(next);
+        }}
+        onTogglePlay={() => setPlaying((current) => !current)}
+        onUndated={setShowUndated}
+      />
       <div className="readout" ref={readoutRef} data-on="false">
         <div className="north" data-role="north" aria-hidden="true" />
         <div className="scale"><i data-role="scale-bar" /><span data-role="scale-label">10 km</span></div>
@@ -569,6 +623,7 @@ export function AtlasApp() {
           onContext={(id, enabled) => setContextOn((current) => ({ ...current, [id]: enabled }))}
           closeup={!detail}
           credit={closeupCredit}
+          range={range}
         />
       ) : null}
       {wikiSite ? (
@@ -579,6 +634,7 @@ export function AtlasApp() {
           contextOn={contextOn}
           onContext={(id, enabled) => setContextOn((current) => ({ ...current, [id]: enabled }))}
           credit={closeupCredit}
+          range={range}
           onClose={() => {
             setWikiId(null);
             stopFlight();
@@ -679,7 +735,7 @@ function SettingsMenu(props: {
       ))}
       <p className="hint">
         Rivers and lakes are present-day. Paleolakes are approximate sketches.
-        {props.roadsInPeriod ? " Roman roads are on for this period." : " Roman roads stay hidden until All periods or Classical & Byzantine."}
+        {props.roadsInPeriod ? " Roman roads are on for this range." : " Roman roads stay hidden until the range overlaps about 300 BCE–700 CE."}
       </p>
       <label>Soil opacity <input type="range" min={0.25} max={0.9} step={0.05} value={props.contextOpacity} data-role="context-opacity" onChange={(event) => props.onContextOpacity(Number(event.target.value))} /></label>
       {props.contextOn.climate ? (
@@ -781,6 +837,7 @@ function SitePanel(props: {
   onContext: (id: string, enabled: boolean) => void;
   closeup?: boolean;
   credit?: { relief: string; satellite: string } | null;
+  range: YearRange;
 }) {
   const properties = props.site.properties;
   const ids = new Set(props.rasters.map(([id]) => id));
@@ -797,7 +854,7 @@ function SitePanel(props: {
       <p className="muted">{properties.names.join(" · ")}</p>
       <p className="badge">{properties.confidence === "approximate" ? "Approximate location" : "Published location"} · {properties.category}</p>
       <p>{properties.period}. {formatYear(properties.startYear)} – {formatYear(properties.endYear)}.</p>
-      <OccupationBar segments={occupationSegments(properties)} />
+      <OccupationBar segments={occupationSegments(properties)} range={props.range} />
       <p>{properties.description}</p>
       <p>{properties.notes}</p>
       <p className="source-line">

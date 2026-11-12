@@ -196,8 +196,12 @@ function writeInstances(
     dummy.quaternion.copy(camera.quaternion);
     dummy.updateMatrix();
     mesh.setMatrixAt(index, dummy.matrix);
+    const color = instanceColor();
+    color.set(pin.muted ? "#8a8176" : "#ffffff");
+    mesh.setColorAt(index, color);
   }
   mesh.instanceMatrix.needsUpdate = true;
+  if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
 }
 
 function ClusterBadge(props: {
@@ -215,7 +219,13 @@ function ClusterBadge(props: {
         props.onApproach(group.longitude, group.latitude);
       }}
     >
-      <spriteMaterial map={countTexture(group.count)} depthTest={false} sizeAttenuation={false} />
+      <spriteMaterial
+        map={countTexture(group.count)}
+        depthTest={false}
+        sizeAttenuation={false}
+        transparent
+        opacity={group.muted ? 0.42 : 1}
+      />
     </sprite>
   );
 }
@@ -236,6 +246,7 @@ function toScreenPin(pin: CataloguePin): ScreenPin {
 let geometry: THREE.PlaneGeometry | null = null;
 let material: THREE.MeshBasicMaterial | null = null;
 let dummy: THREE.Object3D | null = null;
+let color: THREE.Color | null = null;
 
 function markerGeometry(): THREE.PlaneGeometry {
   geometry ??= new THREE.PlaneGeometry(1, 1);
@@ -257,6 +268,11 @@ function markerMaterial(): THREE.MeshBasicMaterial {
 function instanceDummy(): THREE.Object3D {
   dummy ??= new THREE.Object3D();
   return dummy;
+}
+
+function instanceColor(): THREE.Color {
+  color ??= new THREE.Color();
+  return color;
 }
 
 function dotTexture(): THREE.CanvasTexture {

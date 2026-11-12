@@ -4,6 +4,7 @@ import { OccupationBar } from "@/components/OccupationBar";
 import { PlaceMaps, closeupCreditNote } from "@/components/PlaceMaps";
 import { SafeLink } from "@/components/SafeLink";
 import { PERIODS } from "@/lib/periods";
+import type { YearRange } from "@/lib/timeline";
 import { PERIOD_SPAN, type WikiFeature } from "@/lib/wikidata";
 
 export function WikidataPanel(props: {
@@ -13,6 +14,7 @@ export function WikidataPanel(props: {
   contextOn: Record<string, boolean>;
   onContext: (id: string, enabled: boolean) => void;
   credit?: { relief: string; satellite: string } | null;
+  range: YearRange;
   onClose: () => void;
 }) {
   const properties = props.site.properties;
@@ -31,7 +33,7 @@ export function WikidataPanel(props: {
       <h2>{properties.name}</h2>
       <p className="badge">{properties.source} · {properties.confidence} confidence · published record</p>
       <p>{properties.types.slice(0, 4).join(" · ") || "Archaeological place"}</p>
-      <OccupationBar segments={segments} />
+      <OccupationBar segments={segments} range={props.range} />
       <p className="muted">{occupationLabel(properties)}{properties.startYear != null ? ` · ${format(properties.startYear)}` : ""}{properties.endYear != null ? ` – ${format(properties.endYear)}` : ""}</p>
       {properties.heritage.length > 0 ? <p>{properties.heritage.join(" · ")}</p> : null}
       <p className="source-line">

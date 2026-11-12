@@ -41,6 +41,16 @@ export function nextQuality(state: QualityState, meanFrameMs: number): QualitySt
 }
 
 /**
+ * First mesh for a session. Inside the 140–160 km band the distance itself
+ * decides, instead of inheriting the default coarse mesh.
+ */
+export function initialTerrainCoarse(distanceM: number): boolean {
+  if (distanceM < TILE_ON_M) return false;
+  if (distanceM > TILE_OFF_M) return true;
+  return distanceM >= (TILE_ON_M + TILE_OFF_M) / 2;
+}
+
+/**
  * Tiles turn on inside 140 km and off outside 160 km. Between those distances
  * the current mesh stays, so the view does not flicker on the boundary.
  * Frame time does not hold a close view on the coarse mesh.

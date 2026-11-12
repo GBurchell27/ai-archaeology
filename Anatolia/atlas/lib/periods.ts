@@ -1,7 +1,7 @@
 import type { PeriodChip, SiteFeature } from "./types";
 
 export const PERIODS: PeriodChip[] = [
-  { id: "all", label: "All periods", start: -12000, end: 2100 },
+  { id: "all", label: "All periods", start: -12000, end: 1923 },
   { id: "neolithic", label: "Neolithic", start: -9600, end: -6000 },
   { id: "bronze", label: "Bronze & Iron", start: -3200, end: -330 },
   { id: "classical", label: "Classical & Byzantine", start: -330, end: 1095 },
