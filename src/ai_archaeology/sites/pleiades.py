@@ -36,7 +36,13 @@ PERIODS_PATH = Path(__file__).with_name("pleiades_periods.json")
 
 
 def published_periods() -> dict[str, tuple[int, int]]:
-    """Each Pleiades time-period slug and the start/end years published for it."""
+    """Pleiades time-period bounds generated from the public Turtle vocabulary.
+
+    Regenerate with ``python -m ai_archaeology.sites.build_pleiades_periods``
+    after downloading
+    https://atlantides.org/downloads/pleiades/rdf/time-periods.ttl
+    (CC BY 3.0 US, no account). The committed table is the 2026-11-08 export.
+    """
     raw = json.loads(PERIODS_PATH.read_text())
     return {key: (int(bounds[0]), int(bounds[1])) for key, bounds in raw.items()}
 
@@ -167,7 +173,7 @@ def apply_places(places: list[GazetteerPlace], features: list[dict], curated: li
         if _blocked(place, pins):
             skipped_near += 1
             continue
-        if place.id in seen or _same_new_name(place, pins):
+        if place.id in seen:
             skipped_near += 1
             continue
         feature = _new_feature(place, spans)
@@ -284,18 +290,6 @@ def _register(pins: list[dict], by_name: dict[str, list[dict]], feature: dict, n
             by_name.setdefault(folded, []).append(pin)
 
 
-def _same_new_name(place: GazetteerPlace, pins: list[dict]) -> bool:
-    folded_names = {_fold(name) for name in place.names if len(_fold(name)) >= MIN_NAME and not _unnamed(name)}
-    for pin in pins:
-        if not pin.get("new"):
-            continue
-        if not folded_names & pin["names"]:
-            continue
-        if _haversine_m(place.longitude, place.latitude, pin["longitude"], pin["latitude"]) <= NAME_MATCH_M:
-            return True
-    return False
-
-
 def _unnamed(title: str) -> bool:
     return _fold(title) in {"", "untitled"}
 
@@ -393,9 +387,14 @@ def _accepted_spans(place: GazetteerPlace, vocabulary: dict[str, tuple[int, int]
     accepted = []
     filled = 0
     for start, end, period in place.spans:
-        if _modern(period):
+        slug = period.removeprefix("copy_of_") if period else None
+        if slug and _modern(slug):
             continue
-        published = vocabulary.get(period) if period else None
+        published = vocabulary.get(slug) if slug else None
+        # A named period that is not in the published table is dropped.
+        # It is never kept with its raw years.
+        if slug and published is None:
+            continue
         from_vocabulary = False
         if start is None and end is None:
             if published is None:
@@ -416,10 +415,8 @@ def _accepted_spans(place: GazetteerPlace, vocabulary: dict[str, tuple[int, int]
                 end = min(int(end), published[1])
                 if start > end:
                     continue
-        if int(start) >= 1600:
-            continue
-        if published is None:
-            end = min(int(end), 1600)
+            elif int(start) >= 1600:
+                continue
         accepted.append((int(start), int(end), period))
         if from_vocabulary:
             filled += 1

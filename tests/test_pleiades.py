@@ -91,10 +91,11 @@ def test_two_same_name_pins_are_left_undated():
     assert all(feature["properties"]["periods"] == [] for feature in features)
 
 
-def test_modern_slug_is_not_occupation_even_when_the_years_are_ancient():
+def test_modern_slug_is_not_occupation_even_inside_its_own_years():
     features = [_pin("Hattusa", 34.62, 40.02)]
-    # These years would date the pin if the modern- slug were not skipped.
-    place = _place("4", "Hattusa", 34.62, 40.02, [(-200, 200, "modern-middle-east")], names=("Hattusa",))
+    # 1918–2000 is the published modern-middle-east span. Removing the slug
+    # check would keep those years and date the pin.
+    place = _place("4", "Hattusa", 34.62, 40.02, [(1918, 2000, "modern-middle-east")], names=("Hattusa",))
     counts = apply_places([place], features, [])
     assert counts["matched"] == 1
     assert features[0]["properties"]["startYear"] is None
@@ -123,9 +124,10 @@ def test_curated_match_keeps_the_gazetteer_years():
     assert curated["properties"]["pleiadesUrl"] == "https://pleiades.stoa.org/places/5"
 
 
-def test_new_pleiades_rows_with_the_same_name_within_3_km_collapse():
+def test_same_name_within_8_km_is_not_added_twice():
+    # About 5 km apart: inside the 8 km same-name skip, outside 3 km.
     first = _place("10", "Klaros", 27.43, 37.99, [(-750, -550, "archaic")])
-    second = _place("11", "Klaros", 27.435, 37.99, [(-750, -550, "archaic")])
+    second = _place("11", "Klaros", 27.43, 38.035, [(-750, -550, "archaic")])
     counts = apply_places([first, second], [], [])
     assert counts["added"] == 1
 
@@ -139,6 +141,49 @@ def test_untitled_without_a_period_is_dropped():
     assert counts["datesChanged"] == 0
 
 
+def test_published_period_table_matches_the_vocabulary():
+    vocabulary = published_periods()
+    assert vocabulary["1200-bc-middle-east"] == (-1200, -1199)
+    assert vocabulary["middle-bronze-early-iron-age-iran"] == (-2000, -650)
+    assert vocabulary["early-1st-millennium-mesopotamia"] == (-1000, -720)
+    assert vocabulary["2nd-millenium-bce"] == (-2000, -1000)
+    assert vocabulary["mediaeval-byzantine"] == (640, 1453)
+    assert vocabulary["ottoman-empire-2"] == (1300, 1923)
+    assert vocabulary["neolithic-eastern-med"] == (-10000, -3300)
+    assert vocabulary["late-bronze-age-anatolia"] == (-1600, -1200)
+    assert vocabulary["fifteenth-ce"] == (1400, 1499)
+    assert vocabulary["archaic"] == (-750, -550)
+    assert vocabulary["early-iron-age-anatolia"] == (-1200, -700)
+
+
+def test_unknown_period_slug_is_dropped():
+    place = _place("21", "Nowhere", 30.0, 38.0, [(-500, -400, "not-a-real-period")])
+    spans, filled = _accepted_spans(place, published_periods())
+    assert spans == [] and filled == 0
+
+
+def test_pinned_dump_slugs_are_all_in_the_period_table():
+    import hashlib
+    dump = Path("/tmp/pleiades-places-latest.json.gz")
+    meta = json.loads((Path(__file__).resolve().parents[1] / "Anatolia/atlas/public/wikidata/snapshot.json").read_text())
+    if not dump.exists():
+        import pytest
+        pytest.skip("pinned Pleiades dump is not on this machine")
+    digest = hashlib.sha256(dump.read_bytes()).hexdigest()
+    assert digest == meta["pleiades"]["dumpSha256"]
+    vocabulary = published_periods()
+    unknown = set()
+    for raw in iter_places(dump):
+        place = place_from_dump(raw)
+        if place is None:
+            continue
+        spans, _filled = _accepted_spans(place, vocabulary)
+        for _start, _end, period in spans:
+            if period and period.removeprefix("copy_of_") not in vocabulary:
+                unknown.add(period)
+    assert unknown == set()
+
+
 def test_yearless_periods_use_published_bounds_and_do_not_pass_them():
     vocabulary = published_periods()
     place = _place("20", "Archaic town", 30.2, 38.2, [(None, None, "archaic"), (None, None, "early-iron-age-anatolia")])
@@ -150,6 +195,10 @@ def test_yearless_periods_use_published_bounds_and_do_not_pass_them():
         published_start, published_end = vocabulary[period]
         assert start >= published_start
         assert end <= published_end
+    # A 1200 CE attestation of the 1200 BC period does not survive the published bounds.
+    point = _place("22", "Orontes", 36.2, 36.2, [(1200, 1200, "1200-bc-middle-east")])
+    point_spans, _filled = _accepted_spans(point, vocabulary)
+    assert point_spans == []
 
 
 def test_miletus_keeps_published_period_bounds():
