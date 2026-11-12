@@ -132,6 +132,16 @@ function meanNormalY(geometry: THREE.BufferGeometry): number {
 export const FAR_STRIDE = 8;
 export const TILE_CELLS = 96;
 
+/** Source indexes kept by the far mesh, always including the last cell. */
+export function coarseSampleIndexes(count: number, stride: number): number[] {
+  const step = Math.max(1, Math.floor(stride));
+  const indexes: number[] = [];
+  for (let index = 0; index < count; index += step) indexes.push(index);
+  const last = count - 1;
+  if (indexes.length === 0 || indexes[indexes.length - 1] !== last) indexes.push(last);
+  return indexes;
+}
+
 /**
  * One low-vertex mesh for the view where the whole country is on screen.
  * Each kept sample stays on its source-cell centre, so the surface does not
@@ -144,9 +154,10 @@ export function coarseTerrainGeometry(
   exaggeration: number,
   stride = FAR_STRIDE,
 ): THREE.BufferGeometry {
-  const step = Math.max(1, Math.floor(stride));
-  const columns = Math.ceil(grid.width / step);
-  const rows = Math.ceil(grid.height / step);
+  const columnIndexes = coarseSampleIndexes(grid.width, stride);
+  const rowIndexes = coarseSampleIndexes(grid.height, stride);
+  const columns = columnIndexes.length;
+  const rows = rowIndexes.length;
   const [left, bottom, right, top] = grid.bounds;
   const cellWidth = (right - left) / grid.width;
   const cellHeight = (top - bottom) / grid.height;
@@ -155,12 +166,12 @@ export function coarseTerrainGeometry(
   const positions = new Float32Array(columns * rows * 3);
   const uvs = new Float32Array(columns * rows * 2);
   for (let row = 0; row < rows; row += 1) {
-    const sourceRow = Math.min(grid.height - 1, row * step);
+    const sourceRow = rowIndexes[row];
     const north = top - (sourceRow + 0.5) * cellHeight;
     const zValue = -(north - origin[1]);
     const vCoord = spanY === 0 ? 0 : (north - bottom) / spanY;
     for (let column = 0; column < columns; column += 1) {
-      const sourceColumn = Math.min(grid.width - 1, column * step);
+      const sourceColumn = columnIndexes[column];
       const east = left + (sourceColumn + 0.5) * cellWidth;
       const sample = row * columns + column;
       positions[sample * 3] = east - origin[0];

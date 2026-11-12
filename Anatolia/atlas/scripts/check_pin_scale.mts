@@ -1,4 +1,5 @@
-import { buildTerrainGeometry, coarseTerrainGeometry, decimateGrid, sliceTerrainTiles } from "../lib/terrain.ts";
+import { readFileSync } from "node:fs";
+import { buildTerrainGeometry, coarseSampleIndexes, coarseTerrainGeometry, decimateGrid, sliceTerrainTiles } from "../lib/terrain.ts";
 import {
   approachDistance,
   clusterByScreen,
@@ -10,8 +11,10 @@ import {
 import {
   dprForIndex,
   initialQuality,
+  nextBeyondOffMs,
   nextQuality,
   nextTerrainCoarse,
+  tileReleaseDue,
 } from "../lib/renderQuality.ts";
 
 let failed = 0;
@@ -79,7 +82,22 @@ check("the whole country stays one mesh", nextTerrainCoarse(false, 200000, 10, f
 check("a near view keeps tiles while frames are fine", nextTerrainCoarse(false, 50000, 40, false) === false);
 check("a slow close-up still loads tiles", nextTerrainCoarse(false, 50000, 40, true) === false);
 check("software rendering at 28 ms still sharpens a zoom", nextTerrainCoarse(true, 110000, 28, true) === false);
-check("just outside the tile distance stays coarse", nextTerrainCoarse(false, 150000, 8, false) === true);
+check("tiles turn on below 140 km", nextTerrainCoarse(true, 139000, 28, true) === false);
+check("tiles stay on inside the 140 to 160 km band", nextTerrainCoarse(false, 150000, 8, false) === false);
+check("coarse stays on inside the 140 to 160 km band", nextTerrainCoarse(true, 150000, 8, false) === true);
+check("tiles turn off above 160 km", nextTerrainCoarse(false, 161000, 8, false) === true);
+check("the release clock resets inside the off distance", nextBeyondOffMs(150000, 9000, 1000) === 0);
+check("the release clock accumulates beyond the off distance", nextBeyondOffMs(170000, 9000, 1000) === 10000);
+check("tiles stay resident just under 10 s past the off distance", tileReleaseDue(170000, 9999) === false);
+check("tiles are released after 10 s beyond the off distance", tileReleaseDue(170000, 10000) === true);
+check("coming back inside cancels the release", tileReleaseDue(150000, 20000) === false);
+
+const columns = coarseSampleIndexes(1700, 8);
+const rows = coarseSampleIndexes(719, 8);
+check("the coarse stride keeps the last source column", columns[columns.length - 1] === 1699 && columns.includes(1696));
+check("the coarse stride keeps the last source row", rows[rows.length - 1] === 718 && rows.includes(712));
+const exact = coarseSampleIndexes(9, 8);
+check("a stride that already lands on the edge is not repeated", exact.length === 2 && exact[1] === 8);
 
 const grid = {
   width: 4,
@@ -99,7 +117,17 @@ check("coarse samples stay on their source cells",
   && coarsePosition.getZ(0) === full.getAttribute("position").getZ(0)
   && coarsePosition.getX(1) === full.getAttribute("position").getX(2)
   && coarsePosition.getY(1) === full.getAttribute("position").getY(2));
+const lastCoarse = coarsePosition.count - 1;
+const lastFull = full.getAttribute("position").count - 1;
+check("the coarse mesh keeps the east and south edges",
+  coarsePosition.getX(lastCoarse) === full.getAttribute("position").getX(lastFull)
+  && coarsePosition.getZ(lastCoarse) === full.getAttribute("position").getZ(lastFull)
+  && coarsePosition.getY(lastCoarse) === full.getAttribute("position").getY(lastFull));
 coarse.dispose();
+
+const terrainView = readFileSync(new URL("../components/NationalTerrain.tsx", import.meta.url), "utf8");
+check("the view releases tiles through the shared clock",
+  terrainView.includes("tileReleaseDue(") && terrainView.includes("nextBeyondOffMs("));
 const tiles = sliceTerrainTiles(grid, [0, 0], 0, 1, 2);
 check("tiles cover the small grid", tiles.length === 2);
 const fullPosition = full.getAttribute("position");

@@ -11,8 +11,10 @@ import {
   initialQuality,
   meanFrameMs,
   nextQuality,
+  nextBeyondOffMs,
   nextTerrainCoarse,
   QUALITY_SAMPLE_COUNT,
+  tileReleaseDue,
   type QualityState,
 } from "@/lib/renderQuality";
 import { createSurfaceMaterial, prepareTexture, sunDirection } from "@/lib/shade";
@@ -35,11 +37,12 @@ interface NationalTerrainProps {
 interface TerrainView {
   coarse: boolean;
   fastShade: boolean;
+  releaseTiles: boolean;
 }
 
 export function NationalTerrain(props: NationalTerrainProps) {
   const view = useAdaptiveTerrain();
-  const geometries = useTerrainGeometries(props, view.coarse);
+  const geometries = useTerrainGeometries(props, view.coarse, view.releaseTiles);
   const material = useMemo(() => createSurfaceMaterial(), []);
   const { size, gl } = useThree();
   useEffect(() => () => material.dispose(), [material]);
@@ -55,7 +58,7 @@ export function NationalTerrain(props: NationalTerrainProps) {
   );
 }
 
-function useTerrainGeometries(props: NationalTerrainProps, coarseView: boolean) {
+function useTerrainGeometries(props: NationalTerrainProps, coarseView: boolean, releaseTiles: boolean) {
   const grid = useMemo(
     () => ({ ...props.metadata, metres: props.metres }),
     [props.metadata, props.metres],
@@ -64,7 +67,14 @@ function useTerrainGeometries(props: NationalTerrainProps, coarseView: boolean) 
     () => coarseTerrainGeometry(grid, props.origin, props.metadata.elevation.min, props.exaggeration),
     [grid, props.origin, props.metadata.elevation.min, props.exaggeration],
   );
-  const tiles = useLazyTiles(grid, props.origin, props.metadata.elevation.min, props.exaggeration, coarseView);
+  const tiles = useLazyTiles(
+    grid,
+    props.origin,
+    props.metadata.elevation.min,
+    props.exaggeration,
+    coarseView,
+    releaseTiles,
+  );
   useEffect(() => () => coarse.dispose(), [coarse]);
   return { coarse, tiles };
 }
@@ -75,11 +85,19 @@ function useLazyTiles(
   datum: number,
   exaggeration: number,
   coarseView: boolean,
+  releaseTiles: boolean,
 ) {
   const generation = `${exaggeration}:${grid.width}:${grid.height}`;
   const cache = useRef<{ generation: string; tiles: THREE.BufferGeometry[] } | null>(null);
   const [tiles, setTiles] = useState<THREE.BufferGeometry[]>([]);
   useEffect(() => {
+    if (releaseTiles) {
+      if (!cache.current) return undefined;
+      disposeTiles(cache.current.tiles);
+      cache.current = null;
+      setTiles([]);
+      return undefined;
+    }
     if (coarseView) return undefined;
     if (cache.current?.generation === generation) return undefined;
     if (cache.current) disposeTiles(cache.current.tiles);
@@ -87,7 +105,7 @@ function useLazyTiles(
     cache.current = { generation, tiles: built };
     setTiles(built);
     return undefined;
-  }, [coarseView, generation, grid, origin, datum, exaggeration]);
+  }, [releaseTiles, coarseView, generation, grid, origin, datum, exaggeration]);
   useEffect(() => () => {
     if (!cache.current) return;
     disposeTiles(cache.current.tiles);
@@ -114,13 +132,20 @@ function useAdaptiveTerrain(): TerrainView {
   const quality = useRef(initialQuality());
   const coarse = useRef(true);
   const samples = useRef<number[]>([]);
-  const [view, setView] = useState<TerrainView>({ coarse: true, fastShade: false });
+  const [view, setView] = useState<TerrainView>({ coarse: true, fastShade: false, releaseTiles: false });
+  const beyondOffMs = useRef(0);
   useFrame((state, delta) => {
+    const distance = cameraDistance(state);
+    beyondOffMs.current = nextBeyondOffMs(distance, beyondOffMs.current, delta * 1000);
+    const releaseTiles = tileReleaseDue(distance, beyondOffMs.current);
+    if (releaseTiles !== view.releaseTiles) {
+      setView({ coarse: view.coarse, fastShade: view.fastShade, releaseTiles });
+    }
     samples.current.push(delta * 1000);
     if (samples.current.length < QUALITY_SAMPLE_COUNT) return;
     const mean = meanFrameMs(samples.current);
     samples.current = [];
-    publishQuality(setDpr, quality, coarse, mean, cameraDistance(state), view, setView);
+    publishQuality(setDpr, quality, coarse, mean, distance, releaseTiles, view, setView);
   });
   return view;
 }
@@ -137,6 +162,7 @@ function publishQuality(
   coarse: MutableRefObject<boolean>,
   mean: number,
   distance: number,
+  releaseTiles: boolean,
   view: TerrainView,
   setView: (next: TerrainView) => void,
 ): void {
@@ -144,11 +170,11 @@ function publishQuality(
   const atFloor = next.dprIndex >= DPR_STEPS.length - 1;
   const useCoarse = nextTerrainCoarse(coarse.current, distance, mean, atFloor);
   const dprChanged = next.dprIndex !== quality.current.dprIndex;
-  const viewChanged = useCoarse !== view.coarse || next.fastShade !== view.fastShade;
+  const viewChanged = useCoarse !== view.coarse || next.fastShade !== view.fastShade || releaseTiles !== view.releaseTiles;
   quality.current = next;
   coarse.current = useCoarse;
   if (dprChanged) setDpr(dprForIndex(next.dprIndex));
-  if (viewChanged) setView({ coarse: useCoarse, fastShade: next.fastShade });
+  if (viewChanged) setView({ coarse: useCoarse, fastShade: next.fastShade, releaseTiles });
   document.body.dataset.dpr = String(dprForIndex(next.dprIndex));
   document.body.dataset.terrain = useCoarse ? "coarse" : "tiles";
   document.body.dataset.fastShade = next.fastShade ? "on" : "off";
