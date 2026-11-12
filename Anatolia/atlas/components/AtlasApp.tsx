@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { AtlasScene, type CameraPose } from "@/components/AtlasScene";
 import { OccupationBar } from "@/components/OccupationBar";
-import { PlaceMaps, closeupCreditNote } from "@/components/PlaceMaps";
+import { CreditLine, PlaceMaps, closeupCreditNote } from "@/components/PlaceMaps";
 import { SafeLink } from "@/components/SafeLink";
 import { WikidataPanel } from "@/components/WikidataPanel";
 import { Legend, PeriodDock, ShortcutOverlay, readLegendOpen, storeLegend, useAtlasKeys, useTheme, type AtlasKeyHandlers } from "@/components/AtlasChrome";
@@ -589,7 +589,7 @@ export function AtlasApp() {
         return next;
       })} />
       {help ? <ShortcutOverlay onClose={() => setHelp(false)} /> : null}
-      <p className="credit">{metadata.attribution.dem} {metadata.attribution.satellite}</p>
+      <p className="credit">{metadata.attribution.dem} <CreditLine text={metadata.attribution.satellite} /></p>
     </div>
   );
 }

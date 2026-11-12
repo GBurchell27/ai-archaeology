@@ -10,6 +10,8 @@ const EXACT_HOSTS = new Set([
   "s2maps.eu",
   "www.s2maps.eu",
   "tiles.maps.eox.at",
+  "creativecommons.org",
+  "www.creativecommons.org",
 ]);
 
 const HOST_SUFFIXES = ["wikipedia.org", "wikidata.org", "noaa.gov"];

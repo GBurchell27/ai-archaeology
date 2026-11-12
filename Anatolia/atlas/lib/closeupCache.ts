@@ -1,4 +1,4 @@
-import { spawn } from "node:child_process";
+import { spawn, type ChildProcess } from "node:child_process";
 import { chmod, lstat, mkdir, mkdtemp, readFile, readdir, realpath, rm, stat, utimes } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
@@ -198,9 +198,27 @@ export async function evictCache(root: string, keepId: string, maxBytes = byteCa
   }
 }
 
+/** SIGTERM when the timer fires, then SIGKILL if the process is still alive. Returns a cancel function. */
+export function killOnTimeout(child: ChildProcess, timeoutMs: number, graceMs: number): () => void {
+  let killTimer: ReturnType<typeof setTimeout> | undefined;
+  const termTimer = setTimeout(() => {
+    child.kill("SIGTERM");
+    killTimer = setTimeout(() => {
+      if (child.exitCode === null && child.signalCode === null) child.kill("SIGKILL");
+    }, graceMs);
+  }, timeoutMs);
+  const cancel = () => {
+    clearTimeout(termTimer);
+    if (killTimer) clearTimeout(killTimer);
+  };
+  child.once("close", cancel);
+  return cancel;
+}
+
 function runWorker(command: string, args: string[]): Promise<{ status: number | null; stdout: string; stderr: string }> {
   return new Promise((resolve, reject) => {
-    const child = spawn(command, args, { timeout: 120000 });
+    const child = spawn(command, args);
+    const cancelKill = killOnTimeout(child, 120_000, 5_000);
     const cap = 32_000;
     const stdout: Buffer[] = [];
     const stderr: Buffer[] = [];
@@ -214,7 +232,10 @@ function runWorker(command: string, args: string[]): Promise<{ status: number | 
       if (stderrBytes < cap) stderr.push(chunk);
       stderrBytes += chunk.length;
     });
-    child.on("error", reject);
+    child.on("error", (error) => {
+      cancelKill();
+      reject(error);
+    });
     child.on("close", (status) => {
       resolve({
         status,

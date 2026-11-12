@@ -31,7 +31,7 @@ def test_published_site_ids_match_the_closeup_route():
             assert ID_RE.fullmatch(feature["id"]), feature["id"]
 
 
-def test_redirects_stay_on_the_same_host():
+def test_redirects_stay_on_the_same_host_and_port():
     terrain = _load("build_atlas_terrain", ATLAS / "scripts" / "build_atlas_terrain.py")
     handler = terrain.SameHostRedirectHandler()
     request = urllib.request.Request("https://copernicus-dem-30m.s3.amazonaws.com/tile.tif")
@@ -40,8 +40,58 @@ def test_redirects_stay_on_the_same_host():
     )
     assert same is not None
     assert same.get_full_url().startswith("https://copernicus-dem-30m.s3.amazonaws.com/")
+    explicit = handler.redirect_request(
+        request, None, 302, "Found", {}, "https://copernicus-dem-30m.s3.amazonaws.com:443/other.tif",
+    )
+    assert explicit is not None
     with pytest.raises(urllib.error.URLError):
         handler.redirect_request(request, None, 302, "Found", {}, "https://evil.example/tile.tif")
+    with pytest.raises(urllib.error.URLError):
+        handler.redirect_request(request, None, 302, "Found", {}, "https://copernicus-dem-30m.s3.amazonaws.com:8443/other.tif")
+    with pytest.raises(urllib.error.URLError):
+        handler.redirect_request(request, None, 302, "Found", {}, "http://copernicus-dem-30m.s3.amazonaws.com/other.tif")
+
+
+def test_eox_credit_names_the_licence():
+    terrain = _load("build_atlas_terrain", ATLAS / "scripts" / "build_atlas_terrain.py")
+    assert terrain.SAT_CREDIT.endswith(" — CC BY-NC-SA 4.0")
+    footer = json.loads((ATLAS / "public" / "terrain" / "metadata.json").read_text())
+    assert footer["attribution"]["satellite"] == terrain.SAT_CREDIT
+
+
+def test_cog_window_uses_ranges_and_a_byte_cap(tmp_path: Path):
+    import numpy as np
+    import rasterio
+    from rasterio.transform import from_origin
+
+    path = tmp_path / "dem.tif"
+    grid = np.arange(256 * 256, dtype=np.float32).reshape(256, 256)
+    transform = from_origin(30.0, 40.0, 0.001, 0.001)
+    with rasterio.open(
+        path, "w", driver="GTiff", height=256, width=256, count=1, dtype="float32",
+        crs="EPSG:4326", transform=transform, tiled=True, blockxsize=64, blockysize=64,
+        compress="deflate", predictor=3,
+    ) as dataset:
+        dataset.write(grid, 1)
+    blob = path.read_bytes()
+    fetched: list[int] = []
+
+    def fetch(start: int, end: int) -> bytes:
+        fetched.append(end - start + 1)
+        return blob[start:end + 1]
+
+    cog = _load("cog_range", ATLAS / "scripts" / "cog_range.py")
+    west, south, east, north = 30.02, 39.90, 30.05, 39.95
+    window = cog.read_window(fetch, west, south, east, north, max_bytes=len(blob))
+    assert window is not None
+    array, (_scale_x, origin_x, _scale_y, origin_y) = window
+    assert sum(fetched) < len(blob)
+    assert array.shape[0] < 256 and array.shape[1] < 256
+    col = int(round((origin_x - 30.0) / 0.001))
+    row = int(round((40.0 - origin_y) / 0.001))
+    assert np.allclose(array[0, 0], grid[row, col])
+    with pytest.raises(RuntimeError, match="byte cap"):
+        cog.read_window(fetch, west, south, east, north, max_bytes=32)
 
 
 def test_closeup_write_refuses_a_symlink(tmp_path: Path):

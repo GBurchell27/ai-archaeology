@@ -16,7 +16,6 @@ import math
 import os
 import shutil
 import sys
-import tempfile
 import urllib.error
 import urllib.parse
 import urllib.request
@@ -37,11 +36,13 @@ import numpy as np
 import rasterio
 from PIL import Image
 from rasterio.enums import Resampling
-from rasterio.transform import from_bounds
+from rasterio.transform import Affine, from_bounds
 from rasterio.warp import reproject, transform_bounds
 
 REPO = Path(__file__).resolve().parents[3]
+sys.path.insert(0, str(Path(__file__).resolve().parent))
 sys.path.insert(0, str(REPO / "src"))
+import cog_range  # noqa: E402
 from ai_archaeology.dem_window import clean_elevation_window  # noqa: E402
 from ai_archaeology.relief import hillshade  # noqa: E402
 
@@ -60,7 +61,7 @@ DEM_CREDIT = (
 )
 SAT_CREDIT = (
     "EOxCloudless https://cloudless.eox.at by EOX IT Services GmbH "
-    "(Contains modified Copernicus Sentinel data 2020)"
+    "(Contains modified Copernicus Sentinel data 2020) — CC BY-NC-SA 4.0"
 )
 
 
@@ -291,54 +292,74 @@ def crusader_details(sites: dict, geographic: np.ndarray | None = None, transfor
     return details
 
 
+JPEG_MAX_BYTES = 2 * 1024 * 1024
+
+
+def endpoint(url: str) -> tuple[str, str, int]:
+    """Scheme, lowercase host, and port. HTTPS defaults to 443 and HTTP to 80."""
+    parts = urllib.parse.urlsplit(url)
+    if parts.scheme not in {"https", "http"} or not parts.hostname:
+        raise urllib.error.URLError("redirect left the original host")
+    if parts.port is not None:
+        port = parts.port
+    else:
+        port = 443 if parts.scheme == "https" else 80
+    return parts.scheme, parts.hostname.lower(), port
+
+
 class SameHostRedirectHandler(urllib.request.HTTPRedirectHandler):
-    """Follow a redirect only when it stays on the same host."""
+    """Follow a redirect only when scheme, host, and port all stay the same."""
 
     def redirect_request(self, req, fp, code, msg, headers, newurl):
-        original = urllib.parse.urlsplit(req.full_url)
-        target = urllib.parse.urlsplit(newurl)
-        same = (
-            target.scheme == "https"
-            and target.hostname is not None
-            and original.hostname is not None
-            and target.hostname.lower() == original.hostname.lower()
-        )
-        if not same:
+        if endpoint(req.full_url) != endpoint(newurl):
             raise urllib.error.URLError("redirect left the original host")
         return super().redirect_request(req, fp, code, msg, headers, newurl)
 
 
-def urlopen_pinned(url: str, timeout: float = 40):
-    request = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
-    opener = urllib.request.build_opener(SameHostRedirectHandler)
-    return opener.open(request, timeout=timeout)
+def read_pinned(url: str, timeout: float = 40, max_bytes: int = JPEG_MAX_BYTES, extra_headers: dict | None = None, require_range: bool = False) -> bytes:
+    """GET a URL, refusing a redirect that changes scheme, host, or port.
 
-
-def open_dem_tile(url: str):
-    """Fetch one Copernicus COG with a pinned redirect, then let GDAL read the local file.
-
-    This GDAL follows redirects inside libcurl and has no same-host switch, so the
-    GeoTIFF request itself is the pinned urlopen. GDAL never sees the remote URL.
+    The body is capped at `max_bytes`. A ranged read must come back as 206;
+    a 200 that ignores Range would be the whole object.
     """
-    parts = urllib.parse.urlsplit(url)
-    if parts.scheme != "https" or (parts.hostname or "").lower() != DEM_HOST:
+    headers = {"User-Agent": USER_AGENT}
+    if extra_headers:
+        headers.update(extra_headers)
+    request = urllib.request.Request(url, headers=headers)
+    opener = urllib.request.build_opener(SameHostRedirectHandler)
+    with opener.open(request, timeout=timeout) as response:
+        status = getattr(response, "status", None) or response.getcode()
+        if require_range and status != 206:
+            raise RuntimeError("server ignored the range request")
+        declared = response.headers.get("Content-Length")
+        if declared is not None and int(declared) > max_bytes:
+            raise RuntimeError("download exceeded the byte cap")
+        body = bytearray()
+        while len(body) <= max_bytes:
+            block = response.read(min(64 * 1024, max_bytes - len(body) + 1))
+            if not block:
+                break
+            body.extend(block)
+        if len(body) > max_bytes:
+            raise RuntimeError("download exceeded the byte cap")
+        return bytes(body)
+
+
+def read_dem_window(url: str, west: float, south: float, east: float, north: float):
+    """The lon/lat window of one GLO-30 COG, via Range requests under the byte cap."""
+    if endpoint(url) != ("https", DEM_HOST, 443):
         raise ValueError("unexpected DEM host")
-    temporary = tempfile.NamedTemporaryFile(prefix="glo30-", suffix=".tif", delete=False)
-    path = Path(temporary.name)
-    try:
-        os.chmod(path, 0o600)
-        with urlopen_pinned(url, timeout=90) as response:
-            while True:
-                chunk = response.read(1024 * 1024)
-                if not chunk:
-                    break
-                temporary.write(chunk)
-        temporary.close()
-        return rasterio.open(path), path
-    except Exception:
-        temporary.close()
-        path.unlink(missing_ok=True)
-        raise
+
+    def fetch(start: int, end: int) -> bytes:
+        return read_pinned(
+            url,
+            timeout=40,
+            max_bytes=end - start + 1,
+            extra_headers={"Range": f"bytes={start}-{end}"},
+            require_range=True,
+        )
+
+    return cog_range.read_window(fetch, west, south, east, north, cog_range.MAX_COG_BYTES)
 
 
 def read_site_window(longitude: float, latitude: float):
@@ -348,45 +369,37 @@ def read_site_window(longitude: float, latitude: float):
     left, bottom, right, top = centre_x - half, centre_y - half, centre_x + half, centre_y + half
     west, south = _inverse(left, bottom)
     east, north = _inverse(right, top)
-    datasets = []
-    local_copies = []
+    sources = []
     for lat_tile in range(math.floor(south), math.floor(north) + 1):
         for lon_tile in range(math.floor(west), math.floor(east) + 1):
             name = f"Copernicus_DSM_COG_10_N{lat_tile}_00_E{lon_tile:03d}_00_DEM"
             url = f"https://{DEM_HOST}/{name}/{name}.tif"
             try:
-                dataset, local = open_dem_tile(url)
+                window = read_dem_window(url, west, south, east, north)
             except Exception:
                 continue
-            datasets.append(dataset)
-            local_copies.append(local)
-    if not datasets:
+            if window is not None:
+                sources.append(window)
+    if not sources:
         return None
     pixels = 256
     array = np.full((pixels, pixels), np.nan, dtype=np.float32)
     dst_transform = from_bounds(left, bottom, right, top, pixels, pixels)
-    try:
-        for dataset in datasets:
-            staged = np.full_like(array, np.nan)
-            source_void = dataset.nodata if dataset.nodata is not None else -32767.0
-            reproject(
-                source=rasterio.band(dataset, 1),
-                destination=staged,
-                src_transform=dataset.transform,
-                src_crs=dataset.crs,
-                src_nodata=source_void,
-                dst_transform=dst_transform,
-                dst_crs=DST,
-                dst_nodata=np.nan,
-                resampling=Resampling.bilinear,
-            )
-            finite = np.isfinite(staged) & (staged > -1000) & (staged < 5500)
-            array[finite] = staged[finite]
-    finally:
-        for dataset in datasets:
-            dataset.close()
-        for local in local_copies:
-            local.unlink(missing_ok=True)
+    for source, (scale_x, origin_x, scale_y, origin_y) in sources:
+        staged = np.full_like(array, np.nan)
+        reproject(
+            source=source,
+            destination=staged,
+            src_transform=Affine(scale_x, 0.0, origin_x, 0.0, -scale_y, origin_y),
+            src_crs="EPSG:4326",
+            src_nodata=np.nan,
+            dst_transform=dst_transform,
+            dst_crs=DST,
+            dst_nodata=np.nan,
+            resampling=Resampling.bilinear,
+        )
+        finite = np.isfinite(staged) & (staged > -1000) & (staged < 5500)
+        array[finite] = staged[finite]
     try:
         array = clean_elevation_window(array)
     except ValueError:
@@ -474,8 +487,8 @@ def mercator_to_lat(y_coord: float) -> float:
 
 
 def fetch_jpeg(url: str) -> Image.Image:
-    with urlopen_pinned(url, timeout=40) as response:
-        return Image.open(response).convert("RGB")
+    from io import BytesIO
+    return Image.open(BytesIO(read_pinned(url, timeout=40, max_bytes=JPEG_MAX_BYTES))).convert("RGB")
 
 
 if __name__ == "__main__":

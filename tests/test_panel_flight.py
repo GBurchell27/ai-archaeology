@@ -31,6 +31,7 @@ const cases = [
   ["https://whc.unesco.org/en/list/849", true],
   ["https://www.ncei.noaa.gov/pub/data/paleo/x.txt", true],
   ["https://corona.cast.uark.edu/", true],
+  ["https://creativecommons.org/licenses/by-nc-sa/4.0/", true],
   ["http://en.wikipedia.org/wiki/X", false],
   ["javascript:alert(1)", false],
   ["data:text/html,hello", false],

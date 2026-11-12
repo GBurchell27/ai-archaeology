@@ -20,7 +20,7 @@
   },
   "attribution": {
     "dem": "Contains modified Copernicus DEM data \u00a9 DLR e.V. 2010-2014 and \u00a9 Airbus Defence and Space GmbH 2014-2018 provided under COPERNICUS by the European Union and ESA",
-    "satellite": "EOxCloudless https://cloudless.eox.at by EOX IT Services GmbH (Contains modified Copernicus Sentinel data 2020)"
+    "satellite": "EOxCloudless https://cloudless.eox.at by EOX IT Services GmbH (Contains modified Copernicus Sentinel data 2020) — CC BY-NC-SA 4.0"
   },
   "honestNote": "National terrain cells are about 1277 m. They show ranges and plains, not buildings. \u015eanl\u0131urfa site tiles are 30 m and still cannot resolve individual enclosures.",
   "details": {

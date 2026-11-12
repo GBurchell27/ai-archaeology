@@ -1,7 +1,8 @@
 import { chmod, lstat, mkdtemp, mkdir, symlink, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
-import { coalesce, createPrivateCache, evictCache, isSiteId, resolveCacheFile } from "../lib/closeupCache.ts";
+import { spawn } from "node:child_process";
+import { coalesce, createPrivateCache, evictCache, isSiteId, killOnTimeout, resolveCacheFile } from "../lib/closeupCache.ts";
 
 function fail(message) {
   console.error(message);
@@ -76,5 +77,10 @@ await import("node:fs/promises").then((fs) => fs.utimes(older, past, past));
 await evictCache(root, "troy", 100);
 if (await lstat(older).then(() => true).catch(() => false)) fail("old cache entry was kept");
 if (!await lstat(newer).then(() => true).catch(() => false)) fail("kept cache entry was evicted");
+
+const sleeper = spawn(process.execPath, ["-e", "process.on('SIGTERM', () => {}); setTimeout(() => {}, 30000);"]);
+killOnTimeout(sleeper, 40, 80);
+const signal = await new Promise((resolve) => sleeper.once("close", (_code, ended) => resolve(ended)));
+if (signal !== "SIGKILL") fail(`timeout signal ${signal}`);
 
 console.log(JSON.stringify({ ok: true }));
