@@ -1,7 +1,7 @@
 import type { PeriodChip, SiteFeature } from "./types";
 
 export const PERIODS: PeriodChip[] = [
-  { id: "all", label: "All periods", start: -12000, end: 2100 },
+  { id: "all", label: "All periods", start: -12000, end: 1923 },
   { id: "neolithic", label: "Neolithic", start: -9600, end: -6000 },
   { id: "bronze", label: "Bronze & Iron", start: -3200, end: -330 },
   { id: "classical", label: "Classical & Byzantine", start: -330, end: 1095 },
@@ -23,8 +23,10 @@ export function periodOverlaps(site: SiteFeature, period: PeriodChip): boolean {
 }
 
 export function formatYear(year: number): string {
-  if (year < 0) {
-    return `${Math.abs(year)} BCE`;
+  // There is no year 0. A raw 0 is the year after 1 BCE, which is 1 CE.
+  const shown = year === 0 ? 1 : year;
+  if (shown < 0) {
+    return `${Math.abs(shown)} BCE`;
   }
-  return `${year} CE`;
+  return `${shown} CE`;
 }

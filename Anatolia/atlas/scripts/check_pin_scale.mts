@@ -11,6 +11,7 @@ import {
 import {
   dprForIndex,
   initialQuality,
+  initialTerrainCoarse,
   nextBeyondOffMs,
   nextQuality,
   nextTerrainCoarse,
@@ -86,6 +87,10 @@ check("tiles turn on below 140 km", nextTerrainCoarse(true, 139000, 28, true) ==
 check("tiles stay on inside the 140 to 160 km band", nextTerrainCoarse(false, 150000, 8, false) === false);
 check("coarse stays on inside the 140 to 160 km band", nextTerrainCoarse(true, 150000, 8, false) === true);
 check("tiles turn off above 160 km", nextTerrainCoarse(false, 161000, 8, false) === true);
+check("a session opening at 145 km starts on tiles", initialTerrainCoarse(145000) === false);
+check("a session opening at 155 km starts coarse", initialTerrainCoarse(155000) === true);
+check("hysteresis still holds tiles at 145 km", nextTerrainCoarse(false, 145000, 28, true) === false);
+check("hysteresis still holds the coarse mesh at 155 km", nextTerrainCoarse(true, 155000, 8, false) === true);
 check("the release clock resets inside the off distance", nextBeyondOffMs(150000, 9000, 1000) === 0);
 check("the release clock accumulates beyond the off distance", nextBeyondOffMs(170000, 9000, 1000) === 10000);
 check("tiles stay resident just under 10 s past the off distance", tileReleaseDue(170000, 9999) === false);
@@ -128,6 +133,7 @@ coarse.dispose();
 const terrainView = readFileSync(new URL("../components/NationalTerrain.tsx", import.meta.url), "utf8");
 check("the view releases tiles through the shared clock",
   terrainView.includes("tileReleaseDue(") && terrainView.includes("nextBeyondOffMs("));
+check("the first frame picks the mesh from distance", terrainView.includes("initialTerrainCoarse("));
 const tiles = sliceTerrainTiles(grid, [0, 0], 0, 1, 2);
 check("tiles cover the small grid", tiles.length === 2);
 const fullPosition = full.getAttribute("position");

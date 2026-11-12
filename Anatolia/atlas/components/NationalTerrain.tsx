@@ -9,6 +9,7 @@ import {
   DPR_STEPS,
   dprForIndex,
   initialQuality,
+  initialTerrainCoarse,
   meanFrameMs,
   nextQuality,
   nextBeyondOffMs,
@@ -131,11 +132,20 @@ function useAdaptiveTerrain(): TerrainView {
   const setDpr = useThree((state) => state.setDpr);
   const quality = useRef(initialQuality());
   const coarse = useRef(true);
+  const terrainChosen = useRef(false);
   const samples = useRef<number[]>([]);
   const [view, setView] = useState<TerrainView>({ coarse: true, fastShade: false, releaseTiles: false });
   const beyondOffMs = useRef(0);
   useFrame((state, delta) => {
     const distance = cameraDistance(state);
+    if (!terrainChosen.current && distance > 1) {
+      terrainChosen.current = true;
+      const initial = initialTerrainCoarse(distance);
+      coarse.current = initial;
+      if (initial !== view.coarse) {
+        setView({ coarse: initial, fastShade: view.fastShade, releaseTiles: view.releaseTiles });
+      }
+    }
     beyondOffMs.current = nextBeyondOffMs(distance, beyondOffMs.current, delta * 1000);
     const releaseTiles = tileReleaseDue(distance, beyondOffMs.current);
     if (releaseTiles !== view.releaseTiles) {

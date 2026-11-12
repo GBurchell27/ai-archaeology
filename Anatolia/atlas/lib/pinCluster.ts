@@ -21,6 +21,7 @@ export interface ScreenPin {
   screenX: number;
   screenY: number;
   visible: boolean;
+  muted?: boolean;
 }
 
 export interface PinCluster {
@@ -36,6 +37,7 @@ export interface PinCluster {
   screenX: number;
   screenY: number;
   spanM: number;
+  muted: boolean;
 }
 
 export function clusterByScreen(pins: readonly ScreenPin[], cellPx: number): PinCluster[] {
@@ -137,5 +139,6 @@ function summarizeCluster(key: string, members: readonly ScreenPin[]): PinCluste
     screenX: screenX / count,
     screenY: screenY / count,
     spanM: footprintMetres(members),
+    muted: members.every((member) => member.muted === true),
   };
 }

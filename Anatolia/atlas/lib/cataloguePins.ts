@@ -1,4 +1,5 @@
 import { lonLatToMercator, sampleMeshHeight, toLocal } from "@/lib/geo";
+import { isUndatedSpan } from "@/lib/timeline";
 import type { AtlasMetadata } from "@/lib/types";
 import type { WikiFeature } from "@/lib/wikidata";
 
@@ -10,6 +11,7 @@ export interface CataloguePin {
   z: number;
   longitude: number;
   latitude: number;
+  muted: boolean;
 }
 
 const PIN_LIFT_M = 30;
@@ -48,5 +50,6 @@ function placePin(
     z: zCoord,
     longitude,
     latitude,
+    muted: isUndatedSpan(site.properties),
   };
 }
