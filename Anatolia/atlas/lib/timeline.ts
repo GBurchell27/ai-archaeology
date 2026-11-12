@@ -37,13 +37,6 @@ export interface YearRange {
   end: number;
 }
 
-export interface DatedSpan {
-  startYear: number | null;
-  endYear: number | null;
-  /** Period chip ids. Used only when the end year is missing. */
-  periods?: readonly string[];
-}
-
 export function yearToTrack(year: number): number {
   const stops = TIMELINE_STOPS;
   if (year <= stops[0].year) return stops[0].at;
@@ -105,6 +98,39 @@ export function normalizeRange(range: YearRange): YearRange {
   return { start, end };
 }
 
+/** A Wikidata inception after this year is not an occupation date. */
+export const ADMINISTRATIVE_YEAR = 1900;
+
+export interface DatedSpan {
+  startYear: number | null;
+  endYear: number | null;
+  /** Period chip ids. Used only when the end year is missing. */
+  periods?: readonly string[];
+  source?: string;
+  types?: readonly string[];
+  periodLabels?: readonly string[];
+}
+
+/** Ancient or historical tags. A modern museum or show cave alone does not qualify. */
+export function taggedAncientOrHistorical(tags: readonly string[] | undefined): boolean {
+  if (!tags || tags.length === 0) return false;
+  return tags.some((tag) => /ancient|historic|archaeolog|\bpolis\b|\bruins?\b/i.test(tag));
+}
+
+/**
+ * Wikidata inception after 1900 on an ancient or historical place is a modern
+ * administrative date (a titular see, a museum opening, a heritage listing).
+ * It is not an occupation span. A Pleiades or curated span is kept: those
+ * sources are not Wikidata-derived.
+ */
+export function isDroppedAdministrativeSpan(span: DatedSpan): boolean {
+  if (span.source !== "Wikidata") return false;
+  const start = span.startYear ?? span.endYear;
+  if (start == null || start <= ADMINISTRATIVE_YEAR) return false;
+  const tags = [...(span.types ?? []), ...(span.periodLabels ?? [])];
+  return taggedAncientOrHistorical(tags);
+}
+
 /**
  * Closed span for a pin, or null when both years are missing.
  *
@@ -113,13 +139,13 @@ export function normalizeRange(range: YearRange): YearRange {
  * classical and crusader, so it runs to 1522). With no such period it is the
  * single known year (Hoşap Castle, 1643).
  *
- * A span that sits entirely after 1923 is clamped to that year. Dios Hieron,
- * the Haji Bektash Veli complex, and İncirliin Cave are ancient or historical
- * places; their Wikidata years are a 1933 titular see, a 1964 museum opening,
- * and a 2008 heritage listing, so they stay visible at the top of the slider.
+ * A Wikidata span that starts after 1900 on an ancient or historical place is
+ * dropped. If that place has a Pleiades or curated span, the stored years are
+ * that span and this rule leaves them alone.
  */
 export function datedSpan(span: DatedSpan): [number, number] | null {
   if (span.startYear == null && span.endYear == null) return null;
+  if (isDroppedAdministrativeSpan(span)) return null;
   let start = span.startYear ?? span.endYear as number;
   let end = span.endYear ?? span.startYear as number;
   if (span.endYear == null && span.startYear != null) {
@@ -130,7 +156,6 @@ export function datedSpan(span: DatedSpan): [number, number] | null {
     start = end;
     end = swap;
   }
-  if (start > RANGE_END) return [RANGE_END, RANGE_END];
   return [start, end];
 }
 

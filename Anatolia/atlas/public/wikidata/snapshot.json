@@ -7,9 +7,9 @@
   "nameMatchMetres": 3000.0,
   "wikidataRows": 5056,
   "droppedAsCurated": 70,
-  "sitesGeojsonSha256": "e3b28a39c329d298a0e835ea70303d87e97d05256b42684218203d171c62b710",
+  "sitesGeojsonSha256": "3caa55d68cdc5883d022c3965d2c8f4cdb40f409b1c715a9171ed66eae50358c",
   "publishedPins": 7920,
-  "undated": 4450,
+  "undated": 4449,
   "dropped": [
     {
       "qid": "Q272720",

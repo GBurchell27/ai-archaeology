@@ -6,6 +6,7 @@ import {
   RANGE_END,
   RANGE_START,
   activeChip,
+  isDroppedAdministrativeSpan,
   nextPlayRange,
   pinsInRange,
   rangeForChip,
@@ -29,6 +30,10 @@ interface CatalogueFeature {
     startYear: number | null;
     endYear: number | null;
     periods?: string[];
+    source?: string;
+    types?: string[];
+    periodLabels?: string[];
+    pleiadesId?: string;
   };
 }
 
@@ -65,12 +70,58 @@ const hosap = features.find((feature) => feature.id === "Q1420248");
 check("Hoşap Castle keeps a single year when no period is known", hosap?.properties.startYear === 1643 && hosap.properties.endYear == null && (hosap.properties.periods ?? []).length === 0);
 check("that single year does not spill into the next", hosap != null && pinsInRange([hosap], { start: 1643, end: 1643 }, false).length === 1 && pinsInRange([hosap], { start: 1644, end: 1644 }, false).length === 0);
 
-const lateIds = ["Q3708109", "Q20474091", "Q30625593"];
-for (const id of lateIds) {
-  const pin = features.find((feature) => feature.id === id);
-  check(`${pin?.properties.name ?? id} is visible at 1923`, pin != null && pinsInRange([pin], { start: 1923, end: 1923 }, false).length === 1);
-  check(`${pin?.properties.name ?? id} is not dated to 1100`, pin != null && pinsInRange([pin], { start: 1100, end: 1100 }, false).length === 0);
-}
+const dios = features.find((feature) => feature.id === "Q3708109");
+const bektash = features.find((feature) => feature.id === "Q20474091");
+const cave = features.find((feature) => feature.id === "Q30625593");
+check(
+  "Dios Hieron uses the Pleiades span instead of the 1933 titular see",
+  dios?.properties.pleiadesId === "550515"
+  && dios.properties.startYear === -30
+  && dios.properties.endYear === 300
+  && pinsInRange([dios], { start: 100, end: 100 }, false).length === 1
+  && pinsInRange([dios], { start: 1923, end: 1923 }, false).length === 0,
+);
+check(
+  "the Haji Bektash complex is undated without the 1964 museum opening",
+  bektash != null
+  && bektash.properties.startYear == null
+  && bektash.properties.endYear == null
+  && pinsInRange([bektash], { start: 1923, end: 1923 }, false).length === 0
+  && pinsInRange([bektash], { start: 1923, end: 1923 }, true).length === 1,
+);
+check(
+  "İncirliin Cave is undated without the 2008 heritage listing",
+  cave != null
+  && cave.properties.startYear == null
+  && cave.properties.endYear == null
+  && pinsInRange([cave], { start: 1923, end: 1923 }, false).length === 0
+  && pinsInRange([cave], { start: 1923, end: 1923 }, true).length === 1,
+);
+const stillAdministrative = features.filter((feature) => isDroppedAdministrativeSpan(feature.properties));
+check("no Wikidata administrative span remains on an ancient or historical place", stillAdministrative.length === 0);
+const titularSee = {
+  id: "titular",
+  properties: {
+    name: "Titular see",
+    source: "Wikidata",
+    startYear: 1933,
+    endYear: 1933,
+    types: ["archaeological site", "polis", "titular see"],
+    periods: [],
+  },
+};
+check("a Wikidata span after 1900 on an ancient place is undated", pinsInRange([titularSee], { start: 1933, end: 1933 }, false).length === 0);
+check("that dropped span still shows when undated pins are on", pinsInRange([titularSee], { start: 1933, end: 1933 }, true).length === 1);
+const modernMuseum = {
+  id: "museum",
+  properties: { name: "New museum", source: "Wikidata", startYear: 1964, endYear: 1964, types: ["museum"], periods: [] },
+};
+check("a modern museum keeps a post-1900 Wikidata span", pinsInRange([modernMuseum], { start: 1964, end: 1964 }, false).length === 1);
+const pleiadesLate = {
+  id: "pleiades-late",
+  properties: { name: "Pleiades place", source: "Pleiades", startYear: 1918, endYear: 1918, types: ["settlement"], periods: [] },
+};
+check("a Pleiades span is not dropped as a Wikidata inception", pinsInRange([pleiadesLate], { start: 1918, end: 1918 }, false).length === 1);
 
 const undated = features.find((feature) => feature.properties.startYear == null && feature.properties.endYear == null);
 check("the catalogue has an undated pin", undated != null);
