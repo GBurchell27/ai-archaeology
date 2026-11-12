@@ -8,6 +8,7 @@ import { SafeLink } from "@/components/SafeLink";
 import { WikidataPanel } from "@/components/WikidataPanel";
 import { Legend, PeriodDock, ShortcutOverlay, readLegendOpen, storeLegend, useAtlasKeys, useTheme, type AtlasKeyHandlers } from "@/components/AtlasChrome";
 import { naturalExaggeration } from "@/lib/exaggeration";
+import { lookPoseArgument } from "@/lib/pinCluster";
 import type { ClimatePoint, ContextLineLayer, ContextRasterLayer } from "@/components/ContextLayers";
 import type { ContextFeature } from "@/lib/contextGeometry";
 import { boundsCenter, boundsContain, lonLatToMercator, sampleHeight, toLocal } from "@/lib/geo";
@@ -163,6 +164,10 @@ export function AtlasApp() {
   const visible = useMemo(
     () => sites.filter((site) => layers[site.properties.layer] && periodOverlaps(site, period)),
     [sites, layers, period],
+  );
+  const wikiVisible = useMemo(
+    () => (wikiOn ? wikiSites.filter((site) => wikiInPeriod(site, period.id)) : []),
+    [wikiOn, wikiSites, period.id],
   );
   const selected = sites.find((site) => site.id === selectedId) ?? null;
   const detail = selected && metadata ? metadata.details[selected.id] : undefined;
@@ -388,7 +393,6 @@ export function AtlasApp() {
   };
 
   const rasterEntries = Object.entries(detail?.rasters ?? {});
-  const wikiVisible = wikiOn ? wikiSites.filter((site) => wikiInPeriod(site, period.id)) : [];
   const wikiSite = wikiSites.find((site) => site.id === wikiId) ?? null;
   const roadsInPeriod = period.id === "all" || (period.start <= 700 && period.end >= -300);
   const lineColor: Record<string, string> = theme === "dark"
@@ -458,8 +462,9 @@ export function AtlasApp() {
           const site = wikiSites.find((item) => item.id === siteId);
           if (site) openWiki(site);
         }}
-        onApproachWiki={(longitude, latitude) => {
-          setPose(lookPose(longitude, latitude, metadata, metres, exaggeration, pose.token + 1));
+        onApproachWiki={(longitude, latitude, cameraDistance) => {
+          const distance = lookPoseArgument(cameraDistance);
+          setPose(lookPose(longitude, latitude, metadata, metres, exaggeration, pose.token + 1, distance));
           setWikiId(null);
         }}
         onSelect={(siteId) => {

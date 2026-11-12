@@ -5,8 +5,11 @@ import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { Suspense, useEffect, useMemo, useRef, useState, type MutableRefObject, type RefObject } from "react";
 import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
 import * as THREE from "three";
+import { CatalogueMarkers } from "@/components/CatalogueMarkers";
 import { ClimatePins, ContextDrapes, ContextLines, type ClimatePoint, type ContextLineLayer, type ContextRasterLayer } from "@/components/ContextLayers";
-import { WikidataLayer } from "@/components/WikidataLayer";
+import { NationalTerrain } from "@/components/NationalTerrain";
+import { ATLAS_FOV_DEGREES } from "@/lib/pinCluster";
+import { DPR_STEPS, INITIAL_DPR_INDEX } from "@/lib/renderQuality";
 import type { WikiFeature } from "@/lib/wikidata";
 import { boundsCenter, boundsContain, detailClipRect, lonLatToMercator, sampleMeshHeight, toLocal, type ClipRect } from "@/lib/geo";
 import { LAYER_STYLE } from "@/lib/periods";
@@ -51,7 +54,7 @@ interface AtlasSceneProps {
   detailToken: number;
   wikiSites: WikiFeature[];
   onOpenWiki: (siteId: string) => void;
-  onApproachWiki: (longitude: number, latitude: number) => void;
+  onApproachWiki: (longitude: number, latitude: number, cameraDistance: number) => void;
   flightCancel: number;
 }
 
@@ -75,12 +78,13 @@ export function AtlasScene(props: AtlasSceneProps) {
   );
   return (
     <Canvas
-      camera={{ position: props.pose.position, fov: 38, near: 40, far: span * 8 }}
-      gl={{ antialias: true, outputColorSpace: THREE.LinearSRGBColorSpace }}
+      dpr={DPR_STEPS[INITIAL_DPR_INDEX]}
+      camera={{ position: props.pose.position, fov: ATLAS_FOV_DEGREES, near: 40, far: span * 8 }}
+      gl={{ antialias: false, outputColorSpace: THREE.LinearSRGBColorSpace }}
     >
       <SkyHaze night={props.night} />
       <Suspense fallback={null}>
-      <NationalSurface
+      <NationalTerrain
         metadata={props.metadata}
         metres={props.metres}
         origin={origin}
@@ -134,12 +138,13 @@ export function AtlasScene(props: AtlasSceneProps) {
         selectedId={props.climateId}
         onSelect={props.onClimate}
       />
-      <WikidataLayer
+      <CatalogueMarkers
         sites={props.wikiSites}
         metadata={props.metadata}
         metres={props.metres}
         origin={origin}
         exaggeration={props.exaggeration}
+        labels={props.labels}
         onOpen={props.onOpenWiki}
         onApproach={props.onApproachWiki}
       />
@@ -156,57 +161,6 @@ export function AtlasScene(props: AtlasSceneProps) {
       />
       <CameraRig pose={props.pose} span={span} readoutRef={props.readoutRef} originY={origin[1]} cancelToken={props.flightCancel} />
     </Canvas>
-  );
-}
-
-function NationalSurface({
-  metadata,
-  metres,
-  origin,
-  baseMap,
-  exaggeration,
-  azimuth,
-  altitude,
-  night,
-  clip,
-}: {
-  metadata: AtlasMetadata;
-  metres: Float32Array;
-  origin: [number, number];
-  baseMap: BaseMap;
-  exaggeration: number;
-  azimuth: number;
-  altitude: number;
-  night: boolean;
-  clip: ClipRect | null;
-}) {
-  const geometry = useMemo(
-    () => buildTerrainGeometry(
-      { ...metadata, metres },
-      origin,
-      metadata.elevation.min,
-      exaggeration,
-    ),
-    [metadata, metres, origin, exaggeration],
-  );
-  const relief = useTexture(asset(metadata.rasters.relief));
-  const hypsometric = useTexture(asset(metadata.rasters.hypsometric));
-  const satellite = useTexture(asset(metadata.rasters.satellite));
-  const texture = baseMap === "satellite" ? satellite : baseMap === "hypsometric" ? hypsometric : relief;
-  return (
-    <ShadedMesh
-      geometry={geometry}
-      textureA={texture}
-      textureB={null}
-      compare={false}
-      split={0.5}
-      opacity={1}
-      azimuth={azimuth}
-      altitude={altitude}
-      lift={false}
-      clip={clip}
-      night={night}
-    />
   );
 }
 
@@ -516,6 +470,7 @@ function paintHalo(): THREE.CanvasTexture {
 function CameraRig({ pose, span, readoutRef, originY, cancelToken }: { pose: CameraPose; span: number; readoutRef: RefObject<HTMLDivElement | null>; originY: number; cancelToken: number }) {
   const controls = useRef<OrbitControlsImpl>(null);
   const camera = useThree((state) => state.camera);
+  const scene = useThree((state) => state.scene);
   const size = useThree((state) => state.size);
   const flight = useRef<{ started: number; duration: number; fromP: THREE.Vector3; toP: THREE.Vector3; fromT: THREE.Vector3; toT: THREE.Vector3 } | null>(null);
 
@@ -561,9 +516,11 @@ function CameraRig({ pose, span, readoutRef, originY, cancelToken }: { pose: Cam
       const debugWindow = window as Window & {
         __atlasCamera?: typeof camera;
         __atlasControls?: typeof orbit;
+        __atlasScene?: typeof scene;
       };
       debugWindow.__atlasCamera = camera;
       debugWindow.__atlasControls = orbit;
+      debugWindow.__atlasScene = scene;
       writeReadout(readoutRef.current, camera, orbit.target, originY, size.width, size.height);
     }
     const current = flight.current;

@@ -31,6 +31,7 @@ uniform vec3 hazeColor;
 uniform vec4 clipRect;
 uniform float clipOn;
 uniform float night;
+uniform float fastShade;
 varying vec3 vNormal;
 varying vec2 vUv;
 varying vec3 vWorld;
@@ -44,8 +45,10 @@ void main() {
     discard;
   }
   vec3 baseColor = vec3(0.72, 0.64, 0.52);
-  vec3 colorA = mix(baseColor, toLinear(texture2D(mapA, vUv).rgb), opacity);
-  vec3 colorB = mix(baseColor, toLinear(texture2D(mapB, vUv).rgb), opacity);
+  vec3 rawA = texture2D(mapA, vUv).rgb;
+  vec3 rawB = texture2D(mapB, vUv).rgb;
+  vec3 colorA = mix(baseColor, fastShade > 0.5 ? rawA : toLinear(rawA), opacity);
+  vec3 colorB = mix(baseColor, fastShade > 0.5 ? rawB : toLinear(rawB), opacity);
   float screenX = gl_FragCoord.x / resolution.x;
   vec3 albedo = colorA;
   if (compare > 0.5 && useB > 0.5) {
@@ -59,8 +62,9 @@ void main() {
   lit = mix(lit, lit * vec3(0.58, 0.66, 0.78), night);
   float depth = distance(cameraPosition, vWorld);
   float haze = smoothstep(hazeNear, hazeFar, depth) * hazeStrength;
-  lit = mix(lit, pow(hazeColor, vec3(2.2)), clamp(haze, 0.0, 0.8));
-  gl_FragColor = vec4(pow(lit, vec3(1.0 / 2.2)), 1.0);
+  vec3 fog = fastShade > 0.5 ? hazeColor : pow(hazeColor, vec3(2.2));
+  lit = mix(lit, fog, clamp(haze, 0.0, 0.8));
+  gl_FragColor = vec4(fastShade > 0.5 ? lit : pow(lit, vec3(1.0 / 2.2)), 1.0);
 }
 `;
 
@@ -97,6 +101,7 @@ export function createSurfaceMaterial(): THREE.ShaderMaterial {
       clipRect: { value: new THREE.Vector4(0, 0, 0, 0) },
       clipOn: { value: 0 },
       night: { value: 0 },
+      fastShade: { value: 0 },
     },
     vertexShader: SURFACE_VERTEX,
     fragmentShader: SURFACE_FRAGMENT,

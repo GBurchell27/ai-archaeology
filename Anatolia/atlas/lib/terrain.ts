@@ -26,6 +26,22 @@ export function decodeHeight(
   return metres;
 }
 
+/** Keep every `stride` cell. Stride 1 is the source grid. */
+export function decimateGrid(grid: TerrainGrid, stride: number): TerrainGrid {
+  if (stride <= 1) return grid;
+  const columns = Math.ceil(grid.width / stride);
+  const rows = Math.ceil(grid.height / stride);
+  const metres = new Float32Array(columns * rows);
+  for (let row = 0; row < rows; row += 1) {
+    const sourceRow = Math.min(grid.height - 1, row * stride);
+    for (let column = 0; column < columns; column += 1) {
+      const sourceColumn = Math.min(grid.width - 1, column * stride);
+      metres[row * columns + column] = grid.metres[sourceRow * grid.width + sourceColumn];
+    }
+  }
+  return { ...grid, width: columns, height: rows, metres };
+}
+
 export function buildTerrainGeometry(
   grid: TerrainGrid,
   origin: [number, number],
@@ -107,4 +123,111 @@ function meanNormalY(geometry: THREE.BufferGeometry): number {
     samples += 1;
   }
   return samples === 0 ? 1 : sum / samples;
+}
+
+export const FAR_STRIDE = 8;
+export const TILE_CELLS = 96;
+
+/** One low-vertex mesh for the view where the whole country is on screen. */
+export function coarseTerrainGeometry(
+  grid: TerrainGrid,
+  origin: [number, number],
+  datum: number,
+  exaggeration: number,
+): THREE.BufferGeometry {
+  return buildTerrainGeometry(decimateGrid(grid, FAR_STRIDE), origin, datum, exaggeration);
+}
+
+/**
+ * Full-resolution tiles cut from one normal pass, so shared edges match.
+ * The full mesh is disposed; callers draw only the tiles the frustum hits.
+ */
+export function sliceTerrainTiles(
+  grid: TerrainGrid,
+  origin: [number, number],
+  datum: number,
+  exaggeration: number,
+  cellsPerTile = TILE_CELLS,
+): THREE.BufferGeometry[] {
+  if (!(cellsPerTile >= 1)) throw new Error("tile must cover at least one cell");
+  const full = buildTerrainGeometry(grid, origin, datum, exaggeration);
+  const position = full.getAttribute("position");
+  const uv = full.getAttribute("uv");
+  const normal = full.getAttribute("normal");
+  const tiles: THREE.BufferGeometry[] = [];
+  for (let row0 = 0; row0 < grid.height - 1; row0 += cellsPerTile) {
+    const rows = Math.min(cellsPerTile, grid.height - 1 - row0);
+    for (let col0 = 0; col0 < grid.width - 1; col0 += cellsPerTile) {
+      const cols = Math.min(cellsPerTile, grid.width - 1 - col0);
+      tiles.push(copyTile(grid.width, position, uv, normal, row0, col0, rows, cols));
+    }
+  }
+  full.dispose();
+  return tiles;
+}
+
+function copyTile(
+  gridWidth: number,
+  position: THREE.BufferAttribute | THREE.InterleavedBufferAttribute,
+  uv: THREE.BufferAttribute | THREE.InterleavedBufferAttribute,
+  normal: THREE.BufferAttribute | THREE.InterleavedBufferAttribute,
+  row0: number,
+  col0: number,
+  rows: number,
+  cols: number,
+): THREE.BufferGeometry {
+  const vertRows = rows + 1;
+  const vertCols = cols + 1;
+  const count = vertRows * vertCols;
+  const positions = new Float32Array(count * 3);
+  const uvs = new Float32Array(count * 2);
+  const normals = new Float32Array(count * 3);
+  for (let row = 0; row < vertRows; row += 1) {
+    for (let column = 0; column < vertCols; column += 1) {
+      const local = row * vertCols + column;
+      const global = (row0 + row) * gridWidth + (col0 + column);
+      copyVector(position, global, positions, local, 3);
+      copyVector(uv, global, uvs, local, 2);
+      copyVector(normal, global, normals, local, 3);
+    }
+  }
+  const geometry = new THREE.BufferGeometry();
+  geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+  geometry.setAttribute("uv", new THREE.BufferAttribute(uvs, 2));
+  geometry.setAttribute("normal", new THREE.BufferAttribute(normals, 3));
+  geometry.setIndex(tileIndices(vertCols, rows, cols));
+  geometry.computeBoundingSphere();
+  return geometry;
+}
+
+function copyVector(
+  source: THREE.BufferAttribute | THREE.InterleavedBufferAttribute,
+  from: number,
+  target: Float32Array,
+  to: number,
+  width: number,
+): void {
+  for (let channel = 0; channel < width; channel += 1) {
+    target[to * width + channel] = source.getComponent(from, channel);
+  }
+}
+
+function tileIndices(vertCols: number, rows: number, cols: number): THREE.BufferAttribute {
+  const indices = new Uint32Array(rows * cols * 6);
+  let offset = 0;
+  for (let row = 0; row < rows; row += 1) {
+    for (let column = 0; column < cols; column += 1) {
+      const northwest = row * vertCols + column;
+      const northeast = northwest + 1;
+      const southwest = northwest + vertCols;
+      indices[offset] = northwest;
+      indices[offset + 1] = southwest;
+      indices[offset + 2] = northeast;
+      indices[offset + 3] = northeast;
+      indices[offset + 4] = southwest;
+      indices[offset + 5] = southwest + 1;
+      offset += 6;
+    }
+  }
+  return new THREE.BufferAttribute(indices, 1);
 }
