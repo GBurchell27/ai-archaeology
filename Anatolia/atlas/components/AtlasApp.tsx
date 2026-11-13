@@ -22,6 +22,7 @@ import { ATLAS_FOV_DEGREES, lookPoseArgument } from "@/lib/pinCluster";
 import type { ClimatePoint, ContextLineLayer, ContextRasterLayer } from "@/components/ContextLayers";
 import type { ContextFeature } from "@/lib/contextGeometry";
 import { boundsCenter, boundsContain, lonLatToMercator, sampleHeight, toLocal } from "@/lib/geo";
+import { closeupQuery, placeHeightUrl, readStoredReliefSource, reliefLoadFailure, resolvePlaceRelief, storeReliefSource, type TerrainSourceId } from "@/lib/terrainSource";
 import { LAYER_STYLE, PERIODS, formatYear } from "@/lib/periods";
 import { decodeHeight } from "@/lib/terrain";
 import { regionalMaps, relatedPlaces } from "@/lib/placeLearning";
@@ -41,8 +42,15 @@ import type { TerrainGrid } from "@/lib/terrain";
 
 interface LoadedTerrain {
   id: string;
+  source: TerrainSourceId;
   grid: TerrainGrid | null;
   credit?: { relief: string; satellite: string };
+}
+
+class ReliefFetchError extends Error {
+  constructor(readonly status: number) {
+    super("relief-unavailable");
+  }
 }
 
 const SCROLL_SPEED_KEY = "anatolia.scrollSpeed";
@@ -81,6 +89,8 @@ export function AtlasApp({ regional }: { regional: RegionalTerrain | null }) {
   const [regionalRequested, requestRegional] = useState(false);
   const [regionalGrid, setRegionalGrid] = useState<TerrainGrid | null>(null);
   const [regionalVisible, setRegionalVisible] = useState(false);
+  const [terrainSource, setTerrainSource] = useState<TerrainSourceId>("gem15");
+  const [reliefError, setReliefError] = useState<string | null>(null);
   const [exaggeration, setExaggeration] = useState(6.5);
   const [azimuth, setAzimuth] = useState(315);
   const [altitude, setAltitude] = useState(40);
@@ -102,6 +112,10 @@ export function AtlasApp({ regional }: { regional: RegionalTerrain | null }) {
   const [panelShown, setPanelShown] = useState(false);
   const [help, setHelp] = useState(false);
   const [legendOpen, setLegendOpen] = useState(true);
+  useEffect(() => {
+    const stored = readStoredReliefSource();
+    if (stored !== "gem15") setTerrainSource(stored);
+  }, []);
   const [theme, toggleTheme] = useTheme();
   const [contextOn, setContextOn] = useState<Record<string, boolean>>({
     rivers: false,
@@ -248,29 +262,55 @@ export function AtlasApp({ regional }: { regional: RegionalTerrain | null }) {
   const nearby = !selected && !wikiSite
     ? visible.find((site) => site.id === nearbyId) ?? wikiVisible.find((site) => site.id === nearbyId)
     : undefined;
-  const detail = selected ? metadata?.details[selected.id] : undefined;
-  const nearbyDetail = nearby ? metadata?.details[nearby.id] : undefined;
+  const rawDetail = selected ? metadata?.details[selected.id] : undefined;
+  const rawNearby = nearby ? metadata?.details[nearby.id] : undefined;
+  const detail = useMemo(
+    () => (rawDetail ? resolvePlaceRelief(rawDetail, terrainSource) : undefined),
+    [rawDetail, terrainSource],
+  );
+  const nearbyDetail = useMemo(
+    () => (rawNearby ? resolvePlaceRelief(rawNearby, terrainSource) : undefined),
+    [rawNearby, terrainSource],
+  );
   const activeId = selected?.id ?? wikiSite?.id ?? (nearbyDetail ? nearby?.id : undefined);
   const activeRecord = detail ?? nearbyDetail;
-  const activeTerrain = loadedTerrain?.id === activeId ? loadedTerrain : null;
+  const activeTerrain = loadedTerrain
+    && loadedTerrain.id === activeId
+    && loadedTerrain.source === terrainSource
+    ? loadedTerrain
+    : null;
   const busy = Boolean(activeId && !activeTerrain);
   const panelOpen = Boolean(wikiSite || (selected && panelShown));
 
   useEffect(() => {
-    document.body.dataset.detail = activeId ? "loading" : "";
-    if (!activeId) return;
+    if (detail && detailLayer !== "satellite" && !detail.rasters[detailLayer]) {
+      setDetailLayer("hillshade");
+    }
+  }, [detail, detailLayer]);
+
+  useEffect(() => {
+    if (!activeId) {
+      setReliefError(null);
+      document.body.dataset.detail = "";
+      return;
+    }
+    document.body.dataset.detail = "loading";
+    setReliefError(null);
     const controller = new AbortController();
-    const { signal } = controller;
-    loadTerrain(activeId, activeRecord, signal).then((result) => {
-      if (!signal.aborted) setLoadedTerrain(result);
-    }).catch(() => {
-      if (!signal.aborted) {
-        setLoadedTerrain({ id: activeId, grid: null });
-        document.body.dataset.detail = "unavailable";
-      }
+    loadTerrain(activeId, activeRecord, terrainSource, controller.signal).then((result) => {
+      if (controller.signal.aborted) return;
+      setLoadedTerrain(result);
+      setReliefError(null);
+    }).catch((reason: unknown) => {
+      if (controller.signal.aborted) return;
+      const failure = reliefLoadFailure(reason instanceof ReliefFetchError ? reason.status : 0);
+      setLoadedTerrain({ id: activeId, source: terrainSource, grid: null });
+      setPanelShown(failure.panelOpen);
+      setReliefError(failure.message);
+      document.body.dataset.detail = failure.detailState;
     });
     return () => controller.abort();
-  }, [activeId, activeRecord]);
+  }, [activeId, activeRecord, terrainSource]);
 
   useEffect(() => {
     document.body.dataset.site = selectedId ?? "";
@@ -278,6 +318,7 @@ export function AtlasApp({ regional }: { regional: RegionalTerrain | null }) {
     document.body.dataset.panel = panelOpen ? "open" : "closed";
     document.body.dataset.busy = busy ? "true" : "false";
     document.body.dataset.base = baseMap;
+    document.body.dataset.reliefSource = terrainSource;
     document.body.dataset.yearStart = String(range.start);
     document.body.dataset.yearEnd = String(range.end);
     document.body.dataset.period = periodId || "custom";
@@ -285,7 +326,7 @@ export function AtlasApp({ regional }: { regional: RegionalTerrain | null }) {
     for (const [layer, enabled] of Object.entries(layers)) {
       document.body.dataset[layer] = enabled ? "on" : "off";
     }
-  }, [selectedId, settingsOpen, panelOpen, busy, baseMap, layers, range, periodId, showUndated]);
+  }, [selectedId, settingsOpen, panelOpen, busy, baseMap, layers, range, periodId, showUndated, terrainSource]);
 
   if (error) {
     return <p className="status">{error}</p>;
@@ -310,20 +351,21 @@ export function AtlasApp({ regional }: { regional: RegionalTerrain | null }) {
     setLandscapeOpen(false);
     setClimateId(null);
     setWikiId(null);
-    const windowSize = metadata!.details[site.id]?.pixelSizeM ?? 39;
+    const raw = metadata!.details[site.id];
+    const resolved = raw ? resolvePlaceRelief(raw, terrainSource) : undefined;
+    const windowSize = resolved?.pixelSizeM ?? 39;
     const scale = naturalExaggeration(windowSize);
     setExaggeration(scale);
-    const next = sitePose(site, metadata!, metres!, scale, pose!.token + 1);
+    const next = sitePose(site, metadata!, metres!, scale, pose!.token + 1, terrainSource);
     setPose(next);
     setSelectedId(site.id);
     setPanelShown(false);
     setSettingsOpen(false);
     setHelp(false);
     setQuery("");
-    const rasters = metadata!.details[site.id]?.rasters ?? {};
-    setDetailLayer(preferredLayer(rasters, baseMap));
+    setDetailLayer(preferredLayer(resolved?.rasters ?? {}, baseMap));
     setCompare(false);
-    if (!metadata!.details[site.id]) setBaseMap("relief");
+    if (!raw) setBaseMap("relief");
   }
 
   function openWiki(site: WikiFeature) {
@@ -470,7 +512,7 @@ export function AtlasApp({ regional }: { regional: RegionalTerrain | null }) {
   const detailUrl = rasterPath
     ? `/terrain/${rasterPath}`
     : activeId && !activeRecord
-      ? `/api/closeup?id=${encodeURIComponent(activeId)}&part=${currentLayer === "satellite" ? "satellite" : "hillshade"}`
+      ? `/api/closeup?${closeupQuery(activeId, currentLayer === "satellite" ? "satellite" : "hillshade", terrainSource)}`
       : null;
   const compareUrl = detail?.rasters[compareLayer] ? `/terrain/${detail.rasters[compareLayer]}` : null;
   const regionLayerId = regionalLayer || ({
@@ -670,6 +712,11 @@ export function AtlasApp({ regional }: { regional: RegionalTerrain | null }) {
           onAzimuth={setAzimuth}
           onAltitude={setAltitude}
           onLabels={setLabels}
+          terrainSource={terrainSource}
+          onTerrain={(source) => {
+            setTerrainSource(source);
+            storeReliefSource(source);
+          }}
           wikiOn={wikiOn}
           onWiki={setWikiOn}
           contextOn={contextOn}
@@ -700,6 +747,7 @@ export function AtlasApp({ regional }: { regional: RegionalTerrain | null }) {
           onClose={() => {
             setSelectedId(null);
             setPanelShown(false);
+            setReliefError(null);
             stopFlight();
           }}
           onLayer={setDetailLayer}
@@ -714,6 +762,8 @@ export function AtlasApp({ regional }: { regional: RegionalTerrain | null }) {
           onContext={(id, enabled) => setContextOn((current) => ({ ...current, [id]: enabled }))}
           closeup={!detail}
           credit={closeupCredit}
+          reliefNote={terrainSource === "gem15" ? metadata.attribution.gem15 : metadata.attribution.dem}
+          reliefError={reliefError}
           range={range}
         />
       ) : null}
@@ -755,8 +805,9 @@ export function AtlasApp({ regional }: { regional: RegionalTerrain | null }) {
       })} />
       {help ? <ShortcutOverlay onClose={() => setHelp(false)} /> : null}
       <details className="credit">
-        <summary>Copernicus · EOX · Pleiades</summary>
+        <summary>GEM-15 · Copernicus · EOX · Pleiades</summary>
         <p>
+          {metadata.attribution.gem15 ? <><CreditLine text={metadata.attribution.gem15} /> </> : null}
           {metadata.attribution.dem} <CreditLine text={metadata.attribution.satellite} />
           {regionalSentinel && regional ? <> · {regional.sentinelCredit} · {regional.sentinelDay}.</> : null}
           {" "}
@@ -795,6 +846,8 @@ function SettingsMenu(props: {
   onAzimuth: (value: number) => void;
   onAltitude: (value: number) => void;
   onLabels: (value: boolean) => void;
+  terrainSource: TerrainSourceId;
+  onTerrain: (source: TerrainSourceId) => void;
   wikiOn: boolean;
   onWiki: (enabled: boolean) => void;
   contextOn: Record<string, boolean>;
@@ -814,6 +867,15 @@ function SettingsMenu(props: {
           <span>{base === "relief" ? "Shaded relief" : base === "hypsometric" ? "Hypsometric tint" : "Satellite"}</span>
         </label>
       ))}
+      <h2>Place relief</h2>
+      <label className="check">
+        <input type="radio" name="terrain" checked={props.terrainSource === "gem15"} data-terrain="gem15" onChange={() => props.onTerrain("gem15")} />
+        <span>GEM-15 surface, 15 m</span>
+      </label>
+      <label className="check">
+        <input type="radio" name="terrain" checked={props.terrainSource === "copernicus"} data-terrain="copernicus" onChange={() => props.onTerrain("copernicus")} />
+        <span>Copernicus GLO-30</span>
+      </label>
       {props.regional ? (
         <label className="regional-layer">
           Şanlıurfa layer
@@ -965,6 +1027,8 @@ function SitePanel(props: {
   onContext: (id: string, enabled: boolean) => void;
   closeup?: boolean;
   credit?: { relief: string; satellite: string } | null;
+  reliefNote?: string;
+  reliefError?: string | null;
   range: YearRange;
 }) {
   const properties = props.site.properties;
@@ -985,7 +1049,10 @@ function SitePanel(props: {
       onClose={props.onClose}
       related={props.related}
       onVisit={props.onVisit}
-      meta={<p className="guide-meta">{properties.period} · {properties.confidence === "approximate" ? "Approximate location" : "Published location"}</p>}
+      meta={<>
+        <p className="guide-meta">{properties.period} · {properties.confidence === "approximate" ? "Approximate location" : "Published location"}</p>
+        {props.reliefError ? <p data-role="relief-error">{props.reliefError}</p> : null}
+      </>}
       overview={<>
         {properties.names.length > 1 ? <p className="muted">{properties.names.join(" · ")}</p> : null}
         <p>{formatYear(properties.startYear)} – {formatYear(properties.endYear)}</p>
@@ -1013,7 +1080,7 @@ function SitePanel(props: {
         }}
         contextOn={props.contextOn}
         onContext={props.onContext}
-        note={props.closeup ? closeupCreditNote(props.credit) : undefined}
+        note={props.closeup ? closeupCreditNote(props.credit) : props.reliefNote}
       />
       {props.rasters.length > 0 ? (
         <section className="place-layers">
@@ -1111,14 +1178,22 @@ function lookPose(
   };
 }
 
-function sitePose(site: SiteFeature, metadata: AtlasMetadata, metres: Float32Array, exaggeration: number, token: number): CameraPose {
+function sitePose(
+  site: SiteFeature,
+  metadata: AtlasMetadata,
+  metres: Float32Array,
+  exaggeration: number,
+  token: number,
+  source: TerrainSourceId,
+): CameraPose {
   const origin = boundsCenter(metadata.bounds);
   const [longitude, latitude] = site.geometry.coordinates;
   const [east, north] = lonLatToMercator(longitude, latitude);
   const elevation = sampleHeight(metres, metadata.width, metadata.height, metadata.bounds, east, north);
   const [xCoord, zCoord] = toLocal(longitude, latitude, origin);
   const yCoord = (elevation - metadata.elevation.min) * exaggeration;
-  const detail = metadata.details[site.id];
+  const raw = metadata.details[site.id];
+  const detail = raw ? resolvePlaceRelief(raw, source) : undefined;
   const windowSpan = detail
     ? Math.max(detail.bounds[2] - detail.bounds[0], detail.bounds[3] - detail.bounds[1])
     : 0;
@@ -1130,21 +1205,28 @@ function sitePose(site: SiteFeature, metadata: AtlasMetadata, metres: Float32Arr
   };
 }
 
-async function loadTerrain(id: string, detail: DetailRecord | undefined, signal: AbortSignal): Promise<LoadedTerrain> {
-  const query = `/api/closeup?id=${encodeURIComponent(id)}&part=`;
+async function loadTerrain(
+  id: string,
+  detail: DetailRecord | undefined,
+  source: TerrainSourceId,
+  signal: AbortSignal,
+): Promise<LoadedTerrain> {
   let meta = detail as (DetailRecord & { attribution?: { relief?: string; satellite?: string } }) | undefined;
   if (!meta) {
-    const response = await fetch(`${query}meta`, { signal });
-    if (!response.ok) throw new Error("Close-up metadata unavailable");
+    const response = await fetch(`/api/closeup?${closeupQuery(id, "meta", source)}`, { signal });
+    if (!response.ok) throw new ReliefFetchError(response.status);
     meta = await response.json() as NonNullable<typeof meta>;
   }
-  const path = detail ? `/terrain/details/${id}/height.u16` : `${query}height`;
+  const path = detail
+    ? placeHeightUrl(detail, id)
+    : `/api/closeup?${closeupQuery(id, "height", source)}`;
   const response = await fetch(path, { signal });
-  if (!response.ok) throw new Error("Close-up terrain unavailable");
+  if (!response.ok) throw new ReliefFetchError(response.status);
   const { width, height, bounds, elevation, attribution } = meta;
   const metres = decodeHeight(await response.arrayBuffer(), width, height, elevation.min, elevation.max);
   return {
     id,
+    source,
     grid: { width, height, bounds, metres },
     credit: attribution ? { relief: attribution.relief ?? "", satellite: attribution.satellite ?? "" } : undefined,
   };

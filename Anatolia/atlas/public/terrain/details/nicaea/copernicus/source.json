@@ -1,0 +1,20 @@
+{
+  "bounds": [
+    3303538.9545755056,
+    4923505.011579681,
+    3313538.9545755056,
+    4933505.011579681
+  ],
+  "width": 256,
+  "height": 256,
+  "pixelSizeM": 39.0625,
+  "elevation": {
+    "min": 83.0,
+    "max": 565.0721435546875
+  },
+  "heightFile": "details/nicaea/copernicus/height.u16",
+  "rasters": {
+    "hillshade": "details/nicaea/copernicus/hillshade.jpg",
+    "hypsometric": "details/nicaea/copernicus/hypsometric.jpg"
+  }
+}

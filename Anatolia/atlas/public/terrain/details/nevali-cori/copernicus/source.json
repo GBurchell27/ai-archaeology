@@ -1,0 +1,23 @@
+{
+  "bounds": [
+    4294387.905620895,
+    4508427.860342851,
+    4300712.762483982,
+    4514779.532075941
+  ],
+  "width": 167,
+  "height": 167,
+  "pixelSizeM": 29.940119760479043,
+  "elevation": {
+    "min": 537.0,
+    "max": 618.5512084960938
+  },
+  "heightFile": "details/nevali-cori/copernicus/height.u16",
+  "rasters": {
+    "hillshade": "details/nevali-cori/copernicus/hillshade.jpg",
+    "slope": "details/nevali-cori/copernicus/slope.jpg",
+    "local-relief": "details/nevali-cori/copernicus/local-relief.jpg",
+    "multidirectional-hillshade": "details/nevali-cori/copernicus/multidirectional-hillshade.jpg",
+    "sky-view-factor": "details/nevali-cori/copernicus/sky-view-factor.jpg"
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "bounds": [
+    3048431.7878031894,
+    4438521.632307085,
+    3058431.7878031894,
+    4448521.632307085
+  ],
+  "width": 256,
+  "height": 256,
+  "pixelSizeM": 39.0625,
+  "elevation": {
+    "min": -0.0929931253194809,
+    "max": 407.1934814453125
+  },
+  "heightFile": "details/bodrum-petronion/copernicus/height.u16",
+  "rasters": {
+    "hillshade": "details/bodrum-petronion/copernicus/hillshade.jpg",
+    "hypsometric": "details/bodrum-petronion/copernicus/hypsometric.jpg"
+  }
+}

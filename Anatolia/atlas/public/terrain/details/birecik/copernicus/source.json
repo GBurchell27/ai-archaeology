@@ -1,0 +1,20 @@
+{
+  "bounds": [
+    4222574.116945242,
+    4437592.037964527,
+    4232574.116945242,
+    4447592.037964527
+  ],
+  "width": 256,
+  "height": 256,
+  "pixelSizeM": 39.0625,
+  "elevation": {
+    "min": 335.94927978515625,
+    "max": 520.546142578125
+  },
+  "heightFile": "details/birecik/copernicus/height.u16",
+  "rasters": {
+    "hillshade": "details/birecik/copernicus/hillshade.jpg",
+    "hypsometric": "details/birecik/copernicus/hypsometric.jpg"
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "bounds": [
+    4366423.745628378,
+    4442742.094960872,
+    4372699.879631159,
+    4449045.171494531
+  ],
+  "width": 167,
+  "height": 167,
+  "pixelSizeM": 29.940119760479043,
+  "elevation": {
+    "min": 530.57568359375,
+    "max": 727.3045043945312
+  },
+  "heightFile": "details/harbetsuvan-tepesi/copernicus/height.u16",
+  "rasters": {
+    "hillshade": "details/harbetsuvan-tepesi/copernicus/hillshade.jpg",
+    "slope": "details/harbetsuvan-tepesi/copernicus/slope.jpg",
+    "local-relief": "details/harbetsuvan-tepesi/copernicus/local-relief.jpg",
+    "multidirectional-hillshade": "details/harbetsuvan-tepesi/copernicus/multidirectional-hillshade.jpg",
+    "sky-view-factor": "details/harbetsuvan-tepesi/copernicus/sky-view-factor.jpg"
+  }
+}

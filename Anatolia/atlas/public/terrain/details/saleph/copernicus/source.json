@@ -1,0 +1,20 @@
+{
+  "bounds": [
+    3772317.6990146027,
+    4347497.859587312,
+    3782317.6990146027,
+    4357497.859587312
+  ],
+  "width": 256,
+  "height": 256,
+  "pixelSizeM": 39.0625,
+  "elevation": {
+    "min": 1.571075677871704,
+    "max": 401.9090270996094
+  },
+  "heightFile": "details/saleph/copernicus/height.u16",
+  "rasters": {
+    "hillshade": "details/saleph/copernicus/hillshade.jpg",
+    "hypsometric": "details/saleph/copernicus/hypsometric.jpg"
+  }
+}

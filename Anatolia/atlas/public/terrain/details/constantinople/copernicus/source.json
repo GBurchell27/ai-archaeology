@@ -1,0 +1,20 @@
+{
+  "bounds": [
+    3221038.8431890686,
+    5009185.585863031,
+    3231038.8431890686,
+    5019185.585863031
+  ],
+  "width": 256,
+  "height": 256,
+  "pixelSizeM": 39.0625,
+  "elevation": {
+    "min": -11.05123519897461,
+    "max": 101.36245727539062
+  },
+  "heightFile": "details/constantinople/copernicus/height.u16",
+  "rasters": {
+    "hillshade": "details/constantinople/copernicus/hillshade.jpg",
+    "hypsometric": "details/constantinople/copernicus/hypsometric.jpg"
+  }
+}

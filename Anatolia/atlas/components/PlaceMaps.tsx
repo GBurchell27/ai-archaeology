@@ -2,17 +2,22 @@
 
 import { SafeLink } from "@/components/SafeLink";
 
-const LICENCE = "CC BY-NC-SA 4.0";
-const LICENCE_URL = "https://creativecommons.org/licenses/by-nc-sa/4.0/";
+const LICENCES: [string, string][] = [
+  ["CC BY-NC-SA 4.0", "https://creativecommons.org/licenses/by-nc-sa/4.0/"],
+  ["CC BY 4.0", "https://creativecommons.org/licenses/by/4.0/"],
+];
 
 export function CreditLine(props: { text: string }) {
-  const index = props.text.indexOf(LICENCE);
-  if (index < 0) return <>{props.text}</>;
+  const match = LICENCES
+    .map(([label, href]) => ({ label, href, index: props.text.indexOf(label) }))
+    .filter((item) => item.index >= 0)
+    .sort((left, right) => left.index - right.index)[0];
+  if (!match) return <>{props.text}</>;
   return (
     <>
-      {props.text.slice(0, index)}
-      <SafeLink href={LICENCE_URL}>{LICENCE}</SafeLink>
-      {props.text.slice(index + LICENCE.length)}
+      {props.text.slice(0, match.index)}
+      <SafeLink href={match.href}>{match.label}</SafeLink>
+      <CreditLine text={props.text.slice(match.index + match.label.length)} />
     </>
   );
 }

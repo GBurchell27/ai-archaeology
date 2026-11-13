@@ -1,0 +1,23 @@
+{
+  "bounds": [
+    4296090.613130467,
+    4451465.145264101,
+    4302380.223453067,
+    4457781.711446694
+  ],
+  "width": 167,
+  "height": 167,
+  "pixelSizeM": 29.940119760479043,
+  "elevation": {
+    "min": 603.977783203125,
+    "max": 762.5409545898438
+  },
+  "heightFile": "details/sayburc/copernicus/height.u16",
+  "rasters": {
+    "hillshade": "details/sayburc/copernicus/hillshade.jpg",
+    "slope": "details/sayburc/copernicus/slope.jpg",
+    "local-relief": "details/sayburc/copernicus/local-relief.jpg",
+    "multidirectional-hillshade": "details/sayburc/copernicus/multidirectional-hillshade.jpg",
+    "sky-view-factor": "details/sayburc/copernicus/sky-view-factor.jpg"
+  }
+}
