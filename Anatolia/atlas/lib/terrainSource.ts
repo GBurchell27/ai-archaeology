@@ -38,3 +38,44 @@ export function placeHeightUrl(detail: DetailRecord, siteId: string): string {
 export function closeupQuery(siteId: string, part: string, source: TerrainSourceId): string {
   return `id=${encodeURIComponent(siteId)}&part=${part}&terrain=${source}`;
 }
+
+const RELIEF_KEY = "atlas-relief-source";
+
+export interface ReliefLoadFailure {
+  panelOpen: true;
+  detailState: "error";
+  message: string;
+}
+
+/** A failed height fetch keeps the place open and leaves the national terrain in view. */
+export function reliefLoadFailure(status: number): ReliefLoadFailure {
+  const missing = status === 404;
+  return {
+    panelOpen: true,
+    detailState: "error",
+    message: missing
+      ? "This relief grid is missing. The place stays open on the national terrain."
+      : "This relief grid did not load. The place stays open on the national terrain.",
+  };
+}
+
+function reliefStorage(): Storage | null {
+  const host = globalThis as { window?: { localStorage?: Storage } };
+  return host.window?.localStorage ?? null;
+}
+
+export function readStoredReliefSource(): TerrainSourceId {
+  try {
+    return reliefStorage()?.getItem(RELIEF_KEY) === "copernicus" ? "copernicus" : "gem15";
+  } catch {
+    return "gem15";
+  }
+}
+
+export function storeReliefSource(source: TerrainSourceId): void {
+  try {
+    reliefStorage()?.setItem(RELIEF_KEY, source);
+  } catch {
+    // Private mode can reject storage. The choice still applies for this visit.
+  }
+}

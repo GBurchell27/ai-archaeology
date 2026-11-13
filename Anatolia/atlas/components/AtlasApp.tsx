@@ -14,7 +14,7 @@ import { lookPoseArgument } from "@/lib/pinCluster";
 import type { ClimatePoint, ContextLineLayer, ContextRasterLayer } from "@/components/ContextLayers";
 import type { ContextFeature } from "@/lib/contextGeometry";
 import { boundsCenter, boundsContain, lonLatToMercator, sampleHeight, toLocal } from "@/lib/geo";
-import { closeupQuery, placeHeightUrl, resolvePlaceRelief, type TerrainSourceId } from "@/lib/terrainSource";
+import { closeupQuery, placeHeightUrl, readStoredReliefSource, reliefLoadFailure, resolvePlaceRelief, storeReliefSource, type TerrainSourceId } from "@/lib/terrainSource";
 import { LAYER_STYLE, PERIODS, formatYear } from "@/lib/periods";
 import { decodeHeight } from "@/lib/terrain";
 import {
@@ -61,6 +61,11 @@ export function AtlasApp() {
   });
   const [baseMap, setBaseMap] = useState<BaseMap>("hypsometric");
   const [terrainSource, setTerrainSource] = useState<TerrainSourceId>("gem15");
+  const [reliefError, setReliefError] = useState<string | null>(null);
+  useEffect(() => {
+    const stored = readStoredReliefSource();
+    if (stored !== "gem15") setTerrainSource(stored);
+  }, []);
   const [exaggeration, setExaggeration] = useState(6.5);
   const [azimuth, setAzimuth] = useState(315);
   const [altitude, setAltitude] = useState(40);
@@ -217,14 +222,25 @@ export function AtlasApp() {
     if (!selected && !wiki) {
       setDetailGrid(null);
       setCloseupCredit(null);
+      setReliefError(null);
       return;
     }
     document.body.dataset.detail = "loading";
+    setReliefError(null);
     setDetailToken((current) => {
       const next = current + 1;
       document.body.dataset.detailToken = String(next);
       return next;
     });
+    const failRelief = (status: number) => {
+      const failure = reliefLoadFailure(status);
+      setDetailGrid(null);
+      setReveal(false);
+      setBusy(false);
+      setPanelShown(failure.panelOpen);
+      setReliefError(failure.message);
+      document.body.dataset.detail = failure.detailState;
+    };
     if (!detail) {
       const siteId = selected?.id ?? wiki?.id;
       if (!siteId) {
@@ -265,11 +281,7 @@ export function AtlasApp() {
         };
         show();
       }).catch(() => {
-        if (!cancel) {
-          setDetailGrid(null);
-          setBusy(false);
-          setPanelShown(true);
-        }
+        if (!cancel) failRelief(0);
       });
       return () => {
         cancel = true;
@@ -287,6 +299,10 @@ export function AtlasApp() {
     if (imageUrl) image.src = imageUrl;
     const decoded = imageUrl && image.decode ? image.decode().catch(() => undefined) : Promise.resolve();
     fetch(placeHeightUrl(detail, siteId)).then(async (response) => {
+      if (!response.ok) {
+        if (!cancel) failRelief(response.status);
+        return;
+      }
       const grid = decodeHeight(
         await response.arrayBuffer(),
         detail.width,
@@ -296,6 +312,7 @@ export function AtlasApp() {
       );
       await decoded;
       if (cancel) return;
+      setReliefError(null);
       setDetailGrid({
         width: detail.width,
         height: detail.height,
@@ -315,10 +332,7 @@ export function AtlasApp() {
       };
       show();
     }).catch(() => {
-      if (!cancel) {
-        setDetailGrid(null);
-        setBusy(false);
-      }
+      if (!cancel) failRelief(0);
     });
     return () => {
       cancel = true;
@@ -596,7 +610,10 @@ export function AtlasApp() {
           onAltitude={setAltitude}
           onLabels={setLabels}
           terrainSource={terrainSource}
-          onTerrain={setTerrainSource}
+          onTerrain={(source) => {
+            setTerrainSource(source);
+            storeReliefSource(source);
+          }}
           wikiOn={wikiOn}
           onWiki={setWikiOn}
           contextOn={contextOn}
@@ -625,6 +642,7 @@ export function AtlasApp() {
             setSelectedId(null);
             setPanelShown(false);
             setReveal(false);
+            setReliefError(null);
             stopFlight();
           }}
           onLayer={setDetailLayer}
@@ -640,6 +658,7 @@ export function AtlasApp() {
           closeup={!detail}
           credit={closeupCredit}
           reliefNote={terrainSource === "gem15" ? metadata.attribution.gem15 : metadata.attribution.dem}
+          reliefError={reliefError}
           range={range}
         />
       ) : null}
@@ -868,6 +887,7 @@ function SitePanel(props: {
   closeup?: boolean;
   credit?: { relief: string; satellite: string } | null;
   reliefNote?: string;
+  reliefError?: string | null;
   range: YearRange;
 }) {
   const properties = props.site.properties;
@@ -882,6 +902,7 @@ function SitePanel(props: {
     <aside className={props.shown ? "panel is-in" : "panel"} aria-label="Selected place">
       <button type="button" className="close" data-action="close-panel" onClick={props.onClose}>Close</button>
       <h2>{properties.name}</h2>
+      {props.reliefError ? <p data-role="relief-error">{props.reliefError}</p> : null}
       <p className="muted">{properties.names.join(" · ")}</p>
       <p className="badge">{properties.confidence === "approximate" ? "Approximate location" : "Published location"} · {properties.category}</p>
       <p>{properties.period}. {formatYear(properties.startYear)} – {formatYear(properties.endYear)}.</p>

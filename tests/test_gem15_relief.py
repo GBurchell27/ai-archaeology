@@ -46,7 +46,9 @@ def test_masked_cells_take_the_reference_on_the_gem_datum():
 
 def test_baked_place_relief_has_gem_and_copernicus():
     import json
+    import subprocess
 
+    tracked = set(subprocess.check_output(["git", "ls-files"], cwd=ROOT, text=True).splitlines())
     metadata = json.loads((ROOT / "Anatolia/atlas/public/terrain/metadata.json").read_text())
     footer = metadata["attribution"]["gem15"]
     assert "This dataset is produced by Google" in footer
@@ -56,10 +58,13 @@ def test_baked_place_relief_has_gem_and_copernicus():
     for site_id, detail in metadata["details"].items():
         assert detail["terrain"]["default"] == "gem15"
         height = terrain / detail["heightFile"]
+        assert f"Anatolia/atlas/public/terrain/{detail['heightFile']}" in tracked
         assert height.is_file()
         assert height.stat().st_size == detail["width"] * detail["height"] * 2
         fallback = detail["terrain"]["copernicus"]
-        copernicus = terrain / fallback["heightFile"]
+        relative = f"Anatolia/atlas/public/terrain/{fallback['heightFile']}"
+        assert relative in tracked, relative
+        copernicus = ROOT / relative
         assert copernicus.is_file()
         assert copernicus.stat().st_size == fallback["width"] * fallback["height"] * 2
         assert (terrain / detail["rasters"]["hillshade"]).is_file()
