@@ -1,13 +1,13 @@
 /** Frame-time ladder for the national terrain. Pure: the canvas applies the result. */
 
-export const DPR_STEPS = [1, 0.75, 0.55, 0.4] as const;
-export const INITIAL_DPR_INDEX = 2;
+export const DPR_STEPS = [1.5, 1.2, 1, 0.75] as const;
+export const INITIAL_DPR_INDEX = 1;
 export const TILE_ON_M = 140_000;
 export const TILE_OFF_M = 160_000;
 export const TILE_RELEASE_MS = 10_000;
-export const FRAME_BUDGET_MS = 22;
-export const FRAME_HEADROOM_MS = 13;
-export const QUALITY_SAMPLE_COUNT = 8;
+export const FRAME_BUDGET_MS = 27;
+export const FRAME_HEADROOM_MS = 18.5;
+export const QUALITY_SAMPLE_COUNT = 32;
 
 export interface QualityState {
   dprIndex: number;

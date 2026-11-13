@@ -1,6 +1,6 @@
 :root {
   color: #f4efe6;
-  background: #c9b79a;
+  background: #34464a;
   font-family: "Avenir Next", "Segoe UI", sans-serif;
 }
 
@@ -10,11 +10,105 @@ html, body { margin: 0; height: 100%; overflow: hidden; }
 
 .atlas { position: relative; height: 100%; }
 
-.atlas canvas { display: block; }
+.atlas canvas { display: block; touch-action: none; cursor: grab; }
+.atlas canvas:active { cursor: grabbing; }
+
+.map-nav,
+.nearby-place {
+  position: absolute;
+  z-index: 2;
+  border: 1px solid rgba(244, 228, 201, 0.28);
+  border-radius: 14px;
+  background: rgba(30, 23, 17, 0.94);
+  color: #fbf4e7;
+  box-shadow: 0 8px 28px rgba(37, 24, 12, 0.26);
+}
+
+.map-nav {
+  bottom: 57px;
+  left: 16px;
+  padding: 6px;
+}
+
+.map-nav-tools { display: flex; align-items: center; gap: 4px; }
+
+.map-nav button,
+.nearby-place button {
+  border: 1px solid rgba(244, 228, 201, 0.24);
+  border-radius: 8px;
+  background: rgba(255, 242, 220, 0.09);
+  color: inherit;
+  cursor: pointer;
+}
+
+.map-nav button { width: 36px; height: 36px; font-size: 22px; line-height: 1; }
+.map-nav button:hover, .nearby-place button:hover { background: rgba(255, 242, 220, 0.19); }
+
+.map-speed {
+  display: grid;
+  align-content: center;
+  gap: 1px;
+  min-height: 36px;
+  padding: 0 4px 0 8px;
+  border-left: 1px solid rgba(244, 228, 201, 0.21);
+  font-size: 10px;
+  color: #e4d5bf;
+}
+
+.map-speed select {
+  width: 80px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #fbf4e7;
+  color-scheme: dark;
+  font: 600 13px/1.2 "Avenir Next", "Segoe UI", sans-serif;
+  cursor: pointer;
+}
+
+.map-gestures { margin: 6px 3px 2px; color: #e4d5bf; font-size: 11px; }
+
+.nearby-place {
+  right: 16px;
+  bottom: 123px;
+  width: min(292px, calc(100vw - 32px));
+  padding: 15px;
+  animation: nearby-in 180ms ease-out both;
+}
+
+.nearby-period { margin: 0 0 5px; color: #f1c391; font-size: 11px; font-weight: 600; }
+.nearby-place h2 { margin: 0; font: 500 24px/1.12 Palatino, Georgia, serif; }
+.nearby-summary {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  overflow: hidden;
+  margin: 8px 0 0;
+  color: #eaddca;
+  font-size: 13px;
+  line-height: 1.4;
+}
+.nearby-place button {
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  min-height: 36px;
+  margin-top: 12px;
+  padding: 6px 9px;
+  font: 600 12px/1.2 "Avenir Next", "Segoe UI", sans-serif;
+  text-align: left;
+}
+
+@keyframes nearby-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
 
 .topbar {
   position: absolute;
-  z-index: 3;
+  z-index: 4;
   top: 10px;
   left: 12px;
   right: 12px;
@@ -25,6 +119,14 @@ html, body { margin: 0; height: 100%; overflow: hidden; }
 }
 
 .topbar > * { pointer-events: auto; }
+
+.map-places { display: flex; align-items: center; gap: 5px; }
+.map-places .brand { white-space: nowrap; }
+.map-places .region-button { background: #e8d1ab; color: #30271d; border-color: transparent; }
+.map-places .region-button:hover { background: #f5e1c1; }
+.regional-readout { padding: 3px 7px; border-radius: 6px; background: #211b16; }
+.menu .regional-layer select { max-width: 58%; color-scheme: dark; }
+.site-pin-label { transform: translateY(-14px); }
 
 .brand, .icon-button, .chip, .search input, .menu, .panel, .legend {
   background: rgba(22, 17, 13, 0.78);
@@ -92,6 +194,9 @@ html, body { margin: 0; height: 100%; overflow: hidden; }
 }
 
 .icon-button svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 1.6; }
+
+.landscape-toggle { display: flex; gap: 5px; padding: 0 10px; }
+.landscape-toggle[aria-pressed="true"] { background: #edbf87; color: #251e17; }
 
 .menu, .panel {
   position: absolute;
@@ -256,6 +361,84 @@ html, body { margin: 0; height: 100%; overflow: hidden; }
 
 .panel.is-in { transform: none; opacity: 1; pointer-events: auto; }
 
+.atlas { --guide-width: 382px; }
+
+.panel.place-guide {
+  display: flex;
+  flex-direction: column;
+  width: min(var(--guide-width), calc(100vw - 24px));
+  padding: 0;
+  overflow: hidden;
+  color: #fbf3e7;
+  background: #251e17;
+  border-color: #625143;
+  color-scheme: dark;
+}
+
+html[data-theme="dark"] .panel.place-guide { background: #151a1e; border-color: #4d565e; }
+
+.guide-header { padding: 16px 16px 0; border-bottom: 1px solid #8b766455; }
+.guide-header h2 { margin: 0; padding-right: 48px; font: 500 27px/1.13 Palatino, Georgia, serif; }
+.guide-header .guide-meta { margin: 5px 0 13px; color: #e2cdb3; font-size: 12px; }
+.guide-close { min-height: 32px; padding: 3px 0 3px 7px; color: #e2cdb3; }
+.guide-tabs { display: flex; gap: 6px; }
+.guide-tabs button {
+  min-height: 38px;
+  padding: 6px 11px;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  background: transparent;
+  color: #e2cdb3;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+.guide-tabs button:hover { color: #fff4df; }
+.guide-tabs button[aria-pressed="true"] { border-color: #edbf87; color: #fff4df; }
+.place-guide :focus-visible, .landscape-toggle:focus-visible { outline: 2px solid #edbf87; outline-offset: -2px; }
+.guide-body { min-height: 0; padding: 16px; overflow: auto; overscroll-behavior: contain; line-height: 1.5; }
+.guide-body h3 { margin: 0; font: 500 18px/1.3 Palatino, Georgia, serif; }
+.guide-story h3 { font-size: 22px; }
+.guide-body h4 { margin: 14px 0 0; font-size: 13px; }
+.guide-overview { margin-top: 18px; padding-top: 13px; border-top: 1px solid #8b766455; }
+.guide-body .guide-map-prompt { margin: 0 0 13px; color: #e2cdb3; }
+.guide-body .place-layers:first-of-type { margin-top: 0; padding-top: 0; border-top: 0; }
+.guide-text-button {
+  min-height: 32px;
+  margin-top: 4px;
+  padding: 4px 0;
+  border: 0;
+  background: transparent;
+  color: #f6d7a8;
+  cursor: pointer;
+  font: inherit;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.guide-related, .guide-readings { display: grid; gap: 7px; margin: 8px 0 0; padding: 0; list-style: none; }
+.guide-related button {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  min-height: 34px;
+  padding: 5px 8px;
+  border: 1px solid #8b766455;
+  border-radius: 7px;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+}
+.guide-related button:hover { background: #edbf8719; }
+.guide-readings li { padding: 8px 0; border-bottom: 1px solid #8b766455; overflow-wrap: anywhere; }
+.guide-readings li > a { color: #f6d7a8; font-weight: 600; text-underline-offset: 3px; }
+.guide-readings li > span { display: block; margin-top: 2px; color: #e2cdb3; font-size: 11px; }
+.guide-readings li > p { margin: 3px 0 0; }
+.guide-map-library { margin-top: 15px; padding-top: 12px; border-top: 1px solid #8b766455; }
+.guide-map-library > summary { cursor: pointer; font-weight: 600; }
+
 .menu h2, .panel h2 { margin: 0 0 8px; font: 600 15px/1.3 Palatino, Georgia, serif; }
 
 .row, .check { display: flex; gap: 8px; align-items: center; margin-top: 8px; }
@@ -364,7 +547,7 @@ input[type="range"] { width: 130px; accent-color: #e2b07a; }
   position: absolute;
   z-index: 2;
   right: 16px;
-  bottom: 42px;
+  bottom: 70px;
   display: flex;
   flex-direction: column;
   align-items: flex-end;
@@ -388,7 +571,7 @@ input[type="range"] { width: 130px; accent-color: #e2b07a; }
 }
 
 .scale { display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
-.scale i { display: block; height: 2px; min-width: 48px; background: currentColor; }
+.scale i { display: block; height: 2px; background: currentColor; }
 
 .pin-hit {
   width: 44px;
@@ -438,6 +621,7 @@ html[data-theme="dark"] .dock-handle {
   border-color: rgba(244, 239, 230, 0.2);
 }
 html[data-theme="dark"] .chip.is-on { background: #f4efe6; color: #1b140f; }
+html[data-theme="dark"] .landscape-toggle[aria-pressed="true"] { background: #edbf87; color: #251e17; }
 html[data-theme="dark"] .search ul { background: rgba(10, 14, 18, 0.96); }
 
 .legend .swatch { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 4px; }
@@ -454,15 +638,33 @@ html[data-theme="dark"] .search ul { background: rgba(10, 14, 18, 0.96); }
 .credit a { color: #f6d7a8; }
 .credit {
   position: absolute;
-  z-index: 2;
+  z-index: 3;
   right: 12px;
   bottom: 8px;
-  max-width: min(520px, 46vw);
   margin: 0;
   font-size: 10px;
   line-height: 1.35;
   color: #f7f1e6;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.45);
+}
+.credit summary {
+  width: max-content;
+  margin-left: auto;
+  padding: 5px 9px;
+  border: 1px solid rgba(246, 236, 220, 0.2);
+  border-radius: 999px;
+  background: #211b16;
+  cursor: pointer;
+}
+.credit p {
+  position: absolute;
+  right: 0;
+  bottom: calc(100% + 7px);
+  width: min(430px, calc(100vw - 24px));
+  margin: 0;
+  padding: 10px;
+  border-radius: 10px;
+  background: #211b16;
+  font-size: 11px;
 }
 
 .status {
@@ -545,29 +747,73 @@ html[data-theme="dark"] .search ul { background: rgba(10, 14, 18, 0.96); }
   font: 12px/1.2 "Avenir Next", "Segoe UI", sans-serif;
 }
 
+@media (min-width: 721px) {
+  .atlas:is([data-has-panel="true"], [data-has-landscape="true"]) .timebar {
+    left: clamp(12px, calc((100% - 972px) / 2), 24%);
+    width: min(640px, calc(100vw - var(--guide-width) - 74px));
+    transform: none;
+  }
+  .atlas:is([data-has-panel="true"], [data-has-landscape="true"]) .readout { right: calc(var(--guide-width) + 28px); }
+  .atlas:is([data-has-panel="true"], [data-has-landscape="true"]) .dock {
+    left: calc((100% - var(--guide-width) - 24px) / 2);
+  }
+  .panel { bottom: 68px; }
+}
+
 @media (max-width: 720px) {
-  .topbar { flex-wrap: wrap; row-gap: 6px; }
+  .topbar { flex-wrap: wrap; gap: 6px; }
   .brand { order: 1; }
   .search { order: 2; margin-left: auto; }
   .icon-button { order: 3; }
   .chips { order: 4; flex: 1 0 100%; max-width: 100%; }
   .search input { width: 132px; }
-  .panel { top: auto; left: 8px; right: 8px; width: auto; max-height: 48vh; bottom: 0; border-radius: 16px 16px 0 0; transform: translateY(110%); }
+  .panel { top: auto; left: 8px; right: 8px; width: auto; max-height: 42vh; bottom: 0; border-radius: 16px 16px 0 0; transform: translateY(110%); }
   .panel.is-in { transform: translateY(0); }
-  .credit { left: 12px; right: 12px; max-width: none; bottom: 64px; }
-  .legend { left: 8px; bottom: 56px; top: auto; max-width: calc(100vw - 16px); }
-  .timebar { top: auto; bottom: 96px; left: 8px; right: 8px; width: auto; transform: none; }
-  .dock { top: auto; bottom: 8px; left: 8px; right: 8px; transform: none; }
-  .readout { right: 8px; bottom: 92px; }
-  .credit { max-height: 72px; overflow: auto; background: rgba(22, 17, 13, 0.78); padding: 6px 8px; border-radius: 8px; }
+  .panel.place-guide { width: auto; max-height: 63vh; max-height: 63dvh; }
+  .credit { right: 8px; bottom: 8px; }
+  .legend { left: 8px; bottom: 43px; top: auto; max-width: calc(100vw - 16px); }
+  .legend-body { flex-wrap: wrap; gap: 4px 8px; }
+  .timebar { top: 52px; bottom: auto; left: 8px; right: 8px; width: auto; transform: none; }
+  .dock { top: 107px; bottom: auto; left: auto; right: 8px; transform: none; align-items: flex-end; }
+  .dock .chips { max-width: calc(100vw - 16px); }
+  .readout { right: 8px; bottom: 111px; }
   body[data-panel="open"] .credit,
   body[data-panel="open"] .legend,
   body[data-panel="open"] .dock,
   body[data-panel="open"] .timebar,
   body[data-panel="open"] .readout { visibility: hidden; }
   .menu { max-height: 70vh; overflow: auto; }
+  .map-nav { left: 8px; bottom: 111px; }
+  .map-nav button { width: 44px; height: 44px; }
+  .map-speed select { min-height: 25px; }
+  .nearby-place { top: 155px; bottom: auto; left: 8px; right: auto; width: min(264px, calc(100vw - 16px)); }
+  .nearby-place h2 { font-size: 20px; }
+  .atlas[data-has-panel="true"] .map-nav { top: 60px; bottom: auto; }
+}
+
+@media (max-width: 470px) {
+  .topbar .map-places { flex: 1 0 100%; }
+  .topbar .search { margin-left: 0; margin-right: auto; }
+  .timebar, .menu { top: 88px; }
+  .dock { top: 144px; }
+  .nearby-place { top: 192px; }
+  .atlas[data-has-panel="true"] .map-nav { top: 93px; }
+}
+
+@media (max-width: 540px) {
+  .landscape-toggle { padding: 0 8px; }
+  .landscape-toggle > span { display: none; }
+}
+
+@media (max-width: 365px) {
+  .topbar { left: 8px; right: 8px; gap: 5px; }
+  .search input { width: 112px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .panel, .readout, .progress { transition: none; animation: none; }
+  .panel, .readout, .progress, .nearby-place { transition: none; animation: none; }
+}
+
+@media (pointer: coarse) {
+  .map-gestures { display: none; }
 }

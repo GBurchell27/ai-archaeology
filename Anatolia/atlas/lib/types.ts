@@ -68,6 +68,13 @@ export interface AtlasMetadata {
   details: Record<string, DetailRecord>;
 }
 
+export interface RegionalTerrain extends DetailRecord {
+  name: string;
+  heightFile: string;
+  sentinelCredit: string;
+  sentinelDay: string;
+}
+
 export interface PeriodChip {
   id: string;
   label: string;

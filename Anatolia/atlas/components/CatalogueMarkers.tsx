@@ -17,6 +17,7 @@ import {
   type ScreenPin,
 } from "@/lib/pinCluster";
 import type { AtlasMetadata } from "@/lib/types";
+import type { TerrainGrid } from "@/lib/terrain";
 import type { WikiFeature } from "@/lib/wikidata";
 
 const PIN_CAPACITY = 2048;
@@ -39,6 +40,7 @@ export function CatalogueMarkers(props: {
   sites: WikiFeature[];
   metadata: AtlasMetadata;
   metres: Float32Array;
+  regional: TerrainGrid | null;
   origin: [number, number];
   exaggeration: number;
   labels: boolean;
@@ -46,8 +48,8 @@ export function CatalogueMarkers(props: {
   onApproach: (longitude: number, latitude: number, cameraDistance: number) => void;
 }) {
   const placed = useMemo(
-    () => placeCatalogue(props.sites, props.metadata, props.metres, props.origin, props.exaggeration),
-    [props.sites, props.metadata, props.metres, props.origin, props.exaggeration],
+    () => placeCatalogue(props.sites, props.metadata, props.metres, props.origin, props.exaggeration, props.regional),
+    [props.sites, props.metadata, props.metres, props.origin, props.exaggeration, props.regional],
   );
   const screenPins = useMemo(() => placed.map(toScreenPin), [placed]);
   const mesh = useRef<THREE.InstancedMesh>(null);
@@ -62,9 +64,11 @@ export function CatalogueMarkers(props: {
         ref={mesh}
         args={markerArgs}
         frustumCulled={false}
-        renderOrder={3}
+        renderOrder={5}
         userData={{ kind: "catalogue-pins" }}
-        onClick={(event) => openSingle(event, model.singles.current, props.onOpen)}
+        onClick={(event) => {
+          if (event.delta <= 4) openSingle(event, model.singles.current, props.onOpen);
+        }}
         onPointerMove={(event) => moveHover(event, model.singles.current, model.hovered, model.setHovered)}
         onPointerOut={() => model.setHovered(null)}
       />
@@ -93,6 +97,8 @@ function useCatalogueModel(
   const singles = useRef<PinCluster[]>([]);
   const signature = useRef("");
   const scratch = useRef(new THREE.Vector3());
+  const nextProjection = useRef(0);
+  const previousInput = useRef({ screenPins, labels });
   const view = useRef({ distance: 1, fov: ATLAS_FOV_DEGREES });
   const [markers, setMarkers] = useState<MarkerView>({ groups: [], names: [] });
   const [hovered, setHovered] = useState<HoveredPin | null>(null);
@@ -107,7 +113,15 @@ function useCatalogueModel(
       distance: target ? camera.position.distanceTo(target) : camera.position.length(),
       fov,
     };
-    refreshClusters(screenPins, labels, camera, state.size, scratch.current, signature, singles, setMarkers);
+    if (state.clock.elapsedTime >= nextProjection.current
+      || previousInput.current.screenPins !== screenPins || previousInput.current.labels !== labels) {
+      if (previousInput.current.screenPins !== screenPins) signature.current = "";
+      previousInput.current = { screenPins, labels };
+      nextProjection.current = state.clock.elapsedTime + 0.06;
+      camera.updateMatrixWorld();
+      const cellSize = view.current.distance > 420000 ? 160 : CLUSTER_CELL_PX;
+      refreshClusters(screenPins, labels, camera, state.size, cellSize, scratch.current, signature, singles, setMarkers);
+    }
     writeInstances(mesh.current, singles.current, camera, state.size.height, fov);
   });
   return { markers, hovered, setHovered, singles, view };
@@ -118,13 +132,14 @@ function refreshClusters(
   labels: boolean,
   camera: THREE.Camera,
   size: { width: number; height: number },
+  cellSize: number,
   scratch: THREE.Vector3,
   signature: MutableRefObject<string>,
   singles: MutableRefObject<PinCluster[]>,
   setMarkers: (next: MarkerView) => void,
 ): void {
   projectPins(screenPins, camera, size.width, size.height, scratch);
-  const clusters = clusterByScreen(screenPins, CLUSTER_CELL_PX);
+  const clusters = clusterByScreen(screenPins, cellSize);
   const nextSignature = `${labels ? 1 : 0}|${clusterSignature(clusters)}`;
   if (nextSignature === signature.current) return;
   signature.current = nextSignature;
@@ -201,6 +216,7 @@ function writeInstances(
     mesh.setColorAt(index, color);
   }
   mesh.instanceMatrix.needsUpdate = true;
+  mesh.boundingSphere = null;
   if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
 }
 
@@ -209,19 +225,23 @@ function ClusterBadge(props: {
   onApproach: (longitude: number, latitude: number) => void;
 }) {
   const { group } = props;
+  const height = useThree((state) => state.size.height);
+  const width = worldSizeForPixels(1, ATLAS_FOV_DEGREES, height, 28);
   return (
     <sprite
       position={[group.x, group.y, group.z]}
-      scale={[0.024, 0.016, 1]}
+      scale={[width, width * 0.5, 1]}
+      renderOrder={5}
       userData={{ kind: "catalogue-cluster", count: group.count }}
       onClick={(event) => {
         event.stopPropagation();
-        props.onApproach(group.longitude, group.latitude);
+        if (event.delta <= 4) props.onApproach(group.longitude, group.latitude);
       }}
     >
       <spriteMaterial
         map={countTexture(group.count)}
         depthTest={false}
+        depthWrite={false}
         sizeAttenuation={false}
         transparent
         opacity={group.muted ? 0.42 : 1}

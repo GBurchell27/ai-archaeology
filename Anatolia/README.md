@@ -7,6 +7,8 @@ Focus region: southeastern Anatolia and Upper Mesopotamia. That means Göbekli T
 Data gathering, before a direction is chosen. Sources, licences, coverage, and what is still unverified are in [data-sources.md](data-sources.md). A local 3D view of the published sites on Copernicus DEM and one Sentinel-2 day is in [explorer/](explorer/README.md). The wider Turkey atlas is in [atlas/](atlas/README.md). Raw rasters stay out of git.
 GitHub repositories and X accounts from the same pass are in [github-and-x.md](github-and-x.md).
 
+The atlas now has place guides, historical map links and a Landscape research panel. [Educational sources](educational-sources.md) brings together field reports, museum collections, talks and reading questions for the Şanlıurfa sites. [Historical maps and landscape research](maps-and-landscape-research.md) covers archive sheets, environmental layers, survey coverage and a plan for testing landscape models.
+
 ## Candidate directions
 
 These are open options. None of them is a detection result.

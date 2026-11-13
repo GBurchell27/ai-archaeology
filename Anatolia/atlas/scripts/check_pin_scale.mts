@@ -77,7 +77,7 @@ const shaded = nextQuality(floor, 40);
 check("the floor skips gamma instead of going further", shaded.fastShade && shaded.dprIndex === 3);
 const restored = nextQuality(shaded, 10);
 check("fast frames restore gamma before resolution", restored.fastShade === false && restored.dprIndex === 3);
-check("dpr index clamps", dprForIndex(99) === 0.4 && dprForIndex(-2) === 1);
+check("dpr index clamps", dprForIndex(99) === 0.75 && dprForIndex(-2) === 1.5);
 
 check("the whole country stays one mesh", nextTerrainCoarse(false, 200000, 10, false));
 check("a near view keeps tiles while frames are fine", nextTerrainCoarse(false, 50000, 40, false) === false);
@@ -141,7 +141,13 @@ const tilePosition = tiles[0].getAttribute("position");
 check("tile corners match the full mesh", tilePosition.getX(0) === fullPosition.getX(0) && tilePosition.getZ(0) === fullPosition.getZ(0));
 const fullNormal = full.getAttribute("normal");
 const tileNormal = tiles[0].getAttribute("normal");
-check("shared normals come from one pass", tileNormal.getY(0) === fullNormal.getY(0));
+check("terrain faces up", tileNormal.getY(0) > 0 && fullNormal.getY(0) > 0);
+check("tile normals match the source mesh", tileNormal.getY(0) === fullNormal.getY(0));
+const neighbourNormal = tiles[1].getAttribute("normal");
+check("tile normals match along a shared edge",
+  tileNormal.getX(2) === neighbourNormal.getX(0)
+  && tileNormal.getY(2) === neighbourNormal.getY(0)
+  && tileNormal.getZ(2) === neighbourNormal.getZ(0));
 full.dispose();
 for (const tile of tiles) tile.dispose();
 

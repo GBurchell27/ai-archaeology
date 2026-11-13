@@ -1,4 +1,5 @@
-import { lonLatToMercator, sampleMeshHeight, toLocal } from "@/lib/geo";
+import { boundsContain, lonLatToMercator, sampleMeshHeight, toLocal } from "@/lib/geo";
+import type { TerrainGrid } from "@/lib/terrain";
 import { isUndatedSpan } from "@/lib/timeline";
 import type { AtlasMetadata } from "@/lib/types";
 import type { WikiFeature } from "@/lib/wikidata";
@@ -23,10 +24,11 @@ export function placeCatalogue(
   metres: Float32Array,
   origin: [number, number],
   exaggeration: number,
+  regional?: TerrainGrid | null,
 ): CataloguePin[] {
   const placed: CataloguePin[] = [];
   for (const site of sites) {
-    placed.push(placePin(site, metadata, metres, origin, exaggeration));
+    placed.push(placePin(site, metadata, metres, origin, exaggeration, regional));
   }
   return placed;
 }
@@ -37,10 +39,12 @@ function placePin(
   metres: Float32Array,
   origin: [number, number],
   exaggeration: number,
+  regional?: TerrainGrid | null,
 ): CataloguePin {
   const [longitude, latitude] = site.geometry.coordinates;
   const [east, north] = lonLatToMercator(longitude, latitude);
-  const elevation = sampleMeshHeight(metres, metadata.width, metadata.height, metadata.bounds, east, north);
+  const grid = regional && boundsContain(regional.bounds, east, north) ? regional : metadata;
+  const elevation = sampleMeshHeight(grid === regional ? regional.metres : metres, grid.width, grid.height, grid.bounds, east, north);
   const [xCoord, zCoord] = toLocal(longitude, latitude, origin);
   return {
     id: site.id,

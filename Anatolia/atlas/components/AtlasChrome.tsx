@@ -117,6 +117,9 @@ export function ShortcutOverlay(props: { onClose: () => void }) {
         <li><kbd>N</kbd> Neolithic <kbd>B</kbd> Bronze <kbd>L</kbd> Classical <kbd>C</kbd> Crusader</li>
         <li><kbd>R</kbd> Relief <kbd>H</kbd> Hypsometric <kbd>S</kbd> Satellite</li>
         <li><kbd>/</kbd> Search <kbd>Esc</kbd> Close <kbd>0</kbd> Reset view</li>
+        <li><kbd>+</kbd> Zoom in <kbd>−</kbd> Zoom out</li>
+        <li>Left drag pans · Right drag rotates</li>
+        <li>Touch drag pans · Pinch zooms · Two-finger drag tilts</li>
         <li><kbd>D</kbd> Dark mode <kbd>?</kbd> This list</li>
       </ul>
     </div>
@@ -130,6 +133,7 @@ export interface AtlasKeyHandlers {
   onSearch: () => void;
   onEscape: () => void;
   onReset: () => void;
+  onZoom: (steps: number) => void;
   onTheme: () => void;
   onHelp: () => void;
 }
@@ -150,6 +154,9 @@ export function useAtlasKeys(handlers: MutableRefObject<AtlasKeyHandlers>) {
         api.onPeriod(PERIODS[periodIndex].id);
       } else if (event.key === "0" || event.key === "Home") {
         api.onReset();
+      } else if (["+", "=", "-", "−"].includes(event.key)) {
+        event.preventDefault();
+        api.onZoom(event.key === "+" || event.key === "=" ? -1 : 1);
       } else if (event.key === "?") {
         api.onHelp();
       } else if (event.key === "/") {

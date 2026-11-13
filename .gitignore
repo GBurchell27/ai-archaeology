@@ -37,6 +37,7 @@ node_modules/
 .next/
 *.tsbuildinfo
 Anatolia/explorer/screenshots/
+Anatolia/atlas/public/terrain/regions/
 
 # Python
 __pycache__/

@@ -24,16 +24,21 @@ if (wikiToggle) {
 }
 await page.$eval("[data-action='settings']", (element) => element.click());
 
-const overview = await page.evaluate(() => {
+const overview = await page.evaluate(async () => {
   const camera = window.__atlasCamera;
   const target = window.__atlasControls?.target;
+  const terrain = await fetch("/terrain/metadata.json").then((response) => response.json());
+  const halfWidth = (terrain.bounds[2] - terrain.bounds[0]) / 2;
+  const west = camera.position.clone().set(-halfWidth, 0, 0).project(camera);
+  const east = camera.position.clone().set(halfWidth, 0, 0).project(camera);
   return {
-    cameraZ: camera?.position.z ?? 0,
-    targetZ: target?.z ?? 0,
+    west: west.x,
+    east: east.x,
+    targetOffset: Math.hypot(target.x, target.z),
   };
 });
-if (overview.cameraZ < 400000 || overview.targetZ < 50000) {
-  throw new Error(`Overview is not aimed at the southern pin clusters (${JSON.stringify(overview)})`);
+if (overview.west < -1 || overview.east > 1 || overview.targetOffset > 1000) {
+  throw new Error(`Overview does not fit the Turkey terrain (${JSON.stringify(overview)})`);
 }
 if (process.env.ARTIFACT_DIR) {
   await page.screenshot({ path: `${process.env.ARTIFACT_DIR}/atlas-turkey-tilted.png` });

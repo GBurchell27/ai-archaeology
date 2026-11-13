@@ -1,0 +1,292 @@
+.panel {
+  --landscape-paper: #251e17;
+  --landscape-text: #fbf3e7;
+  --landscape-muted: #e2d3bf;
+  --landscape-rule: #625143;
+  --landscape-accent: #edbf87;
+  --landscape-secondary: #98c4c7;
+  position: absolute;
+  z-index: 3;
+  top: 104px;
+  right: 12px;
+  bottom: 50px;
+  width: min(388px, calc(100vw - 24px));
+  padding: 16px;
+  overflow: auto;
+  overscroll-behavior: contain;
+  border: 1px solid var(--landscape-rule);
+  border-radius: 14px;
+  background: var(--landscape-paper);
+  color: var(--landscape-text);
+  color-scheme: dark;
+  font-size: 13px;
+  line-height: 1.45;
+  box-shadow: 0 10px 28px #140e084d;
+}
+
+:global(html[data-theme="dark"]) .panel {
+  --landscape-paper: #151a1e;
+  --landscape-rule: #4d565e;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.header h1 {
+  margin: 0;
+  font: 500 24px/1.14 Palatino, Georgia, serif;
+}
+
+.panel button,
+.panel select {
+  border: 1px solid var(--landscape-rule);
+  border-radius: 8px;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  font: inherit;
+}
+
+.panel button:hover,
+.panel select:hover {
+  border-color: var(--landscape-accent);
+}
+
+.panel :focus-visible {
+  outline: 2px solid var(--landscape-accent);
+  outline-offset: 2px;
+}
+
+.panel .close {
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  font-size: 20px;
+  line-height: 1;
+}
+
+.views {
+  display: flex;
+  gap: 6px;
+  margin: 12px 0 16px;
+}
+
+.views button {
+  min-height: 34px;
+  padding: 5px 10px;
+}
+
+.views button[aria-pressed="true"] {
+  border-color: var(--landscape-accent);
+  background: var(--landscape-accent);
+  color: #251e17;
+  font-weight: 600;
+}
+
+.view h2 {
+  margin: 0;
+  font: 500 18px/1.25 Palatino, Georgia, serif;
+}
+
+.view p {
+  margin: 6px 0 0;
+  color: var(--landscape-muted);
+}
+
+.filters {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin: 12px 0 8px;
+}
+
+.filters label {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+  color: var(--landscape-muted);
+  font-size: 12px;
+}
+
+.filters select {
+  width: 100%;
+  min-height: 34px;
+  padding: 3px 5px;
+  color: var(--landscape-text);
+}
+
+.filters option {
+  background: var(--landscape-paper);
+}
+
+.check {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: fit-content;
+  cursor: pointer;
+}
+
+.check input {
+  margin: 0;
+  accent-color: var(--landscape-accent);
+}
+
+.result {
+  margin-top: 12px;
+  border-top: 1px solid var(--landscape-rule);
+  padding-top: 5px;
+}
+
+.result .period {
+  margin-top: 4px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 24px;
+  margin-top: 5px;
+}
+
+.summary div {
+  display: flex;
+  flex-direction: column;
+}
+
+.summary strong {
+  color: var(--landscape-accent);
+  font: 500 24px/1.15 Palatino, Georgia, serif;
+  font-variant-numeric: tabular-nums;
+}
+
+.summary span,
+.view .note {
+  color: var(--landscape-muted);
+  font-size: 12px;
+}
+
+.chart {
+  margin: 13px 0 0;
+}
+
+.chart figcaption {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 2px 8px;
+  font-weight: 600;
+}
+
+.chart figcaption span,
+.recallRow small {
+  color: var(--landscape-muted);
+  font-size: 12px;
+  font-weight: 400;
+}
+
+.chart ul {
+  display: grid;
+  gap: 4px;
+  margin: 5px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.chart li {
+  display: grid;
+  grid-template-columns: 118px 1fr 72px;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+}
+
+.bandCount {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.bandCount small {
+  color: var(--landscape-muted);
+  font-size: inherit;
+}
+
+.track {
+  position: relative;
+  display: block;
+  height: 8px;
+  border-radius: 9px;
+  background: #fff3df22;
+}
+
+.track i {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--landscape-accent);
+}
+
+.recall {
+  display: grid;
+  gap: 10px;
+  margin: 12px 0 8px;
+}
+
+.recallRow > div:first-child {
+  display: flex;
+  justify-content: space-between;
+  gap: 6px;
+}
+
+.recallRow .track {
+  margin: 4px 0;
+}
+
+.recallRow[data-baseline="true"] .track i {
+  background: var(--landscape-secondary);
+}
+
+.recallRow .track b {
+  position: absolute;
+  top: 2px;
+  bottom: 2px;
+  border: 1px solid var(--landscape-paper);
+  border-radius: inherit;
+  background: var(--landscape-text);
+}
+
+.details {
+  margin-top: 13px;
+  border-top: 1px solid var(--landscape-rule);
+  padding-top: 8px;
+  font-size: 12px;
+}
+
+.details summary {
+  width: fit-content;
+  color: var(--landscape-accent);
+  cursor: pointer;
+}
+
+.details a {
+  color: var(--landscape-accent);
+}
+
+@media (max-width: 720px) {
+  .panel {
+    top: auto;
+    right: 8px;
+    bottom: 0;
+    left: 8px;
+    width: auto;
+    max-height: min(60dvh, calc(100dvh - 145px));
+    padding: 12px;
+    border-radius: 14px 14px 0 0;
+  }
+}

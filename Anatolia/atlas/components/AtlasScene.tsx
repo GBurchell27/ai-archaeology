@@ -1,14 +1,15 @@
 "use client";
 
-import { Html, OrbitControls, useTexture } from "@react-three/drei";
+import { Html, useTexture } from "@react-three/drei";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
-import { Suspense, useEffect, useMemo, useRef, useState, type MutableRefObject, type RefObject } from "react";
-import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
+import { Component, Suspense, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode, type RefObject } from "react";
 import * as THREE from "three";
+import { AtlasCamera, type CameraPose, type ZoomCommand } from "@/components/AtlasCamera";
+import { PlaceProximity } from "@/components/PlaceProximity";
 import { CatalogueMarkers } from "@/components/CatalogueMarkers";
 import { ClimatePins, ContextDrapes, ContextLines, type ClimatePoint, type ContextLineLayer, type ContextRasterLayer } from "@/components/ContextLayers";
-import { NationalTerrain } from "@/components/NationalTerrain";
-import { ATLAS_FOV_DEGREES } from "@/lib/pinCluster";
+import { NationalTerrain, useTerrainTiles } from "@/components/NationalTerrain";
+import { ATLAS_FOV_DEGREES, worldSizeForPixels } from "@/lib/pinCluster";
 import { DPR_STEPS, INITIAL_DPR_INDEX } from "@/lib/renderQuality";
 import type { WikiFeature } from "@/lib/wikidata";
 import { boundsCenter, boundsContain, detailClipRect, lonLatToMercator, sampleMeshHeight, toLocal, type ClipRect } from "@/lib/geo";
@@ -16,14 +17,10 @@ import { LAYER_STYLE } from "@/lib/periods";
 import { createSurfaceMaterial, prepareTexture, sunDirection } from "@/lib/shade";
 import { HAZE_FAR, HAZE_NEAR, HAZE_STRENGTH, hazeBackground } from "@/lib/sky";
 import { stitchDetailToNational } from "@/lib/stitch";
-import { buildTerrainGeometry, type TerrainGrid } from "@/lib/terrain";
-import type { AtlasMetadata, BaseMap, SiteFeature } from "@/lib/types";
+import { buildTerrainGeometry, coarseTerrainGeometry, type TerrainGrid } from "@/lib/terrain";
+import type { AtlasMetadata, BaseMap, RegionalTerrain, SiteFeature } from "@/lib/types";
 
-export interface CameraPose {
-  position: [number, number, number];
-  target: [number, number, number];
-  token: number;
-}
+const DETAIL_FEATHER = 0.10;
 
 interface AtlasSceneProps {
   metadata: AtlasMetadata;
@@ -38,24 +35,34 @@ interface AtlasSceneProps {
   pose: CameraPose;
   detail: TerrainGrid | null;
   detailUrl: string | null;
+  region: RegionalTerrain | null;
+  regionalGrid: TerrainGrid | null;
+  regionalUrl: string | null;
+  onRegionApproach: () => void;
+  onRegionVisibility: (visible: boolean) => void;
   compareUrl: string | null;
   compare: boolean;
   split: number;
   opacity: number;
   onSelect: (siteId: string) => void;
   night: boolean;
-  reveal: boolean;
   readoutRef: RefObject<HTMLDivElement | null>;
   contextLines: ContextLineLayer[];
   contextRasters: ContextRasterLayer[];
   climatePoints: ClimatePoint[];
   climateId: string | null;
   onClimate: (recordId: string) => void;
-  detailToken: number;
+  zoomSpeed: number;
+  zoomCommand: ZoomCommand;
+  onArrival: () => void;
+  onNearby: (id: string | null) => void;
+  nearbyEnabled: boolean;
   wikiSites: WikiFeature[];
   onOpenWiki: (siteId: string) => void;
   onApproachWiki: (longitude: number, latitude: number, cameraDistance: number) => void;
   flightCancel: number;
+  /** Extra 3D layers drawn inside the atlas canvas, in the same local coordinates. */
+  overlay?: ReactNode;
 }
 
 export function AtlasScene(props: AtlasSceneProps) {
@@ -64,63 +71,121 @@ export function AtlasScene(props: AtlasSceneProps) {
     () => ({ ...props.metadata, metres: props.metres }),
     [props.metadata, props.metres],
   );
-  const [cover, setCover] = useState(false);
-  useEffect(() => {
-    setCover(false);
-    if (!props.reveal || !props.detail) return undefined;
-    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const timer = window.setTimeout(() => setCover(true), reduced ? 0 : 300);
-    return () => window.clearTimeout(timer);
-  }, [props.reveal, props.detail]);
+  const [cover, setCover] = useState<string | null>(null);
+  const [regionCover, setRegionCover] = useState<string | null>(null);
+  const background = useMemo(() => hazeBackground(props.night), [props.night]);
+  const [initialPosition] = useState(props.pose.position);
+  const clip = props.detail && props.detailUrl && cover === props.detailUrl
+    ? detailClipRect(props.detail.bounds, origin, DETAIL_FEATHER)
+    : null;
+  const regionalSurface = useMemo(() => props.regionalGrid
+    ? stitchDetailToNational(props.regionalGrid, national)
+    : null, [props.regionalGrid, national]);
+  const regionClip = regionalSurface && props.regionalUrl && regionCover === props.regionalUrl
+    ? detailClipRect(regionalSurface.bounds, origin, DETAIL_FEATHER)
+    : null;
+  const regionalBase = regionalSurface && props.detail && containsWindow(regionalSurface, props.detail)
+    ? regionalSurface
+    : national;
+  const onCover = useCallback((url: string, covered: boolean) => {
+    setCover((current) => covered ? url : current === url ? null : current);
+  }, []);
+  const onRegionCover = useCallback((url: string, covered: boolean) => {
+    setRegionCover((current) => covered ? url : current === url ? null : current);
+  }, []);
+  const regionVisible = Boolean(regionClip);
+  useEffect(() => props.onRegionVisibility(regionVisible), [props.onRegionVisibility, regionVisible]);
+  const groundAt = (x: number, z: number) => {
+    const east = x + origin[0];
+    const north = origin[1] - z;
+    if (!boundsContain(national.bounds, east, north)) return null;
+    const elevation = elevationAt(national, regionClip ? regionalSurface : null, clip ? props.detail : null, east, north);
+    return (elevation - props.metadata.elevation.min) * props.exaggeration;
+  };
   const span = Math.max(
     props.metadata.bounds[2] - props.metadata.bounds[0],
     props.metadata.bounds[3] - props.metadata.bounds[1],
   );
   return (
     <Canvas
+      flat
       dpr={DPR_STEPS[INITIAL_DPR_INDEX]}
-      camera={{ position: props.pose.position, fov: ATLAS_FOV_DEGREES, near: 40, far: span * 8 }}
-      gl={{ antialias: false, outputColorSpace: THREE.LinearSRGBColorSpace }}
+      camera={{ position: initialPosition, fov: ATLAS_FOV_DEGREES, near: 40, far: span * 8 }}
+      gl={{ antialias: true, outputColorSpace: THREE.LinearSRGBColorSpace }}
     >
-      <SkyHaze night={props.night} />
+      <SkyHaze texture={background} />
       <Suspense fallback={null}>
-      <NationalTerrain
-        metadata={props.metadata}
-        metres={props.metres}
-        origin={origin}
-        baseMap={props.baseMap}
-        exaggeration={props.exaggeration}
-        azimuth={props.azimuth}
-        altitude={props.altitude}
-        night={props.night}
-        clip={cover && props.detail ? detailClipRect(props.detail.bounds, origin) : null}
-      />
-      {props.reveal && props.detail && props.detailUrl ? (
-        <DetailSurface
-          grid={props.detail}
-          national={national}
+        <NationalTerrain
+          metadata={props.metadata}
+          metres={props.metres}
           origin={origin}
-          datum={props.metadata.elevation.min}
+          baseMap={props.baseMap}
           exaggeration={props.exaggeration}
           azimuth={props.azimuth}
           altitude={props.altitude}
-          textureUrl={props.detailUrl}
-          compareUrl={props.compareUrl}
-          compare={props.compare}
-          split={props.split}
-          opacity={props.opacity}
           night={props.night}
-          detailToken={props.detailToken}
+          clip={clip}
+          regionClip={regionClip}
+          background={background}
         />
+      </Suspense>
+      {props.region && !props.regionalGrid ? (
+        <RegionApproach region={props.region} origin={origin} onApproach={props.onRegionApproach} />
       ) : null}
-      <ContextDrapes
-        layers={props.contextRasters}
-        metadata={props.metadata}
-        metres={props.metres}
-        origin={origin}
-        exaggeration={props.exaggeration}
-        clip={cover && props.detail ? detailClipRect(props.detail.bounds, origin) : null}
-      />
+      {regionalSurface && props.regionalUrl ? (
+        <DetailBoundary key={props.regionalUrl}>
+          <Suspense fallback={null}>
+            <DetailSurface
+              grid={regionalSurface}
+              origin={origin}
+              datum={props.metadata.elevation.min}
+              exaggeration={props.exaggeration}
+              azimuth={props.azimuth}
+              altitude={props.altitude}
+              textureUrl={props.regionalUrl}
+              compareUrl={null}
+              compare={false}
+              split={0.5}
+              opacity={1}
+              night={props.night}
+              onCover={onRegionCover}
+              regional
+              clip={clip}
+            />
+          </Suspense>
+        </DetailBoundary>
+      ) : null}
+      {props.detail && props.detailUrl ? (
+        <DetailBoundary key={`${props.detailUrl}|${props.compareUrl ?? ""}`}>
+          <Suspense fallback={null}>
+            <DetailSurface
+              grid={props.detail}
+              base={regionalBase}
+              origin={origin}
+              datum={props.metadata.elevation.min}
+              exaggeration={props.exaggeration}
+              azimuth={props.azimuth}
+              altitude={props.altitude}
+              textureUrl={props.detailUrl}
+              compareUrl={props.compareUrl}
+              compare={props.compare}
+              split={props.split}
+              opacity={props.opacity}
+              night={props.night}
+              onCover={onCover}
+            />
+          </Suspense>
+        </DetailBoundary>
+      ) : null}
+      <Suspense fallback={null}>
+        <ContextDrapes
+          layers={props.contextRasters}
+          metadata={props.metadata}
+          metres={props.metres}
+          origin={origin}
+          exaggeration={props.exaggeration}
+          clip={regionClip ?? clip}
+        />
       </Suspense>
       <ContextLines
         layers={props.contextLines}
@@ -142,6 +207,7 @@ export function AtlasScene(props: AtlasSceneProps) {
         sites={props.wikiSites}
         metadata={props.metadata}
         metres={props.metres}
+        regional={regionClip ? regionalSurface : null}
         origin={origin}
         exaggeration={props.exaggeration}
         labels={props.labels}
@@ -152,20 +218,42 @@ export function AtlasScene(props: AtlasSceneProps) {
         sites={props.sites}
         metadata={props.metadata}
         metres={props.metres}
-        detail={props.detail}
+        regional={regionClip ? regionalSurface : null}
+        detail={clip ? props.detail : null}
         origin={origin}
         exaggeration={props.exaggeration}
         labels={props.labels}
         selectedId={props.selectedId}
         onSelect={props.onSelect}
       />
-      <CameraRig pose={props.pose} span={span} readoutRef={props.readoutRef} originY={origin[1]} cancelToken={props.flightCancel} />
+      {props.overlay}
+      <AtlasCamera
+        pose={props.pose}
+        span={span}
+        readoutRef={props.readoutRef}
+        originY={origin[1]}
+        cancelToken={props.flightCancel}
+        zoomSpeed={props.zoomSpeed}
+        zoomCommand={props.zoomCommand}
+        onArrival={props.onArrival}
+        groundAt={groundAt}
+      />
+      <PlaceProximity
+        sites={props.sites}
+        catalogue={props.wikiSites}
+        national={national}
+        regional={regionClip ? regionalSurface : null}
+        origin={origin}
+        datum={props.metadata.elevation.min}
+        exaggeration={props.exaggeration}
+        enabled={props.nearbyEnabled}
+        onChange={props.onNearby}
+      />
     </Canvas>
   );
 }
 
-function SkyHaze({ night }: { night: boolean }) {
-  const texture = useMemo(() => hazeBackground(night), [night]);
+function SkyHaze({ texture }: { texture: THREE.Texture }) {
   const { scene } = useThree();
   useEffect(() => {
     const previous = scene.background;
@@ -178,9 +266,51 @@ function SkyHaze({ night }: { night: boolean }) {
   return null;
 }
 
+function RegionApproach(props: {
+  region: RegionalTerrain;
+  origin: [number, number];
+  onApproach: () => void;
+}) {
+  const rect = useMemo(() => detailClipRect(props.region.bounds, props.origin, 0), [props.region, props.origin]);
+  const sent = useRef(false);
+  const span = Math.max(rect.maxX - rect.minX, rect.maxZ - rect.minZ);
+  useFrame(({ camera, controls }) => {
+    const target = (controls as { target?: THREE.Vector3 } | null)?.target;
+    if (sent.current || !target || camera.position.distanceTo(target) > span * 4) return;
+    if (distanceToRect(target, rect) > span) return;
+    sent.current = true;
+    props.onApproach();
+  });
+  return null;
+}
+
+function distanceToRect(target: THREE.Vector3, rect: ClipRect): number {
+  return Math.hypot(
+    Math.max(rect.minX - target.x, target.x - rect.maxX, 0),
+    Math.max(rect.minZ - target.z, target.z - rect.maxZ, 0),
+  );
+}
+
+function containsWindow(base: TerrainGrid, detail: TerrainGrid): boolean {
+  const [left, bottom, right, top] = detail.bounds;
+  return boundsContain(base.bounds, left, bottom) && boundsContain(base.bounds, right, top);
+}
+
+class DetailBoundary extends Component<{ children: ReactNode }, { failed: boolean }> {
+  state = { failed: false };
+
+  static getDerivedStateFromError() {
+    return { failed: true };
+  }
+
+  render() {
+    return this.state.failed ? null : this.props.children;
+  }
+}
+
 function DetailSurface(props: {
   grid: TerrainGrid;
-  national: TerrainGrid;
+  base?: TerrainGrid;
   origin: [number, number];
   datum: number;
   exaggeration: number;
@@ -192,97 +322,118 @@ function DetailSurface(props: {
   split: number;
   opacity: number;
   night: boolean;
-  detailToken: number;
-}) {
-  const stitched = useMemo(
-    () => stitchDetailToNational(props.grid, props.national),
-    [props.grid, props.national],
-  );
-  const geometry = useMemo(
-    () => buildTerrainGeometry(stitched, props.origin, props.datum, props.exaggeration),
-    [stitched, props.origin, props.datum, props.exaggeration],
-  );
-  const textureA = useTexture(props.textureUrl);
-  const textureB = useTexture(props.compareUrl ?? props.textureUrl);
-  return (
-    <ShadedMesh
-      geometry={geometry}
-      textureA={textureA}
-      textureB={props.compare ? textureB : null}
-      compare={props.compare}
-      split={props.split}
-      opacity={props.opacity}
-      azimuth={props.azimuth}
-      altitude={props.altitude}
-      lift
-      night={props.night}
-      fade
-      detailToken={props.detailToken}
-    />
-  );
-}
-
-function ShadedMesh(props: {
-  geometry: THREE.BufferGeometry;
-  textureA: THREE.Texture;
-  textureB: THREE.Texture | null;
-  compare: boolean;
-  split: number;
-  opacity: number;
-  azimuth: number;
-  altitude: number;
-  lift: boolean;
+  onCover: (url: string, covered: boolean) => void;
+  regional?: boolean;
   clip?: ClipRect | null;
-  night?: boolean;
-  fade?: boolean;
-  detailToken?: number;
 }) {
+  const { grid, base, origin, datum, textureUrl, onCover } = props;
+  const textureA = useTexture(textureUrl);
+  const textureB = useTexture(props.compareUrl ?? textureUrl);
+  const stitched = useMemo(() => base ? stitchDetailToNational(grid, base) : grid, [grid, base]);
+  const geometry = useMemo(
+    () => props.regional
+      ? coarseTerrainGeometry(stitched, origin, datum, 1, 2)
+      : buildTerrainGeometry(stitched, origin, datum, 1),
+    [stitched, origin, datum, props.regional],
+  );
+  const tiles = useTerrainTiles(stitched, origin, datum, Boolean(props.regional));
+  const [showTiles, setShowTiles] = useState(false);
+  const tileMode = useRef(false);
+  const order = props.regional ? 1 : 3;
+  const rect = useMemo(() => detailClipRect(grid.bounds, origin, 0), [grid, origin]);
+  const span = Math.max(rect.maxX - rect.minX, rect.maxZ - rect.minZ);
   const material = useMemo(() => createSurfaceMaterial(), []);
-  const { size, gl } = useThree();
-  useEffect(() => () => material.dispose(), [material]);
-  material.uniforms.mapA.value = prepareTexture(props.textureA);
-  material.uniforms.mapB.value = props.textureB ? prepareTexture(props.textureB) : material.uniforms.mapA.value;
-  material.uniforms.useB.value = props.textureB ? 1 : 0;
+  const edgeMaterial = useMemo(() => new THREE.ShaderMaterial({
+    uniforms: { ...material.uniforms, surfacePart: { value: 2 } },
+    vertexShader: material.vertexShader,
+    fragmentShader: material.fragmentShader,
+    transparent: true,
+    depthTest: false,
+    depthWrite: false,
+  }), [material]);
+  const surface = useRef<THREE.Group>(null);
+  const fade = useRef({ amount: 0, nearby: false, covered: false });
+  const { gl } = useThree();
+  useEffect(() => () => geometry.dispose(), [geometry]);
+  useEffect(() => () => {
+    material.dispose();
+    edgeMaterial.dispose();
+  }, [material, edgeMaterial]);
+  useLayoutEffect(() => () => onCover(textureUrl, false), [textureUrl, onCover]);
+
+  const anisotropy = Math.min(8, gl.capabilities.getMaxAnisotropy());
+  material.uniforms.mapA.value = prepareTexture(textureA, anisotropy);
+  material.uniforms.mapB.value = props.compare ? prepareTexture(textureB, anisotropy) : material.uniforms.mapA.value;
+  material.uniforms.useB.value = props.compare ? 1 : 0;
   material.uniforms.compare.value = props.compare ? 1 : 0;
   material.uniforms.split.value = props.split;
+  material.uniforms.opacity.value = props.opacity;
+  material.uniforms.edgeFeather.value = DETAIL_FEATHER;
+  material.uniforms.surfacePart.value = 1;
   material.uniforms.lightDirection.value.copy(sunDirection(props.azimuth, props.altitude));
-  material.uniforms.resolution.value.set(size.width * gl.getPixelRatio(), size.height * gl.getPixelRatio());
   material.uniforms.hazeNear.value = HAZE_NEAR;
   material.uniforms.hazeFar.value = HAZE_FAR;
   material.uniforms.hazeStrength.value = HAZE_STRENGTH;
-  material.uniforms.hazeColor.value.set(203 / 255, 184 / 255, 154 / 255);
-  const fade = useRef(props.fade ? 0 : 1);
-  const announced = useRef(0);
-  if (!props.fade) fade.current = 1;
-  material.uniforms.opacity.value = props.opacity * fade.current;
-  useFrame(() => {
-    if (!props.fade) return;
-    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    fade.current = reduced ? 1 : Math.min(1, fade.current + 0.08);
-    material.uniforms.opacity.value = props.opacity * fade.current;
-    const token = props.detailToken ?? 0;
-    if (fade.current >= 1 && announced.current !== token && document.body.dataset.detailToken === String(token)) {
-      announced.current = token;
-      document.body.dataset.detail = "ready";
-    }
-  });
   material.uniforms.night.value = props.night ? 1 : 0;
   material.uniforms.clipOn.value = props.clip ? 1 : 0;
   if (props.clip) {
     material.uniforms.clipRect.value.set(props.clip.minX, props.clip.minZ, props.clip.maxX, props.clip.maxZ);
   }
-  if (props.lift) {
-    material.polygonOffset = true;
-    material.polygonOffsetFactor = -1;
-    material.polygonOffsetUnits = -2;
-  }
-  return <mesh geometry={props.geometry} material={material} />;
+  material.transparent = true;
+  material.polygonOffset = true;
+  material.polygonOffsetFactor = -1;
+  material.polygonOffsetUnits = -2;
+
+  useFrame(({ camera, controls, size }, delta) => {
+    const target = (controls as { target?: THREE.Vector3 } | null)?.target;
+    if (!target || !surface.current) return;
+    const state = fade.current;
+    const distance = camera.position.distanceTo(target);
+    const gap = distanceToRect(target, rect);
+    if (props.regional && tiles.length) {
+      const useTiles = distance < span * (tileMode.current ? 1.12 : 0.9) && gap < span * 0.3;
+      if (useTiles !== tileMode.current) {
+        tileMode.current = useTiles;
+        setShowTiles(useTiles);
+      }
+    }
+    const threshold = props.regional ? span * (state.nearby ? 2.7 : 2.3) : Math.min(92000, span * (state.nearby ? 5.3 : 4.5));
+    state.nearby = distance < threshold
+      && gap < span * (state.nearby ? 0.55 : 0.38);
+    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    state.amount = reduced ? Number(state.nearby) : THREE.MathUtils.clamp(state.amount + (state.nearby ? 1 : -1) * delta / 0.28, 0, 1);
+    material.uniforms.surfaceAlpha.value = state.amount * state.amount * (3 - 2 * state.amount);
+    material.uniforms.resolution.value.set(size.width * gl.getPixelRatio(), size.height * gl.getPixelRatio());
+    surface.current.visible = state.amount > 0;
+    const covered = state.amount === 1;
+    material.depthTest = covered;
+    material.depthWrite = covered;
+    if (covered !== state.covered) {
+      state.covered = covered;
+      onCover(textureUrl, covered);
+    }
+    if (!props.regional && covered && document.body.dataset.flying !== "true" && document.body.dataset.detail !== "ready") {
+      document.body.dataset.detail = "ready";
+    }
+  });
+
+  return (
+    <group ref={surface} scale={[1, props.exaggeration, 1]} dispose={null} visible={false}>
+      {(showTiles && tiles.length ? tiles : [geometry]).map((tile) => (
+        <group key={tile.id}>
+          <mesh geometry={tile} material={edgeMaterial} renderOrder={order} />
+          <mesh geometry={tile} material={material} renderOrder={order + 1} />
+        </group>
+      ))}
+    </group>
+  );
 }
 
 function SitePins(props: {
   sites: SiteFeature[];
   metadata: AtlasMetadata;
   metres: Float32Array;
+  regional: TerrainGrid | null;
   detail: TerrainGrid | null;
   origin: [number, number];
   exaggeration: number;
@@ -290,140 +441,99 @@ function SitePins(props: {
   selectedId: string | null;
   onSelect: (siteId: string) => void;
 }) {
-  const spread = useRef(0);
-  const clusterIds = useMemo(() => clusteredSiteIds(props.sites), [props.sites]);
-  useFrame(({ camera }) => {
-    spread.current = THREE.MathUtils.clamp((camera.position.length() - 140000) / 420000, 0, 1);
-  });
+  const { metadata, metres } = props;
+  const national = useMemo(() => ({ ...metadata, metres }), [metadata, metres]);
+  const textures = useMemo(() => ({ filled: paintMarker(true), open: paintMarker(false) }), []);
+  useEffect(() => () => {
+    textures.filled.dispose();
+    textures.open.dispose();
+  }, [textures]);
   return (
     <group>
-      {props.sites.map((site) => (
-        <SitePin
+      {props.sites.map((site) => {
+        const [longitude, latitude] = site.geometry.coordinates;
+        const [east, north] = lonLatToMercator(longitude, latitude);
+        const elevation = elevationAt(national, props.regional, props.detail, east, north);
+        const [x, z] = toLocal(longitude, latitude, props.origin);
+        return <SitePin
           key={site.id}
           site={site}
-          metadata={props.metadata}
-          metres={props.metres}
-          detail={props.detail}
-          origin={props.origin}
-          exaggeration={props.exaggeration}
-          labels={props.labels}
+          position={[x, (elevation - metadata.elevation.min) * props.exaggeration + 18, z]}
+          texture={site.properties.confidence === "approximate" ? textures.open : textures.filled}
+          labels={props.labels || (Boolean(props.regional) && !props.selectedId && Boolean(metadata.details[site.id]?.rasters["true-colour"]))}
           selected={site.id === props.selectedId}
           onSelect={props.onSelect}
-          spread={spread}
-          clusterIndex={clusterIds.indexOf(site.id)}
-          clusterCount={clusterIds.length}
-        />
-      ))}
+        />;
+      })}
     </group>
   );
 }
 
-function clusteredSiteIds(sites: SiteFeature[]): string[] {
-  return sites
-    .filter((site) => {
-      const [longitude, latitude] = site.geometry.coordinates;
-      return (longitude - 38.95) ** 2 + (latitude - 37.15) ** 2 < 0.55 ** 2;
-    })
-    .map((site) => site.id);
-}
-
 function SitePin(props: {
   site: SiteFeature;
-  metadata: AtlasMetadata;
-  metres: Float32Array;
-  detail: TerrainGrid | null;
-  origin: [number, number];
-  exaggeration: number;
+  position: [number, number, number];
+  texture: THREE.Texture;
   labels: boolean;
   selected: boolean;
   onSelect: (siteId: string) => void;
-  spread: MutableRefObject<number>;
-  clusterIndex: number;
-  clusterCount: number;
 }) {
-  const [east, north] = lonLatToMercator(props.site.geometry.coordinates[0], props.site.geometry.coordinates[1]);
-  const elevation = elevationAt(props.metadata, props.metres, props.detail, east, north);
-  const [xCoord, zCoord] = toLocal(props.site.geometry.coordinates[0], props.site.geometry.coordinates[1], props.origin);
-  const yCoord = (elevation - props.metadata.elevation.min) * props.exaggeration + 18;
-  const marker = useRef<THREE.Group>(null);
+  const ring = useRef<THREE.Mesh>(null);
   const [hovered, setHovered] = useState(false);
-  const approximate = props.site.properties.confidence === "approximate";
   const color = LAYER_STYLE[props.site.properties.layer].color;
-  const textures = useMarkerTextures();
-  useFrame(() => {
-    if (!marker.current) {
-      return;
-    }
-    const amount = props.selected || props.clusterIndex < 0 ? 0 : props.spread.current;
-    const angle = props.clusterCount > 0 ? (props.clusterIndex / props.clusterCount) * Math.PI * 2 : 0;
-    const radius = 78000 * amount;
-    marker.current.position.set(Math.cos(angle) * radius, 0, Math.sin(angle) * radius);
+  const height = useThree((state) => state.size.height);
+  const scale = worldSizeForPixels(1, ATLAS_FOV_DEGREES, height, props.selected || hovered ? 23 : 15);
+  const hitSize = worldSizeForPixels(1, ATLAS_FOV_DEGREES, height, 27);
+  useFrame(({ camera }) => {
+    if (!ring.current) return;
+    const [x, y, z] = props.position;
+    const distance = Math.hypot(camera.position.x - x, camera.position.y - y, camera.position.z - z);
+    ring.current.scale.setScalar(worldSizeForPixels(distance, ATLAS_FOV_DEGREES, height, 20));
   });
-  const scale = props.selected ? 0.046 : 0.032;
   return (
-    <group position={[xCoord, yCoord, zCoord]}>
+    <group position={props.position}>
       {props.selected ? (
-        <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 140, 0]} renderOrder={3}>
-          <ringGeometry args={[420, 680, 48]} />
-          <meshBasicMaterial color={color} transparent opacity={0.85} side={THREE.DoubleSide} depthTest={false} />
+        <mesh ref={ring} rotation={[-Math.PI / 2, 0, 0]} position={[0, 20, 0]} renderOrder={6}>
+          <ringGeometry args={[0.89, 1, 48]} />
+          <meshBasicMaterial color={color} transparent opacity={0.75} side={THREE.DoubleSide} depthTest={false} depthWrite={false} />
         </mesh>
       ) : null}
-      <group ref={marker}>
-        <sprite
-          scale={[0.05, 0.05, 1]}
-          onClick={(event) => {
-            event.stopPropagation();
-            props.onSelect(props.site.id);
-          }}
-          onPointerOver={(event) => {
-            event.stopPropagation();
-            setHovered(true);
-          }}
-          onPointerOut={() => setHovered(false)}
-        >
-          <spriteMaterial transparent opacity={0} depthTest={false} sizeAttenuation={false} />
-        </sprite>
-        <sprite scale={[scale * 1.45, scale * 1.45, 1]}>
-          <spriteMaterial map={textures.halo} color={color} transparent depthTest={false} sizeAttenuation={false} />
-        </sprite>
-        <sprite scale={[scale, scale, 1]}>
-          <spriteMaterial
-            map={approximate ? textures.open : textures.filled}
-            color={color}
-            transparent
-            depthTest={false}
-            sizeAttenuation={false}
-          />
-        </sprite>
-        {hovered || props.selected || props.labels ? (
-          <Html center zIndexRange={[4, 0]} style={{ pointerEvents: "none" }}>
-            <span className="tip is-shown">{props.site.properties.name}</span>
-          </Html>
-        ) : null}
-      </group>
+      <sprite
+        scale={[hitSize, hitSize, 1]}
+        onClick={(event) => {
+          event.stopPropagation();
+          if (event.delta <= 4) props.onSelect(props.site.id);
+        }}
+        onPointerOver={(event) => {
+          event.stopPropagation();
+          setHovered(true);
+        }}
+        onPointerOut={() => setHovered(false)}
+      >
+        <spriteMaterial transparent opacity={0} depthTest={false} depthWrite={false} sizeAttenuation={false} />
+      </sprite>
+      <sprite scale={[scale, scale, 1]} renderOrder={7}>
+        <spriteMaterial map={props.texture} color={color} transparent depthTest={false} depthWrite={false} sizeAttenuation={false} />
+      </sprite>
+      {hovered || props.selected || props.labels ? (
+        <Html center zIndexRange={[4, 0]} style={{ pointerEvents: "none" }}>
+          <span className="tip is-shown site-pin-label">{props.site.properties.name}</span>
+        </Html>
+      ) : null}
     </group>
   );
 }
 
 function elevationAt(
-  metadata: AtlasMetadata,
-  metres: Float32Array,
+  national: TerrainGrid,
+  regional: TerrainGrid | null,
   detail: TerrainGrid | null,
   east: number,
   north: number,
 ): number {
-  if (detail && boundsContain(detail.bounds, east, north)) {
-    return sampleMeshHeight(detail.metres, detail.width, detail.height, detail.bounds, east, north);
-  }
-  return sampleMeshHeight(metres, metadata.width, metadata.height, metadata.bounds, east, north);
-}
-
-function useMarkerTextures() {
-  return useMemo(() => ({
-    filled: paintMarker(true),
-    open: paintMarker(false),
-    halo: paintHalo(),
-  }), []);
+  const grid = detail && boundsContain(detail.bounds, east, north)
+    ? detail
+    : regional && boundsContain(regional.bounds, east, north) ? regional : national;
+  return sampleMeshHeight(grid.metres, grid.width, grid.height, grid.bounds, east, north);
 }
 
 function paintMarker(filled: boolean): THREE.CanvasTexture {
@@ -436,9 +546,9 @@ function paintMarker(filled: boolean): THREE.CanvasTexture {
   }
   context.clearRect(0, 0, 64, 64);
   context.beginPath();
-  context.arc(32, 32, 18, 0, Math.PI * 2);
+  context.arc(32, 32, 23, 0, Math.PI * 2);
   context.lineWidth = 8;
-  context.strokeStyle = "#fff8ee";
+  context.strokeStyle = "#2f302b";
   context.stroke();
   if (filled) {
     context.fillStyle = "#ffffff";
@@ -447,160 +557,4 @@ function paintMarker(filled: boolean): THREE.CanvasTexture {
   const texture = new THREE.CanvasTexture(canvas);
   texture.colorSpace = THREE.NoColorSpace;
   return texture;
-}
-
-function paintHalo(): THREE.CanvasTexture {
-  const canvas = document.createElement("canvas");
-  canvas.width = 64;
-  canvas.height = 64;
-  const context = canvas.getContext("2d");
-  if (!context) {
-    throw new Error("Could not draw a site halo");
-  }
-  const gradient = context.createRadialGradient(32, 32, 8, 32, 32, 30);
-  gradient.addColorStop(0, "rgba(255,255,255,0.9)");
-  gradient.addColorStop(1, "rgba(255,255,255,0)");
-  context.fillStyle = gradient;
-  context.fillRect(0, 0, 64, 64);
-  const texture = new THREE.CanvasTexture(canvas);
-  texture.colorSpace = THREE.NoColorSpace;
-  return texture;
-}
-
-function CameraRig({ pose, span, readoutRef, originY, cancelToken }: { pose: CameraPose; span: number; readoutRef: RefObject<HTMLDivElement | null>; originY: number; cancelToken: number }) {
-  const controls = useRef<OrbitControlsImpl>(null);
-  const camera = useThree((state) => state.camera);
-  const scene = useThree((state) => state.scene);
-  const size = useThree((state) => state.size);
-  const flight = useRef<{ started: number; duration: number; fromP: THREE.Vector3; toP: THREE.Vector3; fromT: THREE.Vector3; toT: THREE.Vector3 } | null>(null);
-
-  useEffect(() => {
-    const orbit = controls.current;
-    if (!orbit || pose.token === 0) {
-      orbit?.target.set(...pose.target);
-      document.body.dataset.flying = "false";
-      return;
-    }
-    const fromP = camera.position.clone();
-    const toP = new THREE.Vector3(...pose.position);
-    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const duration = reduced ? 0 : THREE.MathUtils.clamp(1200 + (fromP.distanceTo(toP) / 900000) * 600, 1200, 1800);
-    flight.current = {
-      started: performance.now(),
-      duration,
-      fromP,
-      toP,
-      fromT: orbit.target.clone(),
-      toT: new THREE.Vector3(...pose.target),
-    };
-    orbit.enabled = false;
-    orbit.enableDamping = false;
-    document.body.dataset.flying = "true";
-    document.body.dataset.flightMs = String(Math.round(duration));
-  }, [pose, camera]);
-
-  useEffect(() => {
-    if (cancelToken === 0) return;
-    flight.current = null;
-    const orbit = controls.current;
-    if (orbit) {
-      orbit.enableDamping = true;
-      orbit.enabled = true;
-    }
-    document.body.dataset.flying = "false";
-  }, [cancelToken]);
-
-  useFrame(() => {
-    const orbit = controls.current;
-    if (orbit) {
-      const debugWindow = window as Window & {
-        __atlasCamera?: typeof camera;
-        __atlasControls?: typeof orbit;
-        __atlasScene?: typeof scene;
-      };
-      debugWindow.__atlasCamera = camera;
-      debugWindow.__atlasControls = orbit;
-      debugWindow.__atlasScene = scene;
-      writeReadout(readoutRef.current, camera, orbit.target, originY, size.width, size.height);
-    }
-    const current = flight.current;
-    if (!orbit || !current) {
-      return;
-    }
-    const progress = current.duration === 0 ? 1 : Math.min(1, (performance.now() - current.started) / current.duration);
-    const eased = easeInOutCubic(progress);
-    camera.position.lerpVectors(current.fromP, current.toP, eased);
-    orbit.target.lerpVectors(current.fromT, current.toT, eased);
-    orbit.update();
-    if (progress >= 1) {
-      flight.current = null;
-      orbit.enableDamping = true;
-      orbit.enabled = true;
-      document.body.dataset.flying = "false";
-    }
-  });
-
-  return (
-    <OrbitControls
-      ref={controls}
-      makeDefault
-      enableDamping
-      dampingFactor={0.08}
-      zoomSpeed={0.65}
-      panSpeed={0.7}
-      rotateSpeed={0.5}
-      maxPolarAngle={Math.PI / 2 - 0.03}
-      minDistance={600}
-      maxDistance={span * 2.4}
-    />
-  );
-}
-
-function easeInOutCubic(amount: number): number {
-  return amount < 0.5 ? 4 * amount * amount * amount : 1 - ((-2 * amount + 2) ** 3) / 2;
-}
-
-function writeReadout(
-  element: HTMLDivElement | null,
-  camera: THREE.Camera,
-  target: THREE.Vector3,
-  originY: number,
-  width: number,
-  height: number,
-) {
-  if (!element) return;
-  const north = target.clone();
-  north.z -= 4000;
-  const east = target.clone();
-  east.x += 2000;
-  const here = screenPoint(target, camera, width, height);
-  const northPoint = screenPoint(north, camera, width, height);
-  const eastPoint = screenPoint(east, camera, width, height);
-  const heading = Math.atan2(northPoint.x - here.x, here.y - northPoint.y);
-  const latitude = Math.atan(Math.sinh((originY - target.z) / 6378137)) * 180 / Math.PI;
-  const pixels = Math.hypot(eastPoint.x - here.x, eastPoint.y - here.y);
-  const metresPerPixel = (2000 * Math.cos(latitude * Math.PI / 180)) / Math.max(pixels, 0.001);
-  const choices = [1000, 2000, 5000, 10000, 20000, 50000, 100000, 200000, 500000];
-  let chosen = choices[0];
-  for (const choice of choices) {
-    if (choice / metresPerPixel <= 140) chosen = choice;
-  }
-  const bar = element.querySelector("[data-role='scale-bar']") as HTMLElement | null;
-  const label = element.querySelector("[data-role='scale-label']");
-  const arrow = element.querySelector("[data-role='north']") as HTMLElement | null;
-  if (bar) bar.style.width = `${Math.max(48, chosen / metresPerPixel)}px`;
-  if (label) label.textContent = chosen >= 1000 ? `${chosen / 1000} km` : `${chosen} m`;
-  if (arrow) arrow.style.transform = `rotate(${heading}rad)`;
-  const zoomedOut = camera.position.distanceTo(target) > 160000;
-  const rotated = Math.abs(heading) > 0.18;
-  element.dataset.on = zoomedOut || rotated ? "true" : "false";
-}
-
-function screenPoint(point: THREE.Vector3, camera: THREE.Camera, width: number, height: number): THREE.Vector2 {
-  const projected = point.clone().project(camera);
-  return new THREE.Vector2((projected.x * 0.5 + 0.5) * width, (-projected.y * 0.5 + 0.5) * height);
-}
-
-function asset(path: string): string {
-  return `/terrain/${path}`;
 }
