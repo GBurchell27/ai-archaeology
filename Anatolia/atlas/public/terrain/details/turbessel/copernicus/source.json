@@ -1,0 +1,20 @@
+{
+  "bounds": [
+    4174552.126489761,
+    4417238.878312982,
+    4184552.126489761,
+    4427238.878312982
+  ],
+  "width": 256,
+  "height": 256,
+  "pixelSizeM": 39.0625,
+  "elevation": {
+    "min": 575.7195434570312,
+    "max": 736.4408569335938
+  },
+  "heightFile": "details/turbessel/copernicus/height.u16",
+  "rasters": {
+    "hillshade": "details/turbessel/copernicus/hillshade.jpg",
+    "hypsometric": "details/turbessel/copernicus/hypsometric.jpg"
+  }
+}

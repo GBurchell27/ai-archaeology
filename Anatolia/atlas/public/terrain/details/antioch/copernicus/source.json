@@ -1,0 +1,20 @@
+{
+  "bounds": [
+    4020374.631741077,
+    4323520.953685321,
+    4030374.631741077,
+    4333520.953685321
+  ],
+  "width": 256,
+  "height": 256,
+  "pixelSizeM": 39.0625,
+  "elevation": {
+    "min": 51.97039031982422,
+    "max": 597.7279663085938
+  },
+  "heightFile": "details/antioch/copernicus/height.u16",
+  "rasters": {
+    "hillshade": "details/antioch/copernicus/hillshade.jpg",
+    "hypsometric": "details/antioch/copernicus/hypsometric.jpg"
+  }
+}

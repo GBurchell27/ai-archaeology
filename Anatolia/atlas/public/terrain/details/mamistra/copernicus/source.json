@@ -1,0 +1,20 @@
+{
+  "bounds": [
+    3960633.1713109557,
+    4428223.18720322,
+    3970633.1713109557,
+    4438223.18720322
+  ],
+  "width": 256,
+  "height": 256,
+  "pixelSizeM": 39.0625,
+  "elevation": {
+    "min": 11.5,
+    "max": 644.2808837890625
+  },
+  "heightFile": "details/mamistra/copernicus/height.u16",
+  "rasters": {
+    "hillshade": "details/mamistra/copernicus/hillshade.jpg",
+    "hypsometric": "details/mamistra/copernicus/hypsometric.jpg"
+  }
+}

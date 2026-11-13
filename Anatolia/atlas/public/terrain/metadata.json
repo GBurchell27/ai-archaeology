@@ -20,9 +20,10 @@
   },
   "attribution": {
     "dem": "Contains modified Copernicus DEM data \u00a9 DLR e.V. 2010-2014 and \u00a9 Airbus Defence and Space GmbH 2014-2018 provided under COPERNICUS by the European Union and ESA",
-    "satellite": "EOxCloudless https://cloudless.eox.at by EOX IT Services GmbH (Contains modified Copernicus Sentinel data 2020) — CC BY-NC-SA 4.0"
+    "satellite": "EOxCloudless https://cloudless.eox.at by EOX IT Services GmbH (Contains modified Copernicus Sentinel data 2020) \u2014 CC BY-NC-SA 4.0",
+    "gem15": "Place relief: GEM-15 DSM, 15 m. This dataset is produced by Google. CC BY 4.0. Batchu et al. 2026, EarthArXiv https://doi.org/10.31223/X55N75 (experimental preprint). Voids filled from Copernicus GLO-30."
   },
-  "honestNote": "National terrain cells are about 1277 m. They show ranges and plains, not buildings. \u015eanl\u0131urfa site tiles are 30 m and still cannot resolve individual enclosures.",
+  "honestNote": "National terrain cells are about 1277 m, from Copernicus DEM GLO-90. They show ranges and plains, not buildings. Place relief defaults to the GEM-15 surface model at 15 m (DSM). The height mesh matches that where the window stays within 480 cells on a side, and is 30 m otherwise. 15 m still cannot resolve individual enclosures. Copernicus GLO-30 is the selectable fallback. GEM-15 voids are filled from GLO-30.",
   "details": {
     "gobekli-tepe": {
       "bounds": [
@@ -31,12 +32,12 @@
         4335956.364352341,
         4473422.663967751
       ],
-      "width": 167,
-      "height": 167,
-      "pixelSizeM": 29.940119760479043,
+      "width": 419,
+      "height": 420,
+      "pixelSizeM": 14.985950931635527,
       "elevation": {
-        "min": 566.9337158203125,
-        "max": 800.84716796875
+        "min": 567.00244140625,
+        "max": 802.5547485351562
       },
       "rasters": {
         "hillshade": "details/gobekli-tepe/hillshade.jpg",
@@ -57,6 +58,46 @@
         "credit": "Center for Advanced Spatial Technologies, University of Arkansas/U.S. Geological Survey",
         "pixelSizeM": 2.0,
         "note": "Clipped from the CAST orthorectified GeoTIFF in EPSG:4326 and resampled onto this site window. No control points were added. The orthorectification residual was not measured. The grey scale is a 2nd\u201398th percentile display stretch, not the raw scan."
+      },
+      "heightFile": "details/gobekli-tepe/height.u16",
+      "terrain": {
+        "default": "gem15",
+        "gem15": {
+          "pixelSizeM": 14.985950931635527,
+          "meshPixelM": 15.0,
+          "reliefPixelM": 15.0,
+          "elevation": {
+            "min": 567.00244140625,
+            "max": 802.5547485351562
+          },
+          "heightFile": "details/gobekli-tepe/height.u16",
+          "voidFraction": 0.0,
+          "datumOffsetM": -0.365,
+          "source": "gem15"
+        },
+        "copernicus": {
+          "bounds": [
+            4329677.2509119855,
+            4467116.719333755,
+            4335956.364352341,
+            4473422.663967751
+          ],
+          "width": 167,
+          "height": 167,
+          "pixelSizeM": 29.940119760479043,
+          "elevation": {
+            "min": 566.9337158203125,
+            "max": 800.84716796875
+          },
+          "heightFile": "details/gobekli-tepe/copernicus/height.u16",
+          "rasters": {
+            "hillshade": "details/gobekli-tepe/copernicus/hillshade.jpg",
+            "slope": "details/gobekli-tepe/copernicus/slope.jpg",
+            "local-relief": "details/gobekli-tepe/copernicus/local-relief.jpg",
+            "multidirectional-hillshade": "details/gobekli-tepe/copernicus/multidirectional-hillshade.jpg",
+            "sky-view-factor": "details/gobekli-tepe/copernicus/sky-view-factor.jpg"
+          }
+        }
       }
     },
     "karahan-tepe": {
@@ -66,12 +107,12 @@
         4378400.333713082,
         4455162.981808818
       ],
-      "width": 167,
-      "height": 167,
-      "pixelSizeM": 29.940119760479043,
+      "width": 419,
+      "height": 421,
+      "pixelSizeM": 14.9954888360277,
       "elevation": {
-        "min": 632.9981689453125,
-        "max": 741.7283325195312
+        "min": 633.5418701171875,
+        "max": 742.0028076171875
       },
       "rasters": {
         "hillshade": "details/karahan-tepe/hillshade.jpg",
@@ -92,6 +133,46 @@
         "credit": "Center for Advanced Spatial Technologies, University of Arkansas/U.S. Geological Survey",
         "pixelSizeM": 1.94,
         "note": "Clipped from the CAST orthorectified GeoTIFF in EPSG:4326 and resampled onto this site window. No control points were added. The orthorectification residual was not measured. The grey scale is a 2nd\u201398th percentile display stretch, not the raw scan."
+      },
+      "heightFile": "details/karahan-tepe/height.u16",
+      "terrain": {
+        "default": "gem15",
+        "gem15": {
+          "pixelSizeM": 14.9954888360277,
+          "meshPixelM": 15.0,
+          "reliefPixelM": 15.0,
+          "elevation": {
+            "min": 633.5418701171875,
+            "max": 742.0028076171875
+          },
+          "heightFile": "details/karahan-tepe/height.u16",
+          "voidFraction": 0.0032,
+          "datumOffsetM": -0.554,
+          "source": "gem15"
+        },
+        "copernicus": {
+          "bounds": [
+            4372117.223890786,
+            4448852.930664545,
+            4378400.333713082,
+            4455162.981808818
+          ],
+          "width": 167,
+          "height": 167,
+          "pixelSizeM": 29.940119760479043,
+          "elevation": {
+            "min": 632.9981689453125,
+            "max": 741.7283325195312
+          },
+          "heightFile": "details/karahan-tepe/copernicus/height.u16",
+          "rasters": {
+            "hillshade": "details/karahan-tepe/copernicus/hillshade.jpg",
+            "slope": "details/karahan-tepe/copernicus/slope.jpg",
+            "local-relief": "details/karahan-tepe/copernicus/local-relief.jpg",
+            "multidirectional-hillshade": "details/karahan-tepe/copernicus/multidirectional-hillshade.jpg",
+            "sky-view-factor": "details/karahan-tepe/copernicus/sky-view-factor.jpg"
+          }
+        }
       }
     },
     "sayburc": {
@@ -101,12 +182,12 @@
         4302380.223453067,
         4457781.711446694
       ],
-      "width": 167,
-      "height": 167,
-      "pixelSizeM": 29.940119760479043,
+      "width": 419,
+      "height": 421,
+      "pixelSizeM": 15.011003156563795,
       "elevation": {
-        "min": 603.977783203125,
-        "max": 762.5409545898438
+        "min": 606.8048095703125,
+        "max": 766.5098876953125
       },
       "rasters": {
         "hillshade": "details/sayburc/hillshade.jpg",
@@ -117,6 +198,46 @@
         "true-colour": "details/sayburc/true-colour.jpg",
         "false-colour": "details/sayburc/false-colour.jpg",
         "ndvi": "details/sayburc/ndvi.jpg"
+      },
+      "heightFile": "details/sayburc/height.u16",
+      "terrain": {
+        "default": "gem15",
+        "gem15": {
+          "pixelSizeM": 15.011003156563795,
+          "meshPixelM": 15.0,
+          "reliefPixelM": 15.0,
+          "elevation": {
+            "min": 606.8048095703125,
+            "max": 766.5098876953125
+          },
+          "heightFile": "details/sayburc/height.u16",
+          "voidFraction": 0.0004,
+          "datumOffsetM": -3.493,
+          "source": "gem15"
+        },
+        "copernicus": {
+          "bounds": [
+            4296090.613130467,
+            4451465.145264101,
+            4302380.223453067,
+            4457781.711446694
+          ],
+          "width": 167,
+          "height": 167,
+          "pixelSizeM": 29.940119760479043,
+          "elevation": {
+            "min": 603.977783203125,
+            "max": 762.5409545898438
+          },
+          "heightFile": "details/sayburc/copernicus/height.u16",
+          "rasters": {
+            "hillshade": "details/sayburc/copernicus/hillshade.jpg",
+            "slope": "details/sayburc/copernicus/slope.jpg",
+            "local-relief": "details/sayburc/copernicus/local-relief.jpg",
+            "multidirectional-hillshade": "details/sayburc/copernicus/multidirectional-hillshade.jpg",
+            "sky-view-factor": "details/sayburc/copernicus/sky-view-factor.jpg"
+          }
+        }
       }
     },
     "harbetsuvan-tepesi": {
@@ -126,12 +247,12 @@
         4372699.879631159,
         4449045.171494531
       ],
-      "width": 167,
-      "height": 167,
-      "pixelSizeM": 29.940119760479043,
+      "width": 418,
+      "height": 420,
+      "pixelSizeM": 15.014674647800339,
       "elevation": {
-        "min": 530.57568359375,
-        "max": 727.3045043945312
+        "min": 530.622802734375,
+        "max": 728.7853393554688
       },
       "rasters": {
         "hillshade": "details/harbetsuvan-tepesi/hillshade.jpg",
@@ -142,6 +263,46 @@
         "true-colour": "details/harbetsuvan-tepesi/true-colour.jpg",
         "false-colour": "details/harbetsuvan-tepesi/false-colour.jpg",
         "ndvi": "details/harbetsuvan-tepesi/ndvi.jpg"
+      },
+      "heightFile": "details/harbetsuvan-tepesi/height.u16",
+      "terrain": {
+        "default": "gem15",
+        "gem15": {
+          "pixelSizeM": 15.014674647800339,
+          "meshPixelM": 15.0,
+          "reliefPixelM": 15.0,
+          "elevation": {
+            "min": 530.622802734375,
+            "max": 728.7853393554688
+          },
+          "heightFile": "details/harbetsuvan-tepesi/height.u16",
+          "voidFraction": 0.0,
+          "datumOffsetM": -0.906,
+          "source": "gem15"
+        },
+        "copernicus": {
+          "bounds": [
+            4366423.745628378,
+            4442742.094960872,
+            4372699.879631159,
+            4449045.171494531
+          ],
+          "width": 167,
+          "height": 167,
+          "pixelSizeM": 29.940119760479043,
+          "elevation": {
+            "min": 530.57568359375,
+            "max": 727.3045043945312
+          },
+          "heightFile": "details/harbetsuvan-tepesi/copernicus/height.u16",
+          "rasters": {
+            "hillshade": "details/harbetsuvan-tepesi/copernicus/hillshade.jpg",
+            "slope": "details/harbetsuvan-tepesi/copernicus/slope.jpg",
+            "local-relief": "details/harbetsuvan-tepesi/copernicus/local-relief.jpg",
+            "multidirectional-hillshade": "details/harbetsuvan-tepesi/copernicus/multidirectional-hillshade.jpg",
+            "sky-view-factor": "details/harbetsuvan-tepesi/copernicus/sky-view-factor.jpg"
+          }
+        }
       }
     },
     "nevali-cori": {
@@ -151,12 +312,12 @@
         4300712.762483982,
         4514779.532075941
       ],
-      "width": 167,
-      "height": 167,
-      "pixelSizeM": 29.940119760479043,
+      "width": 422,
+      "height": 423,
+      "pixelSizeM": 14.987812471770244,
       "elevation": {
-        "min": 537.0,
-        "max": 618.5512084960938
+        "min": 530.828369140625,
+        "max": 620.9378051757812
       },
       "rasters": {
         "hillshade": "details/nevali-cori/hillshade.jpg",
@@ -167,6 +328,46 @@
         "true-colour": "details/nevali-cori/true-colour.jpg",
         "false-colour": "details/nevali-cori/false-colour.jpg",
         "ndvi": "details/nevali-cori/ndvi.jpg"
+      },
+      "heightFile": "details/nevali-cori/height.u16",
+      "terrain": {
+        "default": "gem15",
+        "gem15": {
+          "pixelSizeM": 14.987812471770244,
+          "meshPixelM": 15.0,
+          "reliefPixelM": 15.0,
+          "elevation": {
+            "min": 530.828369140625,
+            "max": 620.9378051757812
+          },
+          "heightFile": "details/nevali-cori/height.u16",
+          "voidFraction": 0.5195,
+          "datumOffsetM": -2.29,
+          "source": "gem15"
+        },
+        "copernicus": {
+          "bounds": [
+            4294387.905620895,
+            4508427.860342851,
+            4300712.762483982,
+            4514779.532075941
+          ],
+          "width": 167,
+          "height": 167,
+          "pixelSizeM": 29.940119760479043,
+          "elevation": {
+            "min": 537.0,
+            "max": 618.5512084960938
+          },
+          "heightFile": "details/nevali-cori/copernicus/height.u16",
+          "rasters": {
+            "hillshade": "details/nevali-cori/copernicus/hillshade.jpg",
+            "slope": "details/nevali-cori/copernicus/slope.jpg",
+            "local-relief": "details/nevali-cori/copernicus/local-relief.jpg",
+            "multidirectional-hillshade": "details/nevali-cori/copernicus/multidirectional-hillshade.jpg",
+            "sky-view-factor": "details/nevali-cori/copernicus/sky-view-factor.jpg"
+          }
+        }
       }
     },
     "harran": {
@@ -176,12 +377,12 @@
         4347367.382045134,
         4424254.225715373
       ],
-      "width": 167,
-      "height": 167,
-      "pixelSizeM": 29.940119760479043,
+      "width": 416,
+      "height": 418,
+      "pixelSizeM": 15.016520897548897,
       "elevation": {
-        "min": 357.482666015625,
-        "max": 392.0689697265625
+        "min": 357.1096496582031,
+        "max": 394.39947509765625
       },
       "rasters": {
         "hillshade": "details/harran/hillshade.jpg",
@@ -202,6 +403,46 @@
         "credit": "Center for Advanced Spatial Technologies, University of Arkansas/U.S. Geological Survey",
         "pixelSizeM": 2.0,
         "note": "Clipped from the CAST orthorectified GeoTIFF in EPSG:4326 and resampled onto this site window. No control points were added. The orthorectification residual was not measured. The grey scale is a 2nd\u201398th percentile display stretch, not the raw scan."
+      },
+      "heightFile": "details/harran/height.u16",
+      "terrain": {
+        "default": "gem15",
+        "gem15": {
+          "pixelSizeM": 15.016520897548897,
+          "meshPixelM": 15.0,
+          "reliefPixelM": 15.0,
+          "elevation": {
+            "min": 357.1096496582031,
+            "max": 394.39947509765625
+          },
+          "heightFile": "details/harran/height.u16",
+          "voidFraction": 0.0001,
+          "datumOffsetM": -1.773,
+          "source": "gem15"
+        },
+        "copernicus": {
+          "bounds": [
+            4341120.509351754,
+            4417980.60557304,
+            4347367.382045134,
+            4424254.225715373
+          ],
+          "width": 167,
+          "height": 167,
+          "pixelSizeM": 29.940119760479043,
+          "elevation": {
+            "min": 357.482666015625,
+            "max": 392.0689697265625
+          },
+          "heightFile": "details/harran/copernicus/height.u16",
+          "rasters": {
+            "hillshade": "details/harran/copernicus/hillshade.jpg",
+            "slope": "details/harran/copernicus/slope.jpg",
+            "local-relief": "details/harran/copernicus/local-relief.jpg",
+            "multidirectional-hillshade": "details/harran/copernicus/multidirectional-hillshade.jpg",
+            "sky-view-factor": "details/harran/copernicus/sky-view-factor.jpg"
+          }
+        }
       }
     },
     "edessa": {
@@ -211,17 +452,54 @@
         4323268.580726801,
         4466199.450569973
       ],
-      "width": 256,
-      "height": 256,
-      "pixelSizeM": 39.0625,
+      "width": 333,
+      "height": 333,
+      "pixelSizeM": 30.03003003003003,
       "elevation": {
-        "min": 457.18603515625,
-        "max": 769.239990234375
+        "min": 457.4951477050781,
+        "max": 772.5283203125
       },
       "rasters": {
         "hillshade": "details/edessa/hillshade.jpg",
         "hypsometric": "details/edessa/hypsometric.jpg",
         "satellite": "details/edessa/satellite.jpg"
+      },
+      "heightFile": "details/edessa/height.u16",
+      "terrain": {
+        "default": "gem15",
+        "gem15": {
+          "pixelSizeM": 30.03003003003003,
+          "meshPixelM": 30.0,
+          "reliefPixelM": 15.0,
+          "elevation": {
+            "min": 457.4951477050781,
+            "max": 772.5283203125
+          },
+          "heightFile": "details/edessa/height.u16",
+          "voidFraction": 0.0013,
+          "datumOffsetM": -1.235,
+          "source": "gem15"
+        },
+        "copernicus": {
+          "bounds": [
+            4313268.580726801,
+            4456199.450569973,
+            4323268.580726801,
+            4466199.450569973
+          ],
+          "width": 256,
+          "height": 256,
+          "pixelSizeM": 39.0625,
+          "elevation": {
+            "min": 457.18603515625,
+            "max": 769.239990234375
+          },
+          "heightFile": "details/edessa/copernicus/height.u16",
+          "rasters": {
+            "hillshade": "details/edessa/copernicus/hillshade.jpg",
+            "hypsometric": "details/edessa/copernicus/hypsometric.jpg"
+          }
+        }
       }
     },
     "antioch": {
@@ -231,17 +509,54 @@
         4030374.631741077,
         4333520.953685321
       ],
-      "width": 256,
-      "height": 256,
-      "pixelSizeM": 39.0625,
+      "width": 333,
+      "height": 333,
+      "pixelSizeM": 30.03003003003003,
       "elevation": {
-        "min": 51.97039031982422,
-        "max": 597.7279663085938
+        "min": 54.52922058105469,
+        "max": 597.1480102539062
       },
       "rasters": {
         "hillshade": "details/antioch/hillshade.jpg",
         "hypsometric": "details/antioch/hypsometric.jpg",
         "satellite": "details/antioch/satellite.jpg"
+      },
+      "heightFile": "details/antioch/height.u16",
+      "terrain": {
+        "default": "gem15",
+        "gem15": {
+          "pixelSizeM": 30.03003003003003,
+          "meshPixelM": 30.0,
+          "reliefPixelM": 15.0,
+          "elevation": {
+            "min": 54.52922058105469,
+            "max": 597.1480102539062
+          },
+          "heightFile": "details/antioch/height.u16",
+          "voidFraction": 0.0196,
+          "datumOffsetM": -2.021,
+          "source": "gem15"
+        },
+        "copernicus": {
+          "bounds": [
+            4020374.631741077,
+            4323520.953685321,
+            4030374.631741077,
+            4333520.953685321
+          ],
+          "width": 256,
+          "height": 256,
+          "pixelSizeM": 39.0625,
+          "elevation": {
+            "min": 51.97039031982422,
+            "max": 597.7279663085938
+          },
+          "heightFile": "details/antioch/copernicus/height.u16",
+          "rasters": {
+            "hillshade": "details/antioch/copernicus/hillshade.jpg",
+            "hypsometric": "details/antioch/copernicus/hypsometric.jpg"
+          }
+        }
       }
     },
     "nicaea": {
@@ -251,17 +566,54 @@
         3313538.9545755056,
         4933505.011579681
       ],
-      "width": 256,
-      "height": 256,
-      "pixelSizeM": 39.0625,
+      "width": 333,
+      "height": 333,
+      "pixelSizeM": 30.03003003003003,
       "elevation": {
-        "min": 83.0,
-        "max": 565.0721435546875
+        "min": 84.72650146484375,
+        "max": 568.0714111328125
       },
       "rasters": {
         "hillshade": "details/nicaea/hillshade.jpg",
         "hypsometric": "details/nicaea/hypsometric.jpg",
         "satellite": "details/nicaea/satellite.jpg"
+      },
+      "heightFile": "details/nicaea/height.u16",
+      "terrain": {
+        "default": "gem15",
+        "gem15": {
+          "pixelSizeM": 30.03003003003003,
+          "meshPixelM": 30.0,
+          "reliefPixelM": 15.0,
+          "elevation": {
+            "min": 84.72650146484375,
+            "max": 568.0714111328125
+          },
+          "heightFile": "details/nicaea/height.u16",
+          "voidFraction": 0.249,
+          "datumOffsetM": -3.255,
+          "source": "gem15"
+        },
+        "copernicus": {
+          "bounds": [
+            3303538.9545755056,
+            4923505.011579681,
+            3313538.9545755056,
+            4933505.011579681
+          ],
+          "width": 256,
+          "height": 256,
+          "pixelSizeM": 39.0625,
+          "elevation": {
+            "min": 83.0,
+            "max": 565.0721435546875
+          },
+          "heightFile": "details/nicaea/copernicus/height.u16",
+          "rasters": {
+            "hillshade": "details/nicaea/copernicus/hillshade.jpg",
+            "hypsometric": "details/nicaea/copernicus/hypsometric.jpg"
+          }
+        }
       }
     },
     "dorylaeum": {
@@ -271,17 +623,54 @@
         3402537.6507051857,
         4838545.793428087
       ],
-      "width": 256,
-      "height": 256,
-      "pixelSizeM": 39.0625,
+      "width": 333,
+      "height": 333,
+      "pixelSizeM": 30.03003003003003,
       "elevation": {
-        "min": 781.0,
-        "max": 950.3179931640625
+        "min": 781.6964111328125,
+        "max": 953.809326171875
       },
       "rasters": {
         "hillshade": "details/dorylaeum/hillshade.jpg",
         "hypsometric": "details/dorylaeum/hypsometric.jpg",
         "satellite": "details/dorylaeum/satellite.jpg"
+      },
+      "heightFile": "details/dorylaeum/height.u16",
+      "terrain": {
+        "default": "gem15",
+        "gem15": {
+          "pixelSizeM": 30.03003003003003,
+          "meshPixelM": 30.0,
+          "reliefPixelM": 15.0,
+          "elevation": {
+            "min": 781.6964111328125,
+            "max": 953.809326171875
+          },
+          "heightFile": "details/dorylaeum/height.u16",
+          "voidFraction": 0.0045,
+          "datumOffsetM": -1.36,
+          "source": "gem15"
+        },
+        "copernicus": {
+          "bounds": [
+            3392537.6507051857,
+            4828545.793428087,
+            3402537.6507051857,
+            4838545.793428087
+          ],
+          "width": 256,
+          "height": 256,
+          "pixelSizeM": 39.0625,
+          "elevation": {
+            "min": 781.0,
+            "max": 950.3179931640625
+          },
+          "heightFile": "details/dorylaeum/copernicus/height.u16",
+          "rasters": {
+            "hillshade": "details/dorylaeum/copernicus/hillshade.jpg",
+            "hypsometric": "details/dorylaeum/copernicus/hypsometric.jpg"
+          }
+        }
       }
     },
     "constantinople": {
@@ -291,17 +680,54 @@
         3231038.8431890686,
         5019185.585863031
       ],
-      "width": 256,
-      "height": 256,
-      "pixelSizeM": 39.0625,
+      "width": 333,
+      "height": 333,
+      "pixelSizeM": 30.03003003003003,
       "elevation": {
-        "min": -11.05123519897461,
-        "max": 101.36245727539062
+        "min": -3.156864643096924,
+        "max": 118.5956802368164
       },
       "rasters": {
         "hillshade": "details/constantinople/hillshade.jpg",
         "hypsometric": "details/constantinople/hypsometric.jpg",
         "satellite": "details/constantinople/satellite.jpg"
+      },
+      "heightFile": "details/constantinople/height.u16",
+      "terrain": {
+        "default": "gem15",
+        "gem15": {
+          "pixelSizeM": 30.03003003003003,
+          "meshPixelM": 30.0,
+          "reliefPixelM": 15.0,
+          "elevation": {
+            "min": -3.156864643096924,
+            "max": 118.5956802368164
+          },
+          "heightFile": "details/constantinople/height.u16",
+          "voidFraction": 0.5181,
+          "datumOffsetM": -1.358,
+          "source": "gem15"
+        },
+        "copernicus": {
+          "bounds": [
+            3221038.8431890686,
+            5009185.585863031,
+            3231038.8431890686,
+            5019185.585863031
+          ],
+          "width": 256,
+          "height": 256,
+          "pixelSizeM": 39.0625,
+          "elevation": {
+            "min": -11.05123519897461,
+            "max": 101.36245727539062
+          },
+          "heightFile": "details/constantinople/copernicus/height.u16",
+          "rasters": {
+            "hillshade": "details/constantinople/copernicus/hillshade.jpg",
+            "hypsometric": "details/constantinople/copernicus/hypsometric.jpg"
+          }
+        }
       }
     },
     "turbessel": {
@@ -311,17 +737,54 @@
         4184552.126489761,
         4427238.878312982
       ],
-      "width": 256,
-      "height": 256,
-      "pixelSizeM": 39.0625,
+      "width": 333,
+      "height": 333,
+      "pixelSizeM": 30.03003003003003,
       "elevation": {
-        "min": 575.7195434570312,
-        "max": 736.4408569335938
+        "min": 576.7764892578125,
+        "max": 737.4695434570312
       },
       "rasters": {
         "hillshade": "details/turbessel/hillshade.jpg",
         "hypsometric": "details/turbessel/hypsometric.jpg",
         "satellite": "details/turbessel/satellite.jpg"
+      },
+      "heightFile": "details/turbessel/height.u16",
+      "terrain": {
+        "default": "gem15",
+        "gem15": {
+          "pixelSizeM": 30.03003003003003,
+          "meshPixelM": 30.0,
+          "reliefPixelM": 15.0,
+          "elevation": {
+            "min": 576.7764892578125,
+            "max": 737.4695434570312
+          },
+          "heightFile": "details/turbessel/height.u16",
+          "voidFraction": 0.0181,
+          "datumOffsetM": -1.117,
+          "source": "gem15"
+        },
+        "copernicus": {
+          "bounds": [
+            4174552.126489761,
+            4417238.878312982,
+            4184552.126489761,
+            4427238.878312982
+          ],
+          "width": 256,
+          "height": 256,
+          "pixelSizeM": 39.0625,
+          "elevation": {
+            "min": 575.7195434570312,
+            "max": 736.4408569335938
+          },
+          "heightFile": "details/turbessel/copernicus/height.u16",
+          "rasters": {
+            "hillshade": "details/turbessel/copernicus/hillshade.jpg",
+            "hypsometric": "details/turbessel/copernicus/hypsometric.jpg"
+          }
+        }
       }
     },
     "ravendel": {
@@ -331,17 +794,54 @@
         4129798.793367739,
         4426443.73030254
       ],
-      "width": 256,
-      "height": 256,
-      "pixelSizeM": 39.0625,
+      "width": 333,
+      "height": 333,
+      "pixelSizeM": 30.03003003003003,
       "elevation": {
-        "min": 426.6090087890625,
-        "max": 968.6846313476562
+        "min": 427.572509765625,
+        "max": 971.2688598632812
       },
       "rasters": {
         "hillshade": "details/ravendel/hillshade.jpg",
         "hypsometric": "details/ravendel/hypsometric.jpg",
         "satellite": "details/ravendel/satellite.jpg"
+      },
+      "heightFile": "details/ravendel/height.u16",
+      "terrain": {
+        "default": "gem15",
+        "gem15": {
+          "pixelSizeM": 30.03003003003003,
+          "meshPixelM": 30.0,
+          "reliefPixelM": 15.0,
+          "elevation": {
+            "min": 427.572509765625,
+            "max": 971.2688598632812
+          },
+          "heightFile": "details/ravendel/height.u16",
+          "voidFraction": 0.0001,
+          "datumOffsetM": -2.584,
+          "source": "gem15"
+        },
+        "copernicus": {
+          "bounds": [
+            4119798.793367739,
+            4416443.73030254,
+            4129798.793367739,
+            4426443.73030254
+          ],
+          "width": 256,
+          "height": 256,
+          "pixelSizeM": 39.0625,
+          "elevation": {
+            "min": 426.6090087890625,
+            "max": 968.6846313476562
+          },
+          "heightFile": "details/ravendel/copernicus/height.u16",
+          "rasters": {
+            "hillshade": "details/ravendel/copernicus/hillshade.jpg",
+            "hypsometric": "details/ravendel/copernicus/hypsometric.jpg"
+          }
+        }
       }
     },
     "rumkale": {
@@ -351,17 +851,54 @@
         4217113.077546794,
         4482080.426920858
       ],
-      "width": 256,
-      "height": 256,
-      "pixelSizeM": 39.0625,
+      "width": 333,
+      "height": 333,
+      "pixelSizeM": 30.03003003003003,
       "elevation": {
-        "min": 380.0,
-        "max": 678.7093505859375
+        "min": 380.6444091796875,
+        "max": 678.2449951171875
       },
       "rasters": {
         "hillshade": "details/rumkale/hillshade.jpg",
         "hypsometric": "details/rumkale/hypsometric.jpg",
         "satellite": "details/rumkale/satellite.jpg"
+      },
+      "heightFile": "details/rumkale/height.u16",
+      "terrain": {
+        "default": "gem15",
+        "gem15": {
+          "pixelSizeM": 30.03003003003003,
+          "meshPixelM": 30.0,
+          "reliefPixelM": 15.0,
+          "elevation": {
+            "min": 380.6444091796875,
+            "max": 678.2449951171875
+          },
+          "heightFile": "details/rumkale/height.u16",
+          "voidFraction": 0.0647,
+          "datumOffsetM": -0.644,
+          "source": "gem15"
+        },
+        "copernicus": {
+          "bounds": [
+            4207113.077546794,
+            4472080.426920858,
+            4217113.077546794,
+            4482080.426920858
+          ],
+          "width": 256,
+          "height": 256,
+          "pixelSizeM": 39.0625,
+          "elevation": {
+            "min": 380.0,
+            "max": 678.7093505859375
+          },
+          "heightFile": "details/rumkale/copernicus/height.u16",
+          "rasters": {
+            "hillshade": "details/rumkale/copernicus/hillshade.jpg",
+            "hypsometric": "details/rumkale/copernicus/hypsometric.jpg"
+          }
+        }
       }
     },
     "birecik": {
@@ -371,17 +908,54 @@
         4232574.116945242,
         4447592.037964527
       ],
-      "width": 256,
-      "height": 256,
-      "pixelSizeM": 39.0625,
+      "width": 333,
+      "height": 333,
+      "pixelSizeM": 30.03003003003003,
       "elevation": {
-        "min": 335.94927978515625,
-        "max": 520.546142578125
+        "min": 338.15032958984375,
+        "max": 523.135498046875
       },
       "rasters": {
         "hillshade": "details/birecik/hillshade.jpg",
         "hypsometric": "details/birecik/hypsometric.jpg",
         "satellite": "details/birecik/satellite.jpg"
+      },
+      "heightFile": "details/birecik/height.u16",
+      "terrain": {
+        "default": "gem15",
+        "gem15": {
+          "pixelSizeM": 30.03003003003003,
+          "meshPixelM": 30.0,
+          "reliefPixelM": 15.0,
+          "elevation": {
+            "min": 338.15032958984375,
+            "max": 523.135498046875
+          },
+          "heightFile": "details/birecik/height.u16",
+          "voidFraction": 0.0861,
+          "datumOffsetM": -2.15,
+          "source": "gem15"
+        },
+        "copernicus": {
+          "bounds": [
+            4222574.116945242,
+            4437592.037964527,
+            4232574.116945242,
+            4447592.037964527
+          ],
+          "width": 256,
+          "height": 256,
+          "pixelSizeM": 39.0625,
+          "elevation": {
+            "min": 335.94927978515625,
+            "max": 520.546142578125
+          },
+          "heightFile": "details/birecik/copernicus/height.u16",
+          "rasters": {
+            "hillshade": "details/birecik/copernicus/hillshade.jpg",
+            "hypsometric": "details/birecik/copernicus/hypsometric.jpg"
+          }
+        }
       }
     },
     "samosata": {
@@ -391,17 +965,54 @@
         4288728.616252735,
         4525184.58922707
       ],
-      "width": 256,
-      "height": 256,
-      "pixelSizeM": 39.0625,
+      "width": 333,
+      "height": 333,
+      "pixelSizeM": 30.03003003003003,
       "elevation": {
-        "min": 537.0,
-        "max": 668.205078125
+        "min": 532.9617919921875,
+        "max": 671.3801879882812
       },
       "rasters": {
         "hillshade": "details/samosata/hillshade.jpg",
         "hypsometric": "details/samosata/hypsometric.jpg",
         "satellite": "details/samosata/satellite.jpg"
+      },
+      "heightFile": "details/samosata/height.u16",
+      "terrain": {
+        "default": "gem15",
+        "gem15": {
+          "pixelSizeM": 30.03003003003003,
+          "meshPixelM": 30.0,
+          "reliefPixelM": 15.0,
+          "elevation": {
+            "min": 532.9617919921875,
+            "max": 671.3801879882812
+          },
+          "heightFile": "details/samosata/height.u16",
+          "voidFraction": 0.2058,
+          "datumOffsetM": -2.086,
+          "source": "gem15"
+        },
+        "copernicus": {
+          "bounds": [
+            4278728.616252735,
+            4515184.58922707,
+            4288728.616252735,
+            4525184.58922707
+          ],
+          "width": 256,
+          "height": 256,
+          "pixelSizeM": 39.0625,
+          "elevation": {
+            "min": 537.0,
+            "max": 668.205078125
+          },
+          "heightFile": "details/samosata/copernicus/height.u16",
+          "rasters": {
+            "hillshade": "details/samosata/copernicus/hillshade.jpg",
+            "hypsometric": "details/samosata/copernicus/hypsometric.jpg"
+          }
+        }
       }
     },
     "marash": {
@@ -411,17 +1022,54 @@
         4116399.85959384,
         4525730.855376591
       ],
-      "width": 256,
-      "height": 256,
-      "pixelSizeM": 39.0625,
+      "width": 333,
+      "height": 333,
+      "pixelSizeM": 30.03003003003003,
       "elevation": {
-        "min": 446.4582824707031,
-        "max": 1450.9521484375
+        "min": 445.8518981933594,
+        "max": 1451.0423583984375
       },
       "rasters": {
         "hillshade": "details/marash/hillshade.jpg",
         "hypsometric": "details/marash/hypsometric.jpg",
         "satellite": "details/marash/satellite.jpg"
+      },
+      "heightFile": "details/marash/height.u16",
+      "terrain": {
+        "default": "gem15",
+        "gem15": {
+          "pixelSizeM": 30.03003003003003,
+          "meshPixelM": 30.0,
+          "reliefPixelM": 15.0,
+          "elevation": {
+            "min": 445.8518981933594,
+            "max": 1451.0423583984375
+          },
+          "heightFile": "details/marash/height.u16",
+          "voidFraction": 0.0074,
+          "datumOffsetM": -0.14,
+          "source": "gem15"
+        },
+        "copernicus": {
+          "bounds": [
+            4106399.85959384,
+            4515730.855376591,
+            4116399.85959384,
+            4525730.855376591
+          ],
+          "width": 256,
+          "height": 256,
+          "pixelSizeM": 39.0625,
+          "elevation": {
+            "min": 446.4582824707031,
+            "max": 1450.9521484375
+          },
+          "heightFile": "details/marash/copernicus/height.u16",
+          "rasters": {
+            "hillshade": "details/marash/copernicus/hillshade.jpg",
+            "hypsometric": "details/marash/copernicus/hypsometric.jpg"
+          }
+        }
       }
     },
     "baghras": {
@@ -431,17 +1079,54 @@
         4037548.5539863356,
         4364528.4169922685
       ],
-      "width": 256,
-      "height": 256,
-      "pixelSizeM": 39.0625,
+      "width": 333,
+      "height": 333,
+      "pixelSizeM": 30.03003003003003,
       "elevation": {
-        "min": 78.75129699707031,
-        "max": 947.3778076171875
+        "min": 79.1971435546875,
+        "max": 951.8527221679688
       },
       "rasters": {
         "hillshade": "details/baghras/hillshade.jpg",
         "hypsometric": "details/baghras/hypsometric.jpg",
         "satellite": "details/baghras/satellite.jpg"
+      },
+      "heightFile": "details/baghras/height.u16",
+      "terrain": {
+        "default": "gem15",
+        "gem15": {
+          "pixelSizeM": 30.03003003003003,
+          "meshPixelM": 30.0,
+          "reliefPixelM": 15.0,
+          "elevation": {
+            "min": 79.1971435546875,
+            "max": 951.8527221679688
+          },
+          "heightFile": "details/baghras/height.u16",
+          "voidFraction": 0.0009,
+          "datumOffsetM": -1.111,
+          "source": "gem15"
+        },
+        "copernicus": {
+          "bounds": [
+            4027548.5539863356,
+            4354528.4169922685,
+            4037548.5539863356,
+            4364528.4169922685
+          ],
+          "width": 256,
+          "height": 256,
+          "pixelSizeM": 39.0625,
+          "elevation": {
+            "min": 78.75129699707031,
+            "max": 947.3778076171875
+          },
+          "heightFile": "details/baghras/copernicus/height.u16",
+          "rasters": {
+            "hillshade": "details/baghras/copernicus/hillshade.jpg",
+            "hypsometric": "details/baghras/copernicus/hypsometric.jpg"
+          }
+        }
       }
     },
     "tarsus": {
@@ -451,17 +1136,54 @@
         3889504.7631803607,
         4432474.346119029
       ],
-      "width": 256,
-      "height": 256,
-      "pixelSizeM": 39.0625,
+      "width": 333,
+      "height": 333,
+      "pixelSizeM": 30.03003003003003,
       "elevation": {
-        "min": 6.319052219390869,
-        "max": 147.5831756591797
+        "min": 5.062208652496338,
+        "max": 145.73162841796875
       },
       "rasters": {
         "hillshade": "details/tarsus/hillshade.jpg",
         "hypsometric": "details/tarsus/hypsometric.jpg",
         "satellite": "details/tarsus/satellite.jpg"
+      },
+      "heightFile": "details/tarsus/height.u16",
+      "terrain": {
+        "default": "gem15",
+        "gem15": {
+          "pixelSizeM": 30.03003003003003,
+          "meshPixelM": 30.0,
+          "reliefPixelM": 15.0,
+          "elevation": {
+            "min": 5.062208652496338,
+            "max": 145.73162841796875
+          },
+          "heightFile": "details/tarsus/height.u16",
+          "voidFraction": 0.0055,
+          "datumOffsetM": 0.404,
+          "source": "gem15"
+        },
+        "copernicus": {
+          "bounds": [
+            3879504.7631803607,
+            4422474.346119029,
+            3889504.7631803607,
+            4432474.346119029
+          ],
+          "width": 256,
+          "height": 256,
+          "pixelSizeM": 39.0625,
+          "elevation": {
+            "min": 6.319052219390869,
+            "max": 147.5831756591797
+          },
+          "heightFile": "details/tarsus/copernicus/height.u16",
+          "rasters": {
+            "hillshade": "details/tarsus/copernicus/hillshade.jpg",
+            "hypsometric": "details/tarsus/copernicus/hypsometric.jpg"
+          }
+        }
       }
     },
     "mamistra": {
@@ -471,17 +1193,54 @@
         3970633.1713109557,
         4438223.18720322
       ],
-      "width": 256,
-      "height": 256,
-      "pixelSizeM": 39.0625,
+      "width": 333,
+      "height": 333,
+      "pixelSizeM": 30.03003003003003,
       "elevation": {
-        "min": 11.5,
-        "max": 644.2808837890625
+        "min": 9.390616416931152,
+        "max": 643.066162109375
       },
       "rasters": {
         "hillshade": "details/mamistra/hillshade.jpg",
         "hypsometric": "details/mamistra/hypsometric.jpg",
         "satellite": "details/mamistra/satellite.jpg"
+      },
+      "heightFile": "details/mamistra/height.u16",
+      "terrain": {
+        "default": "gem15",
+        "gem15": {
+          "pixelSizeM": 30.03003003003003,
+          "meshPixelM": 30.0,
+          "reliefPixelM": 15.0,
+          "elevation": {
+            "min": 9.390616416931152,
+            "max": 643.066162109375
+          },
+          "heightFile": "details/mamistra/height.u16",
+          "voidFraction": 0.0112,
+          "datumOffsetM": 0.007,
+          "source": "gem15"
+        },
+        "copernicus": {
+          "bounds": [
+            3960633.1713109557,
+            4428223.18720322,
+            3970633.1713109557,
+            4438223.18720322
+          ],
+          "width": 256,
+          "height": 256,
+          "pixelSizeM": 39.0625,
+          "elevation": {
+            "min": 11.5,
+            "max": 644.2808837890625
+          },
+          "heightFile": "details/mamistra/copernicus/height.u16",
+          "rasters": {
+            "hillshade": "details/mamistra/copernicus/hillshade.jpg",
+            "hypsometric": "details/mamistra/copernicus/hypsometric.jpg"
+          }
+        }
       }
     },
     "adana": {
@@ -491,17 +1250,54 @@
         3936952.8404350826,
         4444106.787250583
       ],
-      "width": 256,
-      "height": 256,
-      "pixelSizeM": 39.0625,
+      "width": 333,
+      "height": 333,
+      "pixelSizeM": 30.03003003003003,
       "elevation": {
-        "min": 14.26073169708252,
-        "max": 87.21824645996094
+        "min": 11.066976547241211,
+        "max": 98.83128356933594
       },
       "rasters": {
         "hillshade": "details/adana/hillshade.jpg",
         "hypsometric": "details/adana/hypsometric.jpg",
         "satellite": "details/adana/satellite.jpg"
+      },
+      "heightFile": "details/adana/height.u16",
+      "terrain": {
+        "default": "gem15",
+        "gem15": {
+          "pixelSizeM": 30.03003003003003,
+          "meshPixelM": 30.0,
+          "reliefPixelM": 15.0,
+          "elevation": {
+            "min": 11.066976547241211,
+            "max": 98.83128356933594
+          },
+          "heightFile": "details/adana/height.u16",
+          "voidFraction": 0.0102,
+          "datumOffsetM": 1.672,
+          "source": "gem15"
+        },
+        "copernicus": {
+          "bounds": [
+            3926952.8404350826,
+            4434106.787250583,
+            3936952.8404350826,
+            4444106.787250583
+          ],
+          "width": 256,
+          "height": 256,
+          "pixelSizeM": 39.0625,
+          "elevation": {
+            "min": 14.26073169708252,
+            "max": 87.21824645996094
+          },
+          "heightFile": "details/adana/copernicus/height.u16",
+          "rasters": {
+            "hillshade": "details/adana/copernicus/hillshade.jpg",
+            "hypsometric": "details/adana/copernicus/hypsometric.jpg"
+          }
+        }
       }
     },
     "saleph": {
@@ -511,17 +1307,54 @@
         3782317.6990146027,
         4357497.859587312
       ],
-      "width": 256,
-      "height": 256,
-      "pixelSizeM": 39.0625,
+      "width": 333,
+      "height": 333,
+      "pixelSizeM": 30.03003003003003,
       "elevation": {
-        "min": 1.571075677871704,
-        "max": 401.9090270996094
+        "min": 3.1295392513275146,
+        "max": 402.62347412109375
       },
       "rasters": {
         "hillshade": "details/saleph/hillshade.jpg",
         "hypsometric": "details/saleph/hypsometric.jpg",
         "satellite": "details/saleph/satellite.jpg"
+      },
+      "heightFile": "details/saleph/height.u16",
+      "terrain": {
+        "default": "gem15",
+        "gem15": {
+          "pixelSizeM": 30.03003003003003,
+          "meshPixelM": 30.0,
+          "reliefPixelM": 15.0,
+          "elevation": {
+            "min": 3.1295392513275146,
+            "max": 402.62347412109375
+          },
+          "heightFile": "details/saleph/height.u16",
+          "voidFraction": 0.0083,
+          "datumOffsetM": -2.776,
+          "source": "gem15"
+        },
+        "copernicus": {
+          "bounds": [
+            3772317.6990146027,
+            4347497.859587312,
+            3782317.6990146027,
+            4357497.859587312
+          ],
+          "width": 256,
+          "height": 256,
+          "pixelSizeM": 39.0625,
+          "elevation": {
+            "min": 1.571075677871704,
+            "max": 401.9090270996094
+          },
+          "heightFile": "details/saleph/copernicus/height.u16",
+          "rasters": {
+            "hillshade": "details/saleph/copernicus/hillshade.jpg",
+            "hypsometric": "details/saleph/copernicus/hypsometric.jpg"
+          }
+        }
       }
     },
     "smyrna-hospitaller": {
@@ -531,17 +1364,54 @@
         3026118.2142581823,
         4643731.476816853
       ],
-      "width": 256,
-      "height": 256,
-      "pixelSizeM": 39.0625,
+      "width": 333,
+      "height": 333,
+      "pixelSizeM": 30.03003003003003,
       "elevation": {
-        "min": -8.47083854675293,
-        "max": 266.6581726074219
+        "min": 0.41530442237854004,
+        "max": 272.4874572753906
       },
       "rasters": {
         "hillshade": "details/smyrna-hospitaller/hillshade.jpg",
         "hypsometric": "details/smyrna-hospitaller/hypsometric.jpg",
         "satellite": "details/smyrna-hospitaller/satellite.jpg"
+      },
+      "heightFile": "details/smyrna-hospitaller/height.u16",
+      "terrain": {
+        "default": "gem15",
+        "gem15": {
+          "pixelSizeM": 30.03003003003003,
+          "meshPixelM": 30.0,
+          "reliefPixelM": 15.0,
+          "elevation": {
+            "min": 0.41530442237854004,
+            "max": 272.4874572753906
+          },
+          "heightFile": "details/smyrna-hospitaller/height.u16",
+          "voidFraction": 0.318,
+          "datumOffsetM": -3.203,
+          "source": "gem15"
+        },
+        "copernicus": {
+          "bounds": [
+            3016118.2142581823,
+            4633731.476816853,
+            3026118.2142581823,
+            4643731.476816853
+          ],
+          "width": 256,
+          "height": 256,
+          "pixelSizeM": 39.0625,
+          "elevation": {
+            "min": -8.47083854675293,
+            "max": 266.6581726074219
+          },
+          "heightFile": "details/smyrna-hospitaller/copernicus/height.u16",
+          "rasters": {
+            "hillshade": "details/smyrna-hospitaller/copernicus/hillshade.jpg",
+            "hypsometric": "details/smyrna-hospitaller/copernicus/hypsometric.jpg"
+          }
+        }
       }
     },
     "bodrum-petronion": {
@@ -551,17 +1421,54 @@
         3058431.7878031894,
         4448521.632307085
       ],
-      "width": 256,
-      "height": 256,
-      "pixelSizeM": 39.0625,
+      "width": 333,
+      "height": 333,
+      "pixelSizeM": 30.03003003003003,
       "elevation": {
-        "min": -0.0929931253194809,
-        "max": 407.1934814453125
+        "min": -1.620774745941162,
+        "max": 410.6304016113281
       },
       "rasters": {
         "hillshade": "details/bodrum-petronion/hillshade.jpg",
         "hypsometric": "details/bodrum-petronion/hypsometric.jpg",
         "satellite": "details/bodrum-petronion/satellite.jpg"
+      },
+      "heightFile": "details/bodrum-petronion/height.u16",
+      "terrain": {
+        "default": "gem15",
+        "gem15": {
+          "pixelSizeM": 30.03003003003003,
+          "meshPixelM": 30.0,
+          "reliefPixelM": 15.0,
+          "elevation": {
+            "min": -1.620774745941162,
+            "max": 410.6304016113281
+          },
+          "heightFile": "details/bodrum-petronion/height.u16",
+          "voidFraction": 0.3247,
+          "datumOffsetM": -2.327,
+          "source": "gem15"
+        },
+        "copernicus": {
+          "bounds": [
+            3048431.7878031894,
+            4438521.632307085,
+            3058431.7878031894,
+            4448521.632307085
+          ],
+          "width": 256,
+          "height": 256,
+          "pixelSizeM": 39.0625,
+          "elevation": {
+            "min": -0.0929931253194809,
+            "max": 407.1934814453125
+          },
+          "heightFile": "details/bodrum-petronion/copernicus/height.u16",
+          "rasters": {
+            "hillshade": "details/bodrum-petronion/copernicus/hillshade.jpg",
+            "hypsometric": "details/bodrum-petronion/copernicus/hypsometric.jpg"
+          }
+        }
       }
     }
   },

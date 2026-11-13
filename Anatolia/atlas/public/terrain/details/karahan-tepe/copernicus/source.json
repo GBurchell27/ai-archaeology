@@ -1,0 +1,23 @@
+{
+  "bounds": [
+    4372117.223890786,
+    4448852.930664545,
+    4378400.333713082,
+    4455162.981808818
+  ],
+  "width": 167,
+  "height": 167,
+  "pixelSizeM": 29.940119760479043,
+  "elevation": {
+    "min": 632.9981689453125,
+    "max": 741.7283325195312
+  },
+  "heightFile": "details/karahan-tepe/copernicus/height.u16",
+  "rasters": {
+    "hillshade": "details/karahan-tepe/copernicus/hillshade.jpg",
+    "slope": "details/karahan-tepe/copernicus/slope.jpg",
+    "local-relief": "details/karahan-tepe/copernicus/local-relief.jpg",
+    "multidirectional-hillshade": "details/karahan-tepe/copernicus/multidirectional-hillshade.jpg",
+    "sky-view-factor": "details/karahan-tepe/copernicus/sky-view-factor.jpg"
+  }
+}

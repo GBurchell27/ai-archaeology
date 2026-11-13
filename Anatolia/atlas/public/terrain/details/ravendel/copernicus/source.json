@@ -1,0 +1,20 @@
+{
+  "bounds": [
+    4119798.793367739,
+    4416443.73030254,
+    4129798.793367739,
+    4426443.73030254
+  ],
+  "width": 256,
+  "height": 256,
+  "pixelSizeM": 39.0625,
+  "elevation": {
+    "min": 426.6090087890625,
+    "max": 968.6846313476562
+  },
+  "heightFile": "details/ravendel/copernicus/height.u16",
+  "rasters": {
+    "hillshade": "details/ravendel/copernicus/hillshade.jpg",
+    "hypsometric": "details/ravendel/copernicus/hypsometric.jpg"
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "bounds": [
+    4329677.2509119855,
+    4467116.719333755,
+    4335956.364352341,
+    4473422.663967751
+  ],
+  "width": 167,
+  "height": 167,
+  "pixelSizeM": 29.940119760479043,
+  "elevation": {
+    "min": 566.9337158203125,
+    "max": 800.84716796875
+  },
+  "heightFile": "details/gobekli-tepe/copernicus/height.u16",
+  "rasters": {
+    "hillshade": "details/gobekli-tepe/copernicus/hillshade.jpg",
+    "slope": "details/gobekli-tepe/copernicus/slope.jpg",
+    "local-relief": "details/gobekli-tepe/copernicus/local-relief.jpg",
+    "multidirectional-hillshade": "details/gobekli-tepe/copernicus/multidirectional-hillshade.jpg",
+    "sky-view-factor": "details/gobekli-tepe/copernicus/sky-view-factor.jpg"
+  }
+}

@@ -14,6 +14,7 @@ import { lookPoseArgument } from "@/lib/pinCluster";
 import type { ClimatePoint, ContextLineLayer, ContextRasterLayer } from "@/components/ContextLayers";
 import type { ContextFeature } from "@/lib/contextGeometry";
 import { boundsCenter, boundsContain, lonLatToMercator, sampleHeight, toLocal } from "@/lib/geo";
+import { closeupQuery, placeHeightUrl, resolvePlaceRelief, type TerrainSourceId } from "@/lib/terrainSource";
 import { LAYER_STYLE, PERIODS, formatYear } from "@/lib/periods";
 import { decodeHeight } from "@/lib/terrain";
 import {
@@ -59,6 +60,7 @@ export function AtlasApp() {
     crusader: true,
   });
   const [baseMap, setBaseMap] = useState<BaseMap>("hypsometric");
+  const [terrainSource, setTerrainSource] = useState<TerrainSourceId>("gem15");
   const [exaggeration, setExaggeration] = useState(6.5);
   const [azimuth, setAzimuth] = useState(315);
   const [altitude, setAltitude] = useState(40);
@@ -198,7 +200,17 @@ export function AtlasApp() {
     [wikiOn, wikiSites, range, showUndated],
   );
   const selected = sites.find((site) => site.id === selectedId) ?? null;
-  const detail = selected && metadata ? metadata.details[selected.id] : undefined;
+  const rawDetail = selected && metadata ? metadata.details[selected.id] : undefined;
+  const detail = useMemo(
+    () => (rawDetail ? resolvePlaceRelief(rawDetail, terrainSource) : undefined),
+    [rawDetail, terrainSource],
+  );
+
+  useEffect(() => {
+    if (detail && detailLayer !== "satellite" && !detail.rasters[detailLayer]) {
+      setDetailLayer("hillshade");
+    }
+  }, [detail, detailLayer]);
 
   useEffect(() => {
     const wiki = wikiSites.find((site) => site.id === wikiId) ?? null;
@@ -219,7 +231,6 @@ export function AtlasApp() {
         setDetailGrid(null);
         return;
       }
-      const query = `id=${encodeURIComponent(siteId)}`;
       let cancel = false;
       setBusy(true);
       setReveal(false);
@@ -227,12 +238,12 @@ export function AtlasApp() {
       setCloseupCredit(null);
       const layer = detailLayer === "satellite" ? "satellite" : "hillshade";
       const image = new Image();
-      image.src = `/api/closeup?${query}&part=${layer}`;
+      image.src = `/api/closeup?${closeupQuery(siteId, layer, terrainSource)}`;
       const decoded = image.decode ? image.decode().catch(() => undefined) : Promise.resolve();
-      fetch(`/api/closeup?${query}&part=meta`).then(async (response) => {
+      fetch(`/api/closeup?${closeupQuery(siteId, "meta", terrainSource)}`).then(async (response) => {
         if (!response.ok) throw new Error("close-up-failed");
         const meta = await response.json() as DetailRecord & { attribution?: { relief?: string; satellite?: string } };
-        const height = await fetch(`/api/closeup?${query}&part=height`);
+        const height = await fetch(`/api/closeup?${closeupQuery(siteId, "height", terrainSource)}`);
         if (!height.ok) throw new Error("close-up-failed");
         const grid = decodeHeight(await height.arrayBuffer(), meta.width, meta.height, meta.elevation.min, meta.elevation.max);
         await decoded;
@@ -275,7 +286,7 @@ export function AtlasApp() {
     const image = new Image();
     if (imageUrl) image.src = imageUrl;
     const decoded = imageUrl && image.decode ? image.decode().catch(() => undefined) : Promise.resolve();
-    fetch(`/terrain/details/${siteId}/height.u16`).then(async (response) => {
+    fetch(placeHeightUrl(detail, siteId)).then(async (response) => {
       const grid = decodeHeight(
         await response.arrayBuffer(),
         detail.width,
@@ -312,7 +323,7 @@ export function AtlasApp() {
     return () => {
       cancel = true;
     };
-  }, [metadata, selected, detail, detailLayer, wikiId, wikiSites]);
+  }, [metadata, selected, detail, detailLayer, wikiId, wikiSites, terrainSource]);
 
   useEffect(() => {
     document.body.dataset.site = selectedId ?? "";
@@ -320,6 +331,7 @@ export function AtlasApp() {
     document.body.dataset.panel = panelShown ? "open" : "closed";
     document.body.dataset.busy = busy ? "true" : "false";
     document.body.dataset.base = baseMap;
+    document.body.dataset.reliefSource = terrainSource;
     document.body.dataset.yearStart = String(range.start);
     document.body.dataset.yearEnd = String(range.end);
     document.body.dataset.period = periodId || "custom";
@@ -327,7 +339,7 @@ export function AtlasApp() {
     for (const [layer, enabled] of Object.entries(layers)) {
       document.body.dataset[layer] = enabled ? "on" : "off";
     }
-  }, [selectedId, settingsOpen, panelShown, busy, baseMap, layers, range, periodId, showUndated]);
+  }, [selectedId, settingsOpen, panelShown, busy, baseMap, layers, range, periodId, showUndated, terrainSource]);
 
   if (error) {
     return <p className="status">{error}</p>;
@@ -456,10 +468,11 @@ export function AtlasApp() {
     : [];
   const climateRecord = climateRecords.find((record) => record.id === climateId) ?? null;
   const liveId = !detail && (selected || wikiSite) ? (selected ?? wikiSite)!.id : null;
+  const livePart = detailLayer === "satellite" ? "satellite" : "hillshade";
   const detailUrl = detail?.rasters[detailLayer]
     ? `/terrain/${detail.rasters[detailLayer]}`
     : liveId
-      ? `/api/closeup?id=${encodeURIComponent(liveId)}&part=${detailLayer === "satellite" ? "satellite" : "hillshade"}`
+      ? `/api/closeup?${closeupQuery(liveId, livePart, terrainSource)}`
       : null;
   const compareUrl = detail?.rasters[compareLayer] ? `/terrain/${detail.rasters[compareLayer]}` : null;
 
@@ -582,6 +595,8 @@ export function AtlasApp() {
           onAzimuth={setAzimuth}
           onAltitude={setAltitude}
           onLabels={setLabels}
+          terrainSource={terrainSource}
+          onTerrain={setTerrainSource}
           wikiOn={wikiOn}
           onWiki={setWikiOn}
           contextOn={contextOn}
@@ -624,6 +639,7 @@ export function AtlasApp() {
           onContext={(id, enabled) => setContextOn((current) => ({ ...current, [id]: enabled }))}
           closeup={!detail}
           credit={closeupCredit}
+          reliefNote={terrainSource === "gem15" ? metadata.attribution.gem15 : metadata.attribution.dem}
           range={range}
         />
       ) : null}
@@ -652,7 +668,9 @@ export function AtlasApp() {
       })} />
       {help ? <ShortcutOverlay onClose={() => setHelp(false)} /> : null}
       <p className="credit">
-        {metadata.attribution.dem} <CreditLine text={metadata.attribution.satellite} />
+        National overview: {metadata.attribution.dem}.{" "}
+        {metadata.attribution.gem15 ? <><CreditLine text={metadata.attribution.gem15} /> </> : null}
+        <CreditLine text={metadata.attribution.satellite} />
         {" "}
         <SafeLink href="https://pleiades.stoa.org/">Pleiades</SafeLink>
         {" gazetteer © the contributors, "}
@@ -685,6 +703,8 @@ function SettingsMenu(props: {
   onAzimuth: (value: number) => void;
   onAltitude: (value: number) => void;
   onLabels: (value: boolean) => void;
+  terrainSource: TerrainSourceId;
+  onTerrain: (source: TerrainSourceId) => void;
   wikiOn: boolean;
   onWiki: (enabled: boolean) => void;
   contextOn: Record<string, boolean>;
@@ -704,6 +724,15 @@ function SettingsMenu(props: {
           <span>{base === "relief" ? "Shaded relief" : base === "hypsometric" ? "Hypsometric tint" : "Satellite"}</span>
         </label>
       ))}
+      <h2>Place relief</h2>
+      <label className="check">
+        <input type="radio" name="terrain" checked={props.terrainSource === "gem15"} data-terrain="gem15" onChange={() => props.onTerrain("gem15")} />
+        <span>GEM-15 surface, 15 m</span>
+      </label>
+      <label className="check">
+        <input type="radio" name="terrain" checked={props.terrainSource === "copernicus"} data-terrain="copernicus" onChange={() => props.onTerrain("copernicus")} />
+        <span>Copernicus GLO-30</span>
+      </label>
       <h2>Places</h2>
       {(Object.keys(LAYER_STYLE) as LayerId[]).map((layer) => (
         <label className="check" key={layer}>
@@ -838,6 +867,7 @@ function SitePanel(props: {
   onContext: (id: string, enabled: boolean) => void;
   closeup?: boolean;
   credit?: { relief: string; satellite: string } | null;
+  reliefNote?: string;
   range: YearRange;
 }) {
   const properties = props.site.properties;
@@ -875,7 +905,7 @@ function SitePanel(props: {
         }}
         contextOn={props.contextOn}
         onContext={props.onContext}
-        note={props.closeup ? closeupCreditNote(props.credit) : undefined}
+        note={props.closeup ? closeupCreditNote(props.credit) : props.reliefNote}
       />
       {props.rasters.length > 0 ? (
         <section className="place-layers">

@@ -11,6 +11,11 @@ const PARTS = {
 } as const;
 
 export type CloseupPart = keyof typeof PARTS;
+export type TerrainSource = "gem15" | "copernicus";
+
+export function terrainSource(value: string | null): TerrainSource {
+  return value === "copernicus" ? "copernicus" : "gem15";
+}
 
 const SITE_ID = /^(?:Q\d+|[a-z0-9]+(?:-[a-z0-9]+)*)$/;
 
@@ -246,10 +251,11 @@ function runWorker(command: string, args: string[]): Promise<{ status: number | 
   });
 }
 
-async function ensureBuilt(root: string, id: string, point: Point): Promise<void> {
-  const meta = await resolveCacheFile(root, id, "meta");
+async function ensureBuilt(root: string, id: string, point: Point, source: TerrainSource): Promise<void> {
+  const cacheId = source === "copernicus" ? `${id}-glo30` : id;
+  const meta = await resolveCacheFile(root, cacheId, "meta");
   if (await stat(meta).then(() => true).catch(() => false)) return;
-  await coalesce(id, async () => {
+  await coalesce(`${source}:${id}`, async () => {
     if (await stat(meta).then(() => true).catch(() => false)) return;
     const siteDir = path.dirname(meta);
     await mkdir(siteDir, { recursive: true, mode: 0o700 });
@@ -263,6 +269,7 @@ async function ensureBuilt(root: string, id: string, point: Point): Promise<void
       "--lon", String(point.longitude),
       "--lat", String(point.latitude),
       "--out", siteDir,
+      "--source", source,
     ]);
     if (result.status !== 0) {
       console.error("close-up worker failed", id, result.status, result.stdout, result.stderr);
@@ -278,6 +285,7 @@ export async function readCloseup(requestUrl: string): Promise<{ status: number;
   }
   const id = url.searchParams.get("id") ?? "";
   const part = url.searchParams.get("part") ?? "meta";
+  const source = terrainSource(url.searchParams.get("terrain"));
   if (!isSiteId(id) || !isCloseupPart(part)) {
     return { status: 400, body: "bad-request", contentType: "text/plain" };
   }
@@ -287,12 +295,13 @@ export async function readCloseup(requestUrl: string): Promise<{ status: number;
   }
   try {
     const root = await cacheRoot();
-    await ensureBuilt(root, id, point);
-    const file = await resolveCacheFile(root, id, part);
+    await ensureBuilt(root, id, point, source);
+    const cacheId = source === "copernicus" ? `${id}-glo30` : id;
+    const file = await resolveCacheFile(root, cacheId, part);
     const body = await readFile(file);
     const now = new Date();
     await utimes(path.dirname(file), now, now);
-    await evictCache(root, id);
+    await evictCache(root, cacheId);
     return { status: 200, body, contentType: PARTS[part].type };
   } catch (error) {
     console.error("close-up failed", id, error instanceof Error ? error.message : "error");
