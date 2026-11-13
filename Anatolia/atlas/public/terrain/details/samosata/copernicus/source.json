@@ -1,0 +1,20 @@
+{
+  "bounds": [
+    4278728.616252735,
+    4515184.58922707,
+    4288728.616252735,
+    4525184.58922707
+  ],
+  "width": 256,
+  "height": 256,
+  "pixelSizeM": 39.0625,
+  "elevation": {
+    "min": 537.0,
+    "max": 668.205078125
+  },
+  "heightFile": "details/samosata/copernicus/height.u16",
+  "rasters": {
+    "hillshade": "details/samosata/copernicus/hillshade.jpg",
+    "hypsometric": "details/samosata/copernicus/hypsometric.jpg"
+  }
+}

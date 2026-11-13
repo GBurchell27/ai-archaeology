@@ -1,0 +1,20 @@
+{
+  "bounds": [
+    4313268.580726801,
+    4456199.450569973,
+    4323268.580726801,
+    4466199.450569973
+  ],
+  "width": 256,
+  "height": 256,
+  "pixelSizeM": 39.0625,
+  "elevation": {
+    "min": 457.18603515625,
+    "max": 769.239990234375
+  },
+  "heightFile": "details/edessa/copernicus/height.u16",
+  "rasters": {
+    "hillshade": "details/edessa/copernicus/hillshade.jpg",
+    "hypsometric": "details/edessa/copernicus/hypsometric.jpg"
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "bounds": [
+    4106399.85959384,
+    4515730.855376591,
+    4116399.85959384,
+    4525730.855376591
+  ],
+  "width": 256,
+  "height": 256,
+  "pixelSizeM": 39.0625,
+  "elevation": {
+    "min": 446.4582824707031,
+    "max": 1450.9521484375
+  },
+  "heightFile": "details/marash/copernicus/height.u16",
+  "rasters": {
+    "hillshade": "details/marash/copernicus/hillshade.jpg",
+    "hypsometric": "details/marash/copernicus/hypsometric.jpg"
+  }
+}

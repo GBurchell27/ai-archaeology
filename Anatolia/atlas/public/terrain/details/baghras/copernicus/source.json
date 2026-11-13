@@ -1,0 +1,20 @@
+{
+  "bounds": [
+    4027548.5539863356,
+    4354528.4169922685,
+    4037548.5539863356,
+    4364528.4169922685
+  ],
+  "width": 256,
+  "height": 256,
+  "pixelSizeM": 39.0625,
+  "elevation": {
+    "min": 78.75129699707031,
+    "max": 947.3778076171875
+  },
+  "heightFile": "details/baghras/copernicus/height.u16",
+  "rasters": {
+    "hillshade": "details/baghras/copernicus/hillshade.jpg",
+    "hypsometric": "details/baghras/copernicus/hypsometric.jpg"
+  }
+}

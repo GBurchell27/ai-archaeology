@@ -44,6 +44,16 @@ export interface CoronaRecord {
   note: string;
 }
 
+export interface TerrainFallback {
+  bounds: [number, number, number, number];
+  width: number;
+  height: number;
+  pixelSizeM: number;
+  elevation: { min: number; max: number };
+  heightFile: string;
+  rasters: Record<string, string>;
+}
+
 export interface DetailRecord {
   bounds: [number, number, number, number];
   width: number;
@@ -51,6 +61,8 @@ export interface DetailRecord {
   pixelSizeM: number;
   elevation: { min: number; max: number };
   rasters: Record<string, string>;
+  heightFile?: string;
+  terrain?: { copernicus?: TerrainFallback };
   corona?: CoronaRecord;
 }
 
@@ -63,7 +75,7 @@ export interface AtlasMetadata {
   elevation: { min: number; max: number };
   heightFile: string;
   rasters: Record<BaseMap, string>;
-  attribution: { dem: string; satellite: string };
+  attribution: { dem: string; satellite: string; gem15?: string };
   honestNote: string;
   details: Record<string, DetailRecord>;
 }

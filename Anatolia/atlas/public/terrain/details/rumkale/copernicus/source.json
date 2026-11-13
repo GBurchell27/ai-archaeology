@@ -1,0 +1,20 @@
+{
+  "bounds": [
+    4207113.077546794,
+    4472080.426920858,
+    4217113.077546794,
+    4482080.426920858
+  ],
+  "width": 256,
+  "height": 256,
+  "pixelSizeM": 39.0625,
+  "elevation": {
+    "min": 380.0,
+    "max": 678.7093505859375
+  },
+  "heightFile": "details/rumkale/copernicus/height.u16",
+  "rasters": {
+    "hillshade": "details/rumkale/copernicus/hillshade.jpg",
+    "hypsometric": "details/rumkale/copernicus/hypsometric.jpg"
+  }
+}

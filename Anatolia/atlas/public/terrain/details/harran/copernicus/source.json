@@ -1,0 +1,23 @@
+{
+  "bounds": [
+    4341120.509351754,
+    4417980.60557304,
+    4347367.382045134,
+    4424254.225715373
+  ],
+  "width": 167,
+  "height": 167,
+  "pixelSizeM": 29.940119760479043,
+  "elevation": {
+    "min": 357.482666015625,
+    "max": 392.0689697265625
+  },
+  "heightFile": "details/harran/copernicus/height.u16",
+  "rasters": {
+    "hillshade": "details/harran/copernicus/hillshade.jpg",
+    "slope": "details/harran/copernicus/slope.jpg",
+    "local-relief": "details/harran/copernicus/local-relief.jpg",
+    "multidirectional-hillshade": "details/harran/copernicus/multidirectional-hillshade.jpg",
+    "sky-view-factor": "details/harran/copernicus/sky-view-factor.jpg"
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "bounds": [
+    3879504.7631803607,
+    4422474.346119029,
+    3889504.7631803607,
+    4432474.346119029
+  ],
+  "width": 256,
+  "height": 256,
+  "pixelSizeM": 39.0625,
+  "elevation": {
+    "min": 6.319052219390869,
+    "max": 147.5831756591797
+  },
+  "heightFile": "details/tarsus/copernicus/height.u16",
+  "rasters": {
+    "hillshade": "details/tarsus/copernicus/hillshade.jpg",
+    "hypsometric": "details/tarsus/copernicus/hypsometric.jpg"
+  }
+}

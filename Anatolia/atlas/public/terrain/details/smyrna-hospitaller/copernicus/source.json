@@ -1,0 +1,20 @@
+{
+  "bounds": [
+    3016118.2142581823,
+    4633731.476816853,
+    3026118.2142581823,
+    4643731.476816853
+  ],
+  "width": 256,
+  "height": 256,
+  "pixelSizeM": 39.0625,
+  "elevation": {
+    "min": -8.47083854675293,
+    "max": 266.6581726074219
+  },
+  "heightFile": "details/smyrna-hospitaller/copernicus/height.u16",
+  "rasters": {
+    "hillshade": "details/smyrna-hospitaller/copernicus/hillshade.jpg",
+    "hypsometric": "details/smyrna-hospitaller/copernicus/hypsometric.jpg"
+  }
+}

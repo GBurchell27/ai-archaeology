@@ -1,0 +1,20 @@
+{
+  "bounds": [
+    3926952.8404350826,
+    4434106.787250583,
+    3936952.8404350826,
+    4444106.787250583
+  ],
+  "width": 256,
+  "height": 256,
+  "pixelSizeM": 39.0625,
+  "elevation": {
+    "min": 14.26073169708252,
+    "max": 87.21824645996094
+  },
+  "heightFile": "details/adana/copernicus/height.u16",
+  "rasters": {
+    "hillshade": "details/adana/copernicus/hillshade.jpg",
+    "hypsometric": "details/adana/copernicus/hypsometric.jpg"
+  }
+}

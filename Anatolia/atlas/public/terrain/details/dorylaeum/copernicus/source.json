@@ -1,0 +1,20 @@
+{
+  "bounds": [
+    3392537.6507051857,
+    4828545.793428087,
+    3402537.6507051857,
+    4838545.793428087
+  ],
+  "width": 256,
+  "height": 256,
+  "pixelSizeM": 39.0625,
+  "elevation": {
+    "min": 781.0,
+    "max": 950.3179931640625
+  },
+  "heightFile": "details/dorylaeum/copernicus/height.u16",
+  "rasters": {
+    "hillshade": "details/dorylaeum/copernicus/hillshade.jpg",
+    "hypsometric": "details/dorylaeum/copernicus/hypsometric.jpg"
+  }
+}

@@ -27,7 +27,7 @@
         "source": "UNESCO World Heritage Centre, listing 1572",
         "sourceUrl": "https://whc.unesco.org/en/list/1572/",
         "confidence": "high",
-        "notes": "Official listing coordinates. 30 m terrain cannot resolve individual enclosures or pillars.",
+        "notes": "Official listing coordinates. 15 m terrain still cannot resolve individual enclosures or pillars.",
         "periods": [
           "neolithic"
         ],
