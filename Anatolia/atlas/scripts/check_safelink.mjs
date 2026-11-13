@@ -1,12 +1,12 @@
-import { mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { pathToFileURL } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import ts from "typescript";
 
 const root = new URL("..", import.meta.url);
-const dir = join(root.pathname, "node_modules/.cache/safelink-test");
-rmSync(dir, { recursive: true, force: true });
-mkdirSync(dir, { recursive: true });
+const cache = fileURLToPath(new URL("./node_modules/.cache/", root));
+mkdirSync(cache, { recursive: true });
+const dir = mkdtempSync(join(cache, "safelink-test-"));
 
 function emit(filename, source) {
   const output = ts.transpileModule(source, {

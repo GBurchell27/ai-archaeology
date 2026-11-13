@@ -813,7 +813,7 @@ body[data-panel="open"] .credit {
 
 @media (max-width: 540px) {
   .landscape-toggle { padding: 0 8px; }
-  .landscape-toggle > span { display: none; }
+  .landscape-toggle > svg + span { display: none; }
 }
 
 @media (max-width: 365px) {
