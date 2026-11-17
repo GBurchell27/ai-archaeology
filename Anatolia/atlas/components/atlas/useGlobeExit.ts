@@ -39,13 +39,19 @@ export function useGlobeExit(
     // Armed only once the camera has been inside the threshold, so a far starting look does not bounce straight back.
     let armed = false;
     let beyondSince = 0;
+    // A resize moves the overview distance under a still camera; only zooming out from where it then stood may leave.
+    let restingDistance = 0;
+    const rest = () => { restingDistance = cameraDistance() ?? 0; };
+    window.addEventListener("resize", rest);
     const timer = window.setInterval(() => {
       const distance = cameraDistance();
       if (distance == null || document.body.dataset.flying === "true") {
         beyondSince = 0;
         return;
       }
-      const beyond = distance > poseDistance(overviewPose(bounds, 0)) * EXIT_DISTANCE_RATIO;
+      const overviewDistance = poseDistance(overviewPose(bounds, 0));
+      if (distance <= overviewDistance) restingDistance = 0;
+      const beyond = distance > Math.max(overviewDistance, restingDistance) * EXIT_DISTANCE_RATIO;
       if (!beyond) {
         armed = true;
         beyondSince = 0;
@@ -59,6 +65,7 @@ export function useGlobeExit(
     }, POLL_MS);
     return () => {
       window.clearInterval(timer);
+      window.removeEventListener("resize", rest);
       // AtlasCamera never clears its globals; a stale camera would mislead the next atlas mounted from the globe.
       delete (window as CameraWindow).__atlasCamera;
       delete (window as CameraWindow).__atlasControls;

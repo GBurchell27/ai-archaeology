@@ -5,9 +5,11 @@ import { useFrame, useThree } from "@react-three/fiber";
 import { useCallback, useEffect, useMemo, useRef, type JSX } from "react";
 import { cameraAltitude, type GlobeLook } from "@/lib/globe/ellipsoid";
 import type { ScreenBox } from "@/lib/globe/labelLayout";
-import { pickedSiteFromRow, type PickedSite } from "@/lib/globe/siteBlock";
+import type { PickedSite, SiteLayer } from "@/lib/globe/siteBlock";
 import type { WorldCatalogue } from "@/lib/world/catalogueLoader";
+import type { SiteColumns } from "@/lib/world/catalogueTypes";
 import type { SiteFilter } from "@/lib/world/siteFilter";
+import { pickedSiteFromColumns } from "@/lib/world/sitePick";
 import { OSM_MEGALITH_STYLE } from "@/lib/world/siteTypeStyle";
 import { GlobeClusterBadges } from "./GlobeClusterBadges";
 import { GlobeFeaturedMarkers } from "./GlobeFeaturedMarkers";
@@ -40,6 +42,15 @@ function useOsmCredit(shown: boolean): void {
   }, [canvas, shown]);
 }
 
+function useCellReport(layers: readonly SiteLayer[], report: ((cells: readonly SiteColumns[]) => void) | undefined): void {
+  const cellKeys = layers.map((layer) => layer.block.key).filter((key) => key.startsWith("cell-")).join(" ");
+  const latest = useRef(layers);
+  latest.current = layers;
+  useEffect(() => {
+    report?.(latest.current.filter((layer) => layer.block.key.startsWith("cell-")).map((layer) => layer.block.columns));
+  }, [cellKeys, report]);
+}
+
 /** Every published site on the globe: the point field, featured monuments, count badges, picking. */
 export function GlobeSites(props: {
   catalogue: WorldCatalogue;
@@ -47,8 +58,12 @@ export function GlobeSites(props: {
   look: GlobeLook | null;
   selectedId: string | null;
   showOsmMegaliths: boolean;
+  /** Monument names and count badges; on unless switched off. */
+  showLabels?: boolean;
   onPick(site: PickedSite | null): void;
   onClusterPick?(target: GlobeLook): void;
+  /** The regional cells drawn right now, reported whenever one arrives or leaves. */
+  onCellsChange?(cells: readonly SiteColumns[]): void;
 }): JSX.Element {
   const { catalogue, onPick } = props;
   const layers = useSiteLayers(catalogue, props.filter, props.look, props.showOsmMegaliths);
@@ -58,12 +73,14 @@ export function GlobeSites(props: {
     tuneSitePointsMaterial(material, "sites", cameraAltitude(camera.position.toArray()), viewport.dpr);
   });
   const pick = useCallback(
-    (hit: SiteHit | null) => onPick(hit ? pickedSiteFromRow(hit.layer.block, hit.row, catalogue.index) : null),
+    (hit: SiteHit | null) => onPick(hit ? pickedSiteFromColumns(hit.layer.block.columns, hit.row, catalogue.index) : null),
     [onPick, catalogue.index],
   );
   const hovered = useGlobePicking(layers, pick);
   useOsmCredit(layers.some((layer) => layer.block.key === "osm-megaliths"));
-  const badgeBoxes = useRef<ScreenBox[]>([]);
+  useCellReport(layers, props.onCellsChange);
+  const labelBoxes = useRef<ScreenBox[]>([]);
+  const showLabels = props.showLabels ?? true;
   const hoveredRow = hovered ? hovered.row * 3 : 0;
 
   return (
@@ -71,9 +88,9 @@ export function GlobeSites(props: {
       {layers.map((layer) => (
         <GlobeSitePoints key={layer.block.key} block={layer.block} shown={layer.shown} material={material} />
       ))}
-      {/* Badges first: their frame callback runs first, so the labels lay out around this frame's badges. */}
-      <GlobeClusterBadges layers={layers} onClusterPick={props.onClusterPick} occupied={badgeBoxes} />
-      <GlobeFeaturedMarkers featured={catalogue.featured} core={layers[0]} siteTypes={catalogue.index.siteTypes} occupied={badgeBoxes} />
+      {/* Names first: their frame callback runs first, so the badges keep clear of this frame's names. */}
+      <GlobeFeaturedMarkers featured={catalogue.featured} core={layers[0]} siteTypes={catalogue.index.siteTypes} occupied={labelBoxes} showLabels={showLabels} />
+      <GlobeClusterBadges layers={layers} onClusterPick={props.onClusterPick} occupied={labelBoxes} shown={showLabels} />
       <GlobeSelectionRing layers={layers} selectedId={props.selectedId} />
       {hovered ? (
         <Html

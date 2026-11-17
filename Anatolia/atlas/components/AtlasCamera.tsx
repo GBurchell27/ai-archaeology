@@ -41,9 +41,11 @@ export function AtlasCamera(props: {
   zoomSpeed: number;
   zoomCommand: ZoomCommand;
   onArrival: () => void;
+  /** Called once the opening pose is in place; a flight ordered before that would start from the wrong view. */
+  onReady?: () => void;
   groundAt: (x: number, z: number) => number | null;
 }) {
-  const { pose, span, cancelToken, zoomSpeed, zoomCommand, onArrival } = props;
+  const { pose, span, cancelToken, zoomSpeed, zoomCommand, onArrival, onReady } = props;
   const controls = useRef<OrbitControlsImpl>(null);
   const camera = useThree((state) => state.camera) as THREE.PerspectiveCamera;
   const scene = useThree((state) => state.scene);
@@ -80,6 +82,7 @@ export function AtlasCamera(props: {
       camera.position.set(...pose.position);
       orbit.update();
       finishFlight(orbit);
+      onReady?.();
       return;
     }
     const fromTarget = orbit.target.clone();
@@ -96,6 +99,7 @@ export function AtlasCamera(props: {
     orbit.enabled = false;
     document.body.dataset.flying = "true";
     document.body.dataset.flightMs = String(Math.round(duration));
+    // onReady is a state setter; the pose alone decides when this runs.
   }, [camera, pose]);
 
   useEffect(() => {

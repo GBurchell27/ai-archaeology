@@ -1,5 +1,6 @@
 "use client";
 
+import { SafeLink } from "@/components/SafeLink";
 import type { ScaleBar } from "@/lib/place/placeGeometry";
 import type { PlaceSite } from "@/lib/place/placeSite";
 import type { CloseupMeta } from "@/lib/place/placeTerrain";
@@ -60,7 +61,7 @@ export function PlaceFooter(props: { meta: CloseupMeta; site: PlaceSite | null |
         {site?.recordCredit ? (
           <p>
             <b>Site record</b> {site.recordCredit}
-            {site.recordUrl ? <> · <a href={site.recordUrl} target="_blank" rel="noreferrer">source</a></> : null}
+            {site.recordUrl ? <> · <SafeLink href={site.recordUrl}>source</SafeLink></> : null}
           </p>
         ) : null}
       </details>

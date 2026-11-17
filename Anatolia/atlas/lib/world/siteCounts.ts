@@ -4,6 +4,8 @@ import type { SiteColumns } from "./catalogueTypes";
 import { siteMatches, type SiteFilter } from "./siteFilter";
 
 export interface SiteCounts {
+  /** Rows in the blocks counted: core plus whichever regional cells are loaded. */
+  loaded: number;
   /** Rows the whole filter lets through. */
   shown: number;
   /** Rows with no dates at all that pass the type and featured filters, whether or not undated sites are on. */
@@ -12,10 +14,17 @@ export interface SiteCounts {
   byType: number[];
 }
 
-export function countSites(columns: SiteColumns, filter: SiteFilter, siteTypes: string[]): SiteCounts {
+/** Counts over every block given: the core file and the regional cells on the globe right now. */
+export function countSites(blocks: readonly SiteColumns[], filter: SiteFilter, siteTypes: string[]): SiteCounts {
+  const counts: SiteCounts = { loaded: 0, shown: 0, undated: 0, byType: siteTypes.map(() => 0) };
+  for (const columns of blocks) countBlock(counts, columns, filter, siteTypes);
+  return counts;
+}
+
+function countBlock(counts: SiteCounts, columns: SiteColumns, filter: SiteFilter, siteTypes: string[]): void {
   const anyType: SiteFilter = { ...filter, types: null };
   const anyTime: SiteFilter = { ...filter, range: null };
-  const counts: SiteCounts = { shown: 0, undated: 0, byType: siteTypes.map(() => 0) };
+  counts.loaded += columns.id.length;
   for (let row = 0; row < columns.id.length; row += 1) {
     const typeAllowed = !filter.types || filter.types.has(siteTypes[columns.type[row]]);
     if (siteMatches(columns, row, anyType, siteTypes)) {
@@ -25,5 +34,4 @@ export function countSites(columns: SiteColumns, filter: SiteFilter, siteTypes: 
     const isUndated = columns.start[row] === null && columns.end[row] === null;
     if (isUndated && siteMatches(columns, row, anyTime, siteTypes)) counts.undated += 1;
   }
-  return counts;
 }

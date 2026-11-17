@@ -2,7 +2,7 @@
 
 Needs the atlas dependencies (`npm install` in Anatolia/atlas, which provides
 puppeteer-core) and a dev server on http://127.0.0.1:43127/. It skips when
-puppeteer-core is not installed.
+puppeteer-core, a Chromium browser (ATLAS_CHROME) or the dev server is missing.
 """
 
 import subprocess
@@ -25,5 +25,7 @@ def test_timeline_thumbs_answer_the_keyboard():
         capture_output=True,
         text=True,
     )
+    if completed.returncode == 77:
+        pytest.skip(completed.stderr.strip() or "no browser or dev server")
     assert completed.returncode == 0, completed.stdout + completed.stderr
     assert '"ok": true' in completed.stdout or '"ok":true' in completed.stdout.replace(" ", "")

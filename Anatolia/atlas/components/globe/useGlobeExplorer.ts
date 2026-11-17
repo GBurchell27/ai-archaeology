@@ -3,7 +3,7 @@
 import { useCallback, useMemo, useRef, useState, type RefObject } from "react";
 import type { GlobeLook } from "@/lib/globe/ellipsoid";
 import { useWorldCatalogue, type WorldCatalogue } from "@/lib/world/catalogueLoader";
-import type { FeaturedSite } from "@/lib/world/catalogueTypes";
+import type { FeaturedSite, SiteColumns } from "@/lib/world/catalogueTypes";
 import { randomAcceptedWonder, tourStops } from "@/lib/world/wonders";
 import { useSiteFilter, type SiteFilterViewModel } from "./useSiteFilter";
 import { useSiteSelection, type SiteSelectionViewModel } from "./useSiteSelection";
@@ -27,6 +27,11 @@ export interface GlobeExplorerViewModel {
   tour: WonderTourViewModel;
   panel: ExplorerPanel | null;
   showOsmMegaliths: boolean;
+  /** Monument names and count badges on the globe. */
+  showLabels: boolean;
+  setShowLabels(show: boolean): void;
+  /** The globe reports which regional cells it has on show, so the counts can include them. */
+  setLoadedCells(cells: readonly SiteColumns[]): void;
   togglePanel(panel: ExplorerPanel): void;
   /** Escape: closes the site card if one is open, otherwise the open panel. Returns false when nothing was open. */
   closeTop(): boolean;
@@ -65,7 +70,9 @@ export function useGlobeExplorer(options: {
   onSelectSite?: (siteId: string | null) => void;
 }): GlobeExplorerViewModel {
   const { catalogue, error: catalogueError } = useWorldCatalogue();
-  const filters = useSiteFilter(catalogue);
+  const [loadedCells, setLoadedCells] = useState<readonly SiteColumns[]>([]);
+  const filters = useSiteFilter(catalogue, loadedCells);
+  const [showLabels, setShowLabels] = useState(true);
   const selection = useSiteSelection({
     catalogue, initialSiteId: options.initialSiteId, look: options.look, onSelectSite: options.onSelectSite,
   });
@@ -100,10 +107,10 @@ export function useGlobeExplorer(options: {
   }, [catalogue, visitById]);
 
   return useMemo(() => ({
-    catalogue, catalogueError, filters, selection, tour, panel, showOsmMegaliths,
-    togglePanel, closeTop, setShowOsmMegaliths, visitRandomWonder,
+    catalogue, catalogueError, filters, selection, tour, panel, showOsmMegaliths, showLabels,
+    togglePanel, closeTop, setShowOsmMegaliths, setShowLabels, setLoadedCells, visitRandomWonder,
   }), [
-    catalogue, catalogueError, filters, selection, tour, panel, showOsmMegaliths,
+    catalogue, catalogueError, filters, selection, tour, panel, showOsmMegaliths, showLabels,
     togglePanel, closeTop, visitRandomWonder,
   ]);
 }

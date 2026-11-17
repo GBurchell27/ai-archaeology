@@ -26,7 +26,8 @@ export function isSiteId(value: string): boolean {
 }
 
 export function isCloseupPart(value: string): value is CloseupPart {
-  return value in PARTS;
+  // Own keys only: "constructor" and "__proto__" are `in` every object.
+  return Object.hasOwn(PARTS, value);
 }
 
 type Point = PublishedPoint;
@@ -50,11 +51,15 @@ function byteCap(): number {
   return Number.isFinite(parsed) && parsed >= 1 ? parsed : 64 * 1024 * 1024;
 }
 
+/** Builds waiting for a worker beyond this are refused: the world catalogue has over 100,000 valid ids to ask for. */
+export const CLOSEUP_QUEUE_LIMIT = 8;
+
 function acquire(): Promise<void> {
   if (active < concurrencyLimit()) {
     active += 1;
     return Promise.resolve();
   }
+  if (waiters.length >= CLOSEUP_QUEUE_LIMIT) return Promise.reject(new Error("close-up-busy"));
   return new Promise((resolve) => {
     waiters.push(() => {
       active += 1;

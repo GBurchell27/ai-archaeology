@@ -46,3 +46,13 @@
   .eras::-webkit-scrollbar { display: none; }
   .era { flex: none; padding-inline: 9px; }
 }
+
+@media (pointer: coarse) {
+  .allTime { min-height: 40px; }
+  .track { height: 40px; }
+  .rail, .fill { top: 19px; }
+  .tick { top: 15px; }
+  .thumb { top: 13px; }
+  /* The thumb stays small; its hit area does not. */
+  .thumb::after { content: ""; position: absolute; inset: -13px; }
+}

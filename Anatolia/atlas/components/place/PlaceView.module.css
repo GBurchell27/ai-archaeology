@@ -2,7 +2,8 @@
   --place-ink: #ece4d4;
   --place-muted: #a3a9b1;
   --place-ochre: #dba545;
-  --place-glass: rgba(12, 16, 22, 0.62);
+  /* Dense enough that the muted labels hold 4.5:1 with pale desert behind the panel. */
+  --place-glass: rgba(12, 16, 22, 0.8);
   --place-rule: rgba(236, 228, 212, 0.16);
   --place-serif: Palatino, "Palatino Linotype", "Book Antiqua", Georgia, serif;
   position: absolute;
@@ -261,4 +262,11 @@
 
 @media (prefers-reduced-motion: reduce) {
   .progress::after { animation: none; width: 100%; opacity: 0.5; }
+}
+
+@media (pointer: coarse) {
+  .back, .reset { min-height: 40px; }
+  .drape span { padding-block: 11px; }
+  .slider input { min-height: 40px; }
+  .credits summary { padding-block: 8px; }
 }

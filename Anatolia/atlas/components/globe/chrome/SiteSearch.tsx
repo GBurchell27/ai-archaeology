@@ -1,31 +1,30 @@
 "use client";
 
-import { useEffect, useId, useMemo, useRef, useState, type KeyboardEvent } from "react";
+import { useEffect, useId, useRef, useState, type KeyboardEvent } from "react";
 import type { WorldCatalogue } from "@/lib/world/catalogueLoader";
-import { pickedSiteFromRow } from "@/lib/world/sitePick";
-import { MIN_QUERY_LENGTH, searchSites } from "@/lib/world/siteSearch";
+import { MIN_QUERY_LENGTH } from "@/lib/world/siteSearch";
 import { siteTypeStyle } from "@/lib/world/siteTypeStyle";
 import { formatSiteDates } from "@/lib/world/worldEras";
 import type { PickedSite } from "../GlobeSites";
 import { SearchIcon } from "./ExplorerIcons";
 import ui from "./chrome.module.css";
 import styles from "./SiteSearch.module.css";
-import { useSiteSearchIndex } from "./useSiteSearchIndex";
+import { useSiteSearchHits } from "./useSiteSearchHits";
 
-/** Instant search over the catalogue names. Enter flies to the highlighted hit, which starts as the best one. */
-export function SiteSearch(props: { catalogue: WorldCatalogue | null; onVisit(site: PickedSite): void }) {
+/**
+ * Instant search over every name in the catalogue: the core file at once, the rest from the names
+ * file fetched when the box is first focused. Enter flies to the highlighted hit, which starts as the best one.
+ */
+export function SiteSearch(props: { catalogue: WorldCatalogue | null; unavailable?: boolean; onVisit(site: PickedSite): void }) {
   const { catalogue, onVisit } = props;
-  const { index, foldedRows } = useSiteSearchIndex(catalogue?.core ?? null);
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
+  const [everFocused, setEverFocused] = useState(false);
+  const { hits, stillReading } = useSiteSearchHits(catalogue, query, everFocused);
   const [active, setActive] = useState(0);
   const input = useRef<HTMLInputElement>(null);
   const listId = useId();
 
-  // foldedRows is a dependency so results fill in while the index is still being built.
-  const hits = useMemo(() => (
-    index && catalogue ? searchSites(index, query).map((row) => pickedSiteFromRow(catalogue, row)) : []
-  ), [index, foldedRows, catalogue, query]); // eslint-disable-line react-hooks/exhaustive-deps
   const listOpen = open && query.trim().length >= MIN_QUERY_LENGTH;
 
   useEffect(() => {
@@ -44,7 +43,9 @@ export function SiteSearch(props: { catalogue: WorldCatalogue | null; onVisit(si
     onVisit(site);
     setQuery(site.name);
     setOpen(false);
-    input.current?.blur();
+    // A newly opened card has taken the focus by now and will hand it back here when it closes.
+    // An already open card has not, so the box lets go itself (and the phone keyboard goes away).
+    window.setTimeout(() => { if (document.activeElement === input.current) input.current?.blur(); }, 0);
   }
 
   function onKeyDown(event: KeyboardEvent<HTMLInputElement>): void {
@@ -79,11 +80,13 @@ export function SiteSearch(props: { catalogue: WorldCatalogue | null; onVisit(si
         aria-autocomplete="list"
         aria-activedescendant={listOpen && hits[active] ? `${listId}-${active}` : undefined}
         autoComplete="off"
+        maxLength={80}
         spellCheck={false}
-        placeholder={catalogue ? "Search a site name" : "Loading the catalogue…"}
+        placeholder={catalogue ? "Search a site name" : props.unavailable ? "Search needs the catalogue" : "Loading the catalogue…"}
+        disabled={props.unavailable}
         value={query}
         onChange={(event) => { setQuery(event.target.value); setActive(0); setOpen(true); }}
-        onFocus={() => setOpen(true)}
+        onFocus={() => { setOpen(true); setEverFocused(true); }}
         onKeyDown={onKeyDown}
       />
       <kbd className={styles.key} aria-hidden="true">/</kbd>
@@ -101,9 +104,7 @@ export function SiteSearch(props: { catalogue: WorldCatalogue | null; onVisit(si
           ))}
           {hits.length === 0 ? (
             <li className={styles.empty} role="presentation">
-              {index && foldedRows === index.folded.length
-                ? "No published site in the catalogue has that name. Try a shorter part of it."
-                : "Still reading the catalogue…"}
+              {stillReading ? "Still reading the catalogue…" : "No published site in the catalogue has that name. Try a shorter part of it."}
             </li>
           ) : null}
         </ul>

@@ -44,7 +44,9 @@ def entities_for(qids: list[str], batch_number: int) -> dict:
         if "entities" not in json.loads(payload):
             raise RuntimeError(f"batch {batch_number}: {payload[:300]!r}")
         RAW_DIRECTORY.mkdir(parents=True, exist_ok=True)
-        cached.write_bytes(payload)
+        partial = cached.with_suffix(".part")
+        partial.write_bytes(payload)
+        partial.replace(cached)  # a crash mid-write must not leave a half file in the cache
         time.sleep(1)
     return json.loads(cached.read_text(encoding="utf-8"))["entities"]
 

@@ -25,19 +25,21 @@ function LayerSwitch(props: { dataRole: string; title: string; checked: boolean;
 export function LayersPanel(props: {
   osmMegaliths: WorldIndex["osmMegaliths"];
   showOsmMegaliths: boolean;
+  showLabels: boolean;
   featuredOnly: boolean;
+  onShowLabels(show: boolean): void;
   onShowOsmMegaliths(show: boolean): void;
   onFeaturedOnly(only: boolean): void;
-  /**
-   * Reserved for the predictive layer ("where published sites of this kind tend to be recorded").
-   * Whatever is passed is mounted under its own heading; this panel knows nothing else about it.
-   */
+  /** The recording-pattern layer's controls, mounted as they are: this panel knows nothing else about that layer. */
   modelSlot?: ReactNode;
   onClose(): void;
 }) {
   const megalithCount = props.osmMegaliths?.count.toLocaleString("en-GB");
   return (
     <PanelShell dataRole="layers-panel" title="Layers" closeLabel="Close the layers panel" onClose={props.onClose}>
+      <LayerSwitch dataRole="show-labels" title="Labels" checked={props.showLabels} onChange={props.onShowLabels}>
+        Names of the wonders, and the counts over crowded regions.
+      </LayerSwitch>
       <LayerSwitch dataRole="featured-only" title="Wonders only" checked={props.featuredOnly} onChange={props.onFeaturedOnly}>
         Hide everything except the hand-picked monuments.
       </LayerSwitch>
@@ -48,7 +50,6 @@ export function LayersPanel(props: {
           <SafeLink href={OSM_MEGALITH_STYLE.attributionUrl}>{OSM_MEGALITH_STYLE.attribution}</SafeLink>.
         </LayerSwitch>
       ) : null}
-      {/* Reserved slot: the predictive-layer controls mount here. Nothing renders until a later change passes `modelSlot`. */}
       {props.modelSlot ? (
         <section className={styles.model} aria-label="Recording-pattern layer" data-role="model-slot">{props.modelSlot}</section>
       ) : null}

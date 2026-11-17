@@ -37,6 +37,12 @@ export function SiteCardRecord(props: { site: PickedSite; detail: SiteDetail | n
       {detail.types.length ? (
         <p className={styles.fact}><span className={ui.eyebrow}>Recorded as</span>{detail.types.join(", ")}</p>
       ) : null}
+      {detail.datingSource === "c14" ? (
+        <p className={styles.fact} data-role="dating-note">
+          <span className={ui.eyebrow}>Dating</span>
+          From radiocarbon samples matched to this site by name, roughly calibrated. Read the years as ± a few centuries.
+        </p>
+      ) : null}
       <ul className={`${ui.prose} ${styles.links}`}>
         {detail.wikipedia ? <li><SafeLink href={detail.wikipedia}>Read about it on Wikipedia</SafeLink></li> : null}
         <li><SafeLink href={detail.sourceUrl}>Open the source record</SafeLink></li>

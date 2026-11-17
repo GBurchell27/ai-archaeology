@@ -6,6 +6,10 @@ import type { GlobeLook, LonLat } from "@/lib/globe/ellipsoid";
 import { globeLookFromAtlas, type AtlasLook } from "@/lib/globe/handoff";
 import { DEFAULT_GLOBE_LOOK, serialiseViewUrl, type WorldViewState } from "@/lib/globe/viewUrl";
 import type { RegionalTerrain } from "@/lib/types";
+import { GlobeModelOverlay } from "./globe/model/GlobeModelOverlay";
+import { ModelControls } from "./globe/model/ModelControls";
+import { withModelParam } from "./globe/model/modelUrl";
+import { useModelLayer } from "./globe/model/useModelLayer";
 import styles from "./WorldCoordinator.module.css";
 
 // Each view owns a WebGL canvas, so each is loaded and mounted only while it is on screen.
@@ -56,7 +60,7 @@ function urlForScene(scene: WorldScene): string {
 }
 
 function writeUrl(search: string): void {
-  window.history.replaceState(window.history.state, "", `${window.location.pathname}${search}`);
+  window.history.replaceState(window.history.state, "", `${window.location.pathname}${withModelParam(search)}`);
 }
 
 /** Owns which of the three views is showing, the crossfade between them, and the address bar. */
@@ -71,6 +75,7 @@ export function WorldCoordinator(props: { regional: RegionalTerrain | null; init
   const currentScene = useRef(mounted.current.scene);
   const fadeTimer = useRef(0);
   const urlTimer = useRef(0);
+  const model = useModelLayer();
 
   const show = useCallback((scene: WorldScene) => {
     currentScene.current = scene;
@@ -137,6 +142,8 @@ export function WorldCoordinator(props: { regional: RegionalTerrain | null; init
         onSelectSite={trackGlobeSite}
         onOpenPlace={openPlace}
         onEnterAtlas={enterAtlas}
+        modelSlot={<ModelControls model={model} />}
+        sceneLayers={<GlobeModelOverlay model={model} />}
       />
     );
   }
@@ -149,7 +156,7 @@ export function WorldCoordinator(props: { regional: RegionalTerrain | null; init
           {renderScene(leaving.scene)}
         </div>
       ) : null}
-      <div key={current.key} className={styles.layer}>{renderScene(current.scene)}</div>
+      <div key={current.key} className={leaving ? `${styles.layer} ${styles.entering}` : styles.layer}>{renderScene(current.scene)}</div>
     </main>
   );
 }

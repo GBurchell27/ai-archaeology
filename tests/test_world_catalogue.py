@@ -2,15 +2,16 @@
 
 import json
 import math
+from dataclasses import replace
 from pathlib import Path
 
 import pytest
 
-from ai_archaeology.world.dating import apply_featured, attach_radiocarbon, dating_name_key
+from ai_archaeology.world.dating import apply_featured, attach_radiocarbon, dating_name_key, drop_implausible_dates
 from ai_archaeology.world.merge import merge_published
 from ai_archaeology.world.records import SITE_ID, SITE_TYPES, WorldSite
 from ai_archaeology.world.web_pack import (
-    build_catalogue_files, cell_key_for, detail_bucket, split_core, write_catalogue,
+    build_catalogue_files, cell_key_for, detail_bucket, source_record_url, split_core, write_catalogue,
 )
 
 METRES_PER_DEGREE = 111_195.0
@@ -57,25 +58,36 @@ def test_identifier_merge_keeps_wikidata_dating_when_it_has_one():
     assert (merged.startYear, merged.endYear, merged.datingSource, merged.licence) == (-900, None, "wikidata", "CC0")
 
 
-def test_spatial_merge_follows_the_150_m_and_same_name_3_km_rule():
+def test_spatial_merge_needs_the_same_folded_name_within_3_km():
     items = [_site("Q1", "Çatal Höyük", 30.0, 40.0), _site("Q2", "Beta", 50.0, 10.0)]
     places = [
         _site("101", "Catal Hoyuk", 30.0, _north(40.0, 2500), "pleiades"),  # same folded name, 2.5 km
-        _site("102", "Unrelated", 50.0, _north(10.0, 100), "pleiades"),  # 100 m, any name
+        _site("102", "Unrelated", 50.0, _north(10.0, 10), "pleiades"),  # 10 m away, but nearness alone never merges
         _site("103", "Beta", 50.0, _north(10.0, 3500), "pleiades"),  # same name, too far
-        _site("104", "Gamma", 30.0, _north(40.0, 500), "pleiades"),  # different monument nearby
     ]
     outcome = merge_published(items, places)
-    assert sorted(site.id for site in outcome.sites) == ["103", "104", "Q1", "Q2"]
-    assert outcome.linked_spatially == 2
+    assert sorted(site.id for site in outcome.sites) == ["102", "103", "Q1", "Q2"]
+    assert outcome.linked_spatially == 1
     by_id = {site.id: site for site in outcome.sites}
     assert by_id["Q1"].ids["pleiades"] == "101"
-    assert by_id["Q2"].ids["pleiades"] == "102"
     assert (by_id["Q1"].lon, by_id["Q1"].lat) == (30.0, 40.0)
 
 
+def test_an_item_absorbs_one_place_and_a_place_takes_its_nearest_namesake():
+    items = [_site("Q1", "Tower", 30.0, 40.0), _site("Q2", "Tower", 30.0, _north(40.0, 1000))]
+    places = [
+        _site("101", "Tower", 30.0, _north(40.0, 900), "pleiades", startYear=-50, datingSource="pleiades"),  # 100 m from Q2
+        _site("102", "Tower", 30.0, _north(40.0, 800), "pleiades"),  # also nearest Q2, but farther from it than 101
+    ]
+    outcome = merge_published(items, places)
+    by_id = {site.id: site for site in outcome.sites}
+    assert sorted(by_id) == ["102", "Q1", "Q2"]
+    assert (by_id["Q2"].ids["pleiades"], by_id["Q2"].startYear) == ("101", -50)
+    assert outcome.linked_spatially == 1
+
+
 def test_spatial_merge_works_across_the_antimeridian():
-    outcome = merge_published([_site("Q1", "Edge", 179.9999, 0.0)], [_site("101", "Other", -179.9999, 0.0, "pleiades")])
+    outcome = merge_published([_site("Q1", "Edge", 179.9999, 0.0)], [_site("101", "Edge", -179.9999, 0.0, "pleiades")])
     assert [site.id for site in outcome.sites] == ["Q1"]
 
 
@@ -114,6 +126,21 @@ def test_radiocarbon_dates_only_undated_sites_and_never_moves_a_pin():
     assert (dated["Q2"].startYear, dated["Q2"].datingSource) == (-3000, "wikidata")
     assert (dated["Q3"].startYear, dated["Q3"].datingSource) == (None, "none")
     assert [(site.lon, site.lat) for site in dated.values()] == [(site.lon, site.lat) for site in sites]
+
+
+def test_radiocarbon_skips_pleiades_places_and_pleistocene_spans_on_holocene_types():
+    span = {"name": "Larissa", "lon": 22.4, "lat": 39.6, "startYear": -44516, "endYear": -25921, "source": "xronos"}
+    young = {"name": "Larissa", "lon": 22.4, "lat": _north(39.6, 2000), "startYear": -6000, "endYear": -5000, "source": "xronos"}
+    city = _site("Q1", "Larissa", 22.4, 39.6, siteType="city")
+    cave = _site("Q2", "Larissa", 22.4, 39.6, siteType="cave")
+    gazetteer = _site("540", "Larissa", 22.4, 39.6, "pleiades", siteType="settlement")
+    dated = {site.id: site for site in attach_radiocarbon([city, cave, gazetteer], [span])}
+    assert (dated["Q1"].startYear, dated["Q1"].datingSource) == (None, "none")
+    assert (dated["Q2"].startYear, dated["Q2"].datingSource) == (-44516, "c14")
+    assert dated["540"] == gazetteer
+    # The implausible span is passed over, not the site: a farther plausible one still dates it.
+    redated = attach_radiocarbon([city, gazetteer], [span, young])
+    assert (redated[0].startYear, redated[1]) == (-6000, gazetteer)
 
 
 def test_radiocarbon_name_key_drops_site_words_but_never_numbers():
@@ -224,22 +251,63 @@ def test_core_top_up_takes_the_most_important_first():
     assert len(rest) == 7
 
 
-def test_core_boosts_monument_types_and_never_splits_a_tie():
+def test_core_boosts_monument_types_and_leaves_stubs_out():
     sites = [
         _site("Q1", "Findspot", 0.0, 0.0, importance=3),
         _site("Q2", "Dolmen", 0.0, 0.0, importance=2, siteType="megalith"),
         _site("Q3", "Village", 0.0, 0.0, importance=2),
-        _site("Q4", "Hamlet", 0.0, 0.0, importance=2),
+        _site("Q4", "Dated village", 0.0, 0.0, importance=2, startYear=-500, datingSource="wikidata"),
         _site("Q5", "Stub dolmen", 0.0, 0.0, siteType="megalith"),
         _site("Q6", "Curated stub", 0.0, 0.0),
     ]
     core, rest = split_core(sites, {"Q6"}, core_target=3)
     assert {site.id for site in core} == {"Q6", "Q2", "Q1"}  # the dolmen (2 x 2) outranks the findspot (3)
     core, rest = split_core(sites, {"Q6"}, core_target=4)
-    assert {site.id for site in core} == {"Q6", "Q2", "Q1", "Q3", "Q4"}  # Q3 and Q4 tie, so both come in
-    assert [site.id for site in rest] == ["Q5"]  # a stub scores nothing, boosted type or not
-    core, rest = split_core(sites[4:] + [_site("Q7", "Stub", 0.0, 0.0)], set(), core_target=1)
-    assert len(core) == 1  # zero-score ties stop at the target
+    assert {site.id for site in core} == {"Q6", "Q2", "Q1", "Q4"}  # on a tie the dated site comes first
+    assert [site.id for site in rest] == ["Q3", "Q5"]
+
+
+def test_core_gives_pleiades_only_places_a_quarter_of_the_room():
+    items = [_site(f"Q{number}", f"Item {number}", 0.0, 0.0, importance=number) for number in range(1, 21)]
+    dated = {"startYear": -500, "endYear": 300, "datingSource": "pleiades"}
+    places = [
+        _site("101", "Undated", 0.0, 0.0, "pleiades"),
+        _site("102", "Rough", 0.0, 0.0, "pleiades", locationPrecision="rough", **dated),
+        _site("103", "Farm", 0.0, 0.0, "pleiades", siteType="other", **dated),
+        _site("104", "Town", 0.0, 0.0, "pleiades", siteType="settlement", **dated),
+        _site("105", "Old town", 0.0, 0.0, "pleiades", siteType="settlement", startYear=-2000, endYear=600, datingSource="pleiades"),
+    ]
+    core, rest = split_core(items + places, set(), core_target=8)
+    assert sorted(site.id for site in core if site.source == "pleiades") == ["104", "105"]
+    assert sorted(site.importance for site in core if site.source == "wikidata") == [15, 16, 17, 18, 19, 20]
+    core, rest = split_core(items + places, set(), core_target=12)
+    assert sorted(site.id for site in core if site.source == "pleiades") == ["103", "104", "105"]
+    core, rest = split_core(places, set(), core_target=4)  # no Wikidata to fill its share
+    assert sorted(site.id for site in core) == ["102", "103", "104", "105"]
+
+
+def test_names_file_lists_every_site_outside_core_for_search():
+    files = build_catalogue_files(_many_sites(), [], [], "2026-01-01", core_target=25)
+    names = files["names.json"]
+    assert list(names) == ["id", "name", "lon", "lat", "type", "start", "end"]
+    assert files["index.json"]["namesFile"] == "names.json"
+    assert set(names["id"]).isdisjoint(files["core.json"]["id"])
+    assert len(names["id"]) == files["index.json"]["count"] - files["index.json"]["coreCount"]
+    assert all(len(column) == len(names["id"]) for column in names.values())
+
+
+def test_implausible_dates_are_nulled():
+    sites = [
+        _site("Q1", "Geological", 0.0, 0.0, startYear=-72_100_000, endYear=-66_000_000, datingSource="wikidata"),
+        _site("Q2", "Reversed", 0.0, 0.0, startYear=200, endYear=-100, datingSource="wikidata"),
+        _site("Q3", "Oldest tools", 0.0, 0.0, startYear=-3_300_000, datingSource="wikidata"),
+        _site("Q4", "Only an end", 0.0, 0.0, endYear=-100, datingSource="wikidata"),
+    ]
+    cleaned, dropped = drop_implausible_dates(sites)
+    assert dropped == 2
+    assert [(site.startYear, site.endYear, site.datingSource) for site in cleaned] == [
+        (None, None, "none"), (None, None, "none"), (-3_300_000, None, "wikidata"), (None, -100, "wikidata"),
+    ]
 
 
 def test_detail_records_leave_out_null_and_empty_fields():
@@ -252,3 +320,18 @@ def test_detail_records_leave_out_null_and_empty_fields():
     }
     assert {"types", "heritage", "wikipedia"} <= set(files["detail/q2.json"]["Q2"])
     assert "image" not in files["detail/q2.json"]["Q2"]
+
+
+def test_detail_leaves_out_a_source_url_the_reader_can_derive():
+    published = [_site("Q3", "Item", 1.0, 2.0), _site("579885", "Place", 1.0, 2.0, "pleiades")]
+    published = [replace(site, sourceUrl=source_record_url(site.id)) for site in published]
+    assert published[1].sourceUrl == "https://pleiades.stoa.org/places/579885"
+    osm = [replace(_site(site_id, "Dolmen", 1.0, 2.0, "osm"), sourceUrl=url) for site_id, url in (
+        ("osm-n123", "https://www.openstreetmap.org/node/123"), ("osm-w45", "https://www.openstreetmap.org/way/45"),
+    )]
+    files = build_catalogue_files(published, osm, [], "2026-01-01")
+    stored = {site_id: record for path, shard in files.items() if path.startswith("detail/") for site_id, record in shard.items()}
+    assert set(stored) == {"Q3", "579885", "osm-n123", "osm-w45"}
+    assert not any("sourceUrl" in record for record in stored.values())
+    odd = build_catalogue_files([_site("Q4", "Odd", 1.0, 2.0)], [], [], "2026-01-01")
+    assert odd["detail/q4.json"]["Q4"]["sourceUrl"] == "https://example.org/Q4"  # not derivable, so kept

@@ -2,7 +2,7 @@ import { useEffect, useRef } from "react";
 import type { SiteFeature } from "@/lib/types";
 import type { WikiFeature } from "@/lib/wikidata";
 
-/** Opens the place the atlas was asked to start on, once its record has loaded.
+/** Opens the place the atlas was asked to start on, once its record has loaded and the camera is in place (`ready`).
  *  A curated site wins; a catalogue place opens when the catalogue arrives. */
 export function useInitialSite(
   initialSiteId: string | undefined,

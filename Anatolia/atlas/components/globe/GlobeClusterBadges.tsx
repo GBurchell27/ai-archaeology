@@ -2,7 +2,7 @@
 
 import { Html } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
-import { useMemo, useRef, useState, type MutableRefObject } from "react";
+import { useMemo, useRef, useState, type RefObject } from "react";
 import { lonLatHeightToScene, sceneToLonLatHeight, type GlobeLook } from "@/lib/globe/ellipsoid";
 import type { ScreenBox } from "@/lib/globe/labelLayout";
 import type { SiteLayer } from "@/lib/globe/siteBlock";
@@ -28,9 +28,10 @@ interface Badge {
 /** Below this the points read as separate places and badges would only cover them. */
 const BADGE_ALTITUDE_FLOOR = 1_500_000;
 const MIN_BADGE_COUNT = 60;
-const MAX_BADGES = 7;
-const BADGE_HALF_WIDTH_PX = 26;
-const BADGE_HALF_HEIGHT_PX = 14;
+const MAX_BADGES = 5;
+// Half the badge plus breathing room, for keeping clear of the monument names.
+const BADGE_HALF_WIDTH_PX = 30;
+const BADGE_HALF_HEIGHT_PX = 20;
 const MAX_BUCKETS_PROJECTED = 6000;
 const RECLUSTER_MS = 100;
 const APPROACH_FACTOR = 0.36;
@@ -75,10 +76,11 @@ function formatCount(count: number): string {
 export function GlobeClusterBadges(props: {
   layers: readonly SiteLayer[];
   onClusterPick?: (target: GlobeLook) => void;
-  /** Kept up to date with the screen boxes of the badges, so name labels can keep clear of them. */
-  occupied: MutableRefObject<ScreenBox[]>;
+  /** Screen boxes of the monument names; a badge that would sit on one is left out. */
+  occupied: RefObject<ScreenBox[]>;
+  shown: boolean;
 }) {
-  const { layers, onClusterPick, occupied } = props;
+  const { layers, onClusterPick, occupied, shown } = props;
   // One pass over the points per filter change; the frame loop below only sees the buckets.
   const pins = useMemo(() => bucketPins(layers), [layers]);
   const pinsById = useMemo(() => new Map(pins.map((pin) => [pin.id, pin])), [pins]);
@@ -92,16 +94,16 @@ export function GlobeClusterBadges(props: {
     recluster.current.pins = pins;
     const altitude = sceneToLonLatHeight(camera.position.toArray()).height;
     recluster.current.altitude = altitude;
-    const visible = altitude < BADGE_ALTITUDE_FLOOR ? [] : projectVisiblePins(pins, camera, size, MAX_BUCKETS_PROJECTED);
+    const visible = !shown || altitude < BADGE_ALTITUDE_FLOOR ? [] : projectVisiblePins(pins, camera, size, MAX_BUCKETS_PROJECTED);
+    const names = occupied.current ?? [];
     const next = clusterByScreen(visible, CLUSTER_CELL_PX)
       .map((cluster) => ({ cluster, badge: badgeFor(cluster, pinsById) }))
-      .filter(({ badge }) => badge.count >= MIN_BADGE_COUNT)
+      .filter(({ badge }) => badge.count >= MIN_BADGE_COUNT && !names.some((name) => (
+        name.left < badge.screenX + BADGE_HALF_WIDTH_PX && name.right > badge.screenX - BADGE_HALF_WIDTH_PX
+        && name.top < badge.screenY + BADGE_HALF_HEIGHT_PX && name.bottom > badge.screenY - BADGE_HALF_HEIGHT_PX
+      )))
       .sort((left, right) => right.badge.count - left.badge.count)
       .slice(0, MAX_BADGES);
-    occupied.current = next.map(({ badge }) => ({
-      left: badge.screenX - BADGE_HALF_WIDTH_PX, right: badge.screenX + BADGE_HALF_WIDTH_PX,
-      top: badge.screenY - BADGE_HALF_HEIGHT_PX, bottom: badge.screenY + BADGE_HALF_HEIGHT_PX,
-    }));
     const signature = `${clusterSignature(next.map(({ cluster }) => cluster))}#${next.map(({ badge }) => badge.count).join(",")}`;
     if (signature === recluster.current.signature) return;
     recluster.current.signature = signature;

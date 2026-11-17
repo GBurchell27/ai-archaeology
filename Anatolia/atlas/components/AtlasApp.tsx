@@ -99,7 +99,7 @@ export function AtlasApp({ regional, initialLook, initialSiteId, onExitToGlobe }
     onHelp: () => undefined,
   });
   useAtlasKeys(keys);
-  useInitialSite(initialSiteId, Boolean(metadata && metres && camera.pose), sites, wikiSites, navigation.flyTo, navigation.openWiki);
+  useInitialSite(initialSiteId, camera.ready, sites, wikiSites, navigation.flyTo, navigation.openWiki);
   const exitToGlobe = useGlobeExit(onExitToGlobe, metadata?.bounds ?? null);
 
   if (data.error) {
@@ -175,6 +175,7 @@ export function AtlasApp({ regional, initialLook, initialSiteId, onExitToGlobe }
         zoomSpeed={preferences.zoomSpeed}
         zoomCommand={camera.zoomCommand}
         onArrival={selection.showPanel}
+        onCameraReady={camera.markReady}
         onNearby={selection.setNearbyId}
         nearbyEnabled={!selected && !wikiSite && !climateId && !landscapeOpen}
         flightCancel={camera.flightCancel}

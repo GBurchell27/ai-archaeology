@@ -7,6 +7,7 @@ query's hash, so a rerun only fetches what is missing. One request at a time.
 from __future__ import annotations
 
 import hashlib
+import http.client
 import json
 import logging
 import time
@@ -64,7 +65,7 @@ class SparqlClient:
                 if error.code not in RETRY_STATUSES:
                     raise RuntimeError(f"{label}: HTTP {error.code}: {detail[:300]}") from error
                 wait = _retry_after(error) or 5.0 * 2 ** attempt
-            except (urllib.error.URLError, TimeoutError, ConnectionError) as error:
+            except (urllib.error.URLError, TimeoutError, ConnectionError, http.client.HTTPException) as error:
                 LOGGER.warning("%s: %s", label, error)
                 if attempt >= 2 and _is_read_timeout(error):
                     # Two silent 90 s waits mean the query itself is too heavy.

@@ -15,19 +15,23 @@
 .globe canvas:active { cursor: grabbing; }
 
 /* The chrome layer never eats a drag; individual controls opt back in. */
+/* It precedes the canvas in the document (for tab order), so everything it shows needs a z-index to sit over the canvas:
+   10 here, 11 to 14 in ExplorerChrome, all above the globe's own DOM labels and badges (0 to 6). */
 .chrome { position: absolute; inset: 0; pointer-events: none; }
 .chrome a, .chrome button { pointer-events: auto; }
 
 .readout,
 .attribution {
   position: absolute;
+  z-index: 10;
   bottom: 14px;
   margin: 0;
   font-size: 11px;
   line-height: 1.35;
   padding: 4px 9px;
   border-radius: 3px;
-  background: var(--globe-glass);
+  /* Denser than --globe-glass: small muted text has to hold 4.5:1 over pale desert too. */
+  background: rgba(10, 13, 18, 0.84);
   -webkit-backdrop-filter: blur(10px);
   backdrop-filter: blur(10px);
   color: var(--globe-muted);
@@ -47,6 +51,7 @@
 
 .enter {
   position: absolute;
+  z-index: 10;
   left: 50%;
   bottom: 64px;
   display: grid;

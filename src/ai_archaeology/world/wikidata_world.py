@@ -33,6 +33,7 @@ LABEL_LANGUAGES = ("en", "mul", "fr", "de", "es", "it", "pt", "nl", "sv", "da", 
 ADMINISTRATIVE_YEAR = 1900
 ANCIENT_TYPES = {"tell", "megalith", "tumulus", "rock-art", "cave", "enclosure", "necropolis"}
 MODERN_YEAR = 1800
+YEAR_PRECISION = 9  # wikibase:timePrecision: 9 is a year, 7 a century, 6 a millennium
 
 # First matching rule wins, so megalith beats tumulus beats settlement.
 SITE_TYPE_RULES: tuple[tuple[str, str], ...] = (
@@ -117,13 +118,20 @@ def details_query(qids: list[str]) -> str:
   UNION {{ ?item wdt:P757 ?whs }}
   UNION {{ ?item wdt:P1584 ?pleiades }}
   UNION {{ ?item wdt:P18 ?image }}
-  UNION {{ ?item wdt:P571 ?inception }}
-  UNION {{ ?item wdt:P576 ?dissolved }}
-  UNION {{ ?item p:P2348 ?statement . ?statement ps:P2348 ?period .
-          OPTIONAL {{ ?statement pq:P580 ?statedStart }} OPTIONAL {{ ?statement pq:P582 ?statedEnd }}
-          OPTIONAL {{ ?period wdt:P580 ?periodStart }} OPTIONAL {{ ?period wdt:P582 ?periodEnd }} }}
+  UNION {{ ?item p:P571 [ a wikibase:BestRank ; psv:P571 {_time("inception")} ] }}
+  UNION {{ ?item p:P576 [ a wikibase:BestRank ; psv:P576 {_time("dissolved")} ] }}
+  UNION {{ ?item p:P2348 ?statement . ?statement a wikibase:BestRank ; ps:P2348 ?period .
+          OPTIONAL {{ ?statement pqv:P580 {_time("statedStart")} }}
+          OPTIONAL {{ ?statement pqv:P582 {_time("statedEnd")} }}
+          OPTIONAL {{ ?period p:P580 [ a wikibase:BestRank ; psv:P580 {_time("periodStart")} ] }}
+          OPTIONAL {{ ?period p:P582 [ a wikibase:BestRank ; psv:P582 {_time("periodEnd")} ] }} }}
   UNION {{ ?article schema:about ?item . FILTER(CONTAINS(STR(?article), ".wikipedia.org/")) }}
 }}"""
+
+
+def _time(name: str) -> str:
+    """A full time value node: the date and how precisely it was entered."""
+    return f"[ wikibase:timeValue ?{name} ; wikibase:timePrecision ?{name}Precision ]"
 
 
 def class_labels_query(qids: list[str]) -> str:
@@ -176,20 +184,35 @@ def _absorb(details: ItemDetails, row: dict) -> None:
         if key in row:
             bucket.add(row[key]["value"])
     for key, bucket in (("inception", details.inceptions), ("dissolved", details.dissolutions)):
-        _add_year(bucket, row.get(key))
+        _add_year(bucket, row, key)
     # A date stated on the item's own period statement beats the period's general span.
-    _add_year(details.period_starts, row.get("statedStart") or row.get("periodStart"))
-    _add_year(details.period_ends, row.get("statedEnd") or row.get("periodEnd"))
+    _add_year(details.period_starts, row, "statedStart" if "statedStart" in row else "periodStart")
+    _add_year(details.period_ends, row, "statedEnd" if "statedEnd" in row else "periodEnd")
     if "whs" in row:
         details.whs = details.whs or row["whs"]["value"]
     if "pleiades" in row:
         details.pleiades = details.pleiades or row["pleiades"]["value"]
 
 
-def _add_year(bucket: set[int], node: dict | None) -> None:
-    year = _year(node)
+def _add_year(bucket: set[int], row: dict, key: str) -> None:
+    year = historical_year(row.get(key), row.get(f"{key}Precision"))
     if year is not None:
         bucket.add(year)
+
+
+def historical_year(node: dict | None, precision_node: dict | None = None) -> int | None:
+    """The year as people write it: -1 is 1 BCE and there is no year 0.
+
+    The query service writes a BCE date of year precision or finer in XSD 1.1, where year 0 is
+    1 BCE, so those are one too high. A decade, century or millennium keeps the year entered.
+    """
+    year = _year(node)
+    if year is None:
+        return None
+    precision = int(precision_node["value"]) if precision_node else YEAR_PRECISION
+    if year == 0 or (year < 0 and precision >= YEAR_PRECISION):
+        return year - 1
+    return year
 
 
 def classify_site_type(type_labels: list[str]) -> str:

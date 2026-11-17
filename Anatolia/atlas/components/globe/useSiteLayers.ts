@@ -1,8 +1,8 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { GlobeLook } from "@/lib/globe/ellipsoid";
-import { buildSiteBlock, type SiteBlock, type SiteLayer } from "@/lib/globe/siteBlock";
+import { buildSiteBlock, buildSiteBlockInSlices, type SiteBlock, type SiteLayer } from "@/lib/globe/siteBlock";
 import { fetchWorldFile, type WorldCatalogue } from "@/lib/world/catalogueLoader";
 import type { SiteColumns, WorldIndex } from "@/lib/world/catalogueTypes";
 import { SiteCellCache, cellKeysInView } from "@/lib/world/cellLoader";
@@ -32,6 +32,37 @@ function useSiteCells(index: WorldIndex, look: GlobeLook | null): { key: string;
   return useMemo(() => ready, [signature]);
 }
 
+const building = new WeakSet<SiteColumns>();
+
+function untilIdle(): Promise<void> {
+  return new Promise((resolve) => {
+    if (typeof window.requestIdleCallback === "function") window.requestIdleCallback(() => resolve(), { timeout: 250 });
+    else window.setTimeout(resolve, 0);
+  });
+}
+
+/** Draw blocks for the arrived cells, built in idle time; a cell joins the globe once its block is whole. */
+function useCellBlocks(cells: { key: string; columns: SiteColumns }[], siteTypes: string[]): SiteBlock[] {
+  const [, announceBuilt] = useState(0);
+  const mounted = useRef(true);
+  useEffect(() => () => { mounted.current = false; }, []);
+  useEffect(() => {
+    for (const cell of cells) {
+      if (blocks.has(cell.columns) || building.has(cell.columns)) continue;
+      building.add(cell.columns);
+      void buildSiteBlockInSlices(`cell-${cell.key}`, cell.columns, siteTypes, untilIdle).then((block) => {
+        blocks.set(cell.columns, block);
+        building.delete(cell.columns);
+        if (mounted.current) announceBuilt((count) => count + 1);
+      });
+    }
+  }, [cells, siteTypes]);
+  const built = cells.flatMap((cell) => blocks.get(cell.columns) ?? []);
+  const signature = built.map((block) => block.key).join(" ");
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  return useMemo(() => built, [signature]);
+}
+
 /** The separate OpenStreetMap megalith block, fetched the first time the layer is switched on. */
 function useOsmMegaliths(index: WorldIndex, enabled: boolean): SiteColumns | null {
   const [columns, setColumns] = useState<SiteColumns | null>(null);
@@ -56,12 +87,12 @@ export function useSiteLayers(
   showOsmMegaliths: boolean,
 ): SiteLayer[] {
   const { index, core } = catalogue;
-  const cells = useSiteCells(index, look);
+  const cells = useCellBlocks(useSiteCells(index, look), index.siteTypes);
   const osm = useOsmMegaliths(index, showOsmMegaliths);
   return useMemo(() => {
     const drawn = [
       blockFor("core", core, index.siteTypes),
-      ...cells.map((cell) => blockFor(`cell-${cell.key}`, cell.columns, index.siteTypes)),
+      ...cells,
       ...(osm ? [blockFor("osm-megaliths", osm, index.siteTypes, OSM_MEGALITH_STYLE.color)] : []),
     ];
     return drawn.map((block) => ({ block, shown: siteVisibility(block.columns, filter, index.siteTypes) }));

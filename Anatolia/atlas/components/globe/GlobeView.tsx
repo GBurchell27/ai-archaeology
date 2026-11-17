@@ -61,19 +61,7 @@ export function GlobeView(props: GlobeViewProps) {
 
   return (
     <div className={styles.globe} data-view="globe" data-handoff={stage}>
-      <Canvas
-        flat
-        dpr={[1, 2]}
-        camera={{ fov: 45, near: 1e4, far: 1e9 }}
-        gl={{ antialias: true, logarithmicDepthBuffer: true }}
-      >
-        <color attach="background" args={[SPACE]} />
-        <GlobeAtmosphere />
-        <GlobeSurface basemap={basemap} />
-        <GlobeFlight initialLook={opening.current} flyTo={props.flyTo} idleSpin={!props.initialLook} />
-        <GlobeLookReporter onLook={reportLook} />
-        {props.children}
-      </Canvas>
+      {/* Before the canvas in the document, so Tab reaches search and the panels before the count badges on the globe. */}
       <div className={styles.chrome}>
         {props.overlay}
         {stage !== "none" && onEnterAtlas ? (
@@ -90,6 +78,19 @@ export function GlobeView(props: GlobeViewProps) {
           {" · "}{basemap.licence}
         </p>
       </div>
+      <Canvas
+        flat
+        dpr={[1, 2]}
+        camera={{ fov: 45, near: 1e4, far: 1e9 }}
+        gl={{ antialias: true, logarithmicDepthBuffer: true }}
+      >
+        <color attach="background" args={[SPACE]} />
+        <GlobeAtmosphere />
+        <GlobeSurface basemap={basemap} />
+        <GlobeFlight initialLook={opening.current} flyTo={props.flyTo} idleSpin={!props.initialLook} />
+        <GlobeLookReporter onLook={reportLook} />
+        {props.children}
+      </Canvas>
     </div>
   );
 }

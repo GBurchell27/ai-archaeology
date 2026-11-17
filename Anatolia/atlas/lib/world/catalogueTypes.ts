@@ -31,7 +31,11 @@ export interface WorldIndex {
   cellDegrees: number;
   cells: Record<string, number>;
   osmMegaliths?: { count: number; file: string };
+  namesFile?: string; // NameColumns for every site outside core.json
 }
+
+/** The search index: one row per site that is not in core.json, best known first. */
+export type NameColumns = Pick<SiteColumns, "id" | "name" | "lon" | "lat" | "type" | "start" | "end">;
 
 export interface FeaturedSite {
   id: string;
@@ -64,13 +68,25 @@ export interface SiteDetail {
   ids: Record<string, string | null>;
 }
 
-type OmittedWhenEmpty = "wikipedia" | "image" | "types" | "heritage";
+type OmittedWhenDefault = "wikipedia" | "image" | "types" | "heritage" | "sourceUrl";
 
-/** A detail record as written to detail/<bucket>.json: null and empty fields are left out, and `ids` has no null entries. */
-export type StoredSiteDetail = Omit<SiteDetail, OmittedWhenEmpty> & Partial<Pick<SiteDetail, OmittedWhenEmpty>>;
+/**
+ * A detail record as written to detail/<bucket>.json. Null and empty fields are left out, `ids` has
+ * no null entries and no copy of the record's own id, and `sourceUrl` is stored only when it is not
+ * the one sourceUrlFor() gives.
+ */
+export type StoredSiteDetail = Omit<SiteDetail, OmittedWhenDefault> & Partial<Pick<SiteDetail, OmittedWhenDefault>>;
 
-export function siteDetailFromStored(stored: StoredSiteDetail): SiteDetail {
-  return { wikipedia: null, image: null, types: [], heritage: [], ...stored };
+/** The source record of a site id: Wikidata item, OpenStreetMap node or way, else Pleiades place. */
+export function sourceUrlFor(id: string): string {
+  if (/^Q\d+$/.test(id)) return `https://www.wikidata.org/wiki/${id}`;
+  const osm = /^osm-([nw])(\d+)$/.exec(id);
+  if (osm) return `https://www.openstreetmap.org/${osm[1] === "n" ? "node" : "way"}/${osm[2]}`;
+  return `https://pleiades.stoa.org/places/${id}`;
+}
+
+export function siteDetailFromStored(id: string, stored: StoredSiteDetail): SiteDetail {
+  return { wikipedia: null, image: null, types: [], heritage: [], sourceUrl: sourceUrlFor(id), ...stored };
 }
 
 export const WORLD_CELL_DEGREES = 10;

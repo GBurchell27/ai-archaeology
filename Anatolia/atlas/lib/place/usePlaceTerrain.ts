@@ -15,7 +15,7 @@ export function usePlaceTerrain(siteId: string): { state: PlaceTerrainState; ret
     const cancel = new AbortController();
     setState({ status: "loading" });
     loadPlaceTerrain(siteId, cancel.signal).then(
-      (terrain) => setState({ status: "ready", terrain }),
+      (terrain) => { if (!cancel.signal.aborted) setState({ status: "ready", terrain }); },
       (error: unknown) => {
         if (cancel.signal.aborted) return;
         setState({ status: "error", failure: error instanceof PlaceTerrainError ? error.failure : "failed" });

@@ -1,8 +1,9 @@
 """Cross-link Wikidata and Pleiades into one list of published sites.
 
 Identifier first: a Wikidata item that names a Pleiades id is that place.
-Then the Turkey pipeline's spatial rule: within 150 m, or the same folded name
-within 3 km. A different monument nearby stays.
+Then the same folded name within 3 km. Nearness alone never merges: in a dense
+site the next monument is metres away, and a wrong merge is worse than a second
+pin. An item absorbs one place at most.
 
 OpenStreetMap records are ODbL share-alike and never enter this module.
 """
@@ -14,7 +15,7 @@ from dataclasses import dataclass, replace
 import numpy as np
 from scipy.spatial import cKDTree
 
-from ai_archaeology.sites.wikidata import NAME_MATCH_M, NEAR_M, _fold, _haversine_m
+from ai_archaeology.sites.wikidata import NAME_MATCH_M, _fold, _haversine_m
 from ai_archaeology.world.dating import adopt_dating, is_dated
 from ai_archaeology.world.records import WorldSite
 
@@ -68,25 +69,33 @@ def _spatial_matches(places: list[WorldSite], candidates: list[WorldSite]) -> li
     # Chord length is never longer than the arc, so this ball misses nothing within 3 km.
     neighbours = tree.query_ball_point(_sphere_points_m(places), r=NAME_MATCH_M)
     folded_names = [_fold(candidate.name) for candidate in candidates]
-    return [
-        _nearest_same_place(place, sorted(indexes), candidates, folded_names)
+    claims = [
+        _best_claim(place, sorted(indexes), candidates, folded_names)
         for place, indexes in zip(places, neighbours)
+    ]
+    # Two Pleiades places are never the same item: the best claim takes it, the others stay standalone.
+    winners: dict[int, int] = {}
+    for place_index, claim in enumerate(claims):
+        if claim is not None and (claim[1] not in winners or claim[0] < claims[winners[claim[1]]][0]):
+            winners[claim[1]] = place_index
+    return [
+        candidates[claim[1]] if claim is not None and winners[claim[1]] == place_index else None
+        for place_index, claim in enumerate(claims)
     ]
 
 
-def _nearest_same_place(
+def _best_claim(
     place: WorldSite, indexes: list[int], candidates: list[WorldSite], folded_names: list[str],
-) -> WorldSite | None:
+) -> tuple[float, int] | None:
+    """(distance, candidate index) of the nearest same-name item within 3 km."""
     folded = _fold(place.name)
-    nearest = None
-    nearest_m = float("inf")
-    for index in indexes:
-        candidate = candidates[index]
-        distance = _haversine_m(place.lon, place.lat, candidate.lon, candidate.lat)
-        same_name = bool(folded) and folded == folded_names[index]
-        if distance < nearest_m and (distance <= NEAR_M or (same_name and distance <= NAME_MATCH_M)):
-            nearest, nearest_m = candidate, distance
-    return nearest
+    if not folded:
+        return None
+    claims = [
+        (_haversine_m(place.lon, place.lat, candidates[index].lon, candidates[index].lat), index)
+        for index in indexes if folded_names[index] == folded
+    ]
+    return min((claim for claim in claims if claim[0] <= NAME_MATCH_M), default=None)
 
 
 def _sphere_points_m(sites: list[WorldSite]) -> np.ndarray:

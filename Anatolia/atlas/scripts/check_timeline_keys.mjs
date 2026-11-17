@@ -1,16 +1,11 @@
-import puppeteer from "puppeteer-core";
+import { launchBrowser, openAtlas } from "./atlasBrowser.mjs";
 
-const browser = await puppeteer.launch({
-  executablePath: "/usr/bin/google-chrome-stable",
-  headless: true,
-  args: ["--no-sandbox", "--disable-dev-shm-usage", "--use-gl=angle", "--use-angle=swiftshader", "--enable-unsafe-swiftshader", "--window-size=1280,800"],
-});
+const browser = await launchBrowser({ width: 1280, height: 800 });
 const page = await browser.newPage();
 page.setDefaultTimeout(30000);
 page.on("pageerror", (error) => console.log("PAGEERROR", error.message));
 await page.setViewport({ width: 1280, height: 800 });
-await page.goto("http://127.0.0.1:43127/", { waitUntil: "networkidle0" });
-await page.waitForSelector("body[data-ready='true']");
+await openAtlas(page);
 await page.waitForSelector("[data-thumb='start']");
 
 function fail(message) {

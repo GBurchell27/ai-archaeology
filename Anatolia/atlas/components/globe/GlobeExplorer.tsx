@@ -59,6 +59,8 @@ export function GlobeExplorer(props: GlobeExplorerProps) {
           look={look}
           selectedId={selection.selected?.id ?? null}
           showOsmMegaliths={explorer.showOsmMegaliths}
+          showLabels={explorer.showLabels}
+          onCellsChange={explorer.setLoadedCells}
           onPick={selection.select}
           onClusterPick={selection.flyToLook}
         />

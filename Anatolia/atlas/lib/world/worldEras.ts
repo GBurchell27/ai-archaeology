@@ -95,5 +95,6 @@ export function formatSiteDates(startYear: number | null, endYear: number | null
 
 function describeClosedSpan(startYear: number, endYear: number): string {
   const sameSide = (startYear < 0) === (endYear < 0);
-  return sameSide ? `${Math.abs(startYear)}–${formatYear(endYear)}` : `${formatYear(startYear)} – ${formatYear(endYear)}`;
+  // There is no year 0: like formatYear, a raw 0 reads as 1 CE.
+  return sameSide ? `${Math.abs(startYear) || 1}–${formatYear(endYear)}` : `${formatYear(startYear)} – ${formatYear(endYear)}`;
 }

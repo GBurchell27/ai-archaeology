@@ -49,7 +49,7 @@ def write_closeup(longitude: float, latitude: float, out_dir: Path, source: str 
     closeup_store.assert_real_directory(out_dir)
     meta_path = out_dir / "meta.json"
     if _complete(out_dir):
-        return json.loads(meta_path.read_text())
+        return json.loads(meta_path.read_text(encoding="utf-8"))
     array, left, bottom, right, top, relief_credit = _window(longitude, latitude, source)
     elevation_box: dict = {}
 

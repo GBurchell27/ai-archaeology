@@ -12,6 +12,7 @@ import math
 from collections import Counter
 from pathlib import Path
 
+from ai_archaeology.world.dating import is_dated
 from ai_archaeology.world.records import SITE_TYPES, SOURCES, WorldSite
 
 # Monument classes count double when ranking for the core, so a known dolmen beats an equally
@@ -19,6 +20,12 @@ from ai_archaeology.world.records import SITE_TYPES, SOURCES, WorldSite
 CORE_BOOSTED_SITE_TYPES = frozenset({"megalith", "monumental", "geoglyph"})
 CORE_TYPE_BOOST = 2
 CORE_TARGET = 40_000
+# Pleiades records carry no sitelink count, so they would never win a place on importance.
+# A fixed share keeps the ancient Mediterranean visible from orbit.
+PLEIADES_CORE_SHARE = 0.25
+PLEIADES_LEADING_SITE_TYPES = frozenset({"settlement", "city", "ritual", "monumental"})
+NAMES_FILE = "names.json"
+NAME_COLUMNS = ("id", "name", "lon", "lat", "type", "start", "end")
 CELL_DEGREES = 10
 OSM_FILE = "osm-megaliths.json"
 # Licences as registered in docs/data-sources.md.
@@ -43,18 +50,21 @@ def detail_bucket(site_id: str) -> str:
 def split_core(
     sites: list[WorldSite], featured_ids: set[str], core_target: int = CORE_TARGET,
 ) -> tuple[list[WorldSite], list[WorldSite]]:
-    """Core = every featured site, topped up to about ``core_target`` by boosted importance.
+    """Core = every featured site, then two ranked lists share the room left under ``core_target``.
 
-    Sites tied with the last one admitted come in too, so the cut is never an accident of id
-    order. Ties at a score of zero (no known importance) are the exception: those stop at the target.
+    About a quarter goes to Pleiades-only places, the rest to Wikidata by boosted sitelinks.
+    Room one list cannot fill goes to the other.
     """
     featured = [site for site in sites if site.id in featured_ids]
-    ranked = sorted((site for site in sites if site.id not in featured_ids), key=_core_rank)
-    room = min(len(ranked), max(0, core_target - len(featured)))
-    cutoff_score = _core_score(ranked[room - 1]) if room else 0
-    while cutoff_score > 0 and room < len(ranked) and _core_score(ranked[room]) == cutoff_score:
-        room += 1
-    return sorted(featured + ranked[:room], key=_label_rank), ranked[room:]
+    others = [site for site in sites if site.id not in featured_ids]
+    by_sitelinks = sorted((site for site in others if site.source != "pleiades"), key=_core_rank)
+    gazetteer = sorted((site for site in others if site.source == "pleiades"), key=_gazetteer_rank)
+    room = max(0, core_target - len(featured))
+    gazetteer_room = min(len(gazetteer), round(room * PLEIADES_CORE_SHARE))
+    sitelink_room = min(len(by_sitelinks), room - gazetteer_room)
+    gazetteer_room = min(len(gazetteer), room - sitelink_room)
+    core = featured + by_sitelinks[:sitelink_room] + gazetteer[:gazetteer_room]
+    return sorted(core, key=_label_rank), by_sitelinks[sitelink_room:] + gazetteer[gazetteer_room:]
 
 
 def column_block(sites: list[WorldSite], featured_ids: set[str]) -> dict[str, list]:
@@ -93,6 +103,8 @@ def build_catalogue_files(
         "core.json": column_block(core, featured_ids),
         "featured.json": _featured_rows(merged_sites, featured_monuments),
         OSM_FILE: column_block(osm_sites, set()),
+        # Search index for everything the globe has not loaded up front.
+        NAMES_FILE: {column: values for column, values in column_block(rest, set()).items() if column in NAME_COLUMNS},
     }
     for cell_key, cell_sites in cells.items():
         files[f"cells/{cell_key}.json"] = column_block(cell_sites, featured_ids)
@@ -123,8 +135,20 @@ def _core_score(site: WorldSite) -> int:
     return site.importance * (CORE_TYPE_BOOST if site.siteType in CORE_BOOSTED_SITE_TYPES else 1)
 
 
-def _core_rank(site: WorldSite) -> tuple[int, str]:
-    return (-_core_score(site), site.id)
+def _core_rank(site: WorldSite) -> tuple[int, bool, str]:
+    return (-_core_score(site), not is_dated(site), site.id)
+
+
+def _gazetteer_rank(site: WorldSite) -> tuple[bool, bool, bool, int, str]:
+    """Dated, exactly located, a leading site type, then the longest attested span."""
+    span_years = (site.endYear - site.startYear) if site.startYear is not None and site.endYear is not None else 0
+    return (
+        not is_dated(site),
+        site.locationPrecision != "exact",
+        site.siteType not in PLEIADES_LEADING_SITE_TYPES,
+        -span_years,
+        site.id,
+    )
 
 
 def _index(
@@ -151,6 +175,7 @@ def _index(
         "cellDegrees": CELL_DEGREES,
         "cells": {cell_key: len(cells[cell_key]) for cell_key in sorted(cells)},
         "osmMegaliths": {"count": len(osm_sites), "file": OSM_FILE},
+        "namesFile": NAMES_FILE,
     }
 
 
@@ -175,13 +200,21 @@ def _detail_shards(sites: list[WorldSite]) -> dict[str, dict[str, dict]]:
     return shards
 
 
+def source_record_url(site_id: str) -> str:
+    """Mirrors sourceUrlFor() in catalogueTypes.ts."""
+    if site_id.startswith("Q"):
+        return f"https://www.wikidata.org/wiki/{site_id}"
+    if site_id.startswith(("osm-n", "osm-w")):
+        return f"https://www.openstreetmap.org/{'node' if site_id[4] == 'n' else 'way'}/{site_id[5:]}"
+    return f"https://pleiades.stoa.org/places/{site_id}"
+
+
 def _detail_record(site: WorldSite) -> dict:
-    """StoredSiteDetail in catalogueTypes.ts: null and empty optional fields are left out for size."""
+    """StoredSiteDetail in catalogueTypes.ts: null, empty and derivable fields are left out for size."""
     record = {
         "lon": round(site.lon, 5),
         "lat": round(site.lat, 5),
         "name": site.name,
-        "sourceUrl": site.sourceUrl,
         "licence": site.licence,
         "attribution": site.attribution,
         "datingSource": site.datingSource,
@@ -189,5 +222,7 @@ def _detail_record(site: WorldSite) -> dict:
         "ids": {key: value for key, value in site.ids.items() if value is not None and value != site.id},
     }
     optional = {"wikipedia": site.wikipedia, "image": site.image, "types": site.types, "heritage": site.heritage}
+    if site.sourceUrl != source_record_url(site.id):
+        optional["sourceUrl"] = site.sourceUrl
     record.update({key: value for key, value in optional.items() if value})
     return record

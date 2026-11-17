@@ -9,14 +9,15 @@ Published sites only: no detector output is an input here.
 from __future__ import annotations
 
 import argparse
-import json
 import shutil
 from collections import Counter
 from datetime import date
 from pathlib import Path
 
-from ai_archaeology.world.featured import load_featured_coordinates, with_coordinate_fixes
-from ai_archaeology.world.dating import apply_featured, attach_radiocarbon, is_dated, read_radiocarbon_sites
+from ai_archaeology.world.featured import load_featured, load_featured_coordinates, with_coordinate_fixes
+from ai_archaeology.world.dating import (
+    apply_featured, attach_radiocarbon, drop_implausible_dates, is_dated, read_radiocarbon_sites,
+)
 from ai_archaeology.world.merge import merge_published
 from ai_archaeology.world.records import WorldSite, read_jsonl
 from ai_archaeology.world.web_pack import build_catalogue_files, write_catalogue
@@ -24,7 +25,6 @@ from ai_archaeology.world.web_pack import build_catalogue_files, write_catalogue
 ROOT = Path(__file__).resolve().parents[1]
 WORLD_DATA = ROOT / "data" / "world"
 OUT_DIR = ROOT / "Anatolia" / "atlas" / "public" / "world"
-FEATURED_MONUMENTS = ROOT / "src" / "ai_archaeology" / "world" / "featured_monuments.json"
 SOURCE_PATHS = {
     "wikidata": WORLD_DATA / "sources" / "wikidata.jsonl",
     "pleiades": WORLD_DATA / "sources" / "pleiades.jsonl",
@@ -42,7 +42,7 @@ def main() -> int:
     missing = [name for name, path in SOURCE_PATHS.items() if not path.exists() and name not in arguments.allow_missing]
     if missing:
         parser.error(f"missing source file(s): {', '.join(missing)}. Pass --allow-missing <source> to build without.")
-    featured_monuments = json.loads(FEATURED_MONUMENTS.read_text(encoding="utf-8"))
+    featured_monuments = load_featured()
     merged_sites = merge_and_date(featured_monuments)
     osm_sites = _sites("osm")
     print(f"osm (own layer, never merged): {len(osm_sites)}")
@@ -58,8 +58,10 @@ def main() -> int:
 def merge_and_date(featured_monuments: list[dict]) -> list[WorldSite]:
     wikidata, pleiades = with_coordinate_fixes(_sites("wikidata")), _sites("pleiades")
     print(f"read: wikidata {len(wikidata)}, pleiades {len(pleiades)}")
-    coordinates_path = SOURCE_PATHS["featured-coordinates"]
-    coordinates = load_featured_coordinates(coordinates_path) if coordinates_path.exists() else {}
+    # Before the merge, so a site that loses a geological "inception" can still borrow a real date.
+    (wikidata, wikidata_undated), (pleiades, pleiades_undated) = drop_implausible_dates(wikidata), drop_implausible_dates(pleiades)
+    print(f"implausible dates nulled: wikidata {wikidata_undated}, pleiades {pleiades_undated}")
+    coordinates = load_featured_coordinates(SOURCE_PATHS["featured-coordinates"])
     # Featured first, so a featured monument Wikidata did not return is still de-duplicated
     # against Pleiades. Later stages only date undated sites, so curated dates still win.
     with_featured, unplaced = apply_featured(wikidata, featured_monuments, coordinates)
@@ -98,6 +100,7 @@ def report_sizes(sizes: dict[str, int], index: dict) -> None:
     print(f"cells: {len(cells)} files, {sum(cells):,} bytes, largest {max(cells, default=0):,}")
     print(f"detail: {len(detail)} shards, {sum(detail):,} bytes, largest {max(detail, default=0):,}")
     print(f"osm layer: {sizes['osm-megaliths.json']:,} bytes")
+    print(f"names (search index for non-core sites): {sizes['names.json']:,} bytes")
     print(f"total: {len(sizes)} files, {sum(sizes.values()):,} bytes written to {OUT_DIR.relative_to(ROOT).as_posix()}")
 
 

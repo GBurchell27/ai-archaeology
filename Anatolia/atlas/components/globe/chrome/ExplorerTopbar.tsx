@@ -18,6 +18,7 @@ const PANEL_BUTTONS: { panel: ExplorerPanel; label: string; icon: ReactNode }[] 
 /** Title, search, and the three panel buttons. */
 export function ExplorerTopbar(props: {
   catalogue: WorldCatalogue | null;
+  catalogueFailed: boolean;
   /** The panel on show, or null when none is (or a site card covers it). */
   openPanel: ExplorerPanel | null;
   onVisit(site: PickedSite): void;
@@ -26,7 +27,7 @@ export function ExplorerTopbar(props: {
   return (
     <header className={styles.topbar}>
       <h1 className={`${ui.serif} ${styles.brand}`}>Atlas of early monuments</h1>
-      <SiteSearch catalogue={props.catalogue} onVisit={props.onVisit} />
+      <SiteSearch catalogue={props.catalogue} unavailable={props.catalogueFailed} onVisit={props.onVisit} />
       <nav className={styles.panels} aria-label="Panels">
         {PANEL_BUTTONS.map(({ panel, label, icon }) => (
           <button

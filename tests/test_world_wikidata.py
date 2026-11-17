@@ -32,8 +32,9 @@ def stone_circle_rows():
         item_row("Q5", whs=node("373")),
         item_row("Q5", pleiades=node("12345")),
         item_row("Q5", image=node("http://commons.wikimedia.org/wiki/Special:FilePath/Ring.jpg")),
-        item_row("Q5", inception=node("-3000-01-01T00:00:00Z")),
-        item_row("Q5", period=node(ENTITY + "Q7"), periodStart=node("-4000-01-01T00:00:00Z"), periodEnd=node("-1500-01-01T00:00:00Z")),
+        item_row("Q5", inception=node("-2999-01-01T00:00:00Z"), inceptionPrecision=node("9")),
+        item_row("Q5", period=node(ENTITY + "Q7"), periodStart=node("-4000-01-01T00:00:00Z"), periodStartPrecision=node("6"),
+                 periodEnd=node("-1500-01-01T00:00:00Z"), periodEndPrecision=node("7")),
         item_row("Q5", article=node("https://de.wikipedia.org/wiki/Steinkreis")),
         item_row("Q5", article=node("https://en.wikipedia.org/wiki/Ring_of_Stones")),
     ]
@@ -99,10 +100,33 @@ def test_registration_year_is_not_a_megalith_build_date():
 
 
 def test_statement_date_beats_the_period_items_span():
-    row = item_row("Q5", statedStart=node("-0800-01-01T00:00:00Z"), periodStart=node("-1200-01-01T00:00:00Z"),
-                   periodEnd=node("-0500-01-01T00:00:00Z"))
+    row = item_row("Q5", statedStart=node("-0799-01-01T00:00:00Z"), statedStartPrecision=node("9"),
+                   periodStart=node("-1200-01-01T00:00:00Z"), periodStartPrecision=node("7"),
+                   periodEnd=node("-0500-01-01T00:00:00Z"), periodEndPrecision=node("7"))
     details = wd.group_details([row])["Q5"]
     assert (details.period_starts, details.period_ends) == ({-800}, {-500})
+
+
+@pytest.mark.parametrize("value,precision,year", [
+    ("-0043-03-15T00:00:00Z", "11", -44),  # a day in 44 BCE
+    ("-2999-01-01T00:00:00Z", "9", -3000),  # year precision: one too high in the query service
+    ("-3000-01-01T00:00:00Z", "6", -3000),  # a millennium keeps the year entered
+    ("-0500-01-01T00:00:00Z", "7", -500),
+    ("-0200-01-01T00:00:00Z", "8", -200),
+    ("0000-01-01T00:00:00Z", "9", -1),  # there is no year 0
+    ("1972-01-01T00:00:00Z", "9", 1972),
+    ("-2999-01-01T00:00:00Z", None, -3000),
+])
+def test_bce_years_are_corrected_once_and_only_at_year_precision(value, precision, year):
+    assert wd.historical_year(node(value), node(precision) if precision else None) == year
+    row = item_row("Q5", inception=node(value), **({"inceptionPrecision": node(precision)} if precision else {}))
+    assert wd.group_details([row])["Q5"].inceptions == {year}
+
+
+def test_details_query_asks_for_the_precision_of_every_date():
+    query = wd.details_query(["Q1"])
+    for name in ("inception", "dissolved", "statedStart", "statedEnd", "periodStart", "periodEnd"):
+        assert f"wikibase:timeValue ?{name} ; wikibase:timePrecision ?{name}Precision" in query
 
 
 def test_scope_rules():
@@ -146,3 +170,21 @@ def test_client_reads_the_cache_and_never_the_network(tmp_path):
 def test_truncated_response_counts_as_a_timeout():
     with pytest.raises(QueryTimeout):
         _parse('{"results": {"bindings": [{"item"')
+
+
+def test_a_connection_cut_mid_body_is_retried_and_only_a_whole_response_is_cached(tmp_path, monkeypatch):
+    import http.client
+
+    monkeypatch.setattr("time.sleep", lambda seconds: None)
+    client = SparqlClient(tmp_path)
+    replies = iter([http.client.IncompleteRead(b'{"results"'), '{"results": {"bindings": []}}'])
+
+    def post(query):
+        reply = next(replies)
+        if isinstance(reply, Exception):
+            raise reply
+        return reply
+
+    client._post = post
+    assert client.bindings("items/batch", "SELECT 1") == []
+    assert [path.name for path in (tmp_path / "items").iterdir()] == [client.cache_path("items/batch", "SELECT 1").name]

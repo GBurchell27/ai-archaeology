@@ -50,3 +50,7 @@
 @media (max-width: 760px) {
   .groupTitle { margin: 0 -14px; padding-inline: 14px; }
 }
+
+@media (pointer: coarse) {
+  .grouping button { min-height: 40px; }
+}

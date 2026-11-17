@@ -16,6 +16,8 @@ from ai_archaeology.sites.wikidata import _fold, _haversine_m
 from ai_archaeology.world.records import WorldSite
 
 RADIOCARBON_MATCH_M = 5000.0
+# Older than the oldest known stone tools: a geological age entered as an inception, not a site date.
+EARLIEST_PLAUSIBLE_START_YEAR = -3_400_000
 # Licences as registered in docs/data-sources.md.
 RADIOCARBON_CREDITS = {
     "xronos": ("XRONOS", "CC BY 4.0"),
@@ -32,6 +34,12 @@ GENERIC_SITE_WORDS = frozenset("""
     causewayed passage court wedge stone circle long
 """.split())
 MIN_SPECIFIC_WORD_LETTERS = 4
+# Monument and urban classes do not predate the Holocene: an older same-name span is a
+# Palaeolithic findspot near the town, not the town.
+HOLOCENE_ONLY_SITE_TYPES = frozenset({
+    "city", "monumental", "enclosure", "ritual", "necropolis", "tumulus", "megalith", "geoglyph", "tell",
+})
+EARLIEST_HOLOCENE_ONLY_START_YEAR = -12_000
 # For a featured monument the source typed only "other", or did not return at all.
 FEATURED_CATEGORY_SITE_TYPES = {
     "megalith": "megalith",
@@ -50,6 +58,20 @@ FEATURED_CATEGORY_SITE_TYPES = {
 
 def is_dated(site: WorldSite) -> bool:
     return site.startYear is not None or site.endYear is not None
+
+
+def drop_implausible_dates(sites: list[WorldSite]) -> tuple[list[WorldSite], int]:
+    """Undate sites that start before any stone tool or end before they start. Returns the count undated."""
+    cleaned = []
+    dropped = 0
+    for site in sites:
+        too_early = site.startYear is not None and site.startYear < EARLIEST_PLAUSIBLE_START_YEAR
+        reversed_span = site.startYear is not None and site.endYear is not None and site.startYear > site.endYear
+        if too_early or reversed_span:
+            site = replace(site, startYear=None, endYear=None, datingSource="none")
+            dropped += 1
+        cleaned.append(site)
+    return cleaned, dropped
 
 
 def adopt_dating(
@@ -81,7 +103,10 @@ def read_radiocarbon_sites(path: Path) -> list[dict]:
 
 
 def attach_radiocarbon(sites: list[WorldSite], radiocarbon_sites: list[dict]) -> list[WorldSite]:
-    """Date undated sites from a radiocarbon site of the same name key within 5 km."""
+    """Date undated sites from a radiocarbon site of the same name key within 5 km.
+
+    Pleiades places are never dated this way: it is a gazetteer of historical-period places.
+    """
     spans_by_name: dict[str, list[dict]] = {}
     for span in radiocarbon_sites:
         folded = dating_name_key(span.get("name") or "")
@@ -89,7 +114,7 @@ def attach_radiocarbon(sites: list[WorldSite], radiocarbon_sites: list[dict]) ->
         if folded and usable and (span.get("startYear") is not None or span.get("endYear") is not None):
             spans_by_name.setdefault(folded, []).append(span)
     return [
-        site if is_dated(site) else _with_radiocarbon(site, spans_by_name.get(dating_name_key(site.name), []))
+        site if is_dated(site) or site.source == "pleiades" else _with_radiocarbon(site, spans_by_name.get(dating_name_key(site.name), []))
         for site in sites
     ]
 
@@ -98,6 +123,8 @@ def _with_radiocarbon(site: WorldSite, same_name_spans: list[dict]) -> WorldSite
     nearest = None
     nearest_m = RADIOCARBON_MATCH_M
     for span in same_name_spans:
+        if not _plausible_for(site, span):
+            continue
         distance = _haversine_m(site.lon, site.lat, span["lon"], span["lat"])
         if distance <= nearest_m and (nearest is None or distance < nearest_m):
             nearest, nearest_m = span, distance
@@ -105,6 +132,12 @@ def _with_radiocarbon(site: WorldSite, same_name_spans: list[dict]) -> WorldSite
         return site
     attribution, licence = RADIOCARBON_CREDITS.get(nearest.get("source"), ("radiocarbon compilation", "see source"))
     return adopt_dating(site, nearest.get("startYear"), nearest.get("endYear"), "c14", attribution, licence)
+
+
+def _plausible_for(site: WorldSite, span: dict) -> bool:
+    start = span.get("startYear")
+    too_old = start is not None and start < EARLIEST_HOLOCENE_ONLY_START_YEAR
+    return not (too_old and site.siteType in HOLOCENE_ONLY_SITE_TYPES)
 
 
 def apply_featured(

@@ -1,9 +1,11 @@
 "use client";
 
 import { memo, useEffect, useMemo, type ReactNode } from "react";
+import type { WorldSource } from "@/lib/world/catalogueTypes";
 import type { PickedSite } from "../GlobeSites";
 import type { GlobeExplorerViewModel } from "../useGlobeExplorer";
 import { AboutPanel } from "./AboutPanel";
+import { CatalogueNotice } from "./CatalogueNotice";
 import styles from "./ExplorerChrome.module.css";
 import { ExplorerLegend } from "./ExplorerLegend";
 import { ExplorerTopbar } from "./ExplorerTopbar";
@@ -53,10 +55,13 @@ export const ExplorerChrome = memo(function ExplorerChrome(props: ExplorerChrome
       data-osm={explorer.showOsmMegaliths ? "on" : "off"}
     >
       <div className={styles.top}>
-        <ExplorerTopbar catalogue={catalogue} openPanel={selected ? null : panel} onVisit={selection.visit} onTogglePanel={explorer.togglePanel} />
-        {explorer.catalogueError ? (
-          <p className={styles.error} role="alert">The site catalogue did not load: {explorer.catalogueError} Reload the page to try again.</p>
-        ) : null}
+        <ExplorerTopbar
+          catalogue={catalogue}
+          catalogueFailed={explorer.catalogueError !== null}
+          openPanel={selected ? null : panel}
+          onVisit={selection.visit}
+          onTogglePanel={explorer.togglePanel}
+        />
       </div>
 
       <div className={styles.side}>
@@ -87,6 +92,8 @@ export const ExplorerChrome = memo(function ExplorerChrome(props: ExplorerChrome
             <LayersPanel
               osmMegaliths={catalogue?.index.osmMegaliths}
               showOsmMegaliths={explorer.showOsmMegaliths}
+              showLabels={explorer.showLabels}
+              onShowLabels={explorer.setShowLabels}
               featuredOnly={filters.featuredOnly}
               onShowOsmMegaliths={explorer.setShowOsmMegaliths}
               onFeaturedOnly={filters.setFeaturedOnly}
@@ -98,26 +105,46 @@ export const ExplorerChrome = memo(function ExplorerChrome(props: ExplorerChrome
         </div>
       </div>
 
-      <div className={styles.bottom}>
-        <div className={styles.legend}>
-          <ExplorerLegend
-            siteTypes={catalogue?.index.siteTypes ?? []}
-            totalSites={catalogue?.core.id.length ?? 0}
-            filters={filters}
-            showOsmMegaliths={explorer.showOsmMegaliths}
-          />
-        </div>
-        <div className={styles.dock}>
-          <GlobeTimeline
-            span={filters.yearSpan}
-            showUndated={filters.showUndated}
-            shownCount={filters.counts?.shown ?? null}
-            undatedCount={filters.counts?.undated ?? null}
-            onSpan={filters.setYearSpan}
-            onShowUndated={filters.setShowUndated}
-          />
-        </div>
-      </div>
+      {explorer.catalogueError ? (
+        <div className={styles.bottom}><div className={styles.dock}><CatalogueNotice reason={explorer.catalogueError} /></div></div>
+      ) : (
+        <ExplorerBottom explorer={explorer} />
+      )}
     </div>
   );
 });
+
+const NO_SOURCES: WorldSource[] = [];
+
+/** Legend and timeline: the controls that only make sense once there are sites to filter. */
+function ExplorerBottom({ explorer }: { explorer: GlobeExplorerViewModel }) {
+  const { catalogue, filters } = explorer;
+  const osmFile = catalogue?.index.osmMegaliths;
+  const sources = useMemo(
+    () => catalogue?.index.sources.filter((source) => !(osmFile && source.id === "osm")) ?? NO_SOURCES,
+    [catalogue, osmFile],
+  );
+  return (
+    <div className={styles.bottom}>
+      <div className={styles.legend}>
+        <ExplorerLegend
+          siteTypes={catalogue?.index.siteTypes ?? []}
+          totalSites={catalogue?.index.count ?? 0}
+          sources={sources}
+          filters={filters}
+          showOsmMegaliths={explorer.showOsmMegaliths}
+        />
+      </div>
+      <div className={styles.dock}>
+        <GlobeTimeline
+          span={filters.yearSpan}
+          showUndated={filters.showUndated}
+          shownCount={filters.counts?.shown ?? null}
+          undatedCount={filters.counts?.undated ?? null}
+          onSpan={filters.setYearSpan}
+          onShowUndated={filters.setShowUndated}
+        />
+      </div>
+    </div>
+  );
+}

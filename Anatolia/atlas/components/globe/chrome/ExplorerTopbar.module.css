@@ -35,3 +35,7 @@
   /* Search drops to its own row under the title. */
   .topbar > [role="search"] { order: 3; flex: 1 1 100%; max-width: none; }
 }
+
+@media (pointer: coarse) {
+  .panelButton { height: 40px; min-width: 40px; }
+}

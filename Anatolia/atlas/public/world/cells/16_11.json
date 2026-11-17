@@ -1,1 +1,1 @@
-{"id":["878261410"],"name":["Lobos 1"],"lon":[-13.82502],"lat":[28.74199],"type":[12],"start":[-30],"end":[300],"importance":[0],"source":[1],"featured":[0]}
+{"id":["Q136525490","878261410"],"name":["Yacimiento arqueológico de Mugaretes del Clavo","Lobos 1"],"lon":[-15.675,-13.82502],"lat":[28.16028,28.74199],"type":[12,12],"start":[null,-30],"end":[null,300],"importance":[1,0],"source":[0,1],"featured":[0,0]}

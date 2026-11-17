@@ -1,0 +1,48 @@
+/* drei's Html wrapper sits at the canvas's top-left corner. Under the panels (12–14), over the site labels (0–6). */
+.anchor { z-index: 10 !important; }
+
+/* Top left, under the top bar: clear of the imagery credit (bottom right) and the timeline (bottom). */
+.chip {
+  position: absolute;
+  top: 72px;
+  left: 18px;
+  display: grid;
+  gap: 3px;
+  width: max-content;
+  max-width: min(330px, calc(100vw - 36px));
+  padding: 8px 12px 9px;
+  border: 1px solid rgba(134, 190, 220, 0.32);
+  border-left: 2px solid #7fcbd7;
+  border-radius: 3px;
+  background: rgba(10, 13, 18, 0.82);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+  color: #ece4d4;
+  font-size: 12px;
+  line-height: 1.35;
+  pointer-events: none;
+}
+
+.kicker { font-size: 10px; font-weight: 600; letter-spacing: 0.13em; text-transform: uppercase; color: #9fcfe0; }
+.title { font: 500 14.5px/1.25 Palatino, "Palatino Linotype", "Book Antiqua", Georgia, serif; text-wrap: balance; }
+
+.badge {
+  justify-self: start;
+  margin-top: 2px;
+  padding: 1px 7px 2px;
+  border: 1px solid;
+  border-radius: 2px;
+  font-size: 10.5px;
+  letter-spacing: 0.03em;
+}
+
+.badge[data-beats-baseline="true"] { border-color: rgba(127, 203, 215, 0.75); color: #c6f7f2; }
+/* Dashed and grey: a weaker claim, stated without alarm. */
+.badge[data-beats-baseline="false"] { border-style: dashed; border-color: rgba(214, 218, 224, 0.55); color: #d3d7dd; }
+
+.note { margin-top: 2px; font-size: 11px; color: #b6bcc5; }
+
+@media (max-width: 760px) {
+  .chip { top: 108px; left: 10px; max-width: calc(100vw - 20px); padding: 6px 10px 7px; }
+  .title { font-size: 13px; }
+}

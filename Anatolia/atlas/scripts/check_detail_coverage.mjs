@@ -1,19 +1,14 @@
 import { mkdir } from "node:fs/promises";
-import puppeteer from "puppeteer-core";
+import { launchBrowser, openAtlas, scratchDir } from "./atlasBrowser.mjs";
 
-const outDir = process.env.CHECK_DIR ?? "/tmp/atlas-detail-check";
+const outDir = process.env.CHECK_DIR ?? scratchDir("atlas-detail-check");
 await mkdir(outDir, { recursive: true });
-const browser = await puppeteer.launch({
-  executablePath: "/usr/bin/google-chrome-stable",
-  headless: true,
-  args: ["--no-sandbox", "--disable-dev-shm-usage", "--use-gl=angle", "--use-angle=swiftshader", "--enable-unsafe-swiftshader", "--window-size=1440,900"],
-});
+const browser = await launchBrowser({ width: 1440, height: 900 });
 const page = await browser.newPage();
 page.setDefaultTimeout(90000);
 page.on("pageerror", (error) => console.log("PAGEERROR", error.message));
 await page.setViewport({ width: 1440, height: 900 });
-await page.goto("http://127.0.0.1:43127/", { waitUntil: "networkidle0" });
-await page.waitForSelector("body[data-ready='true']");
+await openAtlas(page);
 await new Promise((resolve) => setTimeout(resolve, 1600));
 await page.$eval("[data-action='settings']", (element) => element.click());
 const wikiToggle = await page.$("[data-layer-toggle='wikidata']");

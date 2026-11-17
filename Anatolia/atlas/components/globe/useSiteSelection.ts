@@ -2,8 +2,8 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState, type RefObject } from "react";
 import type { GlobeLook } from "@/lib/globe/ellipsoid";
-import { loadSiteDetail, type WorldCatalogue } from "@/lib/world/catalogueLoader";
-import { pickedSiteFromDetail, pickedSiteFromRow, rowOfSite, siteArrivalLook } from "@/lib/world/sitePick";
+import { loadSiteOutsideCore, type WorldCatalogue } from "@/lib/world/catalogueLoader";
+import { pickedSiteFromRow, rowOfSite, siteArrivalLook } from "@/lib/world/sitePick";
 import type { GlobeFlyTo } from "./GlobeFlight";
 import type { PickedSite } from "./GlobeSites";
 
@@ -32,6 +32,8 @@ export function useSiteSelection(options: {
   const [flyTo, setFlyTo] = useState<GlobeFlyTo | null>(null);
   const flightToken = useRef(0);
   const restored = useRef(false);
+  /** Counts every pick, so a slow lookup can tell that the user has chosen something else since. */
+  const picks = useRef(0);
 
   const flyToLook = useCallback((target: GlobeLook) => {
     flightToken.current += 1;
@@ -39,6 +41,7 @@ export function useSiteSelection(options: {
   }, []);
 
   const select = useCallback((site: PickedSite | null) => {
+    picks.current += 1;
     setSelected(site);
     onSelectSite?.(site?.id ?? null);
   }, [onSelectSite]);
@@ -67,11 +70,16 @@ export function useSiteSelection(options: {
     if (!catalogue || !initialSiteId || restored.current) return;
     restored.current = true;
     if (visitById(initialSiteId)) return;
-    // Not in the core file: an OSM megalith or a site from a regional cell. Its detail record still places it.
-    void loadSiteDetail(initialSiteId).then((detail) => {
-      if (detail) visit(pickedSiteFromDetail(initialSiteId, detail));
+    // Not in the core file: an OSM megalith or a site from a regional cell.
+    const picksBefore = picks.current;
+    void loadSiteOutsideCore(catalogue, initialSiteId).then((site) => {
+      if (picks.current !== picksBefore) return;
+      if (site) visit(site);
+      else onSelectSite?.(null); // an id the catalogue does not know leaves the address
     });
-  }, [catalogue, initialSiteId, visit, visitById]);
+  }, [catalogue, initialSiteId, onSelectSite, visit, visitById]);
+  // After unmount nothing may be picked: a late lookup would write this view's site into the next view's address.
+  useEffect(() => () => { picks.current = -1; }, []);
 
   return useMemo(
     () => ({ selected, flyTo, select, visit, visitById, flyCloser, flyToLook }),

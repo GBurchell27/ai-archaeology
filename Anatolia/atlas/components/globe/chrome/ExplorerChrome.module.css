@@ -34,18 +34,6 @@
 /* z-indexes start above the globe's own DOM labels and count badges, which use 0 to 6. */
 .top { position: absolute; z-index: 14; top: 14px; left: var(--edge); right: var(--edge); }
 
-.error {
-  width: fit-content;
-  max-width: 100%;
-  margin: 10px 0 0;
-  padding: 8px 12px;
-  border-left: 2px solid #e88aa0;
-  border-radius: 3px;
-  background: rgba(10, 13, 18, 0.86);
-  color: #f3d6dc;
-  pointer-events: auto;
-}
-
 .side {
   position: absolute;
   z-index: 13;
@@ -81,13 +69,15 @@
 
 .explorer[data-side="open"] .bottom { grid-template-columns: var(--legend-width) minmax(0, 1fr) var(--side-width); }
 
-.legend { display: flex; align-items: flex-end; min-height: 0; max-height: 100%; }
-.dock { container-type: inline-size; }
+/* Stretched to the whole cell so the legend inside has a definite height to stop at; it then scrolls instead of climbing over the top bar. */
+.legend { display: flex; align-items: flex-end; align-self: stretch; min-height: 0; }
+.dock { container-type: inline-size; grid-column: 2; }
 .dock > section { max-width: 640px; margin: 0 auto; }
 
 /* Medium: no room beside the timeline, so the legend stacks above it and the side column stops short of both. */
 @media (max-width: 1180px) {
   .bottom, .explorer[data-side="open"] .bottom { grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(0, 1fr) auto; }
+  .dock { grid-column: 1; grid-row: 2; }
   .legend { width: var(--legend-width); max-width: 100%; }
   .side { bottom: calc(var(--foot) + var(--lift) + 176px); }
 }

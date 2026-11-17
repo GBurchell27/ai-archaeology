@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useId, useState } from "react";
+import type { WorldSource } from "@/lib/world/catalogueTypes";
 import { OSM_MEGALITH_STYLE } from "@/lib/world/siteTypeStyle";
 import type { SiteFilterViewModel } from "../useSiteFilter";
 import { ChevronIcon } from "./ExplorerIcons";
@@ -14,7 +15,10 @@ const count = (value: number) => value.toLocaleString("en-GB");
 /** The colour key and type filter, under a one-line readout of how much of the catalogue is on the globe. */
 export function ExplorerLegend(props: {
   siteTypes: string[];
+  /** Every site in the catalogue, loaded or not. */
   totalSites: number;
+  /** The catalogues the dots come from. The OpenStreetMap layer carries its own credit while it is on. */
+  sources: WorldSource[];
   filters: SiteFilterViewModel;
   showOsmMegaliths: boolean;
 }) {
@@ -23,14 +27,24 @@ export function ExplorerLegend(props: {
   const bodyId = useId();
   // Open by default only where it does not crowd the globe.
   useEffect(() => setOpen(window.matchMedia(ROOMY_SCREEN).matches), []);
-  const shown = filters.counts?.shown ?? null;
+  const counts = filters.counts;
 
   return (
     <section className={`${ui.glass} ${styles.legend}`} aria-label="Legend and site types" data-role="explorer-legend">
+      {props.sources.length ? (
+        <p className={styles.credit} data-role="site-records-credit">
+          Site records: {props.sources.map((source) => `${source.attribution}, ${source.licence}`).join(" · ")}
+        </p>
+      ) : null}
       <button type="button" className={styles.toggle} aria-expanded={open} aria-controls={bodyId} data-action="toggle-legend" onClick={() => setOpen(!open)}>
         <span className={styles.status} data-role="site-status">
-          {shown === null ? "Loading sites…" : (
-            <><b className={ui.numeric}>{count(shown)}</b><span className={ui.numeric}> of {count(totalSites)} sites shown</span></>
+          {counts === null ? "Loading sites…" : (
+            <>
+              <span className={ui.numeric}><b>{count(counts.shown)}</b> sites shown</span>
+              <span className={`${ui.numeric} ${styles.loaded}`} title="Regional sites load as you zoom in">
+                {count(counts.loaded)} loaded of {count(totalSites)}
+              </span>
+            </>
           )}
         </span>
         <span className={styles.caret}><span className={ui.eyebrow}>Legend</span><ChevronIcon direction={open ? "down" : "up"} /></span>

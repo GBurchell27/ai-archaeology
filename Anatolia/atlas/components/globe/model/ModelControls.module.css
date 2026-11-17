@@ -1,0 +1,118 @@
+/* The recording-pattern layer's controls. Cool blue throughout: the ochre of the chrome belongs to the sites. */
+
+.model {
+  --model-cool: #7fcbd7;
+  --model-ice: #c6f7f2;
+  --model-rule: rgba(134, 190, 220, 0.24);
+  --model-quiet: #b6bcc5;
+  display: grid;
+  gap: 10px;
+  font-size: 12.5px;
+  line-height: 1.5;
+}
+
+.model p, .model h3, .model h4, .model ul, .model ol { margin: 0; }
+.model ul, .model ol { padding: 0; list-style: none; }
+
+.kicker { font-size: 10.5px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: #9fcfe0; }
+.switch { display: flex; margin-top: -4px; }
+.heading { font-size: 14px; }
+.switch input:checked + span { border-color: var(--model-cool); background: rgba(127, 203, 215, 0.26); }
+.switch input:checked + span::after { background: var(--model-ice); }
+.switch input:focus-visible + span { outline-color: var(--model-cool); }
+
+/* Always visible, on or off. */
+.statement { padding: 8px 11px; border-left: 2px solid var(--model-cool); background: rgba(127, 203, 215, 0.07); color: #dfe6ea; }
+.error { padding-left: 11px; border-left: 2px solid #e88aa0; color: #f3d6dc; }
+
+/* Picker: what is recorded down the side, when across the top. */
+.picker { display: grid; gap: 7px; padding-top: 4px; }
+.grid { display: grid; grid-template-columns: minmax(74px, 1fr) repeat(4, minmax(0, 62px)); gap: 4px; align-items: center; }
+.period { padding-bottom: 2px; font-size: 10.5px; line-height: 1.25; text-align: center; text-wrap: balance; color: var(--model-quiet); }
+.siteClass { font-size: 12.5px; }
+
+.choice {
+  position: relative;
+  display: grid;
+  place-items: center;
+  height: 30px;
+  border: 1px solid var(--model-rule);
+  border-radius: 3px;
+  cursor: pointer;
+  transition: background 140ms ease, border-color 140ms ease;
+}
+
+.choice input { position: absolute; inset: 0; margin: 0; opacity: 0; cursor: pointer; }
+.choice:hover { background: rgba(127, 203, 215, 0.1); }
+.choice:has(input:checked) { border-color: var(--model-cool); background: rgba(127, 203, 215, 0.2); }
+.choice:has(input:focus-visible) { outline: 2px solid var(--model-cool); outline-offset: 2px; }
+
+/* Filled: says more than survey effort. Hollow and dashed: mostly survey effort. */
+.mark { display: inline-block; flex: none; width: 10px; height: 10px; border: 1px solid var(--model-cool); border-radius: 1px; background: var(--model-cool); }
+.mark[data-beats-baseline="false"] { border: 1px dashed rgba(214, 218, 224, 0.7); background: none; }
+
+.absent { display: grid; place-items: center; height: 30px; color: #8a919c; cursor: help; }
+.key { display: flex; flex-wrap: wrap; gap: 2px 14px; font-size: 11px; color: var(--model-quiet); }
+.key i { margin-right: 4px; font-style: normal; }
+.absentKey { color: #8a919c; }
+
+.opacity { display: grid; grid-template-columns: auto 1fr 4ch; align-items: center; gap: 10px; color: var(--model-quiet); }
+.opacity input { width: 100%; accent-color: var(--model-cool); }
+.opacity input:focus-visible { outline: 2px solid var(--model-cool); outline-offset: 3px; }
+
+/* Legend: ten flat cells with gaps, because the steps are ranks. */
+.legend { display: grid; gap: 5px; }
+.ramp { display: grid; grid-template-columns: repeat(10, 1fr); gap: 2px; }
+.ramp li { height: 14px; }
+.rampEnds { display: flex; justify-content: space-between; gap: 8px; font-size: 11px; color: var(--model-quiet); }
+.noBasis { display: grid; grid-template-columns: 28px 1fr; gap: 8px; align-items: start; margin-top: 2px; font-size: 11.5px; color: var(--model-quiet); }
+.noBasis i { height: 14px; margin-top: 2px; border: 1px solid rgba(236, 228, 212, 0.14); }
+
+.facts { display: grid; gap: 8px; padding-top: 12px; border-top: 1px solid var(--model-rule); }
+.layerTitle { font-size: 17px; font-weight: 500; line-height: 1.25; text-wrap: balance; }
+
+.badge { justify-self: start; padding: 2px 8px 3px; border: 1px solid; border-radius: 2px; font-size: 11.5px; letter-spacing: 0.02em; }
+.badge[data-beats-baseline="true"] { border-color: rgba(127, 203, 215, 0.75); color: var(--model-ice); }
+.badge[data-beats-baseline="false"] { border-style: dashed; border-color: rgba(214, 218, 224, 0.55); color: #d3d7dd; }
+.badgeNote, .basis, .licences { font-size: 11.5px; color: var(--model-quiet); }
+
+.metrics { position: relative; display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
+.metric { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; padding: 5px 9px; border: 1px solid var(--model-rule); border-radius: 3px; cursor: help; }
+.metric:focus-visible { outline: 2px solid var(--model-cool); outline-offset: 1px; }
+.metricLabel { font-size: 11.5px; color: var(--model-quiet); }
+.metricValue { font-size: 14px; color: #ece4d4; }
+
+/* One explanation at a time, spanning the grid just under it. */
+.explanation {
+  position: absolute;
+  z-index: 1;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  display: none;
+  padding: 7px 10px;
+  border: 1px solid var(--model-rule);
+  border-radius: 3px;
+  background: #121821;
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.45);
+  font-size: 11.5px;
+  color: #dfe6ea;
+}
+
+.metric:hover .explanation, .metric:focus .explanation { display: block; }
+
+.caveatsHeading { margin-top: 4px; font-size: 10.5px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: #9fcfe0; }
+.caveats { display: grid; gap: 7px; font-size: 12px; color: #cfd4da; }
+.caveats li { padding-left: 11px; border-left: 1px solid var(--model-rule); }
+/* The first caveat is the layer's own verdict against the effort baseline. */
+.caveats li:first-child { border-left: 2px solid var(--model-cool); color: #ece4d4; }
+
+@media (prefers-reduced-motion: reduce) {
+  .choice { transition: none; }
+}
+
+@media (pointer: coarse) {
+  .choice, .absent { height: 40px; }
+  .opacity input, .metric { min-height: 40px; }
+  .metric { align-items: center; }
+}

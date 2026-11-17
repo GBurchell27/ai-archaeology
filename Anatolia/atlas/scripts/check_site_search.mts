@@ -9,7 +9,7 @@ register(`data:text/javascript,${encodeURIComponent(`
   }
 `)}`);
 
-const { emptySearchIndex, foldNextNames, searchSites } = await import("../lib/world/siteSearch.ts");
+const { emptySearchIndex, foldNextNames, searchSiteIndexes, searchSites } = await import("../lib/world/siteSearch.ts");
 
 let failed = 0;
 
@@ -39,6 +39,11 @@ const columns = {
   featured: SITES.map((site) => site[2]),
 };
 const index = emptySearchIndex(columns);
+function emptyThenFolded(names: string[]) {
+  const folded = emptySearchIndex({ name: names });
+  foldNextNames(folded, names.length);
+  return folded;
+}
 const names = (query: string, limit?: number) => searchSites(index, query, limit).map((row) => columns.name[row]);
 
 check("nothing is searchable before the names are folded", names("stone").length === 0);
@@ -67,6 +72,27 @@ check("case and outer spaces are ignored", names("  STONEHENGE ")[0] === "Stoneh
 check("a second word is found", names("tepe")[0] === "Göbekli Tepe");
 check("one letter is too short", names("s").length === 0);
 check("no match gives nothing", names("zzzz").length === 0);
+check("an empty or blank query gives nothing", names("").length === 0 && names("   ").length === 0 && names(" s ").length === 0);
+check("regex characters are plain text", [".*", "(", "[stone", "st.ne", "stone$", "\\", "s+"].every((query) => names(query).length === 0));
+check("a regex character inside a real name still matches literally", searchSites(emptyThenFolded(["Tell (el-)Amarna"]), "(el-)am").length === 1);
+const started = performance.now();
+check("a very long query gives nothing, quickly", names("stone".repeat(20_000)).length === 0 && performance.now() - started < 500);
+check("a zero or negative limit gives nothing", names("stone", 0).length === 0);
+
+// The names file: every site outside core, best known first, with no importance or featured columns.
+const rest = emptySearchIndex({ name: ["Stone Row of Nowhere", "Stonehaven cairn", "Old Blackstone", "Newgrange North", "Stonehenge Cursus"] });
+const restNames = (rest.columns as { name: string[] }).name;
+const both = (query: string, limit?: number) => searchSiteIndexes([index, rest], query, limit)
+  .map((hit) => (hit.index === 0 ? columns.name[hit.row] : `+${restNames[hit.row]}`));
+check("an unfolded names index adds nothing", both("stone").join() === names("stone").join());
+foldNextNames(rest, 1000);
+check("a name only the names file has is found", both("newgrange")[0] === "+Newgrange North");
+const merged = both("stone", 100);
+const lastCorePrefix = merged.indexOf("Stonefield 0");
+check("core prefix matches come before names-file prefix matches", merged.indexOf("+Stone Row of Nowhere") > lastCorePrefix && merged.indexOf("+Stone Row of Nowhere") < merged.indexOf("Carnac stones"));
+check("the names file keeps its best-known-first order among equal lengths apart", merged.indexOf("+Stonehaven cairn") < merged.indexOf("+Old Blackstone"));
+check("a names-file prefix match beats a core match inside a word", merged.indexOf("+Stonehenge Cursus") < merged.indexOf("Blackstone Edge"));
+check("the merged list is capped", both("stone").length === 8);
 
 // The addresses a found site's card links to.
 const { commonsFilePage, commonsThumbnail, osmElementPage } = await import("../lib/world/siteMedia.ts");

@@ -7,7 +7,8 @@ export const SEARCH_RESULT_LIMIT = 8;
 export const MIN_QUERY_LENGTH = 2;
 
 export interface SiteSearchIndex {
-  columns: Pick<SiteColumns, "name" | "importance" | "featured">;
+  /** The names file has no importance or featured columns: its rows are already in best-known-first order. */
+  columns: Pick<SiteColumns, "name"> & Partial<Pick<SiteColumns, "importance" | "featured">>;
   /** Diacritic-free lower-case names, one per row; only the first `foldedRows` are filled. */
   folded: string[];
   foldedRows: number;
@@ -33,22 +34,53 @@ function matchRank(folded: string, needle: string): number {
   return folded.includes(` ${needle}`) || folded.includes(`-${needle}`) ? 1 : 2;
 }
 
-/** Catalogue rows that match, best first: prefix before substring, then featured, then importance, then shorter names. */
-export function searchSites(index: SiteSearchIndex, query: string, limit = SEARCH_RESULT_LIMIT): number[] {
-  const needle = searchKey(query);
-  if (needle.length < MIN_QUERY_LENGTH) return [];
+interface RankedRow {
+  row: number;
+  rank: number;
+}
+
+/** The best `limit` rows of one index: prefix before substring, then featured, then importance, then shorter names. */
+function bestRows(index: SiteSearchIndex, needle: string, limit: number): RankedRow[] {
   const { featured, importance } = index.columns;
-  const hits: { row: number; rank: number }[] = [];
+  const hits: RankedRow[] = [];
   for (let row = 0; row < index.foldedRows; row += 1) {
     const rank = matchRank(index.folded[row], needle);
     if (rank >= 0) hits.push({ row, rank });
   }
   hits.sort((a, b) => (
     a.rank - b.rank
-    || featured[b.row] - featured[a.row]
-    || importance[b.row] - importance[a.row]
+    || (featured ? featured[b.row] - featured[a.row] : 0)
+    || (importance ? importance[b.row] - importance[a.row] : 0)
     || index.folded[a.row].length - index.folded[b.row].length
     || a.row - b.row
   ));
-  return hits.slice(0, limit).map((hit) => hit.row);
+  return hits.slice(0, limit);
+}
+
+/** Catalogue rows that match, best first. */
+export function searchSites(index: SiteSearchIndex, query: string, limit = SEARCH_RESULT_LIMIT): number[] {
+  const needle = searchKey(query);
+  if (needle.length < MIN_QUERY_LENGTH) return [];
+  return bestRows(index, needle, limit).map((hit) => hit.row);
+}
+
+export interface IndexedHit {
+  /** Position of the index the row belongs to, in the list that was searched. */
+  index: number;
+  row: number;
+}
+
+/**
+ * One ranking over several indexes (the core file, then the names of everything else).
+ * Among matches of the same quality an earlier index wins, so a core site is never pushed
+ * out by a little-known namesake.
+ */
+export function searchSiteIndexes(indexes: readonly SiteSearchIndex[], query: string, limit = SEARCH_RESULT_LIMIT): IndexedHit[] {
+  const needle = searchKey(query);
+  if (needle.length < MIN_QUERY_LENGTH) return [];
+  return indexes
+    .flatMap((searched, index) => bestRows(searched, needle, limit).map((hit) => ({ index, ...hit })))
+    .sort((a, b) => a.rank - b.rank || a.index - b.index) // stable: each index keeps its own order
+    .slice(0, limit)
+    .map(({ index, row }) => ({ index, row }));
 }

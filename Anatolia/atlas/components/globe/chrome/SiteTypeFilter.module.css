@@ -49,11 +49,21 @@
   opacity: 0;
 }
 
-.row:hover .only, .only:focus-visible { opacity: 1; }
+.row:hover .only, .row:focus-within .only { opacity: 1; }
+/* The key hint is for keyboard users: it shows only while the row has focus. */
+.onlyKey { display: none; margin-left: 5px; padding: 0 3px; border: 1px solid rgba(240, 212, 154, 0.45); border-radius: 2px; font: inherit; }
+.row:focus-within .onlyKey { display: inline; }
 .only:hover { background: #2a2a26; }
 
 .all { justify-self: start; margin-left: 8px; }
 
+/* Nothing hovers on a touch screen: "only" sits beside the count instead of taking its place. */
 @media (hover: none) {
-  .only { display: none; }
+  .only { position: static; flex: none; margin-left: 4px; padding: 0 9px; opacity: 1; }
+  .onlyKey, .row:focus-within .onlyKey { display: none; }
+}
+
+@media (pointer: coarse) {
+  .type { min-height: 40px; }
+  .only { min-width: 44px; }
 }

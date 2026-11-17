@@ -24,6 +24,8 @@
 }
 
 .muted { color: var(--globe-muted); }
+/* For screen readers only. */
+.visuallyHidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 .numeric { font-variant-numeric: tabular-nums; }
 
 .button,
@@ -177,4 +179,10 @@
 
 @media (prefers-reduced-motion: reduce) {
   .button, .iconButton, .chip, .switchTrack, .switchTrack::after { transition: none; }
+}
+
+/* A finger needs about 40px; the sizes above are for a mouse. */
+@media (pointer: coarse) {
+  .button, .chip, .textField, .switch { min-height: 40px; }
+  .iconButton { width: 40px; height: 40px; }
 }

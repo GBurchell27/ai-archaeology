@@ -95,3 +95,7 @@
 }
 
 .empty { padding: 10px 9px; font-size: 12.5px; line-height: 1.45; color: var(--globe-muted); }
+
+@media (pointer: coarse) {
+  .input { height: 40px; }
+}

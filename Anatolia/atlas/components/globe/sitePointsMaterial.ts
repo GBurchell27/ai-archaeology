@@ -21,6 +21,7 @@ const VERTEX = /* glsl */ `
   #endif
   uniform float pixelSize;
   uniform float opacity;
+  uniform float orbit;
   varying vec3 vTint;
   varying float vAlpha;
   const vec3 STRETCH = vec3(1.0, 1.0, ${POLAR_STRETCH.toFixed(8)});
@@ -30,7 +31,9 @@ const VERTEX = /* glsl */ `
     vec3 place = position * STRETCH / RADIUS;
     vec3 eye = cameraPosition * STRETCH / RADIUS;
     float nearSide = (dot(place, eye) - 1.0) / max(length(eye) - 1.0, 1e-5);
-    vAlpha = shown * opacity * smoothstep(0.0, 0.07, nearSide);
+    // From orbit the little-known sites sink into a faint haze and the well-known ones stay as sparks.
+    float renown = clamp((size - 0.85) / 0.75, 0.0, 1.0);
+    vAlpha = shown * opacity * smoothstep(0.0, 0.07, nearSide) * mix(1.0, 0.45 + 0.55 * renown, orbit);
     vTint = tint;
     #ifdef FEATURED
       vQuiet = quiet;
@@ -42,12 +45,13 @@ const VERTEX = /* glsl */ `
   }
 `;
 
-// Premultiplied output with a separate coverage alpha: coverage 0 adds light (the orbit glow),
-// coverage 1 paints an opaque dot (distinct places close up).
+// Premultiplied output with a separate coverage alpha. Coverage a little under 1 lets overlapping
+// points build up to tint / coverage and stop there: dense regions saturate to warm amber, never to white.
 const SITES_FRAGMENT = /* glsl */ `
   #include <common>
   #include <logdepthbuf_pars_fragment>
   uniform float solidity;
+  uniform float orbit;
   varying vec3 vTint;
   varying float vAlpha;
   void main() {
@@ -59,7 +63,9 @@ const SITES_FRAGMENT = /* glsl */ `
     // A dark rim keeps a dot legible over pale desert imagery.
     float rim = smoothstep(0.58, 0.76, radius) * solidity;
     float strength = mix(glow, disc, solidity) * vAlpha;
-    gl_FragColor = vec4(mix(vTint, vec3(0.05, 0.035, 0.02), rim * 0.92) * strength, strength * solidity);
+    vec3 tint = mix(vTint, vec3(1.0, 0.66, 0.2), orbit * 0.5);
+    float coverage = mix(0.8, 1.0, solidity);
+    gl_FragColor = vec4(mix(tint, vec3(0.05, 0.035, 0.02), rim * 0.92) * strength, strength * coverage);
   }
 `;
 
@@ -90,7 +96,7 @@ export function createSitePointsMaterial(kind: SitePointsKind): THREE.ShaderMate
     vertexShader: VERTEX,
     fragmentShader: kind === "featured" ? FEATURED_FRAGMENT : SITES_FRAGMENT,
     defines: kind === "featured" ? { FEATURED: "" } : {},
-    uniforms: { pixelSize: { value: 4 }, opacity: { value: 1 }, solidity: { value: 1 } },
+    uniforms: { pixelSize: { value: 4 }, opacity: { value: 1 }, solidity: { value: 1 }, orbit: { value: 0 } },
     transparent: true,
     blending: THREE.CustomBlending,
     blendSrc: THREE.OneFactor,
@@ -107,7 +113,7 @@ export function orbitFraction(altitude: number): number {
   return THREE.MathUtils.clamp(fraction, 0, 1);
 }
 
-/** Orbit: small, translucent, additive, so density glows. Close: larger opaque dots. */
+/** Orbit: small translucent motes, so density reads as a glow with the land still under it. Close: larger opaque dots. */
 export function tuneSitePointsMaterial(
   material: THREE.ShaderMaterial,
   kind: SitePointsKind,
@@ -115,8 +121,9 @@ export function tuneSitePointsMaterial(
   devicePixelRatio: number,
 ): void {
   const orbit = orbitFraction(altitude);
-  const pixels = kind === "featured" ? THREE.MathUtils.lerp(34, 20, orbit) : THREE.MathUtils.lerp(10.5, 3, orbit);
+  const pixels = kind === "featured" ? THREE.MathUtils.lerp(34, 18, orbit) : THREE.MathUtils.lerp(10.5, 2.8, orbit);
   material.uniforms.pixelSize.value = pixels * devicePixelRatio;
-  material.uniforms.opacity.value = kind === "featured" ? 1 : THREE.MathUtils.lerp(1, 0.8, orbit);
-  material.uniforms.solidity.value = 1 - 0.8 * THREE.MathUtils.smoothstep(orbit, 0.55, 1);
+  material.uniforms.opacity.value = kind === "featured" ? 1 : THREE.MathUtils.lerp(1, 0.85, orbit);
+  material.uniforms.solidity.value = 1 - THREE.MathUtils.smoothstep(orbit, 0.55, 1);
+  material.uniforms.orbit.value = kind === "featured" ? 0 : THREE.MathUtils.smoothstep(orbit, 0.6, 1);
 }

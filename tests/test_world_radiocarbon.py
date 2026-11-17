@@ -18,6 +18,12 @@ def test_conversion_is_monotonic_and_lands_known_anchors():
         assert abs(calendar_year_from_radiocarbon_age(radiocarbon_age) - intcal20_year) <= 100
 
 
+def test_conversion_never_returns_a_year_zero():
+    # 2000 14C BP is the 1950 cal BP anchor: 1 BCE, not the year 0 that does not exist.
+    assert calendar_year_from_radiocarbon_age(2000) == -1
+    assert 0 not in {calendar_year_from_radiocarbon_age(age) for age in range(1900, 2100)}
+
+
 def test_aggregation_spans_oldest_to_youngest_and_drops_bad_rows():
     rows = [
         date_row(5000, period="Neolithic"), date_row(4000, period="Neolithic"), date_row(4500, period="Bronze"),

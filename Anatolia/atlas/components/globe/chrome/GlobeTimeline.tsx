@@ -1,11 +1,23 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { ALL_TIME, WORLD_ERAS, activeWorldEra, describeSpan, isAllTime, type YearSpan } from "@/lib/world/worldEras";
 import ui from "./chrome.module.css";
 import styles from "./GlobeTimeline.module.css";
 import { YearRangeSlider } from "./YearRangeSlider";
 
 const count = (value: number) => value.toLocaleString("en-GB");
+const ANNOUNCE_AFTER_MS = 900;
+
+/** The value once it has stopped changing: regional cells arriving mid-flight change the count many times a second. */
+function useSettled<Value>(value: Value, delayMs: number): Value {
+  const [settled, setSettled] = useState(value);
+  useEffect(() => {
+    const timer = window.setTimeout(() => setSettled(value), delayMs);
+    return () => window.clearTimeout(timer);
+  }, [value, delayMs]);
+  return settled;
+}
 
 /** The globe's time filter: era chips that sit under their own stretch of a two-thumb slider. */
 export function GlobeTimeline(props: {
@@ -18,6 +30,7 @@ export function GlobeTimeline(props: {
 }) {
   const { span, onSpan, shownCount, undatedCount } = props;
   const era = activeWorldEra(span);
+  const announcedCount = useSettled(shownCount, ANNOUNCE_AFTER_MS);
   return (
     <section className={`${ui.glass} ${styles.timeline}`} aria-label="Time filter" data-role="globe-timeline" data-year-start={span[0]} data-year-end={span[1]}>
       <div className={styles.head}>
@@ -25,8 +38,11 @@ export function GlobeTimeline(props: {
         {isAllTime(span) ? null : (
           <button type="button" className={`${ui.chip} ${styles.allTime}`} data-era="all" onClick={() => onSpan(ALL_TIME)}>All time</button>
         )}
-        <p className={styles.count} role="status">
+        <p className={styles.count}>
           {shownCount === null ? "Loading sites…" : <><b className={ui.numeric}>{count(shownCount)}</b> {shownCount === 1 ? "site" : "sites"}</>}
+          <span className={ui.visuallyHidden} role="status">
+            {announcedCount === null ? "" : `${count(announcedCount)} ${announcedCount === 1 ? "site" : "sites"} shown`}
+          </span>
         </p>
         <label className={`${ui.switch} ${styles.undated}`}>
           <input type="checkbox" data-role="include-undated" checked={props.showUndated} onChange={(event) => props.onShowUndated(event.target.checked)} />

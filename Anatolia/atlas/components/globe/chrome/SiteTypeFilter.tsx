@@ -36,7 +36,10 @@ export function SiteTypeFilter(props: {
                 data-list-item
                 data-site-type={siteType}
                 aria-pressed={shown}
+                aria-keyshortcuts="O"
                 onClick={() => props.onToggle(siteType)}
+                // "O" is the keyboard's way to "only": the button beside it stays out of the tab order, or the list would be 26 stops long.
+                onKeyDown={(event) => { if (event.key.toLowerCase() === "o" && !event.ctrlKey && !event.metaKey && !event.altKey) props.onSolo(siteType); }}
               >
                 <i className={ui.swatch} style={{ ["--swatch" as string]: style.color }} />
                 <span className={styles.title}>{style.title}</span>
@@ -44,8 +47,8 @@ export function SiteTypeFilter(props: {
                   {counts ? (counts[siteTypes.indexOf(siteType)] ?? 0).toLocaleString("en-GB") : ""}
                 </span>
               </button>
-              <button type="button" className={styles.only} aria-label={`Show only ${style.title.toLowerCase()}`} onClick={() => props.onSolo(siteType)}>
-                only
+              <button type="button" className={styles.only} tabIndex={-1} aria-label={`Show only ${style.title.toLowerCase()}`} onClick={() => props.onSolo(siteType)}>
+                only<kbd className={styles.onlyKey}>O</kbd>
               </button>
             </li>
           );

@@ -5,8 +5,11 @@ import { fileURLToPath } from "node:url";
 import { isOnNearSide } from "../lib/globe/visibleSites.ts";
 import { placeLabels } from "../lib/globe/labelLayout.ts";
 import { buildSiteGrid, countShownByBucket, nearestSite } from "../lib/globe/siteGrid.ts";
-import { cellKeyFor, detailBucket, type SiteColumns, type WorldIndex } from "../lib/world/catalogueTypes.ts";
-import { CELL_ALTITUDE_LIMIT, SiteCellCache, cellKeysInView } from "../lib/world/cellLoader.ts";
+import {
+  cellKeyFor, detailBucket, siteDetailFromStored, sourceUrlFor,
+  type NameColumns, type SiteColumns, type StoredSiteDetail, type WorldIndex,
+} from "../lib/world/catalogueTypes.ts";
+import { CELL_ALTITUDE_LIMIT, HEAVY_CELL_SITES, SiteCellCache, cellKeysInView } from "../lib/world/cellLoader.ts";
 import { ALL_SITES, siteMatches, siteVisibility, type SiteFilter } from "../lib/world/siteFilter.ts";
 
 let failed = 0;
@@ -48,6 +51,20 @@ check("a low camera asks for a handful of cells", lowOverGiza.length >= 1 && low
 check("cells across the date line are neighbours",
   cellKeysInView({ longitude: 179.9, latitude: 0.1, altitude: 500_000 }, allCells).includes(cellKeyFor(-179.9, 0.1)));
 check("only existing cells are asked for", cellKeysInView({ longitude: 31.1, latitude: 29.9, altitude: 300_000 }, { "0_0": 5 }).length === 0);
+check("cells around both poles and the date line never throw or repeat", [[180, 90], [-180, -90], [179.99, 89.99], [0, -90]].every(([longitude, latitude]) => {
+  const keys = cellKeysInView({ longitude, latitude, altitude: 900_000 }, allCells);
+  return new Set(keys).size === keys.length && keys.includes(cellKeyFor(longitude, latitude));
+}));
+check("at a pole every longitude's polar cell is a neighbour",
+  cellKeysInView({ longitude: 10, latitude: 89.9, altitude: 900_000 }, allCells).includes(cellKeyFor(-170, 85)));
+check("cell keys stay in range at the edges", cellKeyFor(180, 90) === "35_17" && cellKeyFor(-180, -90) === "0_0");
+// A very large cell (Scandinavia's is 2.4 MB) waits until it is on screen, not merely inside the tilt allowance.
+const overRome = { longitude: 12.5, latitude: 41.9, altitude: 800_000 };
+const north = cellKeyFor(15, 55);
+check("a light cell just outside the screen is fetched ahead", cellKeysInView(overRome, { [north]: HEAVY_CELL_SITES }).includes(north));
+check("a heavy cell just outside the screen is not", !cellKeysInView(overRome, { [north]: HEAVY_CELL_SITES + 1 }).includes(north));
+check("a heavy cell on screen is fetched", cellKeysInView({ ...overRome, altitude: 2_000_000 }, { [north]: HEAVY_CELL_SITES + 1 }).includes(north)
+  && cellKeysInView({ longitude: 15, latitude: 55, altitude: 200_000 }, { [north]: HEAVY_CELL_SITES + 1 })[0] === north);
 let fetches = 0;
 const cache = new SiteCellCache(async () => { fetches += 1; return rows; }, 2);
 cache.request(["a", "b", "c"], () => undefined);
@@ -76,6 +93,12 @@ check("an overlapping label takes the other side", labels.length === 3 && labels
 check("labels keep clear of obstacles",
   placeLabels([{ name: "Carnac", screenX: 400, screenY: 500 }], 5, viewport, [{ left: 0, right: 800, top: 480, bottom: 520 }]).length === 0);
 
+check("source records derive from the id",
+  sourceUrlFor("Q39671") === "https://www.wikidata.org/wiki/Q39671"
+  && sourceUrlFor("579885") === "https://pleiades.stoa.org/places/579885"
+  && sourceUrlFor("osm-n123") === "https://www.openstreetmap.org/node/123"
+  && sourceUrlFor("osm-w45") === "https://www.openstreetmap.org/way/45");
+
 // --- The files on disk (skipped when the catalogue has not been built).
 const world = fileURLToPath(new URL("../public/world/", import.meta.url));
 const readJson = <Shape,>(file: string) => JSON.parse(readFileSync(world + file, "utf8")) as Shape;
@@ -102,8 +125,20 @@ if (existsSync(world + "index.json") && existsSync(world + "core.json")) {
   const buckets = new Set(listed("detail"));
   check("every core id has its detail bucket on disk", core.id.every((id) => buckets.has(detailBucket(id))));
   const sample = core.id[Math.floor(count / 2)];
-  check("a detail bucket holds the ids that hash to it", sample in readJson<Record<string, unknown>>(`detail/${detailBucket(sample)}.json`));
-  onDisk = { core: count, cells: cellFiles.length };
+  const sampleShard = readJson<Record<string, StoredSiteDetail>>(`detail/${detailBucket(sample)}.json`);
+  check("a detail bucket holds the ids that hash to it", sample in sampleShard);
+  const sampleDetail = siteDetailFromStored(sample, sampleShard[sample]);
+  check("a stored detail record reads back whole",
+    sampleDetail.sourceUrl.startsWith("https://") && Array.isArray(sampleDetail.types) && Array.isArray(sampleDetail.heritage));
+  let names = 0;
+  if (index.namesFile) {
+    const nameRows = readJson<NameColumns>(index.namesFile);
+    names = nameRows.id.length;
+    check("names columns are the same length",
+      [nameRows.name, nameRows.lon, nameRows.lat, nameRows.type, nameRows.start, nameRows.end].every((column) => column.length === names));
+    check("names cover exactly the sites outside core", names === index.count - index.coreCount);
+  }
+  onDisk = { core: count, cells: cellFiles.length, names };
 }
 
 if (failed > 0) {

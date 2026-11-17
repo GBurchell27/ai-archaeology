@@ -1,0 +1,4 @@
+.notice { display: grid; justify-items: start; gap: 8px; padding: 16px 18px 17px; border-left: 2px solid #e88aa0; }
+.title { margin: 0; font-size: 21px; font-weight: 500; line-height: 1.15; }
+.text { margin: 0; max-width: 52ch; font-size: 13px; color: #d9d5cc; }
+.reason { margin: 0 0 4px; font: 11.5px/1.4 ui-monospace, Consolas, monospace; color: var(--globe-muted); overflow-wrap: anywhere; }

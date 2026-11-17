@@ -67,7 +67,9 @@ def fetch_band(west: float, east: float) -> list[dict]:
         print(f"querying Overpass for longitudes {west}..{east}")
         payload = post_overpass(overpass_megalith_query(west, east))
         RAW_DIRECTORY.mkdir(parents=True, exist_ok=True)
-        cache_path.write_text(json.dumps(payload), encoding="utf-8")
+        partial = cache_path.with_suffix(".part")
+        partial.write_text(json.dumps(payload), encoding="utf-8")
+        partial.replace(cache_path)  # a crash mid-write must not leave a half file in the cache
     return json.loads(cache_path.read_text(encoding="utf-8"))["elements"]
 
 

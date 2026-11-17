@@ -20,7 +20,10 @@
 
 .toggle:hover { background: rgba(236, 228, 212, 0.06); }
 .toggle:focus-visible { outline: 2px solid var(--globe-ochre); outline-offset: 2px; }
-.status { font-size: 12px; color: var(--globe-muted); white-space: nowrap; }
+.status { display: grid; gap: 1px; font-size: 12px; color: #c9c6bd; white-space: nowrap; }
+.loaded { font-size: 11px; color: var(--globe-muted); }
+/* First in the document, so last on screen: the legend is a reversed column that opens upward. */
+.credit { margin: 0; padding: 0 12px 7px; font-size: 10.5px; line-height: 1.4; color: var(--globe-muted); }
 .status b { font-weight: 600; color: var(--globe-ink); }
 .caret { display: inline-flex; align-items: center; gap: 5px; color: var(--globe-muted); }
 
@@ -39,4 +42,8 @@
   font-weight: 600;
   line-height: 13px;
   color: #f1e7d2;
+}
+
+@media (pointer: coarse) {
+  .toggle { min-height: 40px; }
 }

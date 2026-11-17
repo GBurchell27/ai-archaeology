@@ -10,6 +10,7 @@ import { formatSiteDates } from "@/lib/world/worldEras";
 import type { PickedSite } from "../GlobeSites";
 import { LinkIcon } from "./ExplorerIcons";
 import ui from "./chrome.module.css";
+import { copyText } from "./copyText";
 import { PanelShell } from "./PanelShell";
 import styles from "./SiteCard.module.css";
 import { SiteCardRecord } from "./SiteCardRecord";
@@ -29,18 +30,20 @@ function useSiteDetail(siteId: string): SiteDetail | null | undefined {
   return loaded?.siteId === siteId ? loaded.detail : undefined;
 }
 
-function useCopyLink(siteId: string): { copied: boolean; copy(): void } {
-  const [copiedId, setCopiedId] = useState<string | null>(null);
+/** The button's label: it says for a moment whether the copy worked, then goes back to the action. */
+function useCopyLink(siteId: string): { label: string; copy(): void } {
+  const [outcome, setOutcome] = useState<{ siteId: string; copied: boolean } | null>(null);
   useEffect(() => {
-    if (!copiedId) return;
-    const timer = window.setTimeout(() => setCopiedId(null), COPIED_NOTICE_MS);
+    if (!outcome) return;
+    const timer = window.setTimeout(() => setOutcome(null), COPIED_NOTICE_MS);
     return () => window.clearTimeout(timer);
-  }, [copiedId]);
+  }, [outcome]);
   function copy(): void {
     const link = `${window.location.origin}${window.location.pathname}?view=globe&site=${encodeURIComponent(siteId)}`;
-    void navigator.clipboard?.writeText(link).then(() => setCopiedId(siteId), () => setCopiedId(null));
+    void copyText(link).then((copied) => setOutcome({ siteId, copied }));
   }
-  return { copied: copiedId === siteId, copy };
+  const shown = outcome?.siteId === siteId ? outcome : null;
+  return { label: shown ? (shown.copied ? "Link copied" : "Copy failed: use the address bar") : "Copy link", copy };
 }
 
 /** Everything the catalogue says about the picked site, and the ways onward from it. */
@@ -75,7 +78,7 @@ export function SiteCard(props: {
         </button>
       ) : null}
       <button type="button" className={ui.button} data-action="copy-link" onClick={link.copy}>
-        <LinkIcon /><span aria-live="polite">{link.copied ? "Link copied" : "Copy link"}</span>
+        <LinkIcon /><span aria-live="polite">{link.label}</span>
       </button>
     </>
   );

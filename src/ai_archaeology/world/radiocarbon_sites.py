@@ -36,12 +36,13 @@ DateRow = dict  # {"siteKey", "name", "lon", "lat", "age", "period"}
 
 
 def calendar_year_from_radiocarbon_age(radiocarbon_age: float) -> int:
-    """Uncalibrated 14C years BP -> approximate calendar year (negative = BCE)."""
+    """Uncalibrated 14C years BP -> approximate calendar year (negative = BCE, and there is no year 0)."""
     ages = [anchor[0] for anchor in INTCAL20_ANCHORS]
     upper = min(max(bisect_right(ages, radiocarbon_age), 1), len(ages) - 1)
     (age_low, calibrated_low), (age_high, calibrated_high) = INTCAL20_ANCHORS[upper - 1], INTCAL20_ANCHORS[upper]
     fraction = (radiocarbon_age - age_low) / (age_high - age_low)
-    return round(1950 - (calibrated_low + fraction * (calibrated_high - calibrated_low)))
+    year = round(1950 - (calibrated_low + fraction * (calibrated_high - calibrated_low)))
+    return year if year > 0 else year - 1  # 1950 cal BP is 1 BCE
 
 
 def _number(text: object) -> float | None:

@@ -2,7 +2,7 @@ import { chmod, lstat, mkdtemp, mkdir, symlink, writeFile } from "node:fs/promis
 import os from "node:os";
 import path from "node:path";
 import { spawn } from "node:child_process";
-import { coalesce, createPrivateCache, evictCache, isSiteId, killOnTimeout, pythonCommand, readCloseup, resolveCacheFile } from "../lib/closeupCache.ts";
+import { CLOSEUP_QUEUE_LIMIT, coalesce, createPrivateCache, evictCache, isSiteId, killOnTimeout, pythonCommand, readCloseup, resolveCacheFile } from "../lib/closeupCache.ts";
 import { findPublishedPoint } from "../lib/closeupCatalog.ts";
 
 // Windows has no POSIX modes or signals, and symlinks need a privilege most accounts lack.
@@ -15,6 +15,11 @@ function fail(message) {
 
 if (!isSiteId("Q233121") || !isSiteId("gobekli-tepe")) fail("published ids rejected");
 if (isSiteId("../etc") || isSiteId("Q") || isSiteId("Q12/../../etc") || isSiteId("data:text/html,hi")) fail("unsafe id accepted");
+if (!isSiteId("osm-n10000046088") || !isSiteId("579885")) fail("world ids rejected");
+// The detail shard is named after the id's last two characters, so nothing path-shaped may pass.
+const pathShaped = ["..", ".", "a/b", "a\\b", "Q1/..", "Q1..", "a.b", "%2e%2e", "A1", "-a", "a-", "a--b", "", " ", "Q1\n", "Q1\0", "c:", "x".repeat(81)];
+const accepted = pathShaped.filter(isSiteId);
+if (accepted.length) fail(`path-shaped ids accepted: ${JSON.stringify(accepted)}`);
 
 const root = await mkdtemp(path.join(os.tmpdir(), "closeup-test-"));
 await chmod(root, 0o700);
@@ -73,6 +78,13 @@ await Promise.all([1, 2, 3].map((item) => coalesce(`job-${item}`, async () => {
 })));
 if (peak > 2) fail(`concurrency ${peak}`);
 
+// A flood of different ids: two build, CLOSEUP_QUEUE_LIMIT wait, the rest are refused at once.
+const flood = await Promise.allSettled(Array.from({ length: 2 + CLOSEUP_QUEUE_LIMIT + 3 }, (_, item) =>
+  coalesce(`flood-${item}`, () => new Promise((resolve) => setTimeout(resolve, 20)))));
+const refused = flood.filter((outcome) => outcome.status === "rejected").length;
+if (refused !== 3) fail(`a flood of ids queued without bound: ${refused} refused`);
+if (await coalesce("after-flood", async () => "built") !== "built") fail("the queue did not recover after a flood");
+
 const older = path.join(root, "harran");
 const newer = path.join(root, "troy");
 await mkdir(older, { mode: 0o700 });
@@ -101,7 +113,20 @@ if (await findPublishedPoint("Q12345", world)) fail("missing shard did not read 
 if (await findPublishedPoint("constructor", world)) fail("prototype key read as a site");
 if (!await findPublishedPoint("gobekli-tepe", world)) fail("Anatolia catalogue lost a site");
 
+// Ids that never pass isSiteId still cannot make the shard lookup leave the detail folder.
+await writeFile(path.join(world, "et.json"), JSON.stringify({ "../et": { lon: 5, lat: 5 }, "..": { lon: 5, lat: 5 } }));
+await writeFile(path.join(world, "..json"), JSON.stringify({ "..": { lon: 5, lat: 5 } }));
+for (const hostile of ["..", "../et", "detail/../et", "a/..", "/x", "\\x", "x/", "99/../99"]) {
+  if (await findPublishedPoint(hostile, world).catch(() => undefined)) fail(`shard lookup left the detail folder for ${hostile}`);
+}
+
 if ((await readCloseup("http://x/api/closeup?id=Q99&lon=1&lat=2", findPublishedPoint)).status !== 400) fail("raw coordinates accepted");
+let lookups = 0;
+const countingLookup = (id) => { lookups += 1; return findPublishedPoint(id, world); };
+for (const query of ["id=..%2F..%2Fetc", "id=..", "id=Q99%2F..%2FQ99", "id=Q99&part=..%2Fmeta.json", "id=Q99&part=__proto__", "id=", "part=meta"]) {
+  if ((await readCloseup(`http://x/api/closeup?${query}`, countingLookup)).status !== 400) fail(`${query} was not refused`);
+}
+if (lookups !== 0) fail("a refused request still reached the catalogue");
 if ((await readCloseup("http://x/api/closeup?id=zz-not-a-published-site", (id) => findPublishedPoint(id))).status !== 404) fail("unknown id is not a 404");
 
 process.env.ATLAS_PYTHON = "custom-python";

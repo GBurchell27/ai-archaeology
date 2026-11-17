@@ -2,19 +2,26 @@
 
 import os
 import subprocess
+import tempfile
 from pathlib import Path
 
+import pytest
 from PIL import Image
 
 ROOT = Path(__file__).resolve().parents[1]
 CHECK = ROOT / "Anatolia" / "atlas" / "scripts" / "check_detail_coverage.mjs"
-OUT = Path("/tmp/atlas-detail-check")
+OUT = Path(tempfile.gettempdir()) / "atlas-detail-check"
+PUPPETEER = ROOT / "Anatolia" / "atlas" / "node_modules" / "puppeteer-core"
 
 
 def test_detail_tile_covers_the_close_up():
+    if not PUPPETEER.exists():
+        pytest.skip("puppeteer-core is missing. Run npm install in Anatolia/atlas, then start the dev server.")
     failure = ""
     for attempt in (1, 2):
         completed = _capture()
+        if completed.returncode == 77:
+            pytest.skip(completed.stderr.strip() or "no browser or dev server")
         if completed.returncode != 0:
             failure = completed.stdout + completed.stderr
             continue

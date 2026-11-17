@@ -44,11 +44,14 @@ export async function loadPlaceSite(id: string): Promise<PlaceSite | null> {
   const row = featured
     ? { kind: `${readable(featured.category)} · ${featured.period}`, dates: formatYearRange(featured.startYear, featured.endYear) }
     : await catalogueRow(id, detail as SiteDetail);
+  // Radiocarbon-derived years are a rough calibration of samples matched by name: never shown bare.
+  const dates = row.dates && !featured && detail?.datingSource === "c14" ? `${row.dates}, radiocarbon (± centuries)` : row.dates;
   return {
     name: featured?.name ?? (detail as SiteDetail).name,
     longitude: detail?.lon ?? (featured as FeaturedSite).lon,
     latitude: detail?.lat ?? (featured as FeaturedSite).lat,
-    ...row,
+    kind: row.kind,
+    dates,
     country: featured?.country ?? null,
     why: featured?.why ?? null,
     recordCredit: detail ? `${detail.attribution}, ${detail.licence}` : null,

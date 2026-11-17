@@ -1,6 +1,6 @@
 // A block of catalogue rows turned into the typed arrays one THREE.Points draw call needs.
 
-import type { SiteColumns, WorldIndex } from "@/lib/world/catalogueTypes";
+import type { SiteColumns } from "@/lib/world/catalogueTypes";
 import { siteTypeStyle } from "@/lib/world/siteTypeStyle";
 import { lonLatHeightToScene } from "./ellipsoid";
 import { buildSiteGrid, type SiteGrid } from "./siteGrid";
@@ -47,33 +47,46 @@ export function hexToBytes(hex: string): [number, number, number] {
 
 const IMPORTANCE_CEILING = Math.log1p(150);
 
-/** `fixedColor` paints every row alike (the OpenStreetMap layer); otherwise rows are coloured by site type. */
-export function buildSiteBlock(key: string, columns: SiteColumns, siteTypes: string[], fixedColor?: string): SiteBlock {
+const SLICE_ROWS = 4000;
+
+/** The draw arrays for a block, empty, and a function that fills a run of rows. */
+function siteBlockWriter(key: string, columns: SiteColumns, siteTypes: string[], fixedColor?: string) {
   const count = columns.id.length;
-  const positions = new Float32Array(count * 3);
-  const tints = new Uint8Array(count * 3);
-  const sizes = new Float32Array(count);
+  const arrays: PointsBlock = { key, positions: new Float32Array(count * 3), tints: new Uint8Array(count * 3), sizes: new Float32Array(count) };
   const palette = siteTypes.map((siteType) => hexToBytes(fixedColor ?? siteTypeStyle(siteType).color));
   const fallback = hexToBytes(fixedColor ?? siteTypeStyle("other").color);
-  for (let row = 0; row < count; row += 1) {
-    positions.set(lonLatHeightToScene(columns.lon[row], columns.lat[row], 0), row * 3);
-    tints.set(palette[columns.type[row]] ?? fallback, row * 3);
-    sizes[row] = 0.85 + 0.75 * Math.min(1, Math.log1p(columns.importance[row] ?? 0) / IMPORTANCE_CEILING);
+  function fillRows(from: number, until: number): void {
+    for (let row = from; row < until; row += 1) {
+      arrays.positions.set(lonLatHeightToScene(columns.lon[row], columns.lat[row], 0), row * 3);
+      arrays.tints.set(palette[columns.type[row]] ?? fallback, row * 3);
+      arrays.sizes[row] = 0.85 + 0.75 * Math.min(1, Math.log1p(columns.importance[row] ?? 0) / IMPORTANCE_CEILING);
+    }
   }
-  return { key, columns, positions, tints, sizes, grid: buildSiteGrid(columns.lon, columns.lat) };
+  return { count, arrays, fillRows };
 }
 
-export function pickedSiteFromRow(block: SiteBlock, row: number, index: WorldIndex): PickedSite {
-  const { columns } = block;
-  return {
-    id: columns.id[row],
-    name: columns.name[row],
-    lon: columns.lon[row],
-    lat: columns.lat[row],
-    siteType: index.siteTypes[columns.type[row]] ?? "other",
-    startYear: columns.start[row],
-    endYear: columns.end[row],
-    featured: columns.featured[row] === 1,
-    source: index.sources[columns.source[row]]?.id ?? "unknown",
-  };
+/** `fixedColor` paints every row alike (the OpenStreetMap layer); otherwise rows are coloured by site type. */
+export function buildSiteBlock(key: string, columns: SiteColumns, siteTypes: string[], fixedColor?: string): SiteBlock {
+  const { count, arrays, fillRows } = siteBlockWriter(key, columns, siteTypes, fixedColor);
+  fillRows(0, count);
+  return { ...arrays, columns, grid: buildSiteGrid(columns.lon, columns.lat) };
+}
+
+/**
+ * The same block built a few thousand rows at a time, awaiting `pause` between slices, so a
+ * 37,000-point cell arriving mid-flight never holds a frame.
+ */
+export async function buildSiteBlockInSlices(
+  key: string,
+  columns: SiteColumns,
+  siteTypes: string[],
+  pause: () => Promise<void>,
+): Promise<SiteBlock> {
+  const { count, arrays, fillRows } = siteBlockWriter(key, columns, siteTypes);
+  for (let from = 0; from < count; from += SLICE_ROWS) {
+    await pause();
+    fillRows(from, Math.min(count, from + SLICE_ROWS));
+  }
+  await pause();
+  return { ...arrays, columns, grid: buildSiteGrid(columns.lon, columns.lat) };
 }

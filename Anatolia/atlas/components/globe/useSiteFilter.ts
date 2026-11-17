@@ -2,6 +2,7 @@
 
 import { useCallback, useMemo, useState } from "react";
 import type { WorldCatalogue } from "@/lib/world/catalogueLoader";
+import type { SiteColumns } from "@/lib/world/catalogueTypes";
 import { countSites, type SiteCounts } from "@/lib/world/siteCounts";
 import type { SiteFilter } from "@/lib/world/siteFilter";
 import { ALL_TIME, filterRangeFor, type YearSpan } from "@/lib/world/worldEras";
@@ -26,7 +27,7 @@ export interface SiteFilterViewModel {
 const NO_TYPES: ReadonlySet<string> = new Set();
 
 /** The time, type and featured filters for the globe, with the live counts they produce. */
-export function useSiteFilter(catalogue: WorldCatalogue | null): SiteFilterViewModel {
+export function useSiteFilter(catalogue: WorldCatalogue | null, loadedCells: readonly SiteColumns[]): SiteFilterViewModel {
   const [yearSpan, setYearSpan] = useState<YearSpan>(ALL_TIME);
   const [showUndated, setShowUndated] = useState(true);
   const [featuredOnly, setFeaturedOnly] = useState(false);
@@ -41,8 +42,8 @@ export function useSiteFilter(catalogue: WorldCatalogue | null): SiteFilterViewM
   }), [yearSpan, showUndated, hiddenTypes, featuredOnly, siteTypes]);
 
   const counts = useMemo(
-    () => (catalogue ? countSites(catalogue.core, filter, catalogue.index.siteTypes) : null),
-    [catalogue, filter],
+    () => (catalogue ? countSites([catalogue.core, ...loadedCells], filter, catalogue.index.siteTypes) : null),
+    [catalogue, loadedCells, filter],
   );
 
   const toggleType = useCallback((siteType: string) => setHiddenTypes((hidden) => {

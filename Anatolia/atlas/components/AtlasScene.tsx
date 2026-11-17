@@ -55,6 +55,7 @@ interface AtlasSceneProps {
   zoomSpeed: number;
   zoomCommand: ZoomCommand;
   onArrival: () => void;
+  onCameraReady?: () => void;
   onNearby: (id: string | null) => void;
   nearbyEnabled: boolean;
   wikiSites: WikiFeature[];
@@ -236,6 +237,7 @@ export function AtlasScene(props: AtlasSceneProps) {
         zoomSpeed={props.zoomSpeed}
         zoomCommand={props.zoomCommand}
         onArrival={props.onArrival}
+        onReady={props.onCameraReady}
         groundAt={groundAt}
       />
       <PlaceProximity

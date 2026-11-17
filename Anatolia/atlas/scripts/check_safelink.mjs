@@ -50,6 +50,12 @@ const allowed = markup("https://en.wikipedia.org/wiki/Miletus");
 check("an allowlisted host is an anchor", allowed.includes('href="https://en.wikipedia.org/wiki/Miletus"'));
 check("the anchor sets noopener and noreferrer", allowed.includes('rel="noopener noreferrer"') && allowed.includes('target="_blank"'));
 
+const repositoryDoc = "https://github.com/GBurchell27/ai-archaeology/blob/main/docs/data-sources.md";
+check("the repository docs on github.com are an anchor", markup(repositoryDoc).includes(`href="${repositoryDoc}"`));
+for (const href of ["https://gist.github.com/someone/1", "https://raw.githubusercontent.com/a/b/main/c.html", "https://github.com.evil.example/a", "https://evilgithub.com/a", "http://github.com/a/b"]) {
+  check(`${href} is not an anchor`, !markup(href).includes("<a "));
+}
+
 const stripped = markup("https://user:pass@pleiades.stoa.org/places/599799");
 check("userinfo is not rendered", stripped.includes('href="https://pleiades.stoa.org/places/599799"') && !stripped.includes("user:pass"));
 

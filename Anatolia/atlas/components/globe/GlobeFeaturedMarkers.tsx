@@ -2,10 +2,10 @@
 
 import { Html } from "@react-three/drei";
 import { useFrame } from "@react-three/fiber";
-import { useEffect, useMemo, useRef, useState, type RefObject } from "react";
+import { useEffect, useMemo, useRef, useState, type MutableRefObject } from "react";
 import * as THREE from "three";
 import { lonLatHeightToScene } from "@/lib/globe/ellipsoid";
-import { placeLabels, type PlacedLabel, type ScreenBox } from "@/lib/globe/labelLayout";
+import { labelBox, placeLabels, type PlacedLabel, type ScreenBox } from "@/lib/globe/labelLayout";
 import { hexToBytes, type PointsBlock, type SiteLayer } from "@/lib/globe/siteBlock";
 import { projectVisiblePins } from "@/lib/globe/visibleSites";
 import type { ScreenPin } from "@/lib/pinCluster";
@@ -28,6 +28,12 @@ const QUIET_STYLE: Record<Exclude<FeaturedSite["status"], "accepted">, { color: 
   "natural-or-pseudo": { color: "#9aa3b0", size: 0.7, note: "natural or pseudo" },
 };
 const MAJOR_LABELS = 10;
+const FULL_SIZE_RANKS = 90;
+const ORBIT_NAMED_RANKS = 60;
+/** The bottom strip belongs to the coordinate readout and the imagery credit. */
+const FOOT_STRIP_PX = 60;
+/** From orbit, named markers keep at least this far apart on screen. */
+const ORBIT_LABEL_SEPARATION_PX = 96;
 const RELAYOUT_MS = 100;
 
 /** Featured monuments ordered by importance (then by the curated list order), with their draw arrays. */
@@ -51,7 +57,8 @@ function buildFeaturedMarkers(featured: FeaturedSite[], core: SiteLayer["block"]
     const quietStyle = site.status === "accepted" ? null : QUIET_STYLE[site.status];
     block.positions.set([x, y, z], rank * 3);
     block.tints.set(hexToBytes(quietStyle?.color ?? siteTypeStyle(siteTypes[core.columns.type[coreRow]]).color), rank * 3);
-    block.sizes[rank] = quietStyle?.size ?? 1;
+    // The best-known monuments carry the largest markers, so the eye lands on them first from orbit.
+    block.sizes[rank] = (quietStyle?.size ?? 1) * (1 - 0.32 * Math.min(1, rank / FULL_SIZE_RANKS));
     quiet[rank] = quietStyle ? 1 : 0;
     return {
       id: site.id, name: site.name, x, y, z, longitude: site.lon, latitude: site.lat,
@@ -63,7 +70,7 @@ function buildFeaturedMarkers(featured: FeaturedSite[], core: SiteLayer["block"]
 
 /** More names as the camera comes down: a handful from orbit, dozens over a region. */
 function labelLimit(altitude: number): number {
-  return Math.round(THREE.MathUtils.lerp(40, 7, orbitFraction(altitude) ** 0.8));
+  return Math.round(THREE.MathUtils.lerp(40, 9, orbitFraction(altitude) ** 0.8));
 }
 
 /** The featured monuments: glowing markers (hollow and quiet when contested) and serif names. */
@@ -72,26 +79,32 @@ export function GlobeFeaturedMarkers(props: {
   /** The core layer; featured sites follow its filter result. */
   core: SiteLayer;
   siteTypes: string[];
-  /** Screen boxes the labels must keep clear of (the count badges). */
-  occupied: RefObject<ScreenBox[]>;
+  /** Kept up to date with the screen boxes of the names, so the count badges can keep clear of them. */
+  occupied: MutableRefObject<ScreenBox[]>;
+  showLabels: boolean;
 }) {
-  const { featured, core, siteTypes, occupied } = props;
+  const { featured, core, siteTypes, occupied, showLabels } = props;
   const markers = useMemo(() => buildFeaturedMarkers(featured, core.block, siteTypes), [featured, core.block, siteTypes]);
   const shown = useMemo(() => Uint8Array.from(markers.pins, (pin) => core.shown[pin.coreRow]), [markers, core.shown]);
   const shownPins = useMemo(() => markers.pins.filter((pin) => core.shown[pin.coreRow] === 1), [markers, core.shown]);
   const material = useMemo(() => createSitePointsMaterial("featured"), []);
   useEffect(() => () => material.dispose(), [material]);
   const [labels, setLabels] = useState<PlacedLabel<FeaturedPin>[]>([]);
-  const layout = useRef({ due: 0, signature: "", pins: shownPins });
+  const layout = useRef({ due: 0, signature: "", pins: shownPins, showLabels });
 
   useFrame(({ camera, size, viewport }) => {
     const altitude = camera.position.length() - 6_371_000;
     tuneSitePointsMaterial(material, "featured", altitude, viewport.dpr);
     const now = performance.now();
-    if (now < layout.current.due && layout.current.pins === shownPins) return;
-    layout.current.due = now + RELAYOUT_MS;
-    layout.current.pins = shownPins;
-    const placed = placeLabels(projectVisiblePins(shownPins, camera, size, shownPins.length), labelLimit(altitude), size, occupied.current ?? []);
+    if (now < layout.current.due && layout.current.pins === shownPins && layout.current.showLabels === showLabels) return;
+    layout.current = { ...layout.current, due: now + RELAYOUT_MS, pins: shownPins, showLabels };
+    const separation = ORBIT_LABEL_SEPARATION_PX * orbitFraction(altitude) ** 2;
+    // From orbit only the best-known monuments may be named; an empty stretch stays empty rather than naming an obscure one.
+    const rankCeiling = THREE.MathUtils.lerp(shownPins.length + 1, ORBIT_NAMED_RANKS, orbitFraction(altitude) ** 2);
+    const placed = showLabels
+      ? placeLabels(projectVisiblePins(shownPins, camera, size, shownPins.length).filter((pin) => pin.rank < rankCeiling), labelLimit(altitude), { width: size.width, height: size.height - FOOT_STRIP_PX }, [], separation)
+      : [];
+    occupied.current = placed.map((label) => labelBox(label.anchor, label.side));
     const signature = placed.map((label) => `${label.anchor.id}${label.side}`).join("|");
     if (signature === layout.current.signature) return;
     layout.current.signature = signature;
