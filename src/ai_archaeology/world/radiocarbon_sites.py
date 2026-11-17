@@ -10,18 +10,23 @@ from bisect import bisect_right
 from collections import Counter, defaultdict
 from typing import Iterable, Iterator
 
-# Approximate IntCal20 curve (Reimer et al. 2020) as (14C years BP, calibrated years BP).
-# shortcut: piecewise-linear lookup, within about +-300 years to 15,000 BP and about
-# +-600 years beyond (plateaus and wiggles are flattened). Good for binning into
-# millennia only; use a real calibration library if finer dating is ever needed.
+# Approximate IntCal20 curve as (14C years BP, calibrated years BP). Anchors checked against
+# the published curve file https://intcal.org/curves/intcal20.14c (Reimer et al. 2020,
+# Radiocarbon 62(4), doi:10.1017/RDC.2020.41); where the curve wiggles, the anchor is the
+# midpoint of the calendar range that maps to that 14C age.
+# shortcut: piecewise-linear lookup. Measured against the curve every 100 14C years: within
+# 280 years (mean 40) to 15,000 BP and within 700 years (mean 150) from there to 50,000 BP
+# (plateaus and wiggles are flattened). Good for binning into millennia only; use a real
+# calibration library if finer dating is ever needed.
 INTCAL20_ANCHORS = (
     (0, 0), (500, 530), (1000, 920), (1500, 1380), (2000, 1950), (2500, 2580),
     (3000, 3190), (3500, 3770), (4000, 4480), (4500, 5150), (5000, 5730),
     (5500, 6300), (6000, 6840), (6500, 7420), (7000, 7840), (7500, 8330),
-    (8000, 8870), (8500, 9500), (9000, 10190), (9500, 10750), (10000, 11480),
-    (11000, 12920), (12000, 13880), (13000, 15560), (14000, 17020), (15000, 18280),
-    (17000, 20520), (20000, 24050), (25000, 29230), (30000, 34450), (35000, 40200),
-    (40000, 43650), (45000, 47500), (50000, 52800),
+    (8000, 8990), (8500, 9500), (9000, 10190), (9500, 10750), (10000, 11480),
+    (10500, 12540), (11000, 12920), (12000, 13880), (12500, 14870), (13000, 15560),
+    (14000, 17020), (15000, 18280), (17000, 20520), (20000, 23950), (22500, 26950),
+    (25000, 29230), (30000, 34450), (35000, 40090), (37500, 42100), (40000, 43050),
+    (42500, 45000), (45000, 47290), (47500, 49980), (50000, 53830),
 )
 MAXIMUM_RADIOCARBON_AGE = INTCAL20_ANCHORS[-1][0]
 TRIM_MINIMUM_DATES = 20

@@ -1,0 +1,118 @@
+/* Where each piece of the chrome sits over the globe.
+   GlobeView keeps the bottom strip for its own readout and imagery credit; nothing here goes below --foot. */
+
+.explorer {
+  --edge: 18px;
+  /* GlobeView's imagery credit can wrap to two lines. */
+  --foot: 58px;
+  --top: 66px;
+  --side-width: 400px;
+  --legend-width: 262px;
+  --gap: 14px;
+  /* Raised while GlobeView shows its "Enter Anatolia terrain" button in the bottom centre. */
+  --lift: 0px;
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+:global([data-handoff="offer"]) .explorer,
+:global([data-handoff="enter"]) .explorer { --lift: 88px; }
+
+/* A soft scrim so the title and buttons read over bright land. */
+.explorer::before {
+  content: "";
+  position: absolute;
+  z-index: 11;
+  inset: 0 0 auto;
+  height: 130px;
+  background: linear-gradient(rgba(4, 6, 10, 0.62), rgba(4, 6, 10, 0));
+}
+
+/* z-indexes start above the globe's own DOM labels and count badges, which use 0 to 6. */
+.top { position: absolute; z-index: 14; top: 14px; left: var(--edge); right: var(--edge); }
+
+.error {
+  width: fit-content;
+  max-width: 100%;
+  margin: 10px 0 0;
+  padding: 8px 12px;
+  border-left: 2px solid #e88aa0;
+  border-radius: 3px;
+  background: rgba(10, 13, 18, 0.86);
+  color: #f3d6dc;
+  pointer-events: auto;
+}
+
+.side {
+  position: absolute;
+  z-index: 13;
+  top: var(--top);
+  right: var(--edge);
+  /* Clear of the imagery credit and the OpenStreetMap credit stacked above it. */
+  bottom: 84px;
+  width: var(--side-width);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.slot { display: flex; flex-direction: column; flex: 0 1 auto; min-height: 0; }
+.slot[hidden] { display: none; }
+.side > section, .slot > section { flex: 0 1 auto; }
+
+/* Legend and timeline share one bottom-anchored grid, so neither needs to know the other's height. */
+.bottom {
+  position: absolute;
+  z-index: 12;
+  top: var(--top);
+  left: var(--edge);
+  right: var(--edge);
+  bottom: calc(var(--foot) + var(--lift));
+  display: grid;
+  grid-template-columns: var(--legend-width) minmax(0, 1fr) var(--legend-width);
+  grid-template-rows: minmax(0, 1fr);
+  align-items: end;
+  gap: 8px var(--gap);
+  transition: bottom 220ms ease;
+}
+
+.explorer[data-side="open"] .bottom { grid-template-columns: var(--legend-width) minmax(0, 1fr) var(--side-width); }
+
+.legend { display: flex; align-items: flex-end; min-height: 0; max-height: 100%; }
+.dock { container-type: inline-size; }
+.dock > section { max-width: 640px; margin: 0 auto; }
+
+/* Medium: no room beside the timeline, so the legend stacks above it and the side column stops short of both. */
+@media (max-width: 1180px) {
+  .bottom, .explorer[data-side="open"] .bottom { grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(0, 1fr) auto; }
+  .legend { width: var(--legend-width); max-width: 100%; }
+  .side { bottom: calc(var(--foot) + var(--lift) + 176px); }
+}
+
+/* Narrow: two-row top bar, and the side column becomes a bottom sheet that replaces the timeline. */
+@media (max-width: 760px) {
+  .explorer { --edge: 10px; --foot: 74px; --top: 104px; }
+  .explorer[data-osm="on"] { --foot: 104px; }
+  /* Here GlobeView's "Enter Anatolia terrain" button sits higher and wraps to two lines. */
+  :global([data-handoff="offer"]) .explorer,
+  :global([data-handoff="enter"]) .explorer { --lift: 118px; }
+  .explorer::before { height: 150px; }
+  .top { top: 10px; }
+  .side {
+    top: auto;
+    left: var(--edge);
+    right: var(--edge);
+    bottom: calc(var(--foot) + var(--lift));
+    width: auto;
+    max-height: min(62%, calc(100% - var(--top) - var(--foot) - 40px));
+    justify-content: flex-end;
+  }
+  .explorer[data-side="open"] .bottom { display: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bottom { transition: none; }
+}

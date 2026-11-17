@@ -15,6 +15,7 @@ from collections import Counter
 from datetime import date
 from pathlib import Path
 
+from ai_archaeology.world.featured import load_featured_coordinates, with_coordinate_fixes
 from ai_archaeology.world.dating import apply_featured, attach_radiocarbon, is_dated, read_radiocarbon_sites
 from ai_archaeology.world.merge import merge_published
 from ai_archaeology.world.records import WorldSite, read_jsonl
@@ -55,9 +56,18 @@ def main() -> int:
 
 
 def merge_and_date(featured_monuments: list[dict]) -> list[WorldSite]:
-    wikidata, pleiades = _sites("wikidata"), _sites("pleiades")
+    wikidata, pleiades = with_coordinate_fixes(_sites("wikidata")), _sites("pleiades")
     print(f"read: wikidata {len(wikidata)}, pleiades {len(pleiades)}")
-    outcome = merge_published(wikidata, pleiades)
+    coordinates_path = SOURCE_PATHS["featured-coordinates"]
+    coordinates = load_featured_coordinates(coordinates_path) if coordinates_path.exists() else {}
+    # Featured first, so a featured monument Wikidata did not return is still de-duplicated
+    # against Pleiades. Later stages only date undated sites, so curated dates still win.
+    with_featured, unplaced = apply_featured(wikidata, featured_monuments, coordinates)
+    added = len(with_featured) - len(wikidata)
+    print(f"featured: {len(featured_monuments)} curated, {added} added from featured coordinates, {len(unplaced)} unplaced")
+    if unplaced:
+        print(f"  unplaced featured QIDs: {', '.join(unplaced)}")
+    outcome = merge_published(with_featured, pleiades)
     print(
         f"merged: {len(outcome.sites)} sites "
         f"({outcome.linked_by_identifier} Pleiades places linked by identifier, {outcome.linked_spatially} spatially)"
@@ -68,14 +78,7 @@ def merge_and_date(featured_monuments: list[dict]) -> list[WorldSite]:
     with_radiocarbon = attach_radiocarbon(outcome.sites, radiocarbon_sites)
     attached = sum(site.datingSource == "c14" for site in with_radiocarbon)
     print(f"radiocarbon: {len(radiocarbon_sites)} dated sites read, {attached} attached to undated pins")
-    coordinates_path = SOURCE_PATHS["featured-coordinates"]
-    coordinates = json.loads(coordinates_path.read_text(encoding="utf-8")) if coordinates_path.exists() else {}
-    featured_sites, unplaced = apply_featured(with_radiocarbon, featured_monuments, coordinates)
-    added = len(featured_sites) - len(with_radiocarbon)
-    print(f"featured: {len(featured_monuments)} curated, {added} added from featured coordinates, {len(unplaced)} unplaced")
-    if unplaced:
-        print(f"  unplaced featured QIDs: {', '.join(unplaced)}")
-    return featured_sites
+    return with_radiocarbon
 
 
 def report_sites(merged_sites: list[WorldSite]) -> None:

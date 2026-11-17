@@ -1,7 +1,8 @@
 """Pack merged world sites into the static columnar files the globe reads.
 
 The shapes, cell keys and detail buckets mirror Anatolia/atlas/lib/world/catalogueTypes.ts.
-OpenStreetMap megaliths get their own file and are in no other one (ODbL share-alike).
+OpenStreetMap megaliths get their own column file. They also appear in the per-id detail shards,
+unmerged and under their own ODbL credit.
 """
 
 from __future__ import annotations
@@ -13,7 +14,10 @@ from pathlib import Path
 
 from ai_archaeology.world.records import SITE_TYPES, SOURCES, WorldSite
 
-CORE_SITE_TYPES = frozenset({"megalith", "monumental", "geoglyph"})
+# Monument classes count double when ranking for the core, so a known dolmen beats an equally
+# known findspot. A register stub with no sitelink still scores nothing and goes to its cell.
+CORE_BOOSTED_SITE_TYPES = frozenset({"megalith", "monumental", "geoglyph"})
+CORE_TYPE_BOOST = 2
 CORE_TARGET = 40_000
 CELL_DEGREES = 10
 OSM_FILE = "osm-megaliths.json"
@@ -39,12 +43,18 @@ def detail_bucket(site_id: str) -> str:
 def split_core(
     sites: list[WorldSite], featured_ids: set[str], core_target: int = CORE_TARGET,
 ) -> tuple[list[WorldSite], list[WorldSite]]:
-    """Core = every featured and megalith/monumental/geoglyph site, topped up by importance."""
-    ranked = sorted(sites, key=_label_rank)
-    required = [site for site in ranked if _always_core(site, featured_ids)]
-    optional = [site for site in ranked if not _always_core(site, featured_ids)]
-    room = max(0, core_target - len(required))
-    return sorted(required + optional[:room], key=_label_rank), optional[room:]
+    """Core = every featured site, topped up to about ``core_target`` by boosted importance.
+
+    Sites tied with the last one admitted come in too, so the cut is never an accident of id
+    order. Ties at a score of zero (no known importance) are the exception: those stop at the target.
+    """
+    featured = [site for site in sites if site.id in featured_ids]
+    ranked = sorted((site for site in sites if site.id not in featured_ids), key=_core_rank)
+    room = min(len(ranked), max(0, core_target - len(featured)))
+    cutoff_score = _core_score(ranked[room - 1]) if room else 0
+    while cutoff_score > 0 and room < len(ranked) and _core_score(ranked[room]) == cutoff_score:
+        room += 1
+    return sorted(featured + ranked[:room], key=_label_rank), ranked[room:]
 
 
 def column_block(sites: list[WorldSite], featured_ids: set[str]) -> dict[str, list]:
@@ -86,7 +96,8 @@ def build_catalogue_files(
     }
     for cell_key, cell_sites in cells.items():
         files[f"cells/{cell_key}.json"] = column_block(cell_sites, featured_ids)
-    for bucket, details in _detail_shards(merged_sites).items():
+    # Per-id lookup only: an OSM record sits beside the others, carrying its own ODbL credit, never merged with them.
+    for bucket, details in _detail_shards([*merged_sites, *osm_sites]).items():
         files[f"detail/{bucket}.json"] = details
     return files
 
@@ -108,8 +119,12 @@ def _label_rank(site: WorldSite) -> tuple[int, str]:
     return (-site.importance, site.id)
 
 
-def _always_core(site: WorldSite, featured_ids: set[str]) -> bool:
-    return site.id in featured_ids or site.siteType in CORE_SITE_TYPES
+def _core_score(site: WorldSite) -> int:
+    return site.importance * (CORE_TYPE_BOOST if site.siteType in CORE_BOOSTED_SITE_TYPES else 1)
+
+
+def _core_rank(site: WorldSite) -> tuple[int, str]:
+    return (-_core_score(site), site.id)
 
 
 def _index(
@@ -153,21 +168,26 @@ def _featured_rows(merged_sites: list[WorldSite], featured_monuments: list[dict]
     return rows
 
 
-def _detail_shards(merged_sites: list[WorldSite]) -> dict[str, dict[str, dict]]:
+def _detail_shards(sites: list[WorldSite]) -> dict[str, dict[str, dict]]:
     shards: dict[str, dict[str, dict]] = {}
-    for site in sorted(merged_sites, key=lambda site: site.id):
-        shards.setdefault(detail_bucket(site.id), {})[site.id] = {
-            "lon": round(site.lon, 5),
-            "lat": round(site.lat, 5),
-            "name": site.name,
-            "sourceUrl": site.sourceUrl,
-            "wikipedia": site.wikipedia,
-            "image": site.image,
-            "types": site.types,
-            "heritage": site.heritage,
-            "licence": site.licence,
-            "attribution": site.attribution,
-            "datingSource": site.datingSource,
-            "ids": site.ids,
-        }
+    for site in sorted(sites, key=lambda site: site.id):
+        shards.setdefault(detail_bucket(site.id), {})[site.id] = _detail_record(site)
     return shards
+
+
+def _detail_record(site: WorldSite) -> dict:
+    """StoredSiteDetail in catalogueTypes.ts: null and empty optional fields are left out for size."""
+    record = {
+        "lon": round(site.lon, 5),
+        "lat": round(site.lat, 5),
+        "name": site.name,
+        "sourceUrl": site.sourceUrl,
+        "licence": site.licence,
+        "attribution": site.attribution,
+        "datingSource": site.datingSource,
+        # The record's own id is the shard key already.
+        "ids": {key: value for key, value in site.ids.items() if value is not None and value != site.id},
+    }
+    optional = {"wikipedia": site.wikipedia, "image": site.image, "types": site.types, "heritage": site.heritage}
+    record.update({key: value for key, value in optional.items() if value})
+    return record

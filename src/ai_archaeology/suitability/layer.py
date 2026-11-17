@@ -7,7 +7,7 @@ from dataclasses import dataclass
 import numpy as np
 
 from ai_archaeology.suitability.crossval import out_of_fold_scores
-from ai_archaeology.suitability.envelope import covariate_range, inside_envelope
+from ai_archaeology.suitability.envelope import covariate_range, inside_envelope, locally_documented
 from ai_archaeology.suitability.folds import MACRO_REGIONS, block_folds, macro_region
 from ai_archaeology.suitability.grid import area_weights
 from ai_archaeology.suitability.labels import MIN_PRESENCE_CELLS
@@ -27,6 +27,7 @@ class LayerResult:
     presences: int
     model_name: str
     metrics: dict[str, float]
+    fold_metrics: list[dict[str, float]]  # the same scores within each held-out fold
     captures: dict[str, tuple[int, int]]  # top-area share -> (presences captured, presences held out)
     region_auc: dict[str, float]
     scores: np.ndarray  # full grid, NaN where the model has no basis
@@ -56,6 +57,14 @@ def held_out_metrics(scores, null_scores, labels, area) -> tuple[dict[str, float
     return metrics, captures
 
 
+def per_fold_metrics(scores, null_scores, labels, area, folds) -> list[dict[str, float]]:
+    return [
+        held_out_metrics(scores[held_out], null_scores[held_out], labels[held_out], area[held_out])[0]
+        for held_out in (folds == fold for fold in np.unique(folds))
+        if 0 < labels[held_out].sum() < held_out.sum()
+    ]
+
+
 def region_aucs(model_name: str, features, labels, regions) -> dict[str, float]:
     """AUC in each macro-region when the model is fitted on all the others."""
     fit, predict = MODELS[model_name]
@@ -68,12 +77,12 @@ def region_aucs(model_name: str, features, labels, regions) -> dict[str, float]:
     return result
 
 
-def score_grid(model_name: str, features, labels, stack, land) -> tuple[np.ndarray, np.ndarray]:
-    """Final model fitted on every documented cell, scored on land inside the covariate envelope."""
+def score_grid(model_name: str, features, labels, stack, land, background) -> tuple[np.ndarray, np.ndarray]:
+    """Final model fitted on every documented cell, scored on land the model has a basis for."""
     fit, predict = MODELS[model_name]
     model = fit(features, labels, 0)
     land_features = stack[:, land].T
-    inside = inside_envelope(land_features, *covariate_range(features))
+    inside = inside_envelope(land_features, *covariate_range(features)) & locally_documented(background)[land]
     scores = np.full(land.shape, np.nan)
     rows, cols = np.nonzero(land)
     scores[rows[inside], cols[inside]] = predict(model, land_features[inside])
@@ -91,12 +100,14 @@ def evaluate_layer(presence, background, stack, land, effort) -> LayerResult:
     folds = block_folds(rows, cols, N_FOLDS)
     model_name, held_out = best_model(features, labels, folds)
     null_scores = out_of_fold_scores(fit_logistic, predict_logistic, effort_features, labels, folds)
-    metrics, captures = held_out_metrics(held_out, null_scores, labels, area_weights()[rows, cols])
-    scores, reference_scores = score_grid(model_name, features, labels, stack, land)
+    area = area_weights()[rows, cols]
+    metrics, captures = held_out_metrics(held_out, null_scores, labels, area)
+    scores, reference_scores = score_grid(model_name, features, labels, stack, land, background)
     return LayerResult(
         presences=int(labels.sum()),
         model_name=model_name,
         metrics=metrics,
+        fold_metrics=per_fold_metrics(held_out, null_scores, labels, area, folds),
         captures=captures,
         region_auc=region_aucs(model_name, features, labels, macro_region(rows, cols)),
         scores=scores,

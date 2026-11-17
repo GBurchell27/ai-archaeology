@@ -11,7 +11,8 @@ from ai_archaeology.sites.wikidata import _fold, assign_periods, build_snapshot,
 def test_sites_geojson_matches_the_snapshot_sha256():
     root = Path("Anatolia/atlas/public/wikidata")
     meta = json.loads((root / "snapshot.json").read_text())
-    digest = hashlib.sha256((root / "sites.geojson").read_bytes()).hexdigest()
+    # The snapshot hashes the LF bytes it wrote; git autocrlf may check the file out with CRLF.
+    digest = hashlib.sha256((root / "sites.geojson").read_bytes().replace(b"\r\n", b"\n")).hexdigest()
     assert digest == meta["sitesGeojsonSha256"]
     assert meta["dropped"]
     assert all(item["qid"].startswith("Q") and item["reason"] for item in meta["dropped"])

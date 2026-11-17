@@ -1,0 +1,13 @@
+.about { color: #d6d3cb; }
+.about p { margin: 0; text-wrap: pretty; }
+.about h3 { margin: 18px 0 5px; color: #d9b877; }
+.lead { margin: 14px 0 0; font-size: 17px; line-height: 1.42; color: var(--globe-ink); }
+
+.sources { width: 100%; margin: 2px 0 12px; border-collapse: collapse; font-size: 12.5px; }
+.sources th, .sources td { padding: 7px 10px 7px 0; border-bottom: 1px solid var(--globe-rule); text-align: left; vertical-align: top; font-weight: 400; }
+.sources thead th { padding-top: 2px; font-size: 11px; color: var(--globe-muted); }
+.sources td:nth-child(2), .sources thead th:nth-child(2) { text-align: right; }
+.sources td:last-child, .sources th:last-child { padding-right: 0; white-space: nowrap; }
+.attribution { display: block; font-size: 11px; color: var(--globe-muted); }
+
+.about .small { margin-top: 8px; font-size: 11.5px; color: var(--globe-muted); }

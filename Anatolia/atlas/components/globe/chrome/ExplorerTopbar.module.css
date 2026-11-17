@@ -1,0 +1,37 @@
+.topbar { display: flex; align-items: center; gap: 12px 20px; min-width: 0; }
+
+.brand {
+  flex: none;
+  margin: 0;
+  font-size: 23px;
+  font-style: italic;
+  font-weight: 500;
+  line-height: 1.1;
+  letter-spacing: 0.005em;
+  color: #f3ecdd;
+  /* Legible over bright desert and cloud without a box behind it. */
+  text-shadow: 0 0 3px rgba(4, 6, 10, 0.9), 0 1px 14px rgba(4, 6, 10, 0.75);
+}
+
+.panels { display: flex; gap: 6px; margin-left: auto; }
+
+.panelButton {
+  height: 38px;
+  border-radius: 4px;
+  background: rgba(10, 13, 18, 0.7);
+  -webkit-backdrop-filter: blur(18px) saturate(1.25);
+  backdrop-filter: blur(18px) saturate(1.25);
+}
+
+.panelButton:hover { background: rgba(26, 28, 30, 0.86); }
+.panelButton[aria-expanded="true"] { background: rgba(48, 38, 20, 0.86); }
+
+@media (max-width: 760px) {
+  .topbar { flex-wrap: wrap; gap: 8px 10px; }
+  .brand { font-size: 19px; }
+  .panels { gap: 4px; }
+  .panelButton { width: 38px; padding: 0; }
+  .label { display: none; }
+  /* Search drops to its own row under the title. */
+  .topbar > [role="search"] { order: 3; flex: 1 1 100%; max-width: none; }
+}

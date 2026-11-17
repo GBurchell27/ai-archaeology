@@ -1,0 +1,4 @@
+.tour { display: flex; align-items: center; gap: 6px; flex: none; padding: 6px 6px 6px 14px; }
+.place { display: flex; align-items: baseline; gap: 9px; margin: 0 auto 0 0; font-size: 12.5px; white-space: nowrap; }
+.tour button { min-height: 30px; padding-inline: 9px; }
+.end { border-color: transparent; background: none; color: var(--globe-muted); }

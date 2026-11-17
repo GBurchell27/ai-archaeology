@@ -6,7 +6,7 @@ from pathlib import Path
 
 import pytest
 
-from ai_archaeology.world.dating import apply_featured, attach_radiocarbon
+from ai_archaeology.world.dating import apply_featured, attach_radiocarbon, dating_name_key
 from ai_archaeology.world.merge import merge_published
 from ai_archaeology.world.records import SITE_ID, SITE_TYPES, WorldSite
 from ai_archaeology.world.web_pack import (
@@ -89,8 +89,10 @@ def test_osm_is_never_merged_and_stays_out_of_every_other_file():
     files = build_catalogue_files([item], [osm], [], "2026-01-01")
     assert files["osm-megaliths.json"]["id"] == ["osm-n1"]
     assert files["core.json"]["id"] == ["Q1"]
-    others = {path: payload for path, payload in files.items() if path != "osm-megaliths.json"}
-    assert "osm-n1" not in json.dumps(others)
+    columns = {path: payload for path, payload in files.items() if not path.startswith("detail/") and path != "osm-megaliths.json"}
+    assert "osm-n1" not in json.dumps(columns)
+    # The detail shard is a per-id lookup and keeps the ODbL credit on the record.
+    assert files["detail/n1.json"]["osm-n1"]["licence"] == "ODbL 1.0"
     assert files["index.json"]["count"] == 1
     assert files["index.json"]["osmMegaliths"] == {"count": 1, "file": "osm-megaliths.json"}
 
@@ -114,12 +116,27 @@ def test_radiocarbon_dates_only_undated_sites_and_never_moves_a_pin():
     assert [(site.lon, site.lat) for site in dated.values()] == [(site.lon, site.lat) for site in sites]
 
 
+def test_radiocarbon_name_key_drops_site_words_but_never_numbers():
+    assert dating_name_key("Cave of El Castillo") == dating_name_key("Castillo") == "castillo"
+    assert dating_name_key("Tell Sabi Abyad") == dating_name_key("Sabi Abyad")
+    assert dating_name_key("Odensala 460:1") != dating_name_key("Odensala")
+    assert dating_name_key("Östra Broby") != dating_name_key("Broby")
+    assert dating_name_key("Cave 4") == "cave4"  # nothing distinctive left, so the whole name stands
+    assert dating_name_key("TÃ¼rkmen-Karah�yÃ¼k") != ""  # upstream mojibake folds without error
+    span = {"name": "Castillo", "lon": 0.0, "lat": 0.0, "startYear": -40000, "endYear": -12000, "source": "p3k14c"}
+    dated = attach_radiocarbon([_site("Q1", "Cave of El Castillo", 0.0, 0.0), _site("Q2", "Castillo 12", 0.0, 0.0)], [span])
+    assert [site.datingSource for site in dated] == ["c14", "none"]
+
+
 def test_featured_dates_override_and_a_missing_featured_site_is_added():
-    sites = [_site("Q1", "Circle", 1.0, 51.0, startYear=-2000, endYear=-1000, datingSource="wikidata")]
+    sites = [_site("Q1", "Circle", 1.0, 51.0, startYear=-2000, endYear=-1000, datingSource="wikidata", siteType="ritual")]
     monuments = [_monument("Q1", "Circle", -3000, -1500), _monument("Q2", "Mound", -2600, None), _monument("Q3", "Lost", None, None)]
     featured, unplaced = apply_featured(sites, monuments, {"Q2": [-77.5, -10.9]})
     by_id = {site.id: site for site in featured}
     assert (by_id["Q1"].startYear, by_id["Q1"].endYear, by_id["Q1"].datingSource) == (-3000, -1500, "featured")
+    assert by_id["Q1"].siteType == "ritual"  # a real source type is kept
+    untyped, _ = apply_featured([_site("Q1", "Circle", 1.0, 51.0)], monuments, {})
+    assert untyped[0].siteType == "megalith"  # "other" takes the curated category
     assert (by_id["Q2"].lon, by_id["Q2"].lat, by_id["Q2"].siteType) == (-77.5, -10.9, "megalith")
     assert (by_id["Q2"].startYear, by_id["Q2"].datingSource) == (-2600, "featured")
     assert unplaced == ["Q3"]
@@ -166,14 +183,13 @@ def test_core_and_cells_partition_the_catalogue_and_the_index_adds_up(tmp_path: 
     index = files["index.json"]
     core_ids = files["core.json"]["id"]
     cell_ids = [site_id for path, block in files.items() if path.startswith("cells/") for site_id in block["id"]]
-    assert len(core_ids) == index["coreCount"] == 25
+    assert len(core_ids) == index["coreCount"] >= 25
+    assert "Q1" in core_ids
     assert set(core_ids).isdisjoint(cell_ids)
     assert sorted(core_ids + cell_ids) == sorted(site.id for site in sites)
     assert index["count"] == len(sites) == index["coreCount"] + sum(index["cells"].values())
     assert sum(source["count"] for source in index["sources"]) == len(sites)
     assert index["cells"] == {path[6:-5]: len(block["id"]) for path, block in files.items() if path.startswith("cells/")}
-    always_core = {site.id for site in sites if site.siteType in ("megalith", "monumental", "geoglyph")} | {"Q1"}
-    assert always_core <= set(core_ids)
     for path, block in files.items():
         if not path.startswith("cells/"):
             continue
@@ -206,3 +222,33 @@ def test_core_top_up_takes_the_most_important_first():
     core, rest = split_core(sites, set(), core_target=3)
     assert [site.id for site in core] == ["Q10", "Q9", "Q8"]
     assert len(rest) == 7
+
+
+def test_core_boosts_monument_types_and_never_splits_a_tie():
+    sites = [
+        _site("Q1", "Findspot", 0.0, 0.0, importance=3),
+        _site("Q2", "Dolmen", 0.0, 0.0, importance=2, siteType="megalith"),
+        _site("Q3", "Village", 0.0, 0.0, importance=2),
+        _site("Q4", "Hamlet", 0.0, 0.0, importance=2),
+        _site("Q5", "Stub dolmen", 0.0, 0.0, siteType="megalith"),
+        _site("Q6", "Curated stub", 0.0, 0.0),
+    ]
+    core, rest = split_core(sites, {"Q6"}, core_target=3)
+    assert {site.id for site in core} == {"Q6", "Q2", "Q1"}  # the dolmen (2 x 2) outranks the findspot (3)
+    core, rest = split_core(sites, {"Q6"}, core_target=4)
+    assert {site.id for site in core} == {"Q6", "Q2", "Q1", "Q3", "Q4"}  # Q3 and Q4 tie, so both come in
+    assert [site.id for site in rest] == ["Q5"]  # a stub scores nothing, boosted type or not
+    core, rest = split_core(sites[4:] + [_site("Q7", "Stub", 0.0, 0.0)], set(), core_target=1)
+    assert len(core) == 1  # zero-score ties stop at the target
+
+
+def test_detail_records_leave_out_null_and_empty_fields():
+    bare = _site("Q1", "Bare", 1.0, 2.0, ids={"wikidata": "Q1", "pleiades": None})
+    rich = _site("Q2", "Rich", 1.0, 2.0, types=["dolmen"], heritage=["Listed"], wikipedia="https://en.wikipedia.org/wiki/Rich")
+    files = build_catalogue_files([bare, rich], [], [], "2026-01-01")
+    assert files["detail/q1.json"]["Q1"] == {
+        "lon": 1.0, "lat": 2.0, "name": "Bare", "sourceUrl": "https://example.org/Q1", "licence": "CC0",
+        "attribution": "wikidata", "datingSource": "none", "ids": {},
+    }
+    assert {"types", "heritage", "wikipedia"} <= set(files["detail/q2.json"]["Q2"])
+    assert "image" not in files["detail/q2.json"]["Q2"]

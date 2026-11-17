@@ -8,6 +8,7 @@ onto an existing site.
 from __future__ import annotations
 
 import json
+import re
 from dataclasses import replace
 from pathlib import Path
 
@@ -20,7 +21,18 @@ RADIOCARBON_CREDITS = {
     "xronos": ("XRONOS", "CC BY 4.0"),
     "p3k14c": ("p3k14c (Bird et al. 2022)", "CC0"),
 }
-# Only used for a featured monument that the Wikidata source did not return.
+# Words that say what kind of site it is, not which one: "Cave of El Castillo" is "Castillo".
+# Numbers are never dropped, so a register stub ("Odensala 460:1") cannot take a parish's date.
+GENERIC_SITE_WORDS = frozenset("""
+    of the de del della di du des la le les el los las von vom bei near at and
+    site archaeological ancient prehistoric ruins settlement necropolis cemetery enclosure
+    tell tel tall tepe hoyuk huyuk cave caves grotte grotta cueva abri rockshelter shelter
+    tomb tombs grave burial chamber chambered cairn barrow mound tumulus dolmen menhir
+    henge henges oppidum hillfort fort castro nuraghe großsteingrab gräberfeld
+    causewayed passage court wedge stone circle long
+""".split())
+MIN_SPECIFIC_WORD_LETTERS = 4
+# For a featured monument the source typed only "other", or did not return at all.
 FEATURED_CATEGORY_SITE_TYPES = {
     "megalith": "megalith",
     "city": "city",
@@ -54,21 +66,30 @@ def adopt_dating(
     )
 
 
+def dating_name_key(name: str) -> str:
+    """Folded name without generic site words, when a distinctive word is left; else the whole folded name."""
+    words = [_fold(word) for word in re.split(r"[\W_]+", name)]
+    specific = [word for word in words if word and word not in GENERIC_SITE_WORDS]
+    if any(len(word) >= MIN_SPECIFIC_WORD_LETTERS and word.isalpha() for word in specific):
+        return "".join(specific)
+    return _fold(name)
+
+
 def read_radiocarbon_sites(path: Path) -> list[dict]:
     with path.open(encoding="utf-8") as handle:
         return [json.loads(line) for line in handle if line.strip()]
 
 
 def attach_radiocarbon(sites: list[WorldSite], radiocarbon_sites: list[dict]) -> list[WorldSite]:
-    """Date undated sites from a radiocarbon site of the same folded name within 5 km."""
+    """Date undated sites from a radiocarbon site of the same name key within 5 km."""
     spans_by_name: dict[str, list[dict]] = {}
     for span in radiocarbon_sites:
-        folded = _fold(span.get("name") or "")
+        folded = dating_name_key(span.get("name") or "")
         usable = span.get("lon") is not None and span.get("lat") is not None
         if folded and usable and (span.get("startYear") is not None or span.get("endYear") is not None):
             spans_by_name.setdefault(folded, []).append(span)
     return [
-        site if is_dated(site) else _with_radiocarbon(site, spans_by_name.get(_fold(site.name), []))
+        site if is_dated(site) else _with_radiocarbon(site, spans_by_name.get(dating_name_key(site.name), []))
         for site in sites
     ]
 
@@ -95,7 +116,7 @@ def apply_featured(
     and no featured coordinate).
     """
     monuments = {monument["qid"]: monument for monument in featured_monuments}
-    dated = [_with_featured_dates(site, monuments[site.id]) if site.id in monuments else site for site in sites]
+    dated = [_with_curation(site, monuments[site.id]) if site.id in monuments else site for site in sites]
     present = {site.id for site in sites}
     unplaced = []
     for qid, monument in monuments.items():
@@ -108,7 +129,10 @@ def apply_featured(
     return dated, unplaced
 
 
-def _with_featured_dates(site: WorldSite, monument: dict) -> WorldSite:
+def _with_curation(site: WorldSite, monument: dict) -> WorldSite:
+    """Curated dates win. The curated category only fills in a source type of "other"."""
+    if site.siteType == "other":
+        site = replace(site, siteType=FEATURED_CATEGORY_SITE_TYPES.get(monument.get("category"), "other"))
     start, end = monument.get("startYear"), monument.get("endYear")
     if start is None and end is None:
         return site

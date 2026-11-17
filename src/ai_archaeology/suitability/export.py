@@ -18,10 +18,10 @@ from ai_archaeology.suitability.layer import LayerResult
 OCEAN, NO_BASIS = 0, 255
 CLASS_TITLES = {"monument": "monuments", "settlement": "settlements", "funerary": "burial sites", "any": "sites of any kind"}
 PERIOD_TITLES = {
-    "early-holocene": "10,000 to 5,000 BCE",
-    "mid-holocene": "5,000 to 2,000 BCE",
-    "late-holocene": "2,000 BCE to 500 CE",
-    "all": "all periods, dated or not",
+    "early-holocene": "from 10,000–5000 BCE",
+    "mid-holocene": "from 5000–2000 BCE",
+    "late-holocene": "from 2000 BCE–500 CE",
+    "all": "of any period",
 }
 LEGEND = {
     "0": "Ocean",
@@ -60,7 +60,7 @@ def layer_entry(site_class: str, period: str, result: LayerResult) -> dict:
     return {
         "id": layer_id,
         "file": f"{layer_id}.png",
-        "title": f"Where published {CLASS_TITLES[site_class]} tend to be recorded, {PERIOD_TITLES[period]}",
+        "title": f"Where published {CLASS_TITLES[site_class]} {PERIOD_TITLES[period]} tend to be recorded",
         "siteClass": site_class,
         "period": period,
         "presences": result.presences,

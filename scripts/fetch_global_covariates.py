@@ -36,7 +36,8 @@ ETOPO_URL = (
 )
 HYDROSHEDS_URL = "https://data.hydrosheds.org/file/hydrosheds-v1-acc/hyd_glo_acc_30s.zip"
 CHELSA_URL = "https://os.zhdk.cloud.switch.ch/chelsav1/chelsa_trace/bio/CHELSA_TraCE21k_{variable}_{time_id}_V1.0.tif"
-# CHELSA-TraCE21k time id = calendar year / 100 (20 is 1900-2000 CE, -200 is about 20000 BCE).
+# Time id k covers calendar years k*100 to k*100+99 (technical documentation, Table 4:
+# 20 is 1900-1990 CE, 10 is 900-999 CE, -200 is 20100-20001 BCE).
 # One slice near each period's midpoint: 7500 BCE, 3500 BCE, 750 BCE.
 CLIMATE_TIME_IDS = {"early-holocene": -75, "mid-holocene": -35, "late-holocene": -8}
 CLIMATE_VARIABLES = {"temperature": "bio01", "precipitation": "bio12"}

@@ -11,7 +11,7 @@ from ai_archaeology.pipeline.report import FORBIDDEN_KEYS
 from ai_archaeology.suitability.aggregate import block_reduce, slope_degrees_geographic
 from ai_archaeology.suitability.background import target_group_background
 from ai_archaeology.suitability.distance import distance_km
-from ai_archaeology.suitability.envelope import covariate_range, inside_envelope
+from ai_archaeology.suitability.envelope import covariate_range, inside_envelope, locally_documented
 from ai_archaeology.suitability.export import decile_raster, layer_entry, write_decile_png, write_index
 from ai_archaeology.suitability.folds import block_folds, block_ids, macro_region
 from ai_archaeology.suitability.grid import N_COLS, N_ROWS, SHAPE, area_weights, cell_centre, cell_of
@@ -89,6 +89,12 @@ def test_envelope_masks_out_of_range_cells(planted_layer):
     low, high = covariate_range(np.linspace(0.0, 100.0, 101).reshape(-1, 1).repeat(2, axis=1))
     inside = inside_envelope(np.array([[50.0, 50.0], [50.0, 100.0], [-5.0, 50.0], [np.nan, 50.0]]), low, high)
     assert inside.tolist() == [True, False, False, False]
+
+    documented = np.zeros(SHAPE, dtype=bool)
+    documented[100, 100] = True  # one lonely site is not a basis
+    documented[300:305, 0:5] = True
+    supported = locally_documented(documented)
+    assert not supported[100, 100] and supported[302, 2] and supported[302, N_COLS - 3] and not supported[302, 40]
 
     result, stack, land = planted_layer
     raster = decile_raster(result)

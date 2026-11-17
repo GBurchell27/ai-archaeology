@@ -1,0 +1,59 @@
+.filter { display: grid; gap: 6px; }
+.types { display: grid; margin: 0; padding: 0; list-style: none; }
+.row { position: relative; display: flex; }
+
+.type {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 9px minmax(0, 1fr) auto;
+  align-items: center;
+  column-gap: 9px;
+  min-height: 25px;
+  padding: 2px 8px;
+  border: 0;
+  border-radius: 3px;
+  background: none;
+  font: inherit;
+  font-size: 12px;
+  text-align: left;
+  color: var(--globe-ink);
+  cursor: pointer;
+}
+
+.type:hover { background: rgba(236, 228, 212, 0.08); }
+.type:focus-visible, .only:focus-visible { outline: 2px solid var(--globe-ochre); outline-offset: -1px; }
+.title { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.count { font-size: 11px; color: var(--globe-muted); transition: opacity 120ms ease; }
+
+/* Switched off: the swatch empties to a ring and the row dims, but stays readable. */
+.type[aria-pressed="false"] { color: #9a9fa8; }
+.type[aria-pressed="false"] i { background: none; box-shadow: inset 0 0 0 1.5px #7d838d; }
+.type[aria-pressed="false"] .title { text-decoration: line-through; text-decoration-color: rgba(154, 159, 168, 0.6); }
+
+/* "only" takes the count's place while the row is hovered or focused. */
+.only {
+  position: absolute;
+  right: 4px;
+  top: 3px;
+  bottom: 3px;
+  padding: 0 6px;
+  border: 0;
+  border-radius: 2px;
+  background: #1b1f26;
+  font: inherit;
+  font-size: 10.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #f0d49a;
+  cursor: pointer;
+  opacity: 0;
+}
+
+.row:hover .only, .only:focus-visible { opacity: 1; }
+.only:hover { background: #2a2a26; }
+
+.all { justify-self: start; margin-left: 8px; }
+
+@media (hover: none) {
+  .only { display: none; }
+}

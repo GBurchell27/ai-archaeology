@@ -1,0 +1,20 @@
+{
+ "Q885987": {
+  "lon": -140.75,
+  "lat": 67.15,
+  "source": "https://doi.org/10.1371/journal.pone.0169486",
+  "reason": "Wikidata P625 is 335 km south; Bourgeon, Burke and Higham 2017 give 67°09'N 140°45'W."
+ },
+ "Q3418050": {
+  "lon": 76.114,
+  "lat": 29.298,
+  "source": "https://doi.org/10.1371/journal.pone.0192299",
+  "reason": "Wikidata P625 is 14 km off; Shinde et al. 2018 give the Rakhigarhi necropolis at N29°17'52.9\" E76°06'51\"."
+ },
+ "Q16571176": {
+  "lon": -67.535,
+  "lat": -9.877,
+  "source": "https://doi.org/10.1073/pnas.1614359114",
+  "reason": "Wikidata P625 is the Acre state centroid, about 330 km from the geoglyphs; Watling et al. 2017 give Fazenda Colorada at 9°52'35.53\"S 67°32'4.59\"W."
+ }
+}

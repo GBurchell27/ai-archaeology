@@ -1,0 +1,351 @@
+{
+  "generated": "2026-11-17",
+  "cellDegrees": 0.25,
+  "layers": [
+    {
+      "id": "any_early-holocene",
+      "file": "any_early-holocene.png",
+      "title": "Where published sites of any kind from 10,000–5000 BCE tend to be recorded",
+      "siteClass": "any",
+      "period": "early-holocene",
+      "presences": 515,
+      "metrics": {
+        "boyce": 0.945,
+        "gainTop10": 0.408,
+        "gainTop20": 0.523,
+        "auc": 0.711,
+        "effortNullAuc": 0.754,
+        "folds": 5
+      },
+      "caveats": [
+        "Held-out AUC 0.71 (folds 0.61 to 0.73) against 0.75 for a null that only knows survey effort. This layer does NOT beat the effort-only null. Read it as a map of where catalogues are dense.",
+        "The top-scoring 10% of documented area holds 17% of held-out presence cells (95% interval 14% to 20%); chance would be 10%.",
+        "Fitted without a whole macro-region and tested on it, AUC runs from 0.51 (Asia) to 0.59 (Africa and Near East). 0.5 is chance: the pattern is regional and does not carry over to other continents.",
+        "Only sites with a published date range count for this period. Most sites are undated, and most dated ones come from the Pleiades gazetteer of the Mediterranean and Near East, so this layer partly shows where that gazetteer reaches.",
+        "Shows where published sites of this kind tend to be recorded, relative to other cells that hold any published site. It is not a map of undiscovered sites and it cannot find one.",
+        "The published record follows where people have surveyed and what got catalogued. Comparing only against documented cells reduces that bias. It does not remove it.",
+        "Cells are 0.25 degrees, about 28 km at the equator. Far too coarse to point at a place.",
+        "Rivers are present-day drainage lines ranked by upstream area (HydroSHEDS), so they include dry desert channels. Coasts are present-day (ETOPO 2022). Climate is a model reconstruction (CHELSA-TraCE21k), not a measurement. None of it sees buried or drowned landscapes.",
+        "Grey cells are 'no basis': fewer than 10 documented cells lie within about 2.5 degrees, or a covariate is outside the range the model learned from. That is most of the world.",
+        "Straight east-west steps in the colours are a model artefact of using latitude, not a feature of the ground.",
+        "Labels come from Wikidata and Pleiades. OpenStreetMap sites are left out."
+      ]
+    },
+    {
+      "id": "settlement_mid-holocene",
+      "file": "settlement_mid-holocene.png",
+      "title": "Where published settlements from 5000–2000 BCE tend to be recorded",
+      "siteClass": "settlement",
+      "period": "mid-holocene",
+      "presences": 449,
+      "metrics": {
+        "boyce": 0.965,
+        "gainTop10": 0.714,
+        "gainTop20": 0.685,
+        "auc": 0.817,
+        "effortNullAuc": 0.812,
+        "folds": 5
+      },
+      "caveats": [
+        "Held-out AUC 0.82 (folds 0.70 to 0.87) against 0.81 for a null that only knows survey effort. That is a tie: this layer is essentially a survey-effort map. It tells you little more than 'where sites of any kind are densely recorded'.",
+        "The top-scoring 10% of documented area holds 35% of held-out presence cells (95% interval 31% to 39%); chance would be 10%.",
+        "Fitted without a whole macro-region and tested on it, AUC runs from 0.43 (Europe and Anatolia) to 0.66 (Asia). 0.5 is chance: the pattern is regional and does not carry over to other continents.",
+        "Only sites with a published date range count for this period. Most sites are undated, and most dated ones come from the Pleiades gazetteer of the Mediterranean and Near East, so this layer partly shows where that gazetteer reaches.",
+        "Shows where published sites of this kind tend to be recorded, relative to other cells that hold any published site. It is not a map of undiscovered sites and it cannot find one.",
+        "The published record follows where people have surveyed and what got catalogued. Comparing only against documented cells reduces that bias. It does not remove it.",
+        "Cells are 0.25 degrees, about 28 km at the equator. Far too coarse to point at a place.",
+        "Rivers are present-day drainage lines ranked by upstream area (HydroSHEDS), so they include dry desert channels. Coasts are present-day (ETOPO 2022). Climate is a model reconstruction (CHELSA-TraCE21k), not a measurement. None of it sees buried or drowned landscapes.",
+        "Grey cells are 'no basis': fewer than 10 documented cells lie within about 2.5 degrees, or a covariate is outside the range the model learned from. That is most of the world.",
+        "Straight east-west steps in the colours are a model artefact of using latitude, not a feature of the ground.",
+        "Labels come from Wikidata and Pleiades. OpenStreetMap sites are left out."
+      ]
+    },
+    {
+      "id": "any_mid-holocene",
+      "file": "any_mid-holocene.png",
+      "title": "Where published sites of any kind from 5000–2000 BCE tend to be recorded",
+      "siteClass": "any",
+      "period": "mid-holocene",
+      "presences": 1252,
+      "metrics": {
+        "boyce": 0.771,
+        "gainTop10": 0.649,
+        "gainTop20": 0.585,
+        "auc": 0.726,
+        "effortNullAuc": 0.638,
+        "folds": 5
+      },
+      "caveats": [
+        "Held-out AUC 0.73 (folds 0.59 to 0.75) against 0.64 for a null that only knows survey effort. Terrain and climate add something beyond survey effort, on held-out 5 degree blocks.",
+        "The top-scoring 10% of documented area holds 29% of held-out presence cells (95% interval 26% to 31%); chance would be 10%.",
+        "Fitted without a whole macro-region and tested on it, AUC runs from 0.60 (Africa and Near East) to 0.68 (Asia). 0.5 is chance: the pattern is regional and does not carry over to other continents.",
+        "Only sites with a published date range count for this period. Most sites are undated, and most dated ones come from the Pleiades gazetteer of the Mediterranean and Near East, so this layer partly shows where that gazetteer reaches.",
+        "Shows where published sites of this kind tend to be recorded, relative to other cells that hold any published site. It is not a map of undiscovered sites and it cannot find one.",
+        "The published record follows where people have surveyed and what got catalogued. Comparing only against documented cells reduces that bias. It does not remove it.",
+        "Cells are 0.25 degrees, about 28 km at the equator. Far too coarse to point at a place.",
+        "Rivers are present-day drainage lines ranked by upstream area (HydroSHEDS), so they include dry desert channels. Coasts are present-day (ETOPO 2022). Climate is a model reconstruction (CHELSA-TraCE21k), not a measurement. None of it sees buried or drowned landscapes.",
+        "Grey cells are 'no basis': fewer than 10 documented cells lie within about 2.5 degrees, or a covariate is outside the range the model learned from. That is most of the world.",
+        "Straight east-west steps in the colours are a model artefact of using latitude, not a feature of the ground.",
+        "Labels come from Wikidata and Pleiades. OpenStreetMap sites are left out."
+      ]
+    },
+    {
+      "id": "monument_late-holocene",
+      "file": "monument_late-holocene.png",
+      "title": "Where published monuments from 2000 BCE–500 CE tend to be recorded",
+      "siteClass": "monument",
+      "period": "late-holocene",
+      "presences": 2403,
+      "metrics": {
+        "boyce": 0.807,
+        "gainTop10": 0.56,
+        "gainTop20": 0.5,
+        "auc": 0.756,
+        "effortNullAuc": 0.764,
+        "folds": 5
+      },
+      "caveats": [
+        "Held-out AUC 0.76 (folds 0.71 to 0.84) against 0.76 for a null that only knows survey effort. That is a tie: this layer is essentially a survey-effort map. It tells you little more than 'where sites of any kind are densely recorded'.",
+        "The top-scoring 10% of documented area holds 23% of held-out presence cells (95% interval 21% to 24%); chance would be 10%.",
+        "Fitted without a whole macro-region and tested on it, AUC runs from 0.50 (Africa and Near East) to 0.62 (Europe and Anatolia). 0.5 is chance: the pattern is regional and does not carry over to other continents.",
+        "Only sites with a published date range count for this period. Most sites are undated, and most dated ones come from the Pleiades gazetteer of the Mediterranean and Near East, so this layer partly shows where that gazetteer reaches.",
+        "Shows where published sites of this kind tend to be recorded, relative to other cells that hold any published site. It is not a map of undiscovered sites and it cannot find one.",
+        "The published record follows where people have surveyed and what got catalogued. Comparing only against documented cells reduces that bias. It does not remove it.",
+        "Cells are 0.25 degrees, about 28 km at the equator. Far too coarse to point at a place.",
+        "Rivers are present-day drainage lines ranked by upstream area (HydroSHEDS), so they include dry desert channels. Coasts are present-day (ETOPO 2022). Climate is a model reconstruction (CHELSA-TraCE21k), not a measurement. None of it sees buried or drowned landscapes.",
+        "Grey cells are 'no basis': fewer than 10 documented cells lie within about 2.5 degrees, or a covariate is outside the range the model learned from. That is most of the world.",
+        "Straight east-west steps in the colours are a model artefact of using latitude, not a feature of the ground.",
+        "Labels come from Wikidata and Pleiades. OpenStreetMap sites are left out."
+      ]
+    },
+    {
+      "id": "settlement_late-holocene",
+      "file": "settlement_late-holocene.png",
+      "title": "Where published settlements from 2000 BCE–500 CE tend to be recorded",
+      "siteClass": "settlement",
+      "period": "late-holocene",
+      "presences": 5501,
+      "metrics": {
+        "boyce": 0.995,
+        "gainTop10": 0.54,
+        "gainTop20": 0.487,
+        "auc": 0.831,
+        "effortNullAuc": 0.828,
+        "folds": 5
+      },
+      "caveats": [
+        "Held-out AUC 0.83 (folds 0.80 to 0.88) against 0.83 for a null that only knows survey effort. That is a tie: this layer is essentially a survey-effort map. It tells you little more than 'where sites of any kind are densely recorded'.",
+        "The top-scoring 10% of documented area holds 22% of held-out presence cells (95% interval 21% to 23%); chance would be 10%.",
+        "Fitted without a whole macro-region and tested on it, AUC runs from 0.43 (Asia) to 0.78 (Europe and Anatolia). 0.5 is chance: the pattern is regional and does not carry over to other continents.",
+        "Only sites with a published date range count for this period. Most sites are undated, and most dated ones come from the Pleiades gazetteer of the Mediterranean and Near East, so this layer partly shows where that gazetteer reaches.",
+        "Shows where published sites of this kind tend to be recorded, relative to other cells that hold any published site. It is not a map of undiscovered sites and it cannot find one.",
+        "The published record follows where people have surveyed and what got catalogued. Comparing only against documented cells reduces that bias. It does not remove it.",
+        "Cells are 0.25 degrees, about 28 km at the equator. Far too coarse to point at a place.",
+        "Rivers are present-day drainage lines ranked by upstream area (HydroSHEDS), so they include dry desert channels. Coasts are present-day (ETOPO 2022). Climate is a model reconstruction (CHELSA-TraCE21k), not a measurement. None of it sees buried or drowned landscapes.",
+        "Grey cells are 'no basis': fewer than 10 documented cells lie within about 2.5 degrees, or a covariate is outside the range the model learned from. That is most of the world.",
+        "Straight east-west steps in the colours are a model artefact of using latitude, not a feature of the ground.",
+        "Labels come from Wikidata and Pleiades. OpenStreetMap sites are left out."
+      ]
+    },
+    {
+      "id": "funerary_late-holocene",
+      "file": "funerary_late-holocene.png",
+      "title": "Where published burial sites from 2000 BCE–500 CE tend to be recorded",
+      "siteClass": "funerary",
+      "period": "late-holocene",
+      "presences": 1012,
+      "metrics": {
+        "boyce": 0.161,
+        "gainTop10": 0.68,
+        "gainTop20": 0.574,
+        "auc": 0.728,
+        "effortNullAuc": 0.572,
+        "folds": 5
+      },
+      "caveats": [
+        "Held-out AUC 0.73 (folds 0.67 to 0.75) against 0.57 for a null that only knows survey effort. Terrain and climate add something beyond survey effort, on held-out 5 degree blocks.",
+        "The top-scoring 10% of documented area holds 31% of held-out presence cells (95% interval 28% to 34%); chance would be 10%.",
+        "Fitted without a whole macro-region and tested on it, AUC runs from 0.50 (Africa and Near East) to 0.60 (Asia). 0.5 is chance: the pattern is regional and does not carry over to other continents.",
+        "Only sites with a published date range count for this period. Most sites are undated, and most dated ones come from the Pleiades gazetteer of the Mediterranean and Near East, so this layer partly shows where that gazetteer reaches.",
+        "Shows where published sites of this kind tend to be recorded, relative to other cells that hold any published site. It is not a map of undiscovered sites and it cannot find one.",
+        "The published record follows where people have surveyed and what got catalogued. Comparing only against documented cells reduces that bias. It does not remove it.",
+        "Cells are 0.25 degrees, about 28 km at the equator. Far too coarse to point at a place.",
+        "Rivers are present-day drainage lines ranked by upstream area (HydroSHEDS), so they include dry desert channels. Coasts are present-day (ETOPO 2022). Climate is a model reconstruction (CHELSA-TraCE21k), not a measurement. None of it sees buried or drowned landscapes.",
+        "Grey cells are 'no basis': fewer than 10 documented cells lie within about 2.5 degrees, or a covariate is outside the range the model learned from. That is most of the world.",
+        "Straight east-west steps in the colours are a model artefact of using latitude, not a feature of the ground.",
+        "Labels come from Wikidata and Pleiades. OpenStreetMap sites are left out."
+      ]
+    },
+    {
+      "id": "any_late-holocene",
+      "file": "any_late-holocene.png",
+      "title": "Where published sites of any kind from 2000 BCE–500 CE tend to be recorded",
+      "siteClass": "any",
+      "period": "late-holocene",
+      "presences": 7305,
+      "metrics": {
+        "boyce": 0.994,
+        "gainTop10": 0.417,
+        "gainTop20": 0.386,
+        "auc": 0.811,
+        "effortNullAuc": 0.794,
+        "folds": 5
+      },
+      "caveats": [
+        "Held-out AUC 0.81 (folds 0.77 to 0.86) against 0.79 for a null that only knows survey effort. That is a tie: this layer is essentially a survey-effort map. It tells you little more than 'where sites of any kind are densely recorded'.",
+        "The top-scoring 10% of documented area holds 17% of held-out presence cells (95% interval 16% to 18%); chance would be 10%.",
+        "Fitted without a whole macro-region and tested on it, AUC runs from 0.43 (Americas) to 0.74 (Europe and Anatolia). 0.5 is chance: the pattern is regional and does not carry over to other continents.",
+        "Only sites with a published date range count for this period. Most sites are undated, and most dated ones come from the Pleiades gazetteer of the Mediterranean and Near East, so this layer partly shows where that gazetteer reaches.",
+        "Shows where published sites of this kind tend to be recorded, relative to other cells that hold any published site. It is not a map of undiscovered sites and it cannot find one.",
+        "The published record follows where people have surveyed and what got catalogued. Comparing only against documented cells reduces that bias. It does not remove it.",
+        "Cells are 0.25 degrees, about 28 km at the equator. Far too coarse to point at a place.",
+        "Rivers are present-day drainage lines ranked by upstream area (HydroSHEDS), so they include dry desert channels. Coasts are present-day (ETOPO 2022). Climate is a model reconstruction (CHELSA-TraCE21k), not a measurement. None of it sees buried or drowned landscapes.",
+        "Grey cells are 'no basis': fewer than 10 documented cells lie within about 2.5 degrees, or a covariate is outside the range the model learned from. That is most of the world.",
+        "Straight east-west steps in the colours are a model artefact of using latitude, not a feature of the ground.",
+        "Labels come from Wikidata and Pleiades. OpenStreetMap sites are left out."
+      ]
+    },
+    {
+      "id": "monument_all",
+      "file": "monument_all.png",
+      "title": "Where published monuments of any period tend to be recorded",
+      "siteClass": "monument",
+      "period": "all",
+      "presences": 5705,
+      "metrics": {
+        "boyce": 0.978,
+        "gainTop10": 0.611,
+        "gainTop20": 0.522,
+        "auc": 0.775,
+        "effortNullAuc": 0.772,
+        "folds": 5
+      },
+      "caveats": [
+        "Held-out AUC 0.77 (folds 0.75 to 0.83) against 0.77 for a null that only knows survey effort. That is a tie: this layer is essentially a survey-effort map. It tells you little more than 'where sites of any kind are densely recorded'.",
+        "The top-scoring 10% of documented area holds 26% of held-out presence cells (95% interval 25% to 27%); chance would be 10%.",
+        "Fitted without a whole macro-region and tested on it, AUC runs from 0.53 (Europe and Anatolia) to 0.57 (Asia). 0.5 is chance: the pattern is regional and does not carry over to other continents.",
+        "Shows where published sites of this kind tend to be recorded, relative to other cells that hold any published site. It is not a map of undiscovered sites and it cannot find one.",
+        "The published record follows where people have surveyed and what got catalogued. Comparing only against documented cells reduces that bias. It does not remove it.",
+        "Cells are 0.25 degrees, about 28 km at the equator. Far too coarse to point at a place.",
+        "Rivers are present-day drainage lines ranked by upstream area (HydroSHEDS), so they include dry desert channels. Coasts are present-day (ETOPO 2022). Climate is a model reconstruction (CHELSA-TraCE21k), not a measurement. None of it sees buried or drowned landscapes.",
+        "Grey cells are 'no basis': fewer than 10 documented cells lie within about 2.5 degrees, or a covariate is outside the range the model learned from. That is most of the world.",
+        "Straight east-west steps in the colours are a model artefact of using latitude, not a feature of the ground.",
+        "Labels come from Wikidata and Pleiades. OpenStreetMap sites are left out."
+      ]
+    },
+    {
+      "id": "settlement_all",
+      "file": "settlement_all.png",
+      "title": "Where published settlements of any period tend to be recorded",
+      "siteClass": "settlement",
+      "period": "all",
+      "presences": 6572,
+      "metrics": {
+        "boyce": 0.998,
+        "gainTop10": 0.473,
+        "gainTop20": 0.439,
+        "auc": 0.812,
+        "effortNullAuc": 0.816,
+        "folds": 5
+      },
+      "caveats": [
+        "Held-out AUC 0.81 (folds 0.79 to 0.86) against 0.82 for a null that only knows survey effort. That is a tie: this layer is essentially a survey-effort map. It tells you little more than 'where sites of any kind are densely recorded'.",
+        "The top-scoring 10% of documented area holds 19% of held-out presence cells (95% interval 18% to 20%); chance would be 10%.",
+        "Fitted without a whole macro-region and tested on it, AUC runs from 0.44 (Americas) to 0.72 (Europe and Anatolia). 0.5 is chance: the pattern is regional and does not carry over to other continents.",
+        "Shows where published sites of this kind tend to be recorded, relative to other cells that hold any published site. It is not a map of undiscovered sites and it cannot find one.",
+        "The published record follows where people have surveyed and what got catalogued. Comparing only against documented cells reduces that bias. It does not remove it.",
+        "Cells are 0.25 degrees, about 28 km at the equator. Far too coarse to point at a place.",
+        "Rivers are present-day drainage lines ranked by upstream area (HydroSHEDS), so they include dry desert channels. Coasts are present-day (ETOPO 2022). Climate is a model reconstruction (CHELSA-TraCE21k), not a measurement. None of it sees buried or drowned landscapes.",
+        "Grey cells are 'no basis': fewer than 10 documented cells lie within about 2.5 degrees, or a covariate is outside the range the model learned from. That is most of the world.",
+        "Straight east-west steps in the colours are a model artefact of using latitude, not a feature of the ground.",
+        "Labels come from Wikidata and Pleiades. OpenStreetMap sites are left out."
+      ]
+    },
+    {
+      "id": "funerary_all",
+      "file": "funerary_all.png",
+      "title": "Where published burial sites of any period tend to be recorded",
+      "siteClass": "funerary",
+      "period": "all",
+      "presences": 3005,
+      "metrics": {
+        "boyce": 0.91,
+        "gainTop10": 0.708,
+        "gainTop20": 0.622,
+        "auc": 0.771,
+        "effortNullAuc": 0.726,
+        "folds": 5
+      },
+      "caveats": [
+        "Held-out AUC 0.77 (folds 0.74 to 0.81) against 0.73 for a null that only knows survey effort. Terrain and climate add something beyond survey effort, on held-out 5 degree blocks.",
+        "The top-scoring 10% of documented area holds 34% of held-out presence cells (95% interval 33% to 36%); chance would be 10%.",
+        "Fitted without a whole macro-region and tested on it, AUC runs from 0.48 (Europe and Anatolia) to 0.79 (Asia). 0.5 is chance: the pattern is regional and does not carry over to other continents.",
+        "Shows where published sites of this kind tend to be recorded, relative to other cells that hold any published site. It is not a map of undiscovered sites and it cannot find one.",
+        "The published record follows where people have surveyed and what got catalogued. Comparing only against documented cells reduces that bias. It does not remove it.",
+        "Cells are 0.25 degrees, about 28 km at the equator. Far too coarse to point at a place.",
+        "Rivers are present-day drainage lines ranked by upstream area (HydroSHEDS), so they include dry desert channels. Coasts are present-day (ETOPO 2022). Climate is a model reconstruction (CHELSA-TraCE21k), not a measurement. None of it sees buried or drowned landscapes.",
+        "Grey cells are 'no basis': fewer than 10 documented cells lie within about 2.5 degrees, or a covariate is outside the range the model learned from. That is most of the world.",
+        "Straight east-west steps in the colours are a model artefact of using latitude, not a feature of the ground.",
+        "Labels come from Wikidata and Pleiades. OpenStreetMap sites are left out."
+      ]
+    }
+  ],
+  "skipped": [
+    {
+      "id": "monument_early-holocene",
+      "reason": "too few cells: 113 presence and 14635 contrast cells"
+    },
+    {
+      "id": "settlement_early-holocene",
+      "reason": "no held-out skill (AUC 0.84, Boyce -0.53)"
+    },
+    {
+      "id": "funerary_early-holocene",
+      "reason": "too few cells: 40 presence and 14708 contrast cells"
+    },
+    {
+      "id": "monument_mid-holocene",
+      "reason": "no held-out skill (AUC 0.73, Boyce -0.60)"
+    },
+    {
+      "id": "funerary_mid-holocene",
+      "reason": "no held-out skill (AUC 0.78, Boyce -0.12)"
+    },
+    {
+      "id": "any_all",
+      "reason": "too few cells: 14748 presence and 0 contrast cells"
+    }
+  ],
+  "legend": {
+    "0": "Ocean",
+    "1-10": "Decile rank among documented cells: 10 = most like the cells where such sites are recorded",
+    "255": "No basis: outside the range of conditions the model learned from"
+  },
+  "licences": [
+    {
+      "name": "ETOPO 2022",
+      "licence": "US public domain",
+      "attribution": "NOAA NCEI, doi:10.25921/fd45-gt74"
+    },
+    {
+      "name": "HydroSHEDS",
+      "licence": "Free with attribution",
+      "attribution": "Lehner and Grill (2013)"
+    },
+    {
+      "name": "CHELSA-TraCE21k",
+      "licence": "CC0 1.0",
+      "attribution": "Karger et al. (2023)"
+    },
+    {
+      "name": "Wikidata",
+      "licence": "CC0 1.0",
+      "attribution": "Wikidata"
+    },
+    {
+      "name": "Pleiades",
+      "licence": "CC BY 3.0",
+      "attribution": "Pleiades contributors"
+    }
+  ]
+}

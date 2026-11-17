@@ -1,0 +1,48 @@
+.timeline { display: grid; gap: 9px; padding: 11px 16px 12px; }
+
+.head { display: flex; align-items: baseline; gap: 6px 16px; flex-wrap: wrap; }
+
+.readout { margin: 0; font-size: 20px; font-style: italic; line-height: 1.15; font-variant-numeric: lining-nums; }
+.count { margin: 0; font-size: 12.5px; color: var(--globe-muted); }
+.count b { font-weight: 600; color: var(--globe-ink); }
+.undated { align-self: center; }
+
+/* The slider. The hit area is taller than the rail it draws. */
+.track { position: relative; height: 22px; margin: 0 7px; cursor: pointer; touch-action: none; }
+.rail, .fill { position: absolute; top: 10px; height: 2px; border-radius: 2px; }
+.rail { left: 0; right: 0; background: rgba(236, 228, 212, 0.22); }
+.fill { background: var(--globe-ochre); }
+.tick { position: absolute; top: 6px; width: 1px; height: 10px; background: rgba(236, 228, 212, 0.3); }
+
+.thumb {
+  position: absolute;
+  top: 4px;
+  width: 14px;
+  height: 14px;
+  margin-left: -7px;
+  padding: 0;
+  border: 2px solid #0b0e13;
+  border-radius: 50%;
+  background: #f6dfae;
+  box-shadow: 0 0 0 1px var(--globe-ochre);
+  cursor: grab;
+  touch-action: none;
+}
+
+.thumb:focus-visible { outline: 2px solid var(--globe-ochre); outline-offset: 3px; }
+
+/* Six equal columns: each era chip sits under the stretch of track it selects. */
+.eras { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 5px; }
+.era { padding-inline: 4px; }
+.allTime { align-self: center; min-height: 24px; margin-right: auto; }
+.head:not(:has(.allTime)) .readout { margin-right: auto; }
+
+/* The dock is a size container (ExplorerChrome): this follows the room the timeline really has. */
+@container (max-width: 560px) {
+  .timeline { gap: 7px; padding: 9px 12px 10px; }
+  .readout { font-size: 18px; }
+  /* Too narrow for six columns of labels: the chips become one scrolling row. */
+  .eras { display: flex; margin: 0 -12px; padding: 2px 12px; overflow-x: auto; scrollbar-width: none; }
+  .eras::-webkit-scrollbar { display: none; }
+  .era { flex: none; padding-inline: 9px; }
+}

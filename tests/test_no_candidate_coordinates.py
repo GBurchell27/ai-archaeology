@@ -22,6 +22,13 @@ PUBLISHED_SITE_FILES = {
     "Anatolia/atlas/scripts/build_context.py",
     "Anatolia/atlas/public/wikidata/sites.geojson",
     "tests/test_wikidata_sites.py",
+    # A personal trip: airports, town-level stops, published landmarks and an OSRM road trace.
+    "Anatolia/atlas/lib/trip/turkeyTripPlaces.ts",
+    "Anatolia/atlas/public/trips/turkey-2026-04.roads.json",
+    # A Stonehenge fixture for the Wikidata ingester, and published locations (each with its
+    # cited source) that replace a wrong Wikidata point for a curated featured monument.
+    "tests/test_world_wikidata.py",
+    "src/ai_archaeology/world/featured_coordinate_fixes.json",
 }
 # The world catalogue is sharded into many generated files. Every record in it is a
 # published Wikidata, Pleiades or OpenStreetMap site (scripts/build_world_catalogue.py).
@@ -38,7 +45,10 @@ def test_tracked_files_have_no_candidate_coordinate_pairs():
         path = ROOT / relative
         if not path.is_file() or path.suffix.lower() in BINARY_SUFFIXES:
             continue
-        text = path.read_text(encoding="utf-8", errors="ignore")
+        content = path.read_bytes()
+        if b"\0" in content:  # binary (e.g. a .glb model): float buffers are not coordinates
+            continue
+        text = content.decode("utf-8", errors="ignore")
         if COORDINATE_PAIR.search(text):
             offenders.append(relative)
     assert offenders == []

@@ -728,19 +728,6 @@
   "source": "https://en.wikipedia.org/wiki/Por-Bazhyn"
  },
  {
-  "qid": "Q3273537",
-  "name": "Pazyryk burials",
-  "country": "Russia",
-  "category": "burial",
-  "period": "Scythian Iron Age",
-  "startYear": -500,
-  "endYear": -200,
-  "datingConfidence": "high",
-  "status": "accepted",
-  "why": "Frozen Altai tombs preserving tattooed bodies, textiles and the oldest known pile carpet.",
-  "source": "https://en.wikipedia.org/wiki/Pazyryk_burials"
- },
- {
   "qid": "Q704240",
   "name": "Arzhan",
   "country": "Russia",
@@ -3224,19 +3211,6 @@
   "source": "https://en.wikipedia.org/wiki/Kalokol_Pillar_Site"
  },
  {
-  "qid": "Q85782261",
-  "name": "Lothagam North Pillar Site",
-  "country": "Kenya",
-  "category": "burial",
-  "period": "Pastoral Neolithic",
-  "startYear": -3000,
-  "endYear": -2300,
-  "datingConfidence": "high",
-  "status": "accepted",
-  "why": "Monumental cemetery with a platform and pillars built by early herders, the oldest known in eastern Africa.",
-  "source": "https://en.wikipedia.org/wiki/Lothagam_North_Pillar_Site"
- },
- {
   "qid": "Q3524629",
   "name": "Thimlich Ohinga",
   "country": "Kenya",
@@ -5081,19 +5055,6 @@
   "status": "accepted",
   "why": "Circle of granite blocks in Amapá that appears to mark the winter solstice.",
   "source": "https://en.wikipedia.org/wiki/Parque_Arqueol%C3%B3gico_do_Solst%C3%ADcio"
- },
- {
-  "qid": "Q5055053",
-  "name": "Caverna da Pedra Pintada",
-  "country": "Brazil",
-  "category": "rock-art",
-  "period": "Late Pleistocene",
-  "startYear": -9200,
-  "endYear": -8000,
-  "datingConfidence": "high",
-  "status": "accepted",
-  "why": "Painted cave showing people lived in the Amazon about 11,000 years ago.",
-  "source": "https://en.wikipedia.org/wiki/Caverna_da_Pedra_Pintada"
  },
  {
   "qid": "Q6442109",

@@ -1,16 +1,22 @@
 """The curated featured tier: remarkable early monuments keyed by Wikidata QID.
 
 The committed list carries no coordinates. They are fetched from Wikidata (P625,
-CC0) and joined here when the web file is packed.
+CC0) and joined here when the web file is packed. Where Wikidata's point is wrong
+by more than about 10 km, featured_coordinate_fixes.json overrides it with a
+location from a cited publication.
 """
 
 from __future__ import annotations
 
 import json
 import re
+from dataclasses import replace
 from pathlib import Path
 
+from ai_archaeology.world.records import WorldSite
+
 FEATURED_PATH = Path(__file__).with_name("featured_monuments.json")
+COORDINATE_FIXES_PATH = Path(__file__).with_name("featured_coordinate_fixes.json")
 FIELDS = (
     "qid", "name", "country", "category", "period", "startYear", "endYear",
     "datingConfidence", "status", "why", "source",
@@ -78,9 +84,29 @@ def coordinates_from_entities(entities: dict) -> dict[str, tuple[float, float]]:
     return coordinates
 
 
+def load_coordinate_fixes(path: Path = COORDINATE_FIXES_PATH) -> dict[str, tuple[float, float]]:
+    """{qid: (lon, lat)} published locations that replace a wrong Wikidata point."""
+    fixes = json.loads(path.read_text(encoding="utf-8"))
+    return {qid: (float(fix["lon"]), float(fix["lat"])) for qid, fix in fixes.items()}
+
+
+def load_featured_coordinates(wikidata_coordinates_path: Path) -> dict[str, list[float]]:
+    """The cached Wikidata {qid: [lon, lat]} (empty if not fetched yet) with the fixes applied."""
+    path = Path(wikidata_coordinates_path)
+    coordinates = json.loads(path.read_text(encoding="utf-8")) if path.exists() else {}
+    return {**coordinates, **{qid: list(lon_lat) for qid, lon_lat in load_coordinate_fixes().items()}}
+
+
+def with_coordinate_fixes(sites: list[WorldSite]) -> list[WorldSite]:
+    """Source records with a fixed QID moved to its published location."""
+    fixes = load_coordinate_fixes()
+    return [replace(site, lon=fixes[site.id][0], lat=fixes[site.id][1]) if site.id in fixes else site for site in sites]
+
+
 def featured_sites(coordinates: dict[str, tuple[float, float]], monuments: list[dict] | None = None) -> list[dict]:
     """The Contract-2 ``featured.json`` array. Every monument must have a point."""
     monuments = load_featured() if monuments is None else monuments
+    coordinates = {**coordinates, **load_coordinate_fixes()}
     missing = [monument["qid"] for monument in monuments if monument["qid"] not in coordinates]
     if missing:
         raise ValueError(f"featured monuments without coordinates: {', '.join(missing)}")

@@ -20,6 +20,15 @@ def no_skill_reason(result: LayerResult) -> str | None:
     return None
 
 
+def metrics_report(result: LayerResult) -> str:
+    """Pooled held-out value and the fold range of every metric, for the run log."""
+    lines = [f"  presences {result.presences}  model {result.model_name}  regions {result.region_auc}"]
+    for name, pooled in result.metrics.items():
+        folds = [fold[name] for fold in result.fold_metrics]
+        lines.append(f"  {name}: {pooled:.3f} (folds {min(folds):.3f} to {max(folds):.3f})")
+    return chr(10).join(lines)
+
+
 def build_layers(sites, grids, out: Path) -> tuple[list[dict], list[dict]]:
     site_counts = site_count_raster(sites)
     background, effort = target_group_background(site_counts), effort_stack(site_counts)
@@ -30,15 +39,17 @@ def build_layers(sites, grids, out: Path) -> tuple[list[dict], list[dict]]:
             layer_id = f"{site_class}_{period}"
             try:
                 result = evaluate_layer(presence_raster(sites, site_class, period), background, stack, land, effort)
-                reason = no_skill_reason(result)
             except InsufficientCells as too_few:
-                reason = f"too few cells: {too_few}"
+                skipped.append({"id": layer_id, "reason": f"too few cells: {too_few}"})
+                print(layer_id, skipped[-1]["reason"], flush=True)
+                continue
+            reason = no_skill_reason(result)
             if reason:
                 skipped.append({"id": layer_id, "reason": reason})
             else:
                 write_decile_png(out / f"{layer_id}.png", decile_raster(result))
                 layers.append(layer_entry(site_class, period, result))
-            print(layer_id, reason or layers[-1]["metrics"], flush=True)
+            print(layer_id, reason or "shipped", metrics_report(result), sep=chr(10), flush=True)
     return layers, skipped
 
 

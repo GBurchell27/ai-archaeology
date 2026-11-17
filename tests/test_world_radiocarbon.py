@@ -13,9 +13,9 @@ def date_row(age, site_key="a", lon=10.0, lat=50.0, period=""):
 def test_conversion_is_monotonic_and_lands_known_anchors():
     years = [calendar_year_from_radiocarbon_age(age) for age in range(0, 50001, 50)]
     assert all(older < younger for younger, older in zip(years, years[1:]))
-    assert abs(calendar_year_from_radiocarbon_age(10000) - -9500) <= 300
-    assert abs(calendar_year_from_radiocarbon_age(4500) - -3200) <= 300
-    assert abs(calendar_year_from_radiocarbon_age(2000) - 0) <= 150
+    # Calendar years read off the published IntCal20 curve (intcal.org/curves/intcal20.14c).
+    for radiocarbon_age, intcal20_year in ((2000, 16), (4500, -3221), (8000, -7036), (10000, -9449), (40000, -41096)):
+        assert abs(calendar_year_from_radiocarbon_age(radiocarbon_age) - intcal20_year) <= 100
 
 
 def test_aggregation_spans_oldest_to_youngest_and_drops_bad_rows():

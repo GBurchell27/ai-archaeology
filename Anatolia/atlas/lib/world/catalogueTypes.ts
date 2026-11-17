@@ -64,6 +64,15 @@ export interface SiteDetail {
   ids: Record<string, string | null>;
 }
 
+type OmittedWhenEmpty = "wikipedia" | "image" | "types" | "heritage";
+
+/** A detail record as written to detail/<bucket>.json: null and empty fields are left out, and `ids` has no null entries. */
+export type StoredSiteDetail = Omit<SiteDetail, OmittedWhenEmpty> & Partial<Pick<SiteDetail, OmittedWhenEmpty>>;
+
+export function siteDetailFromStored(stored: StoredSiteDetail): SiteDetail {
+  return { wikipedia: null, image: null, types: [], heritage: [], ...stored };
+}
+
 export const WORLD_CELL_DEGREES = 10;
 
 export function cellKeyFor(lon: number, lat: number): string {
