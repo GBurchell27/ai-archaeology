@@ -217,7 +217,10 @@ def test_closeup_write_refuses_a_symlink(tmp_path: Path):
     secret = outside / "secret.txt"
     secret.write_text("leave-me")
     linked_dir = tmp_path / "linked"
-    linked_dir.symlink_to(outside, target_is_directory=True)
+    try:
+        linked_dir.symlink_to(outside, target_is_directory=True)
+    except OSError:
+        pytest.skip("this account cannot create symlinks")
     with pytest.raises(RuntimeError):
         store.assert_real_directory(linked_dir)
     with pytest.raises(RuntimeError):
@@ -242,3 +245,39 @@ def test_cache_resolver_rejects_symlinks():
     )
     assert completed.returncode == 0, completed.stdout + completed.stderr
     assert '"ok": true' in completed.stdout or '"ok":true' in completed.stdout.replace(" ", "")
+
+
+def test_closeup_window_is_ten_km_on_the_ground_at_any_latitude():
+    closeup = _load("closeup_window", ATLAS / "scripts" / "closeup_window.py")
+    for latitude in (0.0, 39.0, 51.2, -20.3, 79.9):
+        left, bottom, right, top = closeup.window_bounds(12.0, latitude)
+        ground = (right - left) * math.cos(math.radians(latitude))
+        assert ground == pytest.approx(10_000.0)
+        assert top - bottom == pytest.approx(right - left)
+    assert closeup.window_bounds(0.0, 0.0) == pytest.approx((-5000.0, -5000.0, 5000.0, 5000.0))
+
+
+def test_closeup_window_refuses_the_poles_and_the_antimeridian():
+    closeup = _load("closeup_window", ATLAS / "scripts" / "closeup_window.py")
+    for longitude, latitude in ((10.0, 80.5), (10.0, -85.0), (179.99, -17.0), (-179.99, 60.0), (200.0, 0.0)):
+        with pytest.raises(ValueError):
+            closeup.window_bounds(longitude, latitude)
+    closeup.window_bounds(179.0, -17.0)
+
+
+def test_site_window_keeps_high_mountains_and_names_southern_tiles(monkeypatch):
+    import numpy as np
+
+    terrain = _load("build_atlas_terrain", ATLAS / "scripts" / "build_atlas_terrain.py")
+    asked: list[str] = []
+
+    def fake_window(url, west, south, east, north):
+        asked.append(url.rsplit("/", 1)[-1])
+        grid = np.full((40, 40), 6400.0, dtype=np.float32)
+        return grid, ((east - west) / 40, west, (north - south) / 40, north)
+
+    monkeypatch.setattr(terrain, "read_dem_window", fake_window)
+    window = terrain.read_site_window(-70.5, -15.5)
+    assert asked == ["Copernicus_DSM_COG_10_S16_00_W071_00_DEM.tif"]
+    assert window is not None
+    assert float(np.median(window[0])) == pytest.approx(6400.0)

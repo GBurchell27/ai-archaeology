@@ -1,0 +1,79 @@
+import {
+  WGS84_EQUATORIAL_RADIUS,
+  WGS84_POLAR_RADIUS,
+  cameraAltitude,
+  greatCircleMetres,
+  interpolateGreatCircle,
+  intersectRayWithEllipsoid,
+  lonLatHeightToScene,
+  sceneToLonLatHeight,
+} from "../lib/globe/ellipsoid.ts";
+import { atlasLookFromGlobe, globeLookFromAtlas, handoffStage } from "../lib/globe/handoff.ts";
+import { DEFAULT_GLOBE_LOOK, parseViewUrl, serialiseViewUrl } from "../lib/globe/viewUrl.ts";
+
+let failed = 0;
+
+function check(label: string, condition: boolean): void {
+  if (condition) return;
+  failed += 1;
+  console.error("FAIL", label);
+}
+
+const near = (a: number, b: number, tolerance: number) => Math.abs(a - b) <= tolerance;
+
+// Frame: +X at 0°E 0°N, +Y at 90°E, +Z at the north pole.
+const origin = lonLatHeightToScene(0, 0, 0);
+check("0E 0N sits on +X at the equatorial radius", near(origin[0], WGS84_EQUATORIAL_RADIUS, 1e-6) && near(origin[1], 0, 1e-6) && near(origin[2], 0, 1e-6));
+check("90E sits on +Y", near(lonLatHeightToScene(90, 0, 0)[1], WGS84_EQUATORIAL_RADIUS, 1e-6));
+check("the north pole sits on +Z at the polar radius", near(lonLatHeightToScene(0, 90, 0)[2], WGS84_POLAR_RADIUS, 1e-3));
+
+for (const [longitude, latitude, height] of [[38, 30, 9_000_000], [-122.4, 37.8, 0], [151.2, -33.9, 450_000], [10, 89.5, 1200], [-70, -55, 25]]) {
+  const back = sceneToLonLatHeight(lonLatHeightToScene(longitude, latitude, height));
+  check(`round trip ${longitude},${latitude},${height}`,
+    near(back.longitude, longitude, 1e-9) && near(back.latitude, latitude, 1e-9) && near(back.height, height, 1e-3));
+}
+check("camera altitude is height above the ellipsoid", near(cameraAltitude(lonLatHeightToScene(37, 39, 900_000)), 900_000, 1e-3));
+
+const hit = intersectRayWithEllipsoid([2 * WGS84_EQUATORIAL_RADIUS, 0, 0], [-1, 0, 0]);
+check("a ray down the X axis hits 0E 0N", hit !== null && near(hit[0], WGS84_EQUATORIAL_RADIUS, 1e-3));
+check("a ray pointing away misses", intersectRayWithEllipsoid([2 * WGS84_EQUATORIAL_RADIUS, 0, 0], [1, 0, 0]) === null);
+check("a ray past the limb misses", intersectRayWithEllipsoid([2 * WGS84_EQUATORIAL_RADIUS, 0, 0], [0, 0, 1]) === null);
+
+check("a quarter of the equator is a quarter circumference",
+  near(greatCircleMetres({ longitude: 0, latitude: 0 }, { longitude: 90, latitude: 0 }), Math.PI / 2 * WGS84_EQUATORIAL_RADIUS, 1));
+const midway = interpolateGreatCircle({ longitude: 0, latitude: 0 }, { longitude: 90, latitude: 0 }, 0.5);
+check("the midpoint of an equatorial arc stays on the equator", near(midway.longitude, 45, 1e-9) && near(midway.latitude, 0, 1e-9));
+const acrossDateLine = interpolateGreatCircle({ longitude: 170, latitude: 10 }, { longitude: -170, latitude: 10 }, 0.5);
+check("an arc takes the short way over the date line", near(Math.abs(acrossDateLine.longitude), 180, 1e-6));
+
+const globeState = { view: "globe" as const, longitude: 38.123, latitude: -30.456, altitude: 1_234_567 };
+const globeBack = parseViewUrl(serialiseViewUrl(globeState));
+check("globe url keeps two decimals and whole km", serialiseViewUrl(globeState) === "?view=globe&lon=38.12&lat=-30.46&alt=1235");
+check("globe url round trips", globeBack.view === "globe" && globeBack.longitude === 38.12 && globeBack.latitude === -30.46 && globeBack.altitude === 1_235_000);
+check("site urls round trip",
+  JSON.stringify(parseViewUrl(serialiseViewUrl({ view: "place", siteId: "Q12345" }))) === JSON.stringify({ view: "place", siteId: "Q12345" })
+  && JSON.stringify(parseViewUrl(serialiseViewUrl({ view: "atlas", siteId: "osm-n123" }))) === JSON.stringify({ view: "atlas", siteId: "osm-n123" })
+  && serialiseViewUrl({ view: "atlas" }) === "?view=atlas");
+const empty = parseViewUrl("");
+check("an empty url is the default globe", empty.view === "globe" && empty.longitude === DEFAULT_GLOBE_LOOK.longitude && empty.altitude === DEFAULT_GLOBE_LOOK.altitude);
+const hostile = parseViewUrl("?view=place&site=../../etc&lon=abc&lat=999&alt=-5");
+check("a malformed site id falls back to the globe", hostile.view === "globe");
+check("out of range numbers are clamped or defaulted",
+  hostile.view === "globe" && hostile.longitude === DEFAULT_GLOBE_LOOK.longitude && hostile.latitude === 90 && hostile.altitude === 100_000);
+check("server-style search params parse", parseViewUrl({ view: "atlas", site: ["gobekli-tepe"] }).view === "atlas");
+
+const overTurkey = { longitude: 38.9, latitude: 37.2 };
+check("high over Turkey: no offer", handoffStage({ ...overTurkey, altitude: 900_000 }) === "none");
+check("below 900 km over Turkey: offer", handoffStage({ ...overTurkey, altitude: 899_000 }) === "offer");
+check("at 450 km the offer still stands", handoffStage({ ...overTurkey, altitude: 450_000 }) === "offer");
+check("below 450 km over Turkey: enter", handoffStage({ ...overTurkey, altitude: 449_000 }) === "enter");
+check("low over Egypt: nothing", handoffStage({ longitude: 31.1, latitude: 29.9, altitude: 200_000 }) === "none");
+check("the bounds edge counts as inside", handoffStage({ longitude: 25.5, latitude: 35.8, altitude: 500_000 }) === "offer");
+check("the atlas opens no further out than the handoff altitude", atlasLookFromGlobe({ ...overTurkey, altitude: 800_000 }).cameraDistance === 450_000);
+check("coming back to the globe does not re-offer the atlas", handoffStage(globeLookFromAtlas(overTurkey)) === "none");
+
+if (failed > 0) {
+  console.error(`${failed} failed`);
+  process.exit(1);
+}
+console.log(JSON.stringify({ ok: true }));

@@ -202,7 +202,8 @@ check(
   "the atlas filters pins before they are drawn",
   app.includes("pinsInRange(") && app.includes("wikiSites={wikiVisible}"),
 );
-check("period chips set the range", app.includes("rangeForChip("));
+const timelineState = readFileSync(new URL("../components/atlas/useTimelineState.ts", import.meta.url), "utf8");
+check("period chips set the range", timelineState.includes("rangeForChip(") && app.includes("timeline.selectPeriod"));
 
 if (failed > 0) {
   console.error(`${failed} failed`);

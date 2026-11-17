@@ -100,16 +100,20 @@ def iter_places(path: Path):
             buffer = buffer[index:]
 
 
-def place_from_dump(raw: dict) -> GazetteerPlace | None:
+def place_from_dump(
+    raw: dict, bounds: tuple[float, float, float, float] | None = WINDOW
+) -> GazetteerPlace | None:
+    """``bounds`` is (west, south, east, north); None keeps the whole gazetteer."""
     if raw.get("review_state") not in (None, "published"):
         return None
     point = raw.get("reprPoint")
     if not point or len(point) < 2:
         return None
     longitude, latitude = float(point[0]), float(point[1])
-    west, south, east, north = WINDOW
-    if not (west <= longitude <= east and south <= latitude <= north):
-        return None
+    if bounds is not None:
+        west, south, east, north = bounds
+        if not (west <= longitude <= east and south <= latitude <= north):
+            return None
     identifier = str(raw.get("id") or "")
     if identifier.startswith("http"):
         identifier = identifier.rstrip("/").rsplit("/", 1)[-1]

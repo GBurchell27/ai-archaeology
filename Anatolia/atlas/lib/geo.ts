@@ -6,6 +6,12 @@ export function lonLatToMercator(longitude: number, latitude: number): [number, 
   return [xCoord, yCoord];
 }
 
+export function mercatorToLonLat(east: number, north: number): [number, number] {
+  const longitude = (east / RADIUS) * 180 / Math.PI;
+  const latitude = (2 * Math.atan(Math.exp(north / RADIUS)) - Math.PI / 2) * 180 / Math.PI;
+  return [longitude, latitude];
+}
+
 export function toLocal(
   longitude: number,
   latitude: number,

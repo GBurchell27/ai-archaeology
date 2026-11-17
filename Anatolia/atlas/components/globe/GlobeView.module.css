@@ -1,0 +1,86 @@
+.globe {
+  --globe-ink: #ece4d4;
+  --globe-muted: #98a0ab;
+  --globe-ochre: #dba545;
+  --globe-glass: rgba(12, 16, 22, 0.58);
+  --globe-rule: rgba(236, 228, 212, 0.16);
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background: #04060a;
+  color: var(--globe-ink);
+}
+
+.globe canvas { display: block; touch-action: none; cursor: grab; }
+.globe canvas:active { cursor: grabbing; }
+
+/* The chrome layer never eats a drag; individual controls opt back in. */
+.chrome { position: absolute; inset: 0; pointer-events: none; }
+.chrome a, .chrome button { pointer-events: auto; }
+
+.readout,
+.attribution {
+  position: absolute;
+  bottom: 14px;
+  margin: 0;
+  font-size: 11px;
+  line-height: 1.35;
+  padding: 4px 9px;
+  border-radius: 3px;
+  background: var(--globe-glass);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  color: var(--globe-muted);
+}
+
+.readout {
+  left: 18px;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.06em;
+  white-space: pre;
+  color: var(--globe-ink);
+}
+
+.attribution { right: 18px; max-width: min(78ch, 60vw); text-align: right; }
+.attribution a { color: inherit; text-decoration-color: var(--globe-rule); text-underline-offset: 2px; }
+.attribution a:hover, .attribution a:focus-visible { color: var(--globe-ink); }
+
+.enter {
+  position: absolute;
+  left: 50%;
+  bottom: 64px;
+  display: grid;
+  gap: 2px;
+  padding: 11px 26px 12px;
+  border: 1px solid var(--globe-rule);
+  border-bottom-color: var(--globe-ochre);
+  border-radius: 3px;
+  background: var(--globe-glass);
+  -webkit-backdrop-filter: blur(14px) saturate(1.2);
+  backdrop-filter: blur(14px) saturate(1.2);
+  color: var(--globe-ink);
+  text-align: center;
+  cursor: pointer;
+  transform: translateX(-50%);
+  animation: enter-rise 260ms ease-out both;
+}
+
+.enter:hover { background: rgba(28, 30, 32, 0.74); }
+.enter:focus-visible { outline: 2px solid var(--globe-ochre); outline-offset: 3px; }
+.enterTitle { font: italic 500 19px/1.2 Palatino, "Palatino Linotype", "Book Antiqua", Georgia, serif; }
+.enterHint { font-size: 10.5px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--globe-muted); }
+
+@keyframes enter-rise {
+  from { opacity: 0; transform: translate(-50%, 8px); }
+  to { opacity: 1; transform: translate(-50%, 0); }
+}
+
+@media (max-width: 640px) {
+  .readout { bottom: 44px; }
+  .attribution { left: 18px; max-width: none; text-align: left; font-size: 10px; }
+  .enter { bottom: 92px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .enter { animation: none; }
+}

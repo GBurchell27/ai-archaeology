@@ -1,7 +1,9 @@
 import { spawn, type ChildProcess } from "node:child_process";
+import { existsSync } from "node:fs";
 import { chmod, lstat, mkdir, mkdtemp, readFile, readdir, realpath, rm, stat, utimes } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
+import type { PublishedPoint } from "./closeupCatalog.ts";
 
 const PARTS = {
   meta: { file: "meta.json", type: "application/json" },
@@ -27,9 +29,12 @@ export function isCloseupPart(value: string): value is CloseupPart {
   return value in PARTS;
 }
 
-type Point = { longitude: number; latitude: number };
+type Point = PublishedPoint;
+export type PointLookup = (id: string) => Promise<Point | undefined>;
 
-let catalogPromise: Promise<Map<string, Point>> | null = null;
+// Web Mercator stretches without bound towards the poles. The worker refuses the same range.
+const MAX_LATITUDE = 80;
+
 let rootPromise: Promise<string> | null = null;
 const inflight = new Map<string, Promise<unknown>>();
 let active = 0;
@@ -81,30 +86,6 @@ export function coalesce<T>(key: string, task: () => Promise<T>): Promise<T> {
     if (inflight.get(key) === run) inflight.delete(key);
   }).catch(() => undefined);
   return run;
-}
-
-async function loadCatalog(): Promise<Map<string, Point>> {
-  if (!catalogPromise) {
-    catalogPromise = (async () => {
-      const found = new Map<string, Point>();
-      for (const relative of ["wikidata/sites.geojson", "sites.geojson"]) {
-        const raw = JSON.parse(await readFile(path.join(process.cwd(), "public", relative), "utf8")) as {
-          features: { id?: string; geometry?: { coordinates?: number[] } }[];
-        };
-        for (const feature of raw.features) {
-          const id = String(feature.id ?? "");
-          const coordinates = feature.geometry?.coordinates;
-          if (!isSiteId(id) || !coordinates || coordinates.length < 2) continue;
-          const longitude = Number(coordinates[0]);
-          const latitude = Number(coordinates[1]);
-          if (!Number.isFinite(longitude) || !Number.isFinite(latitude)) continue;
-          found.set(id, { longitude, latitude });
-        }
-      }
-      return found;
-    })();
-  }
-  return catalogPromise;
 }
 
 export async function createPrivateCache(preferred?: string): Promise<string> {
@@ -220,6 +201,14 @@ export function killOnTimeout(child: ChildProcess, timeoutMs: number, graceMs: n
   return cancel;
 }
 
+/** ATLAS_PYTHON wins. Otherwise the repo venv, which sits two folders above the atlas app. */
+export function pythonCommand(): string {
+  if (process.env.ATLAS_PYTHON) return process.env.ATLAS_PYTHON;
+  const venv = path.resolve(process.cwd(), "..", "..", ".venv");
+  const local = process.platform === "win32" ? path.join(venv, "Scripts", "python.exe") : path.join(venv, "bin", "python");
+  return existsSync(local) ? local : "/workspace/.venv/bin/python";
+}
+
 function runWorker(command: string, args: string[]): Promise<{ status: number | null; stdout: string; stderr: string }> {
   return new Promise((resolve, reject) => {
     const child = spawn(command, args);
@@ -262,7 +251,7 @@ async function ensureBuilt(root: string, id: string, point: Point, source: Terra
     await chmod(siteDir, 0o700);
     const created = await lstat(siteDir);
     if (created.isSymbolicLink() || !created.isDirectory()) throw new Error("refusing a symlinked cache entry");
-    const python = process.env.ATLAS_PYTHON ?? "/workspace/.venv/bin/python";
+    const python = pythonCommand();
     const script = path.join(process.cwd(), "scripts", "closeup_window.py");
     const result = await runWorker(python, [
       script,
@@ -278,7 +267,8 @@ async function ensureBuilt(root: string, id: string, point: Point, source: Terra
   });
 }
 
-export async function readCloseup(requestUrl: string): Promise<{ status: number; body: Buffer | string; contentType: string }> {
+/** `findPoint` is the only way in for coordinates: the request carries a published id, never lon/lat. */
+export async function readCloseup(requestUrl: string, findPoint: PointLookup): Promise<{ status: number; body: Buffer | string; contentType: string }> {
   const url = new URL(requestUrl);
   if (url.searchParams.has("lon") || url.searchParams.has("lat")) {
     return { status: 400, body: "bad-request", contentType: "text/plain" };
@@ -289,8 +279,8 @@ export async function readCloseup(requestUrl: string): Promise<{ status: number;
   if (!isSiteId(id) || !isCloseupPart(part)) {
     return { status: 400, body: "bad-request", contentType: "text/plain" };
   }
-  const point = (await loadCatalog()).get(id);
-  if (!point || point.longitude < 25.5 || point.longitude > 45 || point.latitude < 35.8 || point.latitude > 42.2) {
+  const point = await findPoint(id);
+  if (!point || Math.abs(point.latitude) > MAX_LATITUDE) {
     return { status: 404, body: "not-found", contentType: "text/plain" };
   }
   try {

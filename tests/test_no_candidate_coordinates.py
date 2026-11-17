@@ -23,6 +23,9 @@ PUBLISHED_SITE_FILES = {
     "Anatolia/atlas/public/wikidata/sites.geojson",
     "tests/test_wikidata_sites.py",
 }
+# The world catalogue is sharded into many generated files. Every record in it is a
+# published Wikidata, Pleiades or OpenStreetMap site (scripts/build_world_catalogue.py).
+PUBLISHED_SITE_DIRECTORIES = ("Anatolia/atlas/public/world/",)
 BINARY_SUFFIXES = {".png", ".jpg", ".jpeg", ".gif", ".webp", ".u16", ".tif", ".tiff", ".woff", ".woff2"}
 
 
@@ -30,7 +33,7 @@ def test_tracked_files_have_no_candidate_coordinate_pairs():
     tracked = subprocess.check_output(["git", "ls-files"], cwd=ROOT, text=True).splitlines()
     offenders = []
     for relative in tracked:
-        if relative in PUBLISHED_SITE_FILES:
+        if relative in PUBLISHED_SITE_FILES or relative.startswith(PUBLISHED_SITE_DIRECTORIES):
             continue
         path = ROOT / relative
         if not path.is_file() or path.suffix.lower() in BINARY_SUFFIXES:

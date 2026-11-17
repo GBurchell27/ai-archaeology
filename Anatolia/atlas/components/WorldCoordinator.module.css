@@ -1,0 +1,11 @@
+.world { position: relative; height: 100%; background: #04060a; }
+
+.layer { position: absolute; inset: 0; animation: layer-in 620ms ease both; }
+.leaving { z-index: 1; pointer-events: none; animation: layer-out 620ms ease both; }
+
+@keyframes layer-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes layer-out { from { opacity: 1; } to { opacity: 0; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .layer, .leaving { animation-duration: 1ms; }
+}

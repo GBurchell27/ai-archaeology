@@ -6,4 +6,6 @@ Download scripts belong here. Commit the script, not the file it downloads.
 
 `scripts/run_cross_region_smoke.py` fetches one Irish LiDAR tile, one USGS 3DEP window, and one Copernicus GLO-30 window into `data/cross_region/`. It also reads the National Monuments Service SMR and one public National Register polygon. Those points stay under `data/`.
 
+`scripts/fetch_global_covariates.py` fetches ETOPO 2022 relief, HydroSHEDS flow accumulation, and six CHELSA-TraCE21k climate slices, and reduces them to 0.25° grids under `data/world/covariates/` for `python -m ai_archaeology.suitability`. The ETOPO and HydroSHEDS downloads are about 670 MB together; the climate slices are read over HTTP range requests.
+
 A script should record the dataset name, the date it was fetched, the URL or service, and the licence. It should write into `data/` and stop there. It must not write coordinates of candidate or undiscovered sites into the repository.

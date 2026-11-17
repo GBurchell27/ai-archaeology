@@ -29,6 +29,27 @@ def test_gem15_cell_url_uses_the_public_layout():
     assert tiles.tile_url(27, 37, "dsm").endswith("/p30_p20/w27s37/dsm/zall/mosaic.tif")
 
 
+def test_gem15_cells_are_named_by_their_south_west_corner_in_every_hemisphere():
+    tiles = _load("gem15_tiles")
+    assert tiles.tile_url(-2, 51).endswith("/p50_m10/wm2s51/dsm/zall/mosaic.tif")
+    assert tiles.tile_url(-78, -11).endswith("/m20_m80/wm78sm11/dsm/zall/mosaic.tif")
+    assert tiles.tile_url(30, -21).endswith("/m30_p30/w30sm21/dsm/zall/mosaic.tif")
+    assert list(tiles._cells(-0.5, -0.5, 0.5, 0.5)) == [(-1, -1), (-1, 0), (0, -1), (0, 0)]
+
+
+def test_glo30_tiles_are_named_by_their_south_west_corner_in_every_hemisphere():
+    tiles = _load("glo30_tiles")
+    assert tiles.tile_name(37, 38) == "Copernicus_DSM_COG_10_N37_00_E038_00_DEM"
+    assert tiles.tile_name(51, -2) == "Copernicus_DSM_COG_10_N51_00_W002_00_DEM"
+    assert tiles.tile_name(-11, -78) == "Copernicus_DSM_COG_10_S11_00_W078_00_DEM"
+    assert tiles.tile_name(-21, 30) == "Copernicus_DSM_COG_10_S21_00_E030_00_DEM"
+    assert tiles.tile_name(0, 0) == "Copernicus_DSM_COG_10_N00_00_E000_00_DEM"
+    # A point at lat -0.5, lon -0.5 floors to the S01 / W001 tile.
+    assert list(tiles._cells(-0.6, -0.6, -0.4, -0.4)) == [(-1, -1)]
+    assert tiles.tile_name(-1, -1) == "Copernicus_DSM_COG_10_S01_00_W001_00_DEM"
+    assert tiles.tile_url(5, 7).endswith("_N05_00_E007_00_DEM/Copernicus_DSM_COG_10_N05_00_E007_00_DEM.tif")
+
+
 def test_masked_cells_take_the_reference_on_the_gem_datum():
     fill = _load("relief_fill")
     primary = np.array([[10.0, np.nan], [12.0, np.nan]], dtype=np.float32)

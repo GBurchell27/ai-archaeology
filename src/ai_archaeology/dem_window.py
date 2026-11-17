@@ -9,8 +9,9 @@ from __future__ import annotations
 import numpy as np
 from scipy.ndimage import distance_transform_edt, median_filter
 
-VOID_BELOW = -100.0
-VOID_ABOVE = 5500.0
+# Global land range: the Dead Sea shore is near -430 m, Everest 8849 m.
+VOID_BELOW = -500.0
+VOID_ABOVE = 9000.0
 SPIKE_METRES = 160.0
 EDGE_CELLS = 2
 

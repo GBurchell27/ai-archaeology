@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 import sys
 from pathlib import Path
 
@@ -21,6 +22,22 @@ import place_relief  # noqa: E402
 from terrain_credits import GEM15_CREDIT  # noqa: E402
 
 FILES = ("meta.json", "hillshade.jpg", "satellite.jpg", "height.u16")
+GROUND_HALF_M = 5000.0
+GEM_GROUND_PIXEL_M = 15.0
+MAX_LATITUDE = 80.0
+MERCATOR_EDGE = 6378137.0 * math.pi
+
+
+def window_bounds(longitude: float, latitude: float) -> tuple[float, float, float, float]:
+    """Web Mercator box that is 10 km across on the ground at this latitude."""
+    if not (abs(longitude) <= 180 and abs(latitude) <= MAX_LATITUDE):
+        raise ValueError(f"outside the supported range (|lat| <= {MAX_LATITUDE:.0f})")
+    centre_x, centre_y = terrain._mercator(longitude, latitude)
+    half = GROUND_HALF_M / math.cos(math.radians(latitude))
+    # shortcut: a window across the antimeridian is refused, not stitched. Upgrade if a published site needs it.
+    if abs(centre_x) + half > MERCATOR_EDGE:
+        raise ValueError("window crosses the antimeridian")
+    return centre_x - half, centre_y - half, centre_x + half, centre_y + half
 
 
 def _complete(out_dir: Path) -> bool:
@@ -41,7 +58,11 @@ def write_closeup(longitude: float, latitude: float, out_dir: Path, source: str 
 
     closeup_store.atomic_produce(out_dir / "height.u16", write_height)
     pixel = (right - left) / array.shape[1]
-    shade = terrain.hillshade(array, (abs((top - bottom) / array.shape[0]), pixel), azimuth=315, altitude=45)
+    # Mercator stretches distance by 1/cos(lat). The slope needs ground metres.
+    ground = math.cos(math.radians(latitude))
+    shade = terrain.hillshade(
+        array, (abs((top - bottom) / array.shape[0]) * ground, pixel * ground), azimuth=315, altitude=45,
+    )
     image = terrain.Image.fromarray(terrain.gray(shade), "RGB")
 
     def write_shade(path: Path) -> None:
@@ -58,6 +79,7 @@ def write_closeup(longitude: float, latitude: float, out_dir: Path, source: str 
         "width": int(array.shape[1]),
         "height": int(array.shape[0]),
         "pixelSizeM": pixel,
+        "groundPixelSizeM": pixel * ground,
         "elevation": elevation_box,
         "attribution": {
             "relief": relief_credit,
@@ -83,18 +105,17 @@ def _window(longitude: float, latitude: float, source: str):
 
 
 def _gem(longitude: float, latitude: float):
-    centre_x, centre_y = terrain._mercator(longitude, latitude)
-    half = 5000.0
-    left, bottom = centre_x - half, centre_y - half
-    right, top = centre_x + half, centre_y + half
-    array, _transform, note = place_relief.continuous_surface(left, bottom, right, top, 15.0)
+    left, bottom, right, top = window_bounds(longitude, latitude)
+    pixel = GEM_GROUND_PIXEL_M / math.cos(math.radians(latitude))
+    array, _transform, note = place_relief.continuous_surface(left, bottom, right, top, pixel)
     if note.get("source") != "gem15":
         raise RuntimeError("GEM-15 window was empty")
     return array, left, bottom, right, top, GEM15_CREDIT
 
 
 def _copernicus(longitude: float, latitude: float):
-    window = terrain.read_site_window(longitude, latitude)
+    left, _bottom, right, _top = window_bounds(longitude, latitude)
+    window = terrain.read_site_window(longitude, latitude, (right - left) / 2)
     if window is None:
         raise RuntimeError("no Copernicus window for this place")
     array, left, bottom, right, top = window
@@ -108,8 +129,10 @@ def main() -> None:
     parser.add_argument("--out", type=Path, required=True)
     parser.add_argument("--source", choices=("gem15", "copernicus"), default="gem15")
     args = parser.parse_args()
-    if not (25.5 <= args.lon <= 45 and 35.8 <= args.lat <= 42.2):
-        raise SystemExit("outside the Turkey window")
+    try:
+        window_bounds(args.lon, args.lat)
+    except ValueError as error:
+        raise SystemExit(str(error)) from error
     write_closeup(args.lon, args.lat, args.out, args.source)
 
 

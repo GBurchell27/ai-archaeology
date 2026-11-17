@@ -14,8 +14,18 @@ GLO_ROOT = "https://copernicus-dem-30m.s3.amazonaws.com"
 VOID_BELOW = -1000.0
 
 
+def tile_name(latitude_index: int, longitude_index: int) -> str:
+    """GLO-30 tile named by its south-west corner: lat -1 is S01, lon -1 is W001."""
+    north_south = "N" if latitude_index >= 0 else "S"
+    east_west = "E" if longitude_index >= 0 else "W"
+    return (
+        f"Copernicus_DSM_COG_10_{north_south}{abs(latitude_index):02d}_00_"
+        f"{east_west}{abs(longitude_index):03d}_00_DEM"
+    )
+
+
 def tile_url(latitude_index: int, longitude_index: int) -> str:
-    name = f"Copernicus_DSM_COG_10_N{latitude_index}_00_E{longitude_index:03d}_00_DEM"
+    name = tile_name(latitude_index, longitude_index)
     return f"{GLO_ROOT}/{name}/{name}.tif"
 
 

@@ -2,7 +2,11 @@ import { chmod, lstat, mkdtemp, mkdir, symlink, writeFile } from "node:fs/promis
 import os from "node:os";
 import path from "node:path";
 import { spawn } from "node:child_process";
-import { coalesce, createPrivateCache, evictCache, isSiteId, killOnTimeout, resolveCacheFile } from "../lib/closeupCache.ts";
+import { coalesce, createPrivateCache, evictCache, isSiteId, killOnTimeout, pythonCommand, readCloseup, resolveCacheFile } from "../lib/closeupCache.ts";
+import { findPublishedPoint } from "../lib/closeupCatalog.ts";
+
+// Windows has no POSIX modes or signals, and symlinks need a privilege most accounts lack.
+const windows = process.platform === "win32";
 
 function fail(message) {
   console.error(message);
@@ -15,15 +19,18 @@ if (isSiteId("../etc") || isSiteId("Q") || isSiteId("Q12/../../etc") || isSiteId
 const root = await mkdtemp(path.join(os.tmpdir(), "closeup-test-"));
 await chmod(root, 0o700);
 const mode = (await lstat(root)).mode & 0o777;
-if (mode !== 0o700) fail(`cache mode ${mode.toString(8)}`);
+if (!windows && mode !== 0o700) fail(`cache mode ${mode.toString(8)}`);
 
 const privateRoot = await createPrivateCache();
-if (((await lstat(privateRoot)).mode & 0o777) !== 0o700) fail("private cache is not 0700");
+if (!windows && ((await lstat(privateRoot)).mode & 0o777) !== 0o700) fail("private cache is not 0700");
 
 const outside = await mkdtemp(path.join(os.tmpdir(), "closeup-outside-"));
 await writeFile(path.join(outside, "meta.json"), "{\"secret\":true}\n");
-await symlink(outside, path.join(root, "gobekli-tepe"));
-try {
+const linkable = await symlink(outside, path.join(root, "gobekli-tepe"), "dir").then(() => true, (error) => {
+  if (windows && error.code === "EPERM") return false;
+  throw error;
+});
+if (linkable) try {
   await resolveCacheFile(root, "gobekli-tepe", "meta");
   fail("directory symlink was followed");
 } catch (error) {
@@ -31,8 +38,8 @@ try {
 }
 
 await mkdir(path.join(root, "catalhoyuk"), { mode: 0o700 });
-await symlink(path.join(outside, "meta.json"), path.join(root, "catalhoyuk", "meta.json"));
-try {
+if (linkable) await symlink(path.join(outside, "meta.json"), path.join(root, "catalhoyuk", "meta.json"));
+if (linkable) try {
   await resolveCacheFile(root, "catalhoyuk", "meta");
   fail("file symlink was followed");
 } catch (error) {
@@ -81,6 +88,25 @@ if (!await lstat(newer).then(() => true).catch(() => false)) fail("kept cache en
 const sleeper = spawn(process.execPath, ["-e", "process.on('SIGTERM', () => {}); setTimeout(() => {}, 30000);"]);
 killOnTimeout(sleeper, 40, 80);
 const signal = await new Promise((resolve) => sleeper.once("close", (_code, ended) => resolve(ended)));
-if (signal !== "SIGKILL") fail(`timeout signal ${signal}`);
+if (signal !== (windows ? "SIGTERM" : "SIGKILL")) fail(`timeout signal ${signal}`);
 
-console.log(JSON.stringify({ ok: true }));
+const world = await mkdtemp(path.join(os.tmpdir(), "closeup-world-"));
+await mkdir(path.join(world, "detail"));
+await writeFile(path.join(world, "detail", "99.json"), JSON.stringify({ Q99: { lon: -70.5, lat: -12.25 }, Q199: { lon: "x", lat: 1 } }));
+const far = await findPublishedPoint("Q99", world);
+if (far?.longitude !== -70.5 || far?.latitude !== -12.25) fail(`world shard lookup ${JSON.stringify(far)}`);
+if (await findPublishedPoint("Q199", world)) fail("non-numeric point accepted");
+if (await findPublishedPoint("Q299", world)) fail("id missing from its shard was found");
+if (await findPublishedPoint("Q12345", world)) fail("missing shard did not read as not found");
+if (await findPublishedPoint("constructor", world)) fail("prototype key read as a site");
+if (!await findPublishedPoint("gobekli-tepe", world)) fail("Anatolia catalogue lost a site");
+
+if ((await readCloseup("http://x/api/closeup?id=Q99&lon=1&lat=2", findPublishedPoint)).status !== 400) fail("raw coordinates accepted");
+if ((await readCloseup("http://x/api/closeup?id=zz-not-a-published-site", (id) => findPublishedPoint(id))).status !== 404) fail("unknown id is not a 404");
+
+process.env.ATLAS_PYTHON = "custom-python";
+if (pythonCommand() !== "custom-python") fail("ATLAS_PYTHON ignored");
+delete process.env.ATLAS_PYTHON;
+if (!/[\\/](?:Scripts[\\/]python\.exe|bin[\\/]python)$/.test(pythonCommand())) fail(`default python ${pythonCommand()}`);
+
+console.log(JSON.stringify({ ok: true, symlinkChecks: linkable }));

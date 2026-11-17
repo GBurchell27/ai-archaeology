@@ -1,9 +1,12 @@
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
-import { AtlasApp } from "@/components/AtlasApp";
+import { WorldCoordinator } from "@/components/WorldCoordinator";
+import { parseViewUrl } from "@/lib/globe/viewUrl";
 import type { RegionalTerrain } from "@/lib/types";
 
-export default async function Page() {
+type SearchParams = Record<string, string | string[] | undefined>;
+
+export default async function Page({ searchParams }: { searchParams: Promise<SearchParams> }) {
   const path = join(process.cwd(), "public", "terrain", "regions", "sanliurfa", "metadata.json");
   const regional = await readFile(path, "utf8")
     .then((contents) => JSON.parse(contents) as RegionalTerrain)
@@ -11,5 +14,5 @@ export default async function Page() {
       if (error.code === "ENOENT") return null;
       throw error;
     });
-  return <AtlasApp regional={regional} />;
+  return <WorldCoordinator regional={regional} initialView={parseViewUrl(await searchParams)} />;
 }

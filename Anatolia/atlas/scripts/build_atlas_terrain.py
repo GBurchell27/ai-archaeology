@@ -44,6 +44,7 @@ REPO = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 sys.path.insert(0, str(REPO / "src"))
 import cog_range  # noqa: E402
+import glo30_tiles  # noqa: E402
 from ai_archaeology.dem_window import clean_elevation_window  # noqa: E402
 from ai_archaeology.relief import hillshade  # noqa: E402
 
@@ -382,17 +383,16 @@ def read_dem_window(url: str, west: float, south: float, east: float, north: flo
     return cog_range.read_window(fetch, west, south, east, north, cog_range.MAX_COG_BYTES)
 
 
-def read_site_window(longitude: float, latitude: float):
-    """A 10 km GLO-30 window, about 40 m cells, including any tile the box crosses."""
+def read_site_window(longitude: float, latitude: float, half: float = 5000.0):
+    """A GLO-30 window of ``half`` Mercator metres each way, 256 cells, including any tile the box crosses."""
     centre_x, centre_y = _mercator(longitude, latitude)
-    half = 5000.0
     left, bottom, right, top = centre_x - half, centre_y - half, centre_x + half, centre_y + half
     west, south = _inverse(left, bottom)
     east, north = _inverse(right, top)
     sources = []
     for lat_tile in range(math.floor(south), math.floor(north) + 1):
         for lon_tile in range(math.floor(west), math.floor(east) + 1):
-            name = f"Copernicus_DSM_COG_10_N{lat_tile}_00_E{lon_tile:03d}_00_DEM"
+            name = glo30_tiles.tile_name(lat_tile, lon_tile)
             url = f"https://{DEM_HOST}/{name}/{name}.tif"
             try:
                 window = read_dem_window(url, west, south, east, north)
@@ -418,7 +418,7 @@ def read_site_window(longitude: float, latitude: float):
             dst_nodata=np.nan,
             resampling=Resampling.bilinear,
         )
-        finite = np.isfinite(staged) & (staged > -1000) & (staged < 5500)
+        finite = np.isfinite(staged) & (staged > -1000) & (staged < 9000)
         array[finite] = staged[finite]
     try:
         array = clean_elevation_window(array)
