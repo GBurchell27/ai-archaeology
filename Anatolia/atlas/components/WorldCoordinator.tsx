@@ -6,6 +6,7 @@ import type { GlobeLook, LonLat } from "@/lib/globe/ellipsoid";
 import { globeLookFromAtlas, type AtlasLook } from "@/lib/globe/handoff";
 import { DEFAULT_GLOBE_LOOK, serialiseViewUrl, type WorldViewState } from "@/lib/globe/viewUrl";
 import type { RegionalTerrain } from "@/lib/types";
+import { findWalkSite } from "@/lib/walk/walkSites";
 import { GlobeModelOverlay } from "./globe/model/GlobeModelOverlay";
 import { ModelControls } from "./globe/model/ModelControls";
 import { withModelParam } from "./globe/model/modelUrl";
@@ -16,11 +17,13 @@ import styles from "./WorldCoordinator.module.css";
 const GlobeExplorer = dynamic(() => import("./globe/GlobeExplorer").then((module) => module.GlobeExplorer), { ssr: false });
 const AtlasApp = dynamic(() => import("./AtlasApp").then((module) => module.AtlasApp), { ssr: false });
 const PlaceView = dynamic(() => import("./place/PlaceView"), { ssr: false });
+const WalkView = dynamic(() => import("./walk/WalkView").then((module) => module.WalkView), { ssr: false });
 
 type WorldScene =
   | { view: "globe"; look?: GlobeLook; siteId?: string }
   | { view: "atlas"; look?: AtlasLook; siteId?: string }
-  | { view: "place"; siteId: string };
+  | { view: "place"; siteId: string }
+  | { view: "walk"; siteId: string };
 
 interface MountedScene {
   scene: WorldScene;
@@ -41,6 +44,8 @@ function globeSiteFromAddress(): string | undefined {
 }
 
 function sceneFromUrl(state: WorldViewState): WorldScene {
+  // A site with no walk opens the atlas, which ignores an id it does not know.
+  if (state.view === "walk" && !findWalkSite(state.siteId)) return { view: "atlas", siteId: state.siteId };
   if (state.view !== "globe") return state;
   const siteId = globeSiteFromAddress();
   const { longitude, latitude, altitude } = state;
@@ -63,7 +68,7 @@ function writeUrl(search: string): void {
   window.history.replaceState(window.history.state, "", `${window.location.pathname}${withModelParam(search)}`);
 }
 
-/** Owns which of the three views is showing, the crossfade between them, and the address bar. */
+/** Owns which of the four views is showing, the crossfade between them, and the address bar. */
 export function WorldCoordinator(props: { regional: RegionalTerrain | null; initialView: WorldViewState }) {
   const [mounted, setMounted] = useState<{ current: MountedScene; leaving: MountedScene | null }>(
     () => ({ current: { scene: sceneFromUrl(props.initialView), key: 0 }, leaving: null }),
@@ -87,6 +92,12 @@ export function WorldCoordinator(props: { regional: RegionalTerrain | null; init
     // After the fade only one canvas is left alive.
     window.clearTimeout(fadeTimer.current);
     fadeTimer.current = window.setTimeout(() => setMounted(({ current }) => ({ current, leaving: null })), FADE_MS);
+  }, []);
+
+  useEffect(() => {
+    // An address that fell back to another view is corrected, so a reload or a copied link names what is shown.
+    if (currentScene.current.view !== props.initialView.view) writeUrl(urlForScene(currentScene.current));
+    // Only the address the page opened on can be wrong.
   }, []);
 
   useEffect(() => () => {
@@ -122,7 +133,20 @@ export function WorldCoordinator(props: { regional: RegionalTerrain | null; init
     show({ view: "place", siteId });
   }, [show]);
 
+  const openWalk = useCallback((siteId: string) => {
+    if (findWalkSite(siteId)) show({ view: "walk", siteId });
+  }, [show]);
+  const exitWalk = useCallback(() => {
+    const scene = currentScene.current;
+    // Back in the atlas the site just walked is selected again.
+    show({ view: "atlas", siteId: scene.view === "walk" ? scene.siteId : undefined });
+  }, [show]);
+
   function renderScene(scene: WorldScene) {
+    if (scene.view === "walk") {
+      const site = findWalkSite(scene.siteId);
+      return site ? <WalkView site={site} onExit={exitWalk} /> : null;
+    }
     if (scene.view === "place") return <PlaceView siteId={scene.siteId} onExit={exitPlace} />;
     if (scene.view === "atlas") {
       return (
@@ -131,6 +155,7 @@ export function WorldCoordinator(props: { regional: RegionalTerrain | null; init
           initialLook={scene.look}
           initialSiteId={scene.siteId}
           onExitToGlobe={exitToGlobe}
+          onEnterWalk={openWalk}
         />
       );
     }
@@ -149,10 +174,12 @@ export function WorldCoordinator(props: { regional: RegionalTerrain | null; init
   }
 
   const { current, leaving } = mounted;
+  // Entering a walk, the atlas swells as it fades while its camera pushes at the site.
+  const leavingStyle = leaving?.scene.view === "atlas" && current.scene.view === "walk" ? styles.diving : styles.leaving;
   return (
     <main className={styles.world} data-world-view={current.scene.view}>
       {leaving ? (
-        <div key={leaving.key} className={`${styles.layer} ${styles.leaving}`} aria-hidden="true" inert>
+        <div key={leaving.key} className={`${styles.layer} ${leavingStyle}`} aria-hidden="true" inert>
           {renderScene(leaving.scene)}
         </div>
       ) : null}

@@ -2,7 +2,7 @@
 
 The app lives in `Anatolia/atlas` (Next 15, React 19, three.js, React Three Fiber). Paths below are relative to that folder unless they start with `src/`, `scripts/` or `tests/`. How to run it is in [`Anatolia/atlas/README.md`](../Anatolia/atlas/README.md). The data it reads is described in [`world-catalogue.md`](world-catalogue.md) and [`suitability-model.md`](suitability-model.md).
 
-## Three views and one coordinator
+## Four views and one coordinator
 
 `app/page.tsx` renders `components/WorldCoordinator.tsx`. The coordinator owns which view is showing, the crossfade between views, and the address bar. Nothing else writes the URL, apart from the model layer's one parameter.
 
@@ -11,6 +11,7 @@ The app lives in `Anatolia/atlas` (Next 15, React 19, three.js, React Three Fibe
 | `globe` | `components/globe/GlobeExplorer.tsx` | The world globe, its sites, and its chrome. |
 | `atlas` | `components/AtlasApp.tsx` | The Anatolia terrain atlas. Its state lives in the hooks under `components/atlas/`. |
 | `place` | `components/place/PlaceView.tsx` | A standalone terrain close-up of one published site. |
+| `walk` | `components/walk/WalkView.tsx` | A walk through the Gaussian splat of one site listed in `lib/walk/walkSites.ts`. |
 
 Each view owns a WebGL canvas, so each is loaded with `next/dynamic` and mounted only while it is on screen. A transition gives the new view a fresh key, fades the old one out for 620 ms, then unmounts it. One canvas is alive afterwards.
 
@@ -19,6 +20,7 @@ Handoffs:
 - **Globe to atlas.** `lib/globe/handoff.ts`. Inside the Turkey bounds (25.5–45°E, 35.8–42.2°N) the globe offers the atlas below 900 km and enters it when a zoom crosses 450 km. A link that opens low over Turkey does not bounce straight in. "Open in Anatolia atlas" on a site card enters with that site's id.
 - **Atlas to globe.** The Globe button, or zooming well past the overview (`components/atlas/useGlobeExit.ts`). The globe reopens at 1,500 km, above the offer line.
 - **To a place and back.** "View terrain" on a site card. Leaving returns to the view you came from, and on the globe the card of that site reopens.
+- **Atlas to a walk and back.** `lib/atlas/walkHandoff.ts`, `components/atlas/useWalkEntry.ts`. Only for the sites in `lib/walk/walkSites.ts`. "Walk the site" on the site panel enters. So does zooming: with the camera looking within 800 m of the site, the atlas offers the walk below a camera distance of 3,000 m and enters it when a zoom crosses 700 m. A camera that starts below 700 m does not bounce straight in, flights do not count, and the zoom entry is off while the trip replay is open. On the way in the atlas camera pushes at the site and the fading layer swells (`.diving` in `WorldCoordinator.module.css`); neither happens under `prefers-reduced-motion`. Back returns to the atlas with that site selected, at the usual site distance, which is above the offer line.
 
 ## URL scheme
 
@@ -31,6 +33,7 @@ Handoffs:
 | `…&model=<layerId>` on a globe address | The recording-pattern layer that is switched on (`components/globe/model/modelUrl.ts`). |
 | `?view=atlas` or `?view=atlas&site=<id>` | The Anatolia atlas, optionally opened on a site. An id the Anatolia catalogue does not know is ignored. |
 | `?view=place&site=<id>` | The close-up of one site. |
+| `?view=walk&site=<id>` | The walk through one site. An id with no walk opens the atlas instead, and the address is corrected to `?view=atlas&site=<id>`. |
 
 No parameters means the globe at its default look (38°E, 30°N, 13,000 km) with a slow idle turn. A site id must match `^(?:Q\d+|[a-z0-9]+(?:-[a-z0-9]+)*)$`. Anything else is dropped. No address ever carries a site's coordinates: a link names a published id.
 
@@ -98,6 +101,21 @@ The recording-pattern layer is separate: `components/globe/model/`. `useModelLay
 
 The scene here is a local Web Mercator block, not ECEF. Heights are scaled by `1 / cos(latitude)` to match the Mercator stretch.
 
+## The walk view
+
+`?view=walk&site=<id>` (`components/walk/`) is the coordinator's fourth view, entered from the Anatolia atlas. It shows a Gaussian splat of one site with a visitor inside it, who can walk on the floor or fly above it.
+
+- `lib/walk/walkSites.ts` lists the sites, and for each the splat file, eye height, walk radius and alignment. An id that is not listed has no walk: the coordinator opens the atlas instead.
+- Keys: click to look around (pointer lock, Esc frees it), W A S D or the arrows to move, Shift to move faster, F to switch between walking and flying, E and Q to rise and sink while flying, R to return to the start. `lib/walk/walkKeys.ts` holds the layout. Space is left alone because it would press the focused button.
+- `lib/walk/walkMovement.ts` is the pure movement maths: the velocity eases towards what the keys ask for, so starts and stops are smooth at any frame rate. A walker stays at eye height inside the walk radius. A flyer stays inside a dome of three times that radius, between 0.4 m and a ceiling of twice the radius, capped at 40 m. Leaving fly mode eases down to eye height, and a walker who lands outside the walk radius can walk in but not further out.
+- `components/walk/WalkControls.tsx` applies it each frame and reports pointer lock. Only elements marked by `pointerLockTrigger.ts` (the scene and the entry prompt) lock the pointer, so the buttons stay clickable.
+- `components/walk/WalkView.tsx` is the chrome: `WalkView({ site, onExit })` shows a Back button when `onExit` is given and a link to `/` otherwise. `WalkHud.tsx` is the entry prompt with the key legend and the mode button. A note shows while the splat loads.
+- Hooks for browser checks on `[data-view='walk']`: `data-walk-state` (`checking`, `ready`, `missing`), `data-walk-shown`, `data-walk-mode` (`walk`, `fly`), `data-walk-locked`. Also `[data-role='walk-prompt']` and `[data-role='walk-mode']`.
+- `components/walk/WalkScene.tsx` draws the splat with drei's `<Splat>`, which reads the 32-byte `.splat` format and already turns y-down capture data upright.
+- The splats live in `public/splats/` and are gitignored: they are built from share-alike photographs by the steps in [`scripts/splat/README.md`](../scripts/splat/README.md). Without the file the page says so.
+
+Limits: a splat has no surfaces, so there is no collision, only a flat floor and a radius. It is a reconstruction from visitors' photographs, not a survey.
+
 ## The close-up API
 
 `GET /api/closeup?id=<id>&part=<part>[&terrain=copernicus]` (`app/api/closeup/route.ts`, `lib/closeupCache.ts`, `lib/closeupCatalog.ts`).
@@ -154,11 +172,12 @@ Each has a pytest wrapper, so `pytest` at the repository root runs them all.
 
 | Check | Wrapper | What it covers |
 | --- | --- | --- |
-| `check_globe_math.mts` | `tests/test_globe_math.py` | Ellipsoid round-trips, the view URL, the handoff thresholds. |
+| `check_globe_math.mts` | `tests/test_globe_math.py` | Ellipsoid round-trips, the view URL, the handoff thresholds of the globe and of the walk. |
 | `check_world_catalogue.mts` | `tests/test_world_catalogue_web.py` | Cell and detail keys against the files on disk, filter semantics, cell choice, the picking grid, label layout. |
 | `check_site_search.mts` | `tests/test_site_search.py` | Search ranking and diacritic folding. |
 | `check_place_view.mts` | `tests/test_place_view.py` | Close-up geometry: height scaling, camera framing, scale bar, skirt. |
 | `check_model_overlay.mts` | `tests/test_model_overlay.py` | The model raster mapping, the colour ramp, the layer index, which layers beat the baseline. |
+| `check_walk.mts` | `tests/test_walk.py` | The walk view: keys to intent, ground steps, the walk radius, the site list. |
 | `check_closeup_cache.mjs` | `tests/test_closeup_cache.py` | The close-up cache: id validation, path safety, eviction, concurrency. The Python side of the same test file checks the 10 km window and the refusal at the poles and the 180° meridian. |
 | `check_safelink.mjs` | `tests/test_safelink.py` | The external link allowlist. |
 | `check_pin_scale.mts`, `check_timeline.mts`, `check_relief_load.mts`, `check_place_resources.mts` | same names under `tests/` | The Anatolia atlas: pin sizes, the timeline, relief loading, the Sources shard. |
@@ -193,7 +212,7 @@ console.log(await page.$eval("main", (main) => main.dataset.worldView));
 await browser.close();
 ```
 
-Save it inside `Anatolia/atlas` so Node finds puppeteer-core, and run it with `node`. Software rendering is slow: allow a minute or more for the globe to settle. Do not wait for `networkidle0`, because the globe keeps streaming tiles. Useful hooks are the `data-*` attributes: `main[data-world-view]`, `[data-view='globe']`, `[data-role='site-status']`, `[data-role='globe-look']`, `[data-action='view-terrain']`, and `[data-place-state]` on the place view (`loading`, `ready`, `error`). Look at a screenshot before trusting a pass.
+Save it inside `Anatolia/atlas` so Node finds puppeteer-core, and run it with `node`. Software rendering is slow: allow a minute or more for the globe to settle. Do not wait for `networkidle0`, because the globe keeps streaming tiles. Useful hooks are the `data-*` attributes: `main[data-world-view]`, `[data-view='globe']`, `[data-role='site-status']`, `[data-role='globe-look']`, `[data-action='view-terrain']`, `[data-action='walk-site']` on the atlas site panel, `[data-action='walk-offer']` on the zoom prompt, and `[data-place-state]` on the place view (`loading`, `ready`, `error`). Look at a screenshot before trusting a pass.
 
 ## File map
 
@@ -207,12 +226,16 @@ components/globe/chrome/          top bar, search, timeline, legend and type fil
                                   Wonders, Layers and About panels, site card, tour bar
 components/globe/model/           the recording-pattern overlay and its controls
 components/place/                 the place view
-components/atlas/                 hooks the Anatolia atlas (AtlasApp) is split into
+components/atlas/                 hooks the Anatolia atlas (AtlasApp) is split into,
+                                  the walk offer and entry
+components/walk/                  the walk view
 lib/globe/                        ellipsoid maths, view URL, handoff, basemaps,
                                   site blocks, bucket grid, label layout
 lib/world/                        catalogue types and loaders, filter, search, styles,
                                   wonders, eras, model index
 lib/place/                        place site lookup, terrain loading, geometry, drapes
+lib/atlas/walkHandoff.ts          when the atlas offers and enters a walk
+lib/walk/                         walkable sites, walk keys and movement
 lib/closeupCache.ts, closeupCatalog.ts   server side of the close-up API
 scripts/closeup_window.py         the Python worker that builds a close-up
 scripts/check_*.mts, check_*.mjs  the checks

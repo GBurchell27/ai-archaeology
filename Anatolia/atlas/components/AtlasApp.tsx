@@ -25,6 +25,8 @@ import { useMapDisplay } from "@/components/atlas/useMapDisplay";
 import { usePlaceTerrain } from "@/components/atlas/usePlaceTerrain";
 import { useRegionalTerrain } from "@/components/atlas/useRegionalTerrain";
 import { useTimelineState } from "@/components/atlas/useTimelineState";
+import { useWalkEntry } from "@/components/atlas/useWalkEntry";
+import { WalkOffer } from "@/components/atlas/WalkOffer";
 import { TripControl } from "@/components/trip/TripControl";
 import { TripLayer } from "@/components/trip/TripLayer";
 import { useTripSession } from "@/components/trip/useTripSession";
@@ -46,9 +48,11 @@ export interface AtlasAppProps {
   initialSiteId?: string;
   /** Present when the atlas sits under the world globe: called to hand the view back. */
   onExitToGlobe?: (look: GlobeLook) => void;
+  /** Present when the atlas sits under the coordinator: called with a walkable site's id to open its walk. */
+  onEnterWalk?: (siteId: string) => void;
 }
 
-export function AtlasApp({ regional, initialLook, initialSiteId, onExitToGlobe }: AtlasAppProps) {
+export function AtlasApp({ regional, initialLook, initialSiteId, onExitToGlobe, onEnterWalk }: AtlasAppProps) {
   const preferences = useAtlasPreferences();
   const display = useMapDisplay();
   const camera = useCameraCommands();
@@ -101,6 +105,7 @@ export function AtlasApp({ regional, initialLook, initialSiteId, onExitToGlobe }
   useAtlasKeys(keys);
   useInitialSite(initialSiteId, camera.ready, sites, wikiSites, navigation.flyTo, navigation.openWiki);
   const exitToGlobe = useGlobeExit(onExitToGlobe, metadata?.bounds ?? null);
+  const walkEntry = useWalkEntry({ onEnterWalk, zoomEntry: !tripSession.open, sites, metadata, metres, exaggeration, camera });
 
   if (data.error) {
     return <p className="status">{data.error}</p>;
@@ -240,6 +245,9 @@ export function AtlasApp({ regional, initialLook, initialSiteId, onExitToGlobe }
         />
       ) : null}
       <MapNavigation speed={preferences.zoomSpeed} onSpeed={preferences.changeScrollSpeed} onZoom={camera.zoomMap} />
+      {walkEntry.offeredSite ? (
+        <WalkOffer siteName={walkEntry.offeredSite.properties.name} onWalk={walkEntry.walkAction(walkEntry.offeredSite.id) ?? (() => undefined)} />
+      ) : null}
       {nearby && !settingsOpen && !help && !climateId && !landscapeOpen ? (
         <NearbyPlace key={nearby.id} site={nearby} onOpen={() => navigation.openPlace(nearby.id)} />
       ) : null}
@@ -284,6 +292,7 @@ export function AtlasApp({ regional, initialLook, initialSiteId, onExitToGlobe }
           site={selected}
           related={relatedPlaces(selected, sites)}
           onVisit={navigation.visitCuratedPlace}
+          onWalk={walkEntry.walkAction(selected.id)}
           rasters={Object.entries(detail?.rasters ?? {})}
           detailLayer={placeLayers.detailLayer}
           compare={placeLayers.compare}

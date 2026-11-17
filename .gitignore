@@ -51,3 +51,8 @@ dist/
 *.egg-info/
 .mypy_cache/
 .ruff_cache/
+
+# Gaussian splats and their photo credits. Built from share-alike photographs: local only.
+Anatolia/atlas/public/splats/
+*.ply
+*.splat

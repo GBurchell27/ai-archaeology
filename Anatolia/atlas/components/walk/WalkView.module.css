@@ -1,0 +1,89 @@
+.walk {
+  --walk-ink: #ece4d4;
+  --walk-ochre: #dba545;
+  --walk-glass: rgba(12, 16, 22, 0.8);
+  --walk-rule: rgba(236, 228, 212, 0.16);
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  background: linear-gradient(#101820, #263641);
+  color: var(--walk-ink);
+}
+
+.stage { position: absolute; inset: 0; }
+.walk canvas { display: block; }
+.walk :focus-visible { outline: 2px solid var(--walk-ochre); outline-offset: 3px; }
+.walk a { color: var(--walk-ink); }
+.walk button { color: inherit; font: inherit; cursor: pointer; }
+
+/* The chrome never eats the click that locks the pointer; links and buttons opt back in. */
+.chrome { position: absolute; inset: 0; z-index: 5; pointer-events: none; }
+.chrome a, .chrome button { pointer-events: auto; }
+
+.header { position: absolute; top: 18px; left: 22px; }
+
+.exit, .mode {
+  padding: 6px 13px 7px;
+  border: 1px solid var(--walk-rule);
+  border-radius: 3px;
+  background: var(--walk-glass);
+  font-size: 12.5px;
+  letter-spacing: 0.04em;
+  text-decoration: none;
+}
+.exit { display: inline-block; }
+.exit:hover, .mode:hover { border-color: var(--walk-ochre); }
+
+.name {
+  margin: 16px 0 0;
+  font: 500 clamp(27px, 3.4vw, 42px)/1.08 Palatino, "Palatino Linotype", "Book Antiqua", Georgia, serif;
+  text-shadow: 0 1px 14px rgba(4, 6, 10, 0.7);
+}
+
+.mode { position: absolute; top: 18px; right: 22px; transition: opacity 0.3s; }
+.mode strong { color: var(--walk-ochre); font-weight: 600; }
+.mode span { opacity: 0.7; }
+/* With the pointer locked it cannot be clicked, so it steps back to a quiet indicator. */
+.mode[data-locked="true"] { opacity: 0.6; border-color: transparent; }
+
+.prompt {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: min(400px, calc(100% - 44px));
+  padding: 20px 24px 22px;
+  border: 1px solid var(--walk-rule);
+  border-radius: 4px;
+  background: var(--walk-glass);
+  text-align: left;
+}
+.prompt[hidden] { display: none; }
+.prompt:hover { border-color: var(--walk-ochre); }
+.promptTitle {
+  display: block;
+  margin-bottom: 14px;
+  font: 500 24px/1.1 Palatino, "Palatino Linotype", "Book Antiqua", Georgia, serif;
+  text-align: center;
+}
+.legend { display: grid; gap: 7px; font-size: 13px; line-height: 1.35; }
+.legendRow { display: grid; grid-template-columns: 9.5em 1fr; gap: 12px; align-items: baseline; }
+.legendRow kbd { font: 600 12px/1.35 ui-monospace, Consolas, monospace; color: var(--walk-ochre); text-align: right; }
+
+.note, .footer {
+  position: absolute;
+  left: 22px;
+  max-width: min(560px, calc(100% - 44px));
+  padding: 10px 14px;
+  border: 1px solid var(--walk-rule);
+  border-radius: 3px;
+  background: var(--walk-glass);
+  font-size: 13px;
+  line-height: 1.5;
+}
+.note { top: 130px; margin: 0; }
+.footer { bottom: 18px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .mode { transition: none; }
+}

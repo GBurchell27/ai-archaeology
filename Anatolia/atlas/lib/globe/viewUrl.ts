@@ -1,14 +1,16 @@
-// The address-bar contract for the three views:
+// The address-bar contract for the four views:
 //   ?view=globe&lon=38.00&lat=30.00&alt=13000  (alt is camera altitude in whole km)
 //   ?view=atlas&site=<id>                       (site optional)
 //   ?view=place&site=<id>
+//   ?view=walk&site=<id>                        (the coordinator checks the id has a walk)
 
 import type { GlobeLook } from "./ellipsoid";
 
 export type WorldViewState =
   | ({ view: "globe" } & GlobeLook)
   | { view: "atlas"; siteId?: string }
-  | { view: "place"; siteId: string };
+  | { view: "place"; siteId: string }
+  | { view: "walk"; siteId: string };
 
 export const DEFAULT_GLOBE_LOOK: GlobeLook = { longitude: 38, latitude: 30, altitude: 13_000_000 };
 export const MIN_GLOBE_ALTITUDE = 100_000;
@@ -35,7 +37,7 @@ export function parseViewUrl(search: SearchInput): WorldViewState {
   const view = readParameter(search, "view");
   const site = readParameter(search, "site");
   const siteId = site && SITE_ID.test(site) ? site : undefined;
-  if (view === "place" && siteId) return { view: "place", siteId };
+  if ((view === "place" || view === "walk") && siteId) return { view, siteId };
   if (view === "atlas") return siteId ? { view: "atlas", siteId } : { view: "atlas" };
   return {
     view: "globe",

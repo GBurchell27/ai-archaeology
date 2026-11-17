@@ -1,13 +1,15 @@
 .world { position: relative; height: 100%; background: #04060a; }
 
 .layer { position: absolute; inset: 0; animation: layer-in 620ms ease both; }
-.leaving { z-index: 1; pointer-events: none; animation: layer-out 620ms ease both; }
+.leaving, .diving { z-index: 1; pointer-events: none; animation: layer-out 620ms ease both; }
+.diving { animation-name: layer-dive; }
 /* A wheel or drag still running from the view being left must not steer the one fading in; its buttons opt back in. */
 .entering { pointer-events: none; }
 
 @keyframes layer-in { from { opacity: 0; } to { opacity: 1; } }
 @keyframes layer-out { from { opacity: 1; } to { opacity: 0; } }
+@keyframes layer-dive { from { opacity: 1; transform: scale(1); } to { opacity: 0; transform: scale(1.45); } }
 
 @media (prefers-reduced-motion: reduce) {
-  .layer, .leaving { animation-duration: 1ms; }
+  .layer, .leaving, .diving { animation-duration: 1ms; }
 }

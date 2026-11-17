@@ -8,6 +8,7 @@ import {
   lonLatHeightToScene,
   sceneToLonLatHeight,
 } from "../lib/globe/ellipsoid.ts";
+import { ENTER_WALK_DISTANCE, OFFER_WALK_DISTANCE, WALK_DIVE_DISTANCE, WALK_SITE_REACH, advanceWalkEntry, walkHandoffStage, walkSiteUnderTarget } from "../lib/atlas/walkHandoff.ts";
 import { atlasLookFromGlobe, globeLookFromAtlas, handoffStage } from "../lib/globe/handoff.ts";
 import { DEFAULT_GLOBE_LOOK, parseViewUrl, serialiseViewUrl } from "../lib/globe/viewUrl.ts";
 
@@ -60,6 +61,11 @@ const hostile = parseViewUrl("?view=place&site=../../etc&lon=abc&lat=999&alt=-5"
 check("a malformed site id falls back to the globe", hostile.view === "globe");
 check("out of range numbers are clamped or defaulted",
   hostile.view === "globe" && hostile.longitude === DEFAULT_GLOBE_LOOK.longitude && hostile.latitude === 90 && hostile.altitude === 100_000);
+check("a walk url round trips",
+  serialiseViewUrl({ view: "walk", siteId: "karahan-tepe" }) === "?view=walk&site=karahan-tepe"
+  && JSON.stringify(parseViewUrl("?view=walk&site=karahan-tepe")) === JSON.stringify({ view: "walk", siteId: "karahan-tepe" }));
+check("a walk url without a usable site id falls back to the globe",
+  parseViewUrl("?view=walk").view === "globe" && parseViewUrl("?view=walk&site=../x").view === "globe");
 check("server-style search params parse", parseViewUrl({ view: "atlas", site: ["gobekli-tepe"] }).view === "atlas");
 
 const overTurkey = { longitude: 38.9, latitude: 37.2 };
@@ -71,6 +77,21 @@ check("low over Egypt: nothing", handoffStage({ longitude: 31.1, latitude: 29.9,
 check("the bounds edge counts as inside", handoffStage({ longitude: 25.5, latitude: 35.8, altitude: 500_000 }) === "offer");
 check("the atlas opens no further out than the handoff altitude", atlasLookFromGlobe({ ...overTurkey, altitude: 800_000 }).cameraDistance === 450_000);
 check("coming back to the globe does not re-offer the atlas", handoffStage(globeLookFromAtlas(overTurkey)) === "none");
+
+const walkAnchors = [{ id: "west", x: 0, z: 0 }, { id: "east", x: 35_000, z: 2000 }];
+check("the walk site under the camera target is the nearest one in reach",
+  walkSiteUnderTarget({ x: 34_700, z: 2100 }, walkAnchors)?.id === "east" && walkSiteUnderTarget({ x: 0, z: WALK_SITE_REACH }, walkAnchors)?.id === "west");
+check("a target out of reach is over no walk site", walkSiteUnderTarget({ x: 0, z: WALK_SITE_REACH + 1 }, walkAnchors) === null);
+check("far above a walk site: no offer", walkHandoffStage(OFFER_WALK_DISTANCE, true) === "none");
+check("close above a walk site: offer", walkHandoffStage(OFFER_WALK_DISTANCE - 1, true) === "offer" && walkHandoffStage(ENTER_WALK_DISTANCE, true) === "offer");
+check("closer still: enter", walkHandoffStage(ENTER_WALK_DISTANCE - 1, true) === "enter");
+check("close over open country: nothing", walkHandoffStage(300, false) === "none");
+check("the dive ends inside the enter line", WALK_DIVE_DISTANCE < ENTER_WALK_DISTANCE && ENTER_WALK_DISTANCE < OFFER_WALK_DISTANCE);
+const openedLow = advanceWalkEntry(false, "enter");
+check("a camera that starts below the line does not bounce in", !openedLow.enter && !openedLow.crossedFromAbove);
+const seenAbove = advanceWalkEntry(false, "offer");
+const crossed = advanceWalkEntry(seenAbove.crossedFromAbove, "enter");
+check("a zoom that crosses the line enters once", seenAbove.crossedFromAbove && crossed.enter && !advanceWalkEntry(crossed.crossedFromAbove, "enter").enter);
 
 if (failed > 0) {
   console.error(`${failed} failed`);

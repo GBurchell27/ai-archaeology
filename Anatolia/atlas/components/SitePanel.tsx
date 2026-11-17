@@ -28,6 +28,8 @@ export function SitePanel(props: {
   site: SiteFeature;
   related: { id: string; name: string }[];
   onVisit: (id: string) => void;
+  /** Present only for a site that has a walk view. */
+  onWalk?: () => void;
   rasters: [string, string][];
   detailLayer: string;
   compare: boolean;
@@ -73,6 +75,9 @@ export function SitePanel(props: {
       meta={<>
         <p className="guide-meta">{properties.period} · {properties.confidence === "approximate" ? "Approximate location" : "Published location"}</p>
         {props.reliefError ? <p data-role="relief-error">{props.reliefError}</p> : null}
+        {props.onWalk ? (
+          <button type="button" className="guide-text-button" data-action="walk-site" onClick={props.onWalk}>Walk the site <span aria-hidden="true">→</span></button>
+        ) : null}
       </>}
       overview={<>
         {properties.names.length > 1 ? <p className="muted">{properties.names.join(" · ")}</p> : null}
