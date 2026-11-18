@@ -1,7 +1,10 @@
 import { MOVE_KEYS, intentFromKeys } from "../lib/walk/walkKeys.ts";
-import { easeToward, moveLimits, moveStep, wishVelocity } from "../lib/walk/walkMovement.ts";
+import { climbAfterWheel, climbThisFrame, easeToward, moveLimits, moveStep, wishVelocity } from "../lib/walk/walkMovement.ts";
 import type { MoveMode, MoveState, Vec3 } from "../lib/walk/walkMovement.ts";
 import { WALK_SITES, findWalkSite } from "../lib/walk/walkSites.ts";
+import { centralPillars, modelBoxes, perimeterPillars, pillarRingRadiusM } from "../lib/walk/enclosureModel.ts";
+import type { Enclosure, PlanPoint } from "../lib/walk/enclosureModel.ts";
+import { GOBEKLI_TEPE_MODEL } from "../lib/walk/gobekliTepeLayout.ts";
 
 let failed = 0;
 
@@ -70,6 +73,14 @@ check("distance barely depends on the frame rate", near(slowFrames.position[2], 
 const fenced = simulate(standing, "walk", LOOK_NORTH, ["KeyW", "ShiftLeft"], 10);
 check("the walker stops at the radius", near(fenced.position[2], -10) && fenced.position[1] === 1.65);
 
+const owed = climbAfterWheel(0, -100);
+check("scrolling up owes a climb, down a descent", owed > 0 && climbAfterWheel(0, 100) < 0);
+check("a wild wheel cannot owe more than 20 m", climbAfterWheel(0, -1e6) === 20);
+const glide = climbThisFrame(owed, 1 / 60);
+check("a wheel notch glides instead of jumping", glide > 0 && glide < owed / 2);
+check("a flier climbs by the wheel", near(moveStep(standing, "fly", LOOK_NORTH, keys(), LIMITS, 1 / 60, 0.5).position[1], 2.15));
+check("a walker ignores the wheel", moveStep(standing, "walk", LOOK_NORTH, keys(), LIMITS, 1 / 60, 0.5).position[1] === 1.65);
+
 const climbed = simulate(standing, "fly", LOOK_NORTH, ["KeyE", "ShiftLeft"], 10);
 check("flying stops at the ceiling", climbed.position[1] === LIMITS.flyCeilingM && LIMITS.flyCeilingM === 20);
 check("the ceiling is capped for large sites", moveLimits(1.65, 25).flyCeilingM === 40);
@@ -91,6 +102,37 @@ check("and they can walk back in", simulate(landed, "walk", LOOK_NORTH, ["KeyS"]
 check("site ids are unique", new Set(WALK_SITES.map((site) => site.id)).size === WALK_SITES.length);
 check("a known site is found", findWalkSite("karahan-tepe")?.name === "Karahan Tepe");
 check("an unknown site is not", findWalkSite("../etc") === null && findWalkSite(undefined) === null);
+
+// The modelled enclosures
+const { enclosures, walkRadiusM } = GOBEKLI_TEPE_MODEL;
+const apart = (a: PlanPoint, b: PlanPoint) => Math.hypot(a[0] - b[0], a[1] - b[1]);
+const outerRadiusM = (enclosure: Enclosure) => Math.max(...enclosure.rings.map((ring) => ring.innerRadiusM + ring.wallThicknessM));
+check("enclosures A to D are modelled", enclosures.map((enclosure) => enclosure.id).sort().join("") === "ABCD");
+enclosures.forEach((enclosure, index) => {
+  const { id, centre } = enclosure;
+  for (const ring of enclosure.rings) {
+    const pillars = perimeterPillars(enclosure, ring);
+    const entrance: PlanPoint = [centre[0], centre[1] + pillarRingRadiusM(ring)];
+    check(`${id}: the pillar count matches the data`, pillars.length === ring.pillarCount);
+    check(`${id}: pillars sit on their ring`, pillars.every((pillar) => near(apart(pillar.centre, centre), pillarRingRadiusM(ring))));
+    check(`${id}: no pillar stands in the southern entrance`, pillars.every((pillar) => apart(pillar.centre, entrance) > ring.gapWidthM / 2));
+    check(`${id}: the central pair is taller than the ring`, enclosure.centralPair.pillar.heightM > ring.pillar.heightM);
+  }
+  const pair = centralPillars(enclosure);
+  check(`${id}: two central pillars straddle the centre`, pair.length === 2 && near(pair[0].centre[0] + pair[1].centre[0], 2 * centre[0]) && pair[0].centre[1] === centre[1]);
+  check(`${id}: inside the walk radius`, apart(centre, [0, 0]) + outerRadiusM(enclosure) < walkRadiusM);
+  for (const other of enclosures.slice(index + 1)) {
+    check(`${id} and ${other.id} do not overlap`, apart(centre, other.centre) > outerRadiusM(enclosure) + outerRadiusM(other));
+  }
+});
+const enclosureD = enclosures.find((enclosure) => enclosure.id === "D")!;
+check("the walker starts inside Enclosure D, south of its central pillars", apart([0, 0], enclosureD.centre) < enclosureD.rings[0].innerRadiusM && enclosureD.centre[1] < 0);
+const boxes = modelBoxes(enclosures);
+check("every box rests on or above the floor", boxes.every((box) => box.centre[1] - box.size[1] / 2 >= -1e-9 && box.size.every((side) => side > 0)));
+check("the tallest block is D's pillar on its pedestal", near(Math.max(...boxes.map((box) => box.centre[1] + box.size[1] / 2)), 5.75));
+check("the layout is the same on every visit", JSON.stringify(modelBoxes(enclosures)) === JSON.stringify(boxes));
+check("the model stays cheap to draw", boxes.length > 1000 && boxes.length < 8000);
+check("only Göbekli Tepe names a model", WALK_SITES.filter((site) => site.modelId).map((site) => site.id).join() === "gobekli-tepe");
 
 console.log(JSON.stringify({ ok: failed === 0, failed }));
 process.exit(failed === 0 ? 0 : 1);

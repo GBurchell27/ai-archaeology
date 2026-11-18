@@ -33,7 +33,6 @@ export interface AtlasNavigation {
   openWikiById: (id: string) => void;
   backToTurkey: () => void;
   flyToRegion: () => void;
-  approachWiki: (longitude: number, latitude: number, cameraDistance: number) => void;
   toggleLandscape: () => void;
   toggleSettings: () => void;
   escape: () => void;
@@ -79,7 +78,6 @@ export function useAtlasNavigation(input: AtlasNavigationInput): AtlasNavigation
     },
     backToTurkey: () => flights.backToOverview(context),
     flyToRegion: () => flights.flyToRegion(context),
-    approachWiki: (longitude, latitude, cameraDistance) => flights.approachWikiCluster(context, longitude, latitude, cameraDistance),
     toggleLandscape: () => flights.toggleLandscape(context),
     toggleSettings: () => {
       overlays.setLandscapeOpen(false);

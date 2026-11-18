@@ -1,4 +1,5 @@
 import { boundsContain, lonLatToMercator, sampleMeshHeight, toLocal } from "@/lib/geo";
+import { periodColor } from "@/lib/periodStyle";
 import type { TerrainGrid } from "@/lib/terrain";
 import { isUndatedSpan } from "@/lib/timeline";
 import type { AtlasMetadata } from "@/lib/types";
@@ -13,6 +14,8 @@ export interface CataloguePin {
   longitude: number;
   latitude: number;
   muted: boolean;
+  /** sRGB hex of the earliest period the record names. */
+  color: string;
 }
 
 const PIN_LIFT_M = 30;
@@ -55,5 +58,6 @@ function placePin(
     longitude,
     latitude,
     muted: isUndatedSpan(site.properties),
+    color: periodColor(site.properties.periods[0]),
   };
 }

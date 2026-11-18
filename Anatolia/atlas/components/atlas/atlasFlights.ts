@@ -7,7 +7,6 @@ import type { RegionalTerrainState } from "@/components/atlas/useRegionalTerrain
 import { lookPose, overviewPose, sitePose } from "@/lib/atlasPoses";
 import { naturalExaggeration } from "@/lib/exaggeration";
 import { boundsCenter, sampleHeight } from "@/lib/geo";
-import { lookPoseArgument } from "@/lib/pinCluster";
 import { preferredLayer } from "@/lib/rasterLayers";
 import { resolvePlaceRelief, type TerrainSourceId } from "@/lib/terrainSource";
 import type { AtlasMetadata, RegionalTerrain, SiteFeature } from "@/lib/types";
@@ -102,17 +101,6 @@ export function flyToRegion(context: FlightContext): void {
   const y = (elevation - metadata.elevation.min) * scale;
   display.setExaggeration(scale);
   camera.setPose(overviewPose(regional.bounds, camera.pose.token + 1, [center[0] - originX, y, originY - center[1]]));
-}
-
-/** Flies toward a catalogue cluster without opening any place. */
-export function approachWikiCluster(context: FlightContext, longitude: number, latitude: number, cameraDistance: number): void {
-  const { metadata, metres, camera, selection, display } = context;
-  if (!metadata || !metres || !camera.pose) return;
-  const distance = lookPoseArgument(cameraDistance);
-  camera.setPose(lookPose(longitude, latitude, metadata, metres, display.exaggeration, camera.pose.token + 1, distance));
-  selection.setWikiId(null);
-  selection.setSelectedId(null);
-  selection.setPanelShown(false);
 }
 
 export function toggleLandscape(context: FlightContext): void {

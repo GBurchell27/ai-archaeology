@@ -46,6 +46,21 @@
 /* With the pointer locked it cannot be clicked, so it steps back to a quiet indicator. */
 .mode[data-locked="true"] { opacity: 0.6; border-color: transparent; }
 
+/* Model or photographs: two joined buttons under the mode button. */
+.sources { position: absolute; top: 62px; right: 22px; display: flex; transition: opacity 0.3s; }
+.sources button {
+  padding: 6px 13px 7px;
+  border: 1px solid var(--walk-rule);
+  background: var(--walk-glass);
+  font-size: 12.5px;
+  letter-spacing: 0.04em;
+}
+.sources button:first-child { border-radius: 3px 0 0 3px; }
+.sources button:last-child { border-radius: 0 3px 3px 0; margin-left: -1px; }
+.sources button:hover, .sources button[aria-pressed="true"] { position: relative; border-color: var(--walk-ochre); }
+.sources button[aria-pressed="true"] { color: var(--walk-ochre); font-weight: 600; }
+.sources[data-locked="true"] { opacity: 0.6; }
+
 .prompt {
   position: absolute;
   top: 50%;
@@ -85,5 +100,5 @@
 .footer { bottom: 18px; }
 
 @media (prefers-reduced-motion: reduce) {
-  .mode { transition: none; }
+  .mode, .sources { transition: none; }
 }

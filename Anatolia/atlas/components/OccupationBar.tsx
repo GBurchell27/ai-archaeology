@@ -1,7 +1,7 @@
 "use client";
 
 import { yearToTrack, type YearRange } from "@/lib/timeline";
-import { PERIOD_COLOR } from "@/lib/wikidata";
+import { periodColor } from "@/lib/periodStyle";
 
 export function OccupationBar(props: {
   segments: { id: string; start: number; end: number }[];
@@ -25,7 +25,7 @@ export function OccupationBar(props: {
       {props.segments.map((segment) => {
         const left = yearToTrack(segment.start) * 100;
         const width = Math.max(1.2, yearToTrack(segment.end) * 100 - left);
-        return <i key={`${segment.id}-${segment.start}`} style={{ left: `${left}%`, width: `${width}%`, background: PERIOD_COLOR[segment.id] ?? "#c4b59a" }} />;
+        return <i key={`${segment.id}-${segment.start}`} style={{ left: `${left}%`, width: `${width}%`, background: periodColor(segment.id) }} />;
       })}
     </div>
   );

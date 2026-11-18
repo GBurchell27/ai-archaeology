@@ -21,6 +21,9 @@ const EYE_SETTLE_S = 0.25;
 const FLY_RADIUS_FACTOR = 3;
 const FLY_FLOOR_M = 0.4;
 const HIGHEST_CEILING_M = 40;
+const CLIMB_RESPONSE_S = 0.15;
+const CLIMB_M_PER_WHEEL_UNIT = 0.015;
+const LARGEST_PENDING_CLIMB_M = 20;
 
 export function moveLimits(eyeHeightM: number, walkRadiusM: number): MoveLimits {
   return {
@@ -35,6 +38,17 @@ export function moveLimits(eyeHeightM: number, walkRadiusM: number): MoveLimits 
 /** Moves `current` towards `target` by the same fraction per second whatever the frame rate. */
 export function easeToward(current: number, target: number, seconds: number, responseS: number): number {
   return target + (current - target) * Math.exp(-seconds / responseS);
+}
+
+/** Metres of climb still owed after a wheel movement. Scrolling up (negative delta) climbs. */
+export function climbAfterWheel(pendingClimbM: number, wheelDeltaY: number): number {
+  const wanted = pendingClimbM - wheelDeltaY * CLIMB_M_PER_WHEEL_UNIT;
+  return Math.min(LARGEST_PENDING_CLIMB_M, Math.max(-LARGEST_PENDING_CLIMB_M, wanted));
+}
+
+/** The part of the owed climb to fly this frame, so a wheel notch glides instead of jumping. */
+export function climbThisFrame(pendingClimbM: number, seconds: number): number {
+  return pendingClimbM - easeToward(pendingClimbM, 0, seconds, CLIMB_RESPONSE_S);
 }
 
 /**
@@ -72,6 +86,7 @@ export function moveStep(
   intent: MoveIntent,
   limits: MoveLimits,
   seconds: number,
+  climbM = 0,
 ): MoveState {
   const wish = wishVelocity(mode, look, intent);
   const [velocityX, flyVelocityY, velocityZ] = from.velocity.map((speed, axis) =>
@@ -85,6 +100,6 @@ export function moveStep(
     const y = easeToward(fromY, limits.eyeHeightM, seconds, EYE_SETTLE_S);
     return { position: [x, y, z], velocity: [velocityX, 0, velocityZ] };
   }
-  const y = Math.min(limits.flyCeilingM, Math.max(limits.flyFloorM, fromY + flyVelocityY * seconds));
+  const y = Math.min(limits.flyCeilingM, Math.max(limits.flyFloorM, fromY + flyVelocityY * seconds + climbM));
   return { position: [x, y, z], velocity: [velocityX, flyVelocityY, velocityZ] };
 }

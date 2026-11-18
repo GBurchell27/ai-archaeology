@@ -47,7 +47,7 @@ const VERTEX = /* glsl */ `
 
 // Premultiplied output with a separate coverage alpha. Coverage a little under 1 lets overlapping
 // points build up to tint / coverage and stop there: dense regions saturate to warm amber, never to white.
-const SITES_FRAGMENT = /* glsl */ `
+export const SITES_FRAGMENT = /* glsl */ `
   #include <common>
   #include <logdepthbuf_pars_fragment>
   uniform float solidity;
@@ -91,19 +91,24 @@ const FEATURED_FRAGMENT = /* glsl */ `
   }
 `;
 
+/** Premultiplied blending, with no depth: the fragment shaders above write colour already scaled by alpha. */
+export const SITE_POINTS_BLENDING = {
+  transparent: true,
+  blending: THREE.CustomBlending,
+  blendSrc: THREE.OneFactor,
+  blendDst: THREE.OneMinusSrcAlphaFactor,
+  depthTest: false,
+  depthWrite: false,
+} as const;
+
 export function createSitePointsMaterial(kind: SitePointsKind): THREE.ShaderMaterial {
   return new THREE.ShaderMaterial({
     vertexShader: VERTEX,
     fragmentShader: kind === "featured" ? FEATURED_FRAGMENT : SITES_FRAGMENT,
     defines: kind === "featured" ? { FEATURED: "" } : {},
     uniforms: { pixelSize: { value: 4 }, opacity: { value: 1 }, solidity: { value: 1 }, orbit: { value: 0 } },
-    transparent: true,
-    blending: THREE.CustomBlending,
-    blendSrc: THREE.OneFactor,
-    blendDst: THREE.OneMinusSrcAlphaFactor,
-    // The surface sits at the same height as the points; the horizon test stands in for depth.
-    depthTest: false,
-    depthWrite: false,
+    // No depth: the surface sits at the same height as the points; the horizon test stands in for it.
+    ...SITE_POINTS_BLENDING,
   });
 }
 

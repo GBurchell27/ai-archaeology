@@ -17,6 +17,9 @@ const ROSE = "#e88aa0"; // burial
 const VERDIGRIS = "#86d2c1"; // caves and rock art
 const DUST = "#b3a791"; // everything else
 
+/** The families by name, for layers that colour by something other than site type. */
+export const SITE_PALETTE = { STONE_GOLD, AMBER, EMBER, OCHRE, ROSE, VERDIGRIS, DUST } as const;
+
 export const SITE_TYPE_STYLE: Record<string, SiteTypeStyle> = {
   megalith: { title: "Megaliths", color: STONE_GOLD },
   monumental: { title: "Monumental buildings", color: AMBER },

@@ -7,13 +7,15 @@ import * as THREE from "three";
 import { AtlasCamera, type CameraPose, type ZoomCommand } from "@/components/AtlasCamera";
 import { PlaceProximity } from "@/components/PlaceProximity";
 import { CatalogueMarkers } from "@/components/CatalogueMarkers";
+import { sitePinTexture } from "@/components/atlas/sitePinTexture";
+import globeStyles from "@/components/globe/GlobeSites.module.css";
 import { ClimatePins, ContextDrapes, ContextLines, type ClimatePoint, type ContextLineLayer, type ContextRasterLayer } from "@/components/ContextLayers";
 import { NationalTerrain, useTerrainTiles } from "@/components/NationalTerrain";
 import { ATLAS_FOV_DEGREES, worldSizeForPixels } from "@/lib/pinCluster";
 import { DPR_STEPS, INITIAL_DPR_INDEX } from "@/lib/renderQuality";
 import type { WikiFeature } from "@/lib/wikidata";
 import { boundsCenter, boundsContain, detailClipRect, lonLatToMercator, sampleMeshHeight, toLocal, type ClipRect } from "@/lib/geo";
-import { LAYER_STYLE } from "@/lib/periods";
+import { LAYER_STYLE } from "@/lib/periodStyle";
 import { createSurfaceMaterial, prepareTexture, sunDirection } from "@/lib/shade";
 import { HAZE_FAR, HAZE_NEAR, HAZE_STRENGTH, hazeBackground } from "@/lib/sky";
 import { stitchDetailToNational } from "@/lib/stitch";
@@ -59,8 +61,9 @@ interface AtlasSceneProps {
   onNearby: (id: string | null) => void;
   nearbyEnabled: boolean;
   wikiSites: WikiFeature[];
+  /** The catalogue place whose panel is open. */
+  selectedWikiId: string | null;
   onOpenWiki: (siteId: string) => void;
-  onApproachWiki: (longitude: number, latitude: number, cameraDistance: number) => void;
   flightCancel: number;
   /** Extra 3D layers drawn inside the atlas canvas, in the same local coordinates. */
   overlay?: ReactNode;
@@ -212,8 +215,8 @@ export function AtlasScene(props: AtlasSceneProps) {
         origin={origin}
         exaggeration={props.exaggeration}
         labels={props.labels}
+        selectedId={props.selectedWikiId}
         onOpen={props.onOpenWiki}
-        onApproach={props.onApproachWiki}
       />
       <SitePins
         sites={props.sites}
@@ -445,11 +448,6 @@ function SitePins(props: {
 }) {
   const { metadata, metres } = props;
   const national = useMemo(() => ({ ...metadata, metres }), [metadata, metres]);
-  const textures = useMemo(() => ({ filled: paintMarker(true), open: paintMarker(false) }), []);
-  useEffect(() => () => {
-    textures.filled.dispose();
-    textures.open.dispose();
-  }, [textures]);
   return (
     <group>
       {props.sites.map((site) => {
@@ -461,7 +459,7 @@ function SitePins(props: {
           key={site.id}
           site={site}
           position={[x, (elevation - metadata.elevation.min) * props.exaggeration + 18, z]}
-          texture={site.properties.confidence === "approximate" ? textures.open : textures.filled}
+          texture={sitePinTexture(LAYER_STYLE[site.properties.layer].color, site.properties.confidence !== "approximate")}
           labels={props.labels || (Boolean(props.regional) && !props.selectedId && Boolean(metadata.details[site.id]?.rasters["true-colour"]))}
           selected={site.id === props.selectedId}
           onSelect={props.onSelect}
@@ -479,25 +477,17 @@ function SitePin(props: {
   selected: boolean;
   onSelect: (siteId: string) => void;
 }) {
-  const ring = useRef<THREE.Mesh>(null);
   const [hovered, setHovered] = useState(false);
-  const color = LAYER_STYLE[props.site.properties.layer].color;
   const height = useThree((state) => state.size.height);
-  const scale = worldSizeForPixels(1, ATLAS_FOV_DEGREES, height, props.selected || hovered ? 23 : 15);
+  // The texture is half halo and shadow: the bright core is about 40% of this width.
+  const scale = worldSizeForPixels(1, ATLAS_FOV_DEGREES, height, props.selected || hovered ? 44 : 34);
   const hitSize = worldSizeForPixels(1, ATLAS_FOV_DEGREES, height, 27);
-  useFrame(({ camera }) => {
-    if (!ring.current) return;
-    const [x, y, z] = props.position;
-    const distance = Math.hypot(camera.position.x - x, camera.position.y - y, camera.position.z - z);
-    ring.current.scale.setScalar(worldSizeForPixels(distance, ATLAS_FOV_DEGREES, height, 20));
-  });
   return (
     <group position={props.position}>
       {props.selected ? (
-        <mesh ref={ring} rotation={[-Math.PI / 2, 0, 0]} position={[0, 20, 0]} renderOrder={6}>
-          <ringGeometry args={[0.89, 1, 48]} />
-          <meshBasicMaterial color={color} transparent opacity={0.75} side={THREE.DoubleSide} depthTest={false} depthWrite={false} />
-        </mesh>
+        <Html center zIndexRange={[2, 1]} style={{ pointerEvents: "none" }}>
+          <span className={globeStyles.ring} data-role="selected-site-ring" />
+        </Html>
       ) : null}
       <sprite
         scale={[hitSize, hitSize, 1]}
@@ -514,11 +504,11 @@ function SitePin(props: {
         <spriteMaterial transparent opacity={0} depthTest={false} depthWrite={false} sizeAttenuation={false} />
       </sprite>
       <sprite scale={[scale, scale, 1]} renderOrder={7}>
-        <spriteMaterial map={props.texture} color={color} transparent depthTest={false} depthWrite={false} sizeAttenuation={false} />
+        <spriteMaterial map={props.texture} transparent depthTest={false} depthWrite={false} sizeAttenuation={false} />
       </sprite>
       {hovered || props.selected || props.labels ? (
-        <Html center zIndexRange={[4, 0]} style={{ pointerEvents: "none" }}>
-          <span className="tip is-shown site-pin-label">{props.site.properties.name}</span>
+        <Html zIndexRange={[4, 0]} style={{ pointerEvents: "none" }}>
+          <span className={globeStyles.label} data-role="site-pin-label">{props.site.properties.name}</span>
         </Html>
       ) : null}
     </group>
@@ -536,27 +526,4 @@ function elevationAt(
     ? detail
     : regional && boundsContain(regional.bounds, east, north) ? regional : national;
   return sampleMeshHeight(grid.metres, grid.width, grid.height, grid.bounds, east, north);
-}
-
-function paintMarker(filled: boolean): THREE.CanvasTexture {
-  const canvas = document.createElement("canvas");
-  canvas.width = 64;
-  canvas.height = 64;
-  const context = canvas.getContext("2d");
-  if (!context) {
-    throw new Error("Could not draw a site marker");
-  }
-  context.clearRect(0, 0, 64, 64);
-  context.beginPath();
-  context.arc(32, 32, 23, 0, Math.PI * 2);
-  context.lineWidth = 8;
-  context.strokeStyle = "#2f302b";
-  context.stroke();
-  if (filled) {
-    context.fillStyle = "#ffffff";
-    context.fill();
-  }
-  const texture = new THREE.CanvasTexture(canvas);
-  texture.colorSpace = THREE.NoColorSpace;
-  return texture;
 }

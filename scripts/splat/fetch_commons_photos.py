@@ -7,6 +7,11 @@ A rerun skips files that are already on disk.
 
     python scripts/splat/fetch_commons_photos.py gobekli-tepe "Göbekli Tepe" \
         "Göbekli Tepe excavations in 2012"
+
+Files outside a category come from --search (Commons search syntax), and --suffix keeps a second
+batch apart: `--suffix extra` writes images_extra/ and credits_extra.json.
+
+    python scripts/splat/fetch_commons_photos.py karahan-tepe --suffix extra --search "intitle:Karahantepe1"
 """
 
 from __future__ import annotations
@@ -56,12 +61,21 @@ def fetch(url: str) -> bytes:
 
 def category_photos(category: str) -> list[dict]:
     """Every JPEG directly in one category, as credit rows."""
+    return listed_photos({"generator": "categorymembers", "gcmtitle": f"Category:{category}", "gcmtype": "file", "gcmlimit": "50"}, category)
+
+
+def search_photos(query: str) -> list[dict]:
+    """Every JPEG a Commons file search finds, as credit rows."""
+    return listed_photos({"generator": "search", "gsrsearch": query, "gsrnamespace": "6", "gsrlimit": "50"}, f"search: {query}")
+
+
+def listed_photos(generator: dict[str, str], label: str) -> list[dict]:
     rows: list[dict] = []
     continuation: dict[str, str] = {}
     while True:
         parameters = {
             "action": "query", "format": "json", "maxlag": "5",
-            "generator": "categorymembers", "gcmtitle": f"Category:{category}", "gcmtype": "file", "gcmlimit": "50",
+            **generator,
             "prop": "imageinfo", "iiprop": "url|mime|extmetadata", "iiurlwidth": str(PHOTO_WIDTH_PX),
             **continuation,
         }
@@ -69,10 +83,11 @@ def category_photos(category: str) -> list[dict]:
         if "error" in reply:
             raise RuntimeError(reply["error"].get("info", "Commons API error"))
         for page in reply.get("query", {}).get("pages", {}).values():
-            row = credit_row(page, category)
+            row = credit_row(page, label)
             if row:
                 rows.append(row)
         if "continue" not in reply:
+            print(f"{label}: {len(rows)} photographs")
             return rows
         continuation = reply["continue"]
 
@@ -105,20 +120,25 @@ def photo_path(images_directory: Path, title: str) -> Path:
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument("site", help="site id, e.g. gobekli-tepe")
-    parser.add_argument("categories", nargs="+", help='Commons category names without the "Category:" prefix')
+    parser.add_argument("categories", nargs="*", help='Commons category names without the "Category:" prefix')
+    parser.add_argument("--search", action="append", default=[], help="a Commons file search; repeat for more")
+    parser.add_argument("--suffix", default="", help="e.g. extra, to write images_extra/ and credits_extra.json")
     arguments = parser.parse_args()
     if not re.fullmatch(r"[a-z0-9]+(?:-[a-z0-9]+)*", arguments.site):
         parser.error("site must be a lower-case id such as gobekli-tepe")
+    if not re.fullmatch(r"[a-z0-9]*", arguments.suffix) or not (arguments.categories or arguments.search):
+        parser.error("give a category or --search, and a lower-case --suffix")
 
+    tail = f"_{arguments.suffix}" if arguments.suffix else ""
     site_directory = SPLAT_DIRECTORY / arguments.site
-    images_directory = site_directory / "images"
+    images_directory = site_directory / f"images{tail}"
     images_directory.mkdir(parents=True, exist_ok=True)
 
     rows_by_title: dict[str, dict] = {}
     for category in arguments.categories:
-        found = category_photos(category)
-        print(f"{category}: {len(found)} photographs")
-        rows_by_title.update((row["title"], row) for row in found)
+        rows_by_title.update((row["title"], row) for row in category_photos(category))
+    for query in arguments.search:
+        rows_by_title.update((row["title"], row) for row in search_photos(query))
 
     for index, row in enumerate(rows_by_title.values(), start=1):
         target = photo_path(images_directory, row["title"])
@@ -132,9 +152,10 @@ def main() -> None:
         "source": "Wikimedia Commons",
         "fetched": datetime.date.today().isoformat(),
         "categories": arguments.categories,
+        "searches": arguments.search,
         "photographs": list(rows_by_title.values()),
     }
-    (site_directory / "credits.json").write_text(json.dumps(credits, ensure_ascii=False, indent=1), encoding="utf-8")
+    (site_directory / f"credits{tail}.json").write_text(json.dumps(credits, ensure_ascii=False, indent=1), encoding="utf-8")
     print(f"{len(rows_by_title)} photographs in {images_directory}")
 
 

@@ -11,6 +11,7 @@ type WalkSceneProps = {
   site: WalkSite;
   mode: MoveMode;
   onLockChange: (locked: boolean) => void;
+  onLiftOff: () => void;
   onSplatShown: () => void;
 };
 
@@ -21,7 +22,7 @@ function ShownSignal({ onShown }: { onShown: () => void }) {
 }
 
 /** The splat of one site with a walker inside it. Default export so the view can load it lazily. */
-export default function WalkScene({ site, mode, onLockChange, onSplatShown }: WalkSceneProps) {
+export default function WalkScene({ site, mode, onLockChange, onLiftOff, onSplatShown }: WalkSceneProps) {
   const { position, rotation, scale } = site.alignment;
   const limits = useMemo(() => moveLimits(site.eyeHeightM, site.walkRadiusM), [site.eyeHeightM, site.walkRadiusM]);
   return (
@@ -31,7 +32,7 @@ export default function WalkScene({ site, mode, onLockChange, onSplatShown }: Wa
         <Splat src={site.splatUrl} position={position} rotation={rotation} scale={scale} />
         <ShownSignal onShown={onSplatShown} />
       </Suspense>
-      <WalkControls mode={mode} limits={limits} onLockChange={onLockChange} />
+      <WalkControls mode={mode} limits={limits} onLockChange={onLockChange} onLiftOff={onLiftOff} />
     </Canvas>
   );
 }

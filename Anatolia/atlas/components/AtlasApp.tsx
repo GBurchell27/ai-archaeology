@@ -196,8 +196,8 @@ export function AtlasApp({ regional, initialLook, initialSiteId, onExitToGlobe, 
           />
         ) : null}
         wikiSites={wikiVisible}
+        selectedWikiId={wikiSite?.id ?? null}
         onOpenWiki={navigation.openWikiById}
-        onApproachWiki={navigation.approachWiki}
         onSelect={navigation.visitCuratedPlace}
       />
       <AtlasTopbar

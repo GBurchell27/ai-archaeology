@@ -1,6 +1,6 @@
 import { ReadingList } from "@/components/PlaceGuide";
 import type { ClimateRecord } from "@/components/ClimateChart";
-import { LAYER_STYLE } from "@/lib/periods";
+import { LAYER_STYLE } from "@/lib/periodStyle";
 import { regionalMaps } from "@/lib/placeLearning";
 import { RASTER_TITLES } from "@/lib/rasterLayers";
 import type { TerrainSourceId } from "@/lib/terrainSource";

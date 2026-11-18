@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState, type MutableRefObject } from "react";
-import { LAYER_STYLE, PERIODS } from "@/lib/periods";
+import { LAYER_STYLE, NO_PERIOD_STYLE } from "@/lib/periodStyle";
+import { PERIODS } from "@/lib/periods";
 import type { BaseMap, LayerId } from "@/lib/types";
 
 const THEME_KEY = "atlas-theme";
@@ -91,6 +92,7 @@ export function Legend(props: { open: boolean; onToggle: () => void }) {
           {(Object.keys(LAYER_STYLE) as LayerId[]).map((layer) => (
             <span key={layer}><span className="swatch" style={{ background: LAYER_STYLE[layer].color }} /> {LAYER_STYLE[layer].title}</span>
           ))}
+          <span><span className="swatch" style={{ background: NO_PERIOD_STYLE.color }} /> {NO_PERIOD_STYLE.title}</span>
           <span><span className="open-ring" /> approximate</span>
         </div>
       ) : null}

@@ -9,7 +9,7 @@ const KEY_LEGEND: ReadonlyArray<readonly [keys: string, action: string]> = [
   ["W A S D or arrows", "Move"],
   ["Shift", "Move faster"],
   ["F", "Switch between walking and flying"],
-  ["E / Q", "Up / down while flying"],
+  ["Scroll or E / Q", "Up / down (scrolling up takes off)"],
   ["R", "Return to the start"],
   ["Esc", "Free the pointer"],
 ];

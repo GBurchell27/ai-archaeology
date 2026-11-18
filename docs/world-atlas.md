@@ -73,6 +73,16 @@ Drawing (`lib/globe/siteBlock.ts`, `components/globe/GlobeSitePoints.tsx`, `site
 
 On top of the points: featured markers with serif names (`GlobeFeaturedMarkers.tsx`, label placement in `lib/globe/labelLayout.ts`), count badges where points crowd (`GlobeClusterBadges.tsx`, one-degree buckets from `lib/globe/siteGrid.ts`), and a ring on the selected site.
 
+### Sites on the Anatolia terrain map
+
+The terrain map draws its sites in the globe's style, from the globe's own pieces.
+
+- **Colour means period here**, not site type. `lib/periodStyle.ts` maps the four periods onto the globe's colour families (`SITE_PALETTE` in `lib/world/siteTypeStyle.ts`). The legend, the layer switches and the occupation bar read the same file.
+- **The catalogue** (`components/CatalogueMarkers.tsx`, `components/atlas/cataloguePoints.ts`): every published place is its own dot in one `THREE.Points` draw call, with the globe's dot fragment shader. A dot takes the colour of the earliest period its record names, or pale gold when it names none. Undated places are smaller and a little fainter. There are no count badges: where places crowd, the dots do. Dots grow from 6.5 px at the country overview to 12 px close up.
+- **Picking** is a custom `raycast` on the points: the place nearest the pointer ray within 9 screen pixels. A click opens that place.
+- **Curated sites** (`SitePins` in `components/AtlasScene.tsx`, texture in `components/atlas/sitePinTexture.ts`): a bright core in a halo of the period colour, with a dark rim and soft shadow so it holds on pale terrain. A hollow ring is an approximate location. Names use the globe's serif label class.
+- **The selected place**, curated or catalogue, wears the globe's ring (`.ring` in `components/globe/GlobeSites.module.css`). Its pulse is CSS and stops under `prefers-reduced-motion`.
+
 ## Picking
 
 `components/globe/useGlobePicking.ts`. There is no GPU picking and no raycast against the points.
@@ -103,18 +113,20 @@ The scene here is a local Web Mercator block, not ECEF. Heights are scaled by `1
 
 ## The walk view
 
-`?view=walk&site=<id>` (`components/walk/`) is the coordinator's fourth view, entered from the Anatolia atlas. It shows a Gaussian splat of one site with a visitor inside it, who can walk on the floor or fly above it.
+`?view=walk&site=<id>` (`components/walk/`) is the coordinator's fourth view, entered from the Anatolia atlas. It shows one site with a visitor inside it, who can walk on the floor or fly above it. A site has a Gaussian splat built from photographs, and may also have a modelled reconstruction, which then opens first.
 
-- `lib/walk/walkSites.ts` lists the sites, and for each the splat file, eye height, walk radius and alignment. An id that is not listed has no walk: the coordinator opens the atlas instead.
+- `lib/walk/walkSites.ts` lists the sites, and for each the splat file, eye height, walk radius, alignment and an optional `modelId`. An id that is not listed has no walk: the coordinator opens the atlas instead.
 - Keys: click to look around (pointer lock, Esc frees it), W A S D or the arrows to move, Shift to move faster, F to switch between walking and flying, E and Q to rise and sink while flying, R to return to the start. `lib/walk/walkKeys.ts` holds the layout. Space is left alone because it would press the focused button.
 - `lib/walk/walkMovement.ts` is the pure movement maths: the velocity eases towards what the keys ask for, so starts and stops are smooth at any frame rate. A walker stays at eye height inside the walk radius. A flyer stays inside a dome of three times that radius, between 0.4 m and a ceiling of twice the radius, capped at 40 m. Leaving fly mode eases down to eye height, and a walker who lands outside the walk radius can walk in but not further out.
 - `components/walk/WalkControls.tsx` applies it each frame and reports pointer lock. Only elements marked by `pointerLockTrigger.ts` (the scene and the entry prompt) lock the pointer, so the buttons stay clickable.
-- `components/walk/WalkView.tsx` is the chrome: `WalkView({ site, onExit })` shows a Back button when `onExit` is given and a link to `/` otherwise. `WalkHud.tsx` is the entry prompt with the key legend and the mode button. A note shows while the splat loads.
-- Hooks for browser checks on `[data-view='walk']`: `data-walk-state` (`checking`, `ready`, `missing`), `data-walk-shown`, `data-walk-mode` (`walk`, `fly`), `data-walk-locked`. Also `[data-role='walk-prompt']` and `[data-role='walk-mode']`.
+- `components/walk/WalkView.tsx` is the chrome: `WalkView({ site, onExit })` shows a Back button when `onExit` is given and a link to `/` otherwise. `WalkHud.tsx` is the entry prompt with the key legend and the mode button. A note shows while the splat loads. For a site with a model, `WalkSourceToggle.tsx` adds two buttons, Model and Photographs; the choice is not in the URL, so a reload opens the model again. The footer says what the reconstruction on screen is made from.
+- Hooks for browser checks on `[data-view='walk']`: `data-walk-source` (`model`, `photographs`), `data-walk-state` (`checking`, `ready`, `missing`; always `ready` for a model), `data-walk-shown`, `data-walk-mode` (`walk`, `fly`), `data-walk-locked`. Also `[data-role='walk-prompt']`, `[data-role='walk-mode']` and `[data-role='walk-source']` with a `[data-source]` button for each choice.
 - `components/walk/WalkScene.tsx` draws the splat with drei's `<Splat>`, which reads the 32-byte `.splat` format and already turns y-down capture data upright.
 - The splats live in `public/splats/` and are gitignored: they are built from share-alike photographs by the steps in [`scripts/splat/README.md`](../scripts/splat/README.md). Without the file the page says so.
+- The model is a schematic drawn from published dimensions. `lib/walk/gobekliTepeLayout.ts` holds the figures for Enclosures A to D in local metres from the walker's start, each marked as published (`[HG]`, Haklay & Gopher 2020) or estimated (`[EST]`). It holds no real-world coordinates. `lib/walk/enclosureModel.ts` is the pure layout maths that turns ring walls, benches and T-pillars into boxes, and `lib/walk/walkModels.ts` maps a `modelId` to its model. To add a site's model, write its layout file, add the id to `WalkModelId` and a row to `walkModels.ts`.
+- `components/walk/ModelScene.tsx` draws the model with the same `WalkControls`: `EnclosureStones.tsx` is one instanced mesh of boxes (about 6,000), and `ModelBackdrop.tsx` is the evening sky, far hills, earth floor, a low sun with one 2048 px shadow map, and haze. Nothing is downloaded.
 
-Limits: a splat has no surfaces, so there is no collision, only a flat floor and a radius. It is a reconstruction from visitors' photographs, not a survey.
+Limits: neither reconstruction has collision, only a flat floor and a radius, so the walker passes through walls and pillars. The splat is a reconstruction from visitors' photographs, not a survey. The model is a diagram, not a survey either: every enclosure is drawn as a circle on one level, walls stand free instead of holding back the mound, wall heights, pillar proportions and the position of Enclosure A are estimates, and no carvings are drawn.
 
 ## The close-up API
 
@@ -177,7 +189,7 @@ Each has a pytest wrapper, so `pytest` at the repository root runs them all.
 | `check_site_search.mts` | `tests/test_site_search.py` | Search ranking and diacritic folding. |
 | `check_place_view.mts` | `tests/test_place_view.py` | Close-up geometry: height scaling, camera framing, scale bar, skirt. |
 | `check_model_overlay.mts` | `tests/test_model_overlay.py` | The model raster mapping, the colour ramp, the layer index, which layers beat the baseline. |
-| `check_walk.mts` | `tests/test_walk.py` | The walk view: keys to intent, ground steps, the walk radius, the site list. |
+| `check_walk.mts` | `tests/test_walk.py` | The walk view: keys to intent, ground steps, the walk radius, the site list, and the modelled enclosures (pillar counts, pillars on their rings, no overlaps). |
 | `check_closeup_cache.mjs` | `tests/test_closeup_cache.py` | The close-up cache: id validation, path safety, eviction, concurrency. The Python side of the same test file checks the 10 km window and the refusal at the poles and the 180° meridian. |
 | `check_safelink.mjs` | `tests/test_safelink.py` | The external link allowlist. |
 | `check_pin_scale.mts`, `check_timeline.mts`, `check_relief_load.mts`, `check_place_resources.mts` | same names under `tests/` | The Anatolia atlas: pin sizes, the timeline, relief loading, the Sources shard. |
@@ -238,7 +250,7 @@ lib/world/                        catalogue types and loaders, filter, search, s
                                   wonders, eras, model index
 lib/place/                        place site lookup, terrain loading, geometry, drapes
 lib/atlas/walkHandoff.ts          when the atlas offers and enters a walk
-lib/walk/                         walkable sites, walk keys and movement
+lib/walk/                         walkable sites, walk keys and movement, the modelled enclosures
 lib/closeupCache.ts, closeupCatalog.ts   server side of the close-up API
 scripts/closeup_window.py         the Python worker that builds a close-up
 scripts/check_*.mts, check_*.mjs  the checks

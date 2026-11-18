@@ -30,13 +30,6 @@ export const PERIOD_SPAN: Record<string, [number, number]> = {
   crusader: [1096, 1522],
 };
 
-export const PERIOD_COLOR: Record<string, string> = {
-  neolithic: "#d06a3a",
-  bronze: "#c4923a",
-  classical: "#6d5b8a",
-  crusader: "#2c6d8a",
-};
-
 export function wikiInPeriod(feature: WikiFeature, periodId: string): boolean {
   if (periodId === "all") return true;
   return feature.properties.periods.includes(periodId);

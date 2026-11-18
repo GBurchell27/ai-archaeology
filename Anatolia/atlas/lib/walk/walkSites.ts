@@ -9,6 +9,9 @@ export type SplatAlignment = {
   scale: number;
 };
 
+/** Modelled reconstructions, held in walkModels.ts. */
+export type WalkModelId = "gobekli-tepe-enclosures";
+
 export type WalkSite = {
   id: string;
   name: string;
@@ -18,12 +21,14 @@ export type WalkSite = {
   /** The walker stays within this distance of the origin. */
   walkRadiusM: number;
   alignment: SplatAlignment;
+  /** Present when the site also has a modelled reconstruction, which the walk then opens first. */
+  modelId?: WalkModelId;
 };
 
 // shortcut: alignment is tuned by eye after each build, upgrade to surveyed control points if scale matters.
 const UNTUNED_ALIGNMENT: SplatAlignment = { position: [0, 0, 0], rotation: [0, 0, 0], scale: 1 };
 
-function walkSite(id: string, name: string, walkRadiusM: number, alignment = UNTUNED_ALIGNMENT): WalkSite {
+function walkSite(id: string, name: string, walkRadiusM: number, alignment = UNTUNED_ALIGNMENT, modelId?: WalkModelId): WalkSite {
   return {
     id,
     name,
@@ -32,14 +37,16 @@ function walkSite(id: string, name: string, walkRadiusM: number, alignment = UNT
     eyeHeightM: 1.65,
     walkRadiusM,
     alignment,
+    modelId,
   };
 }
 
 export const WALK_SITES: readonly WalkSite[] = [
-  // Levelled from the photographers' average up direction. The walker starts where they stood, above the
-  // enclosures; the scale of 3 is an estimate, not a measurement.
-  walkSite("gobekli-tepe", "Göbekli Tepe", 25, { position: [-0.22, 1.68, 0.72], rotation: [-0.5284, -0.0151, 0.0559], scale: 3 }),
-  walkSite("karahan-tepe", "Karahan Tepe", 25),
+  // Levelled from the photographers' cameras. The walker starts on the visitor walkway where one wide photograph
+  // was taken, looking the way it looked; the scale of 4.5 is an estimate from the depth of the enclosures.
+  walkSite("gobekli-tepe", "Göbekli Tepe", 25, { position: [-0.76, 1.23, -14.08], rotation: [-0.593, -0.313, -0.157], scale: 4.5 }, "gobekli-tepe-enclosures"),
+  // A fragment from 11 photographs. The walker starts where Gir_Ke_el3.jpg was taken; the scale is an estimate.
+  walkSite("karahan-tepe", "Karahan Tepe", 25, { position: [-0.81, 1.47, -4.46], rotation: [-1.828, -1.287, -1.837], scale: 1.5 }),
 ];
 
 export function findWalkSite(id: string | undefined): WalkSite | null {

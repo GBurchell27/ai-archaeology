@@ -2,40 +2,28 @@
 
 import { Html } from "@react-three/drei";
 import { useFrame, useThree } from "@react-three/fiber";
-import { useLayoutEffect, useMemo, useRef, useState, type MutableRefObject, type RefObject } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
-import { placeCatalogue, type CataloguePin } from "@/lib/cataloguePins";
 import {
-  ATLAS_FOV_DEGREES,
-  CLUSTER_CELL_PX,
-  SINGLE_PIN_PX,
-  approachDistance,
-  clusterByScreen,
-  clusterSignature,
-  worldSizeForPixels,
-  type PinCluster,
-  type ScreenPin,
-} from "@/lib/pinCluster";
+  buildCatalogueGeometry,
+  cataloguePointPixels,
+  createCataloguePointsMaterial,
+  pickCataloguePin,
+} from "@/components/atlas/cataloguePoints";
+import ringStyles from "@/components/globe/GlobeSites.module.css";
+import { placeCatalogue, type CataloguePin } from "@/lib/cataloguePins";
+import { ATLAS_FOV_DEGREES } from "@/lib/pinCluster";
 import type { AtlasMetadata } from "@/lib/types";
 import type { TerrainGrid } from "@/lib/terrain";
 import type { WikiFeature } from "@/lib/wikidata";
 
-const PIN_CAPACITY = 2048;
 const NAME_LIMIT = 12;
+const NAME_REFRESH_SECONDS = 0.25;
 
-interface MarkerView {
-  groups: PinCluster[];
-  names: PinCluster[];
-}
-
-interface HoveredPin {
-  id: string;
-  name: string;
-  x: number;
-  y: number;
-  z: number;
-}
-
+/**
+ * The published catalogue on the terrain map, drawn as the globe draws it: every place its own
+ * small dot in one draw call. There are no count badges; where places crowd, the dots do.
+ */
 export function CatalogueMarkers(props: {
   sites: WikiFeature[];
   metadata: AtlasMetadata;
@@ -44,313 +32,99 @@ export function CatalogueMarkers(props: {
   origin: [number, number];
   exaggeration: number;
   labels: boolean;
+  selectedId: string | null;
   onOpen: (siteId: string) => void;
-  onApproach: (longitude: number, latitude: number, cameraDistance: number) => void;
 }) {
-  const placed = useMemo(
-    () => placeCatalogue(props.sites, props.metadata, props.metres, props.origin, props.exaggeration, props.regional),
+  const pins = useMemo(
+    () => placeCatalogue(props.sites, props.metadata, props.metres, props.origin, props.exaggeration, props.regional)
+      // Undated places first, so the dated ones are drawn over them.
+      .sort((left, right) => Number(right.muted) - Number(left.muted)),
     [props.sites, props.metadata, props.metres, props.origin, props.exaggeration, props.regional],
   );
-  const screenPins = useMemo(() => placed.map(toScreenPin), [placed]);
-  const mesh = useRef<THREE.InstancedMesh>(null);
-  const markerArgs = useMemo(
-    () => [markerGeometry(), markerMaterial(), PIN_CAPACITY] as [THREE.PlaneGeometry, THREE.MeshBasicMaterial, number],
-    [],
-  );
-  const model = useCatalogueModel(screenPins, props.labels, mesh);
+  const geometry = useMemo(() => buildCatalogueGeometry(pins), [pins]);
+  useEffect(() => () => geometry.dispose(), [geometry]);
+  const material = useMemo(() => createCataloguePointsMaterial(), []);
+  useEffect(() => () => material.dispose(), [material]);
+  useFrame(({ camera, controls, viewport }) => {
+    const target = (controls as { target?: THREE.Vector3 } | null)?.target;
+    const distance = target ? camera.position.distanceTo(target) : camera.position.length();
+    material.uniforms.pixelSize.value = cataloguePointPixels(distance) * viewport.dpr;
+  });
+  const viewportHeight = useThree((state) => state.size.height);
+  const [hovered, setHovered] = useState<CataloguePin | null>(null);
+  const names = useOnScreenNames(pins, props.labels);
+  const selected = props.selectedId ? pins.find((pin) => pin.id === props.selectedId) : undefined;
   return (
     <group>
-      <instancedMesh
-        ref={mesh}
-        args={markerArgs}
+      <points
+        geometry={geometry}
+        material={material}
         frustumCulled={false}
         renderOrder={5}
         userData={{ kind: "catalogue-pins" }}
-        onClick={(event) => {
-          if (event.delta <= 4) openSingle(event, model.singles.current, props.onOpen);
+        raycast={function pick(this: THREE.Points, raycaster, intersects) {
+          const fov = raycaster.camera instanceof THREE.PerspectiveCamera ? raycaster.camera.fov : ATLAS_FOV_DEGREES;
+          const row = pickCataloguePin(pins, raycaster.ray, fov, viewportHeight);
+          if (row < 0) return;
+          const point = new THREE.Vector3(pins[row].x, pins[row].y, pins[row].z);
+          intersects.push({ object: this, index: row, point, distance: point.distanceTo(raycaster.ray.origin) });
         }}
-        onPointerMove={(event) => moveHover(event, model.singles.current, model.hovered, model.setHovered)}
-        onPointerOut={() => model.setHovered(null)}
+        onClick={(event) => {
+          event.stopPropagation();
+          const pin = pins[event.index ?? -1];
+          if (pin && event.delta <= 4) props.onOpen(pin.id);
+        }}
+        onPointerMove={(event) => {
+          event.stopPropagation();
+          setHovered(pins[event.index ?? -1] ?? null);
+        }}
+        onPointerOut={() => setHovered(null)}
       />
-      {model.markers.groups.map((group) => (
-        <ClusterBadge
-          key={group.key}
-          group={group}
-          onApproach={(longitude, latitude) => {
-            props.onApproach(longitude, latitude, approachDistance(model.view.current.distance, group.spanM, model.view.current.fov));
-          }}
-        />
-      ))}
-      {model.markers.names.map((pin) => (
-        <PinName key={pin.ids[0]} pin={pin} />
-      ))}
-      {model.hovered ? <PinName pin={model.hovered} /> : null}
+      {names.map((pin) => <PinName key={pin.id} pin={pin} />)}
+      {hovered ? <PinName pin={hovered} /> : null}
+      {selected ? (
+        <Html position={[selected.x, selected.y, selected.z]} center zIndexRange={[2, 1]} style={{ pointerEvents: "none" }}>
+          <span className={ringStyles.ring} data-role="selected-site-ring" />
+        </Html>
+      ) : null}
     </group>
   );
 }
 
-function useCatalogueModel(
-  screenPins: ScreenPin[],
-  labels: boolean,
-  mesh: RefObject<THREE.InstancedMesh | null>,
-) {
-  const singles = useRef<PinCluster[]>([]);
-  const signature = useRef("");
-  const scratch = useRef(new THREE.Vector3());
-  const nextProjection = useRef(0);
-  const previousInput = useRef({ screenPins, labels });
-  const view = useRef({ distance: 1, fov: ATLAS_FOV_DEGREES });
-  const [markers, setMarkers] = useState<MarkerView>({ groups: [], names: [] });
-  const [hovered, setHovered] = useState<HoveredPin | null>(null);
-  useLayoutEffect(() => {
-    if (mesh.current) mesh.current.count = 0;
-  }, [mesh]);
-  useFrame((state) => {
-    const camera = state.camera;
-    const fov = camera instanceof THREE.PerspectiveCamera ? camera.fov : ATLAS_FOV_DEGREES;
-    const target = (state.controls as { target?: THREE.Vector3 } | null)?.target;
-    view.current = {
-      distance: target ? camera.position.distanceTo(target) : camera.position.length(),
-      fov,
-    };
-    if (state.clock.elapsedTime >= nextProjection.current
-      || previousInput.current.screenPins !== screenPins || previousInput.current.labels !== labels) {
-      if (previousInput.current.screenPins !== screenPins) signature.current = "";
-      previousInput.current = { screenPins, labels };
-      nextProjection.current = state.clock.elapsedTime + 0.06;
-      camera.updateMatrixWorld();
-      const cellSize = view.current.distance > 420000 ? 160 : CLUSTER_CELL_PX;
-      refreshClusters(screenPins, labels, camera, state.size, cellSize, scratch.current, signature, singles, setMarkers);
-    }
-    writeInstances(mesh.current, singles.current, camera, state.size.height, fov);
+/** With labels on, the places on screen are named once few enough are in view to read. */
+function useOnScreenNames(pins: readonly CataloguePin[], labels: boolean): CataloguePin[] {
+  const [names, setNames] = useState<CataloguePin[]>([]);
+  const refresh = useRef({ due: 0, signature: "" });
+  const scratch = useMemo(() => new THREE.Vector3(), []);
+  useFrame(({ camera, clock }) => {
+    if (clock.elapsedTime < refresh.current.due) return;
+    refresh.current.due = clock.elapsedTime + NAME_REFRESH_SECONDS;
+    const onScreen = labels ? pinsOnScreen(pins, camera, scratch, NAME_LIMIT) : [];
+    const signature = onScreen.map((pin) => pin.id).join("|");
+    if (signature === refresh.current.signature) return;
+    refresh.current.signature = signature;
+    setNames(onScreen);
   });
-  return { markers, hovered, setHovered, singles, view };
+  return names;
 }
 
-function refreshClusters(
-  screenPins: ScreenPin[],
-  labels: boolean,
-  camera: THREE.Camera,
-  size: { width: number; height: number },
-  cellSize: number,
-  scratch: THREE.Vector3,
-  signature: MutableRefObject<string>,
-  singles: MutableRefObject<PinCluster[]>,
-  setMarkers: (next: MarkerView) => void,
-): void {
-  projectPins(screenPins, camera, size.width, size.height, scratch);
-  const clusters = clusterByScreen(screenPins, cellSize);
-  const nextSignature = `${labels ? 1 : 0}|${clusterSignature(clusters)}`;
-  if (nextSignature === signature.current) return;
-  signature.current = nextSignature;
-  const alone = clusters.filter((cluster) => cluster.count === 1);
-  singles.current = alone;
-  setMarkers({
-    groups: clusters.filter((cluster) => cluster.count > 1),
-    names: labels && alone.length <= NAME_LIMIT ? alone : [],
-  });
-}
-
-function openSingle(
-  event: { stopPropagation: () => void; instanceId?: number },
-  singles: readonly PinCluster[],
-  onOpen: (siteId: string) => void,
-): void {
-  event.stopPropagation();
-  const pin = singles[event.instanceId ?? -1];
-  if (pin) onOpen(pin.ids[0]);
-}
-
-function moveHover(
-  event: { stopPropagation: () => void; instanceId?: number },
-  singles: readonly PinCluster[],
-  hovered: HoveredPin | null,
-  setHovered: (pin: HoveredPin | null) => void,
-): void {
-  event.stopPropagation();
-  const pin = singles[event.instanceId ?? -1];
-  if (!pin?.name || hovered?.id === pin.ids[0]) return;
-  setHovered({ id: pin.ids[0], name: pin.name, x: pin.x, y: pin.y, z: pin.z });
-}
-
-function projectPins(
-  pins: ScreenPin[],
-  camera: THREE.Camera,
-  width: number,
-  height: number,
-  scratch: THREE.Vector3,
-): void {
-  const margin = CLUSTER_CELL_PX;
+/** The pins inside the view, or none when there are more than `limit`. */
+function pinsOnScreen(pins: readonly CataloguePin[], camera: THREE.Camera, scratch: THREE.Vector3, limit: number): CataloguePin[] {
+  const found: CataloguePin[] = [];
   for (const pin of pins) {
     scratch.set(pin.x, pin.y, pin.z).project(camera);
-    pin.screenX = (scratch.x * 0.5 + 0.5) * width;
-    pin.screenY = (-scratch.y * 0.5 + 0.5) * height;
-    pin.visible = scratch.z >= -1 && scratch.z <= 1
-      && pin.screenX >= -margin && pin.screenX <= width + margin
-      && pin.screenY >= -margin && pin.screenY <= height + margin;
+    if (Math.abs(scratch.x) > 1 || Math.abs(scratch.y) > 1 || Math.abs(scratch.z) > 1) continue;
+    if (found.length === limit) return [];
+    found.push(pin);
   }
+  return found;
 }
 
-function writeInstances(
-  mesh: THREE.InstancedMesh | null,
-  singles: readonly PinCluster[],
-  camera: THREE.Camera,
-  viewportHeight: number,
-  fov: number,
-): void {
-  if (!mesh) return;
-  const dummy = instanceDummy();
-  const count = Math.min(singles.length, PIN_CAPACITY);
-  mesh.count = count;
-  for (let index = 0; index < count; index += 1) {
-    const pin = singles[index];
-    const distance = Math.hypot(camera.position.x - pin.x, camera.position.y - pin.y, camera.position.z - pin.z);
-    const size = worldSizeForPixels(distance, fov, viewportHeight, SINGLE_PIN_PX);
-    dummy.position.set(pin.x, pin.y, pin.z);
-    dummy.scale.set(size, size, 1);
-    dummy.quaternion.copy(camera.quaternion);
-    dummy.updateMatrix();
-    mesh.setMatrixAt(index, dummy.matrix);
-    const color = instanceColor();
-    color.set(pin.muted ? "#8a8176" : "#ffffff");
-    mesh.setColorAt(index, color);
-  }
-  mesh.instanceMatrix.needsUpdate = true;
-  mesh.boundingSphere = null;
-  if (mesh.instanceColor) mesh.instanceColor.needsUpdate = true;
-}
-
-function ClusterBadge(props: {
-  group: PinCluster;
-  onApproach: (longitude: number, latitude: number) => void;
-}) {
-  const { group } = props;
-  const height = useThree((state) => state.size.height);
-  const width = worldSizeForPixels(1, ATLAS_FOV_DEGREES, height, 28);
-  return (
-    <sprite
-      position={[group.x, group.y, group.z]}
-      scale={[width, width * 0.5, 1]}
-      renderOrder={5}
-      userData={{ kind: "catalogue-cluster", count: group.count }}
-      onClick={(event) => {
-        event.stopPropagation();
-        if (event.delta <= 4) props.onApproach(group.longitude, group.latitude);
-      }}
-    >
-      <spriteMaterial
-        map={countTexture(group.count)}
-        depthTest={false}
-        depthWrite={false}
-        sizeAttenuation={false}
-        transparent
-        opacity={group.muted ? 0.42 : 1}
-      />
-    </sprite>
-  );
-}
-
-function PinName(props: { pin: { name: string | null; x: number; y: number; z: number } }) {
+function PinName(props: { pin: CataloguePin }) {
   if (!props.pin.name) return null;
   return (
     <Html position={[props.pin.x, props.pin.y, props.pin.z]} center zIndexRange={[4, 0]} style={{ pointerEvents: "none" }}>
-      <span className="tip is-shown">{props.pin.name}</span>
+      <span className="tip is-shown" style={{ transform: "translateY(-22px)" }}>{props.pin.name}</span>
     </Html>
   );
-}
-
-function toScreenPin(pin: CataloguePin): ScreenPin {
-  return { ...pin, screenX: 0, screenY: 0, visible: false };
-}
-
-let geometry: THREE.PlaneGeometry | null = null;
-let material: THREE.MeshBasicMaterial | null = null;
-let dummy: THREE.Object3D | null = null;
-let color: THREE.Color | null = null;
-
-function markerGeometry(): THREE.PlaneGeometry {
-  geometry ??= new THREE.PlaneGeometry(1, 1);
-  return geometry;
-}
-
-function markerMaterial(): THREE.MeshBasicMaterial {
-  if (material) return material;
-  material = new THREE.MeshBasicMaterial({
-    map: dotTexture(),
-    transparent: true,
-    depthTest: false,
-    side: THREE.DoubleSide,
-    color: "#f4efe6",
-  });
-  return material;
-}
-
-function instanceDummy(): THREE.Object3D {
-  dummy ??= new THREE.Object3D();
-  return dummy;
-}
-
-function instanceColor(): THREE.Color {
-  color ??= new THREE.Color();
-  return color;
-}
-
-function dotTexture(): THREE.CanvasTexture {
-  const canvas = document.createElement("canvas");
-  canvas.width = 64;
-  canvas.height = 64;
-  const context = canvas.getContext("2d");
-  if (!context) throw new Error("Could not draw a catalogue pin");
-  context.fillStyle = "#f4efe6";
-  context.beginPath();
-  context.arc(32, 32, 18, 0, Math.PI * 2);
-  context.fill();
-  const texture = new THREE.CanvasTexture(canvas);
-  texture.colorSpace = THREE.NoColorSpace;
-  return texture;
-}
-
-const countTextures = new Map<number, THREE.CanvasTexture>();
-
-function countTexture(count: number): THREE.CanvasTexture {
-  const cached = countTextures.get(count);
-  if (cached) return cached;
-  const canvas = document.createElement("canvas");
-  canvas.width = 128;
-  canvas.height = 64;
-  const context = canvas.getContext("2d");
-  if (!context) throw new Error("Could not draw a cluster count");
-  context.clearRect(0, 0, 128, 64);
-  // The globe's count badge: dark glass, an ochre rim, pale figures.
-  context.fillStyle = "rgba(12, 16, 22, 0.86)";
-  context.beginPath();
-  roundRect(context, 6, 8, 116, 48, 24);
-  context.fill();
-  context.lineWidth = 3;
-  context.strokeStyle = "rgba(219, 165, 69, 0.8)";
-  context.stroke();
-  context.fillStyle = "#f1e7d2";
-  context.font = "700 30px sans-serif";
-  context.textAlign = "center";
-  context.textBaseline = "middle";
-  context.fillText(String(count), 64, 34);
-  const texture = new THREE.CanvasTexture(canvas);
-  texture.colorSpace = THREE.NoColorSpace;
-  countTextures.set(count, texture);
-  return texture;
-}
-
-function roundRect(
-  context: CanvasRenderingContext2D,
-  x: number,
-  y: number,
-  width: number,
-  height: number,
-  radius: number,
-): void {
-  if (context.roundRect) {
-    context.roundRect(x, y, width, height, radius);
-    return;
-  }
-  context.rect(x, y, width, height);
 }
