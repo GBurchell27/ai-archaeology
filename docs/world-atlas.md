@@ -219,6 +219,7 @@ Save it inside `Anatolia/atlas` so Node finds puppeteer-core, and run it with `n
 ```
 app/page.tsx                      server entry: reads the URL, renders the coordinator
 app/api/closeup/route.ts          the close-up API
+app/theme.css                     the shared --globe-* colour and type tokens every view reads
 components/WorldCoordinator.tsx   view switching, crossfade, address bar
 components/globe/                 GlobeView, GlobeSurface, GlobeAtmosphere, GlobeFlight,
                                   GlobeSites and its parts, picking, selection, filters
@@ -228,6 +229,8 @@ components/globe/model/           the recording-pattern overlay and its controls
 components/place/                 the place view
 components/atlas/                 hooks the Anatolia atlas (AtlasApp) is split into,
                                   the walk offer and entry
+components/atlas/styles/          the Anatolia atlas chrome styles, one file per area,
+                                  imported in order by app/globals.css
 components/walk/                  the walk view
 lib/globe/                        ellipsoid maths, view URL, handoff, basemaps,
                                   site blocks, bucket grid, label layout

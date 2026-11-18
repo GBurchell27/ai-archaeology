@@ -1,9 +1,5 @@
+/* The --globe-* tokens live in app/theme.css, where the other views read them too. */
 .globe {
-  --globe-ink: #ece4d4;
-  --globe-muted: #98a0ab;
-  --globe-ochre: #dba545;
-  --globe-glass: rgba(12, 16, 22, 0.58);
-  --globe-rule: rgba(236, 228, 212, 0.16);
   position: absolute;
   inset: 0;
   overflow: hidden;

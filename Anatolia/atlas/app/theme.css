@@ -1,0 +1,40 @@
+/* The one palette every view reads. The globe set these first, so the names kept its prefix. */
+:root {
+  --globe-ink: #ece4d4;
+  --globe-muted: #98a0ab;
+  --globe-ochre: #dba545;
+  --globe-glass: rgba(12, 16, 22, 0.58);
+  --globe-rule: rgba(236, 228, 212, 0.16);
+
+  /* The rest name values the globe chrome spells out in its own modules. */
+  --globe-ink-bright: #f3ecdd;
+  --globe-ink-soft: #c9c6bd;
+  --globe-ochre-ink: #f6dfae;
+  --globe-ochre-wash: rgba(219, 165, 69, 0.16);
+  --globe-link: #f0d49a;
+  --globe-hover: rgba(236, 228, 212, 0.1);
+  /* Dense glass: small muted text has to hold 4.5:1 with pale desert behind it. */
+  --globe-panel: rgba(10, 13, 18, 0.88);
+  --globe-control: rgba(10, 13, 18, 0.7);
+  --globe-control-hover: rgba(26, 28, 30, 0.86);
+  --globe-control-on: rgba(48, 38, 20, 0.86);
+  /* Small labels straight on the map, like the globe's readout and imagery credit. */
+  --globe-readout: rgba(10, 13, 18, 0.84);
+  --globe-popover: rgba(10, 13, 18, 0.94);
+  --globe-field: rgba(4, 6, 10, 0.45);
+  --globe-button: rgba(236, 228, 212, 0.04);
+  --globe-rule-strong: rgba(236, 228, 212, 0.3);
+  --globe-scroll-thumb: rgba(236, 228, 212, 0.25);
+  --globe-ochre-tint: rgba(219, 165, 69, 0.12);
+  --globe-primary: rgba(219, 165, 69, 0.14);
+  --globe-primary-hover: rgba(219, 165, 69, 0.24);
+  --globe-primary-rule: rgba(219, 165, 69, 0.7);
+  --globe-link-rule: rgba(240, 212, 154, 0.45);
+  --globe-link-hover: #fff1cf;
+  --globe-prose: #d9d5cc;
+  --globe-thumb-rim: #0b0e13;
+  --globe-blur: blur(18px) saturate(1.25);
+  --globe-shadow: 0 14px 38px rgba(0, 0, 0, 0.34);
+  --globe-space: #04060a;
+  --globe-serif: Palatino, "Palatino Linotype", "Book Antiqua", Georgia, serif;
+}

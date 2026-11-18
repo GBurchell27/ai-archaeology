@@ -1,5 +1,5 @@
 /* Shared pieces of the globe chrome: glass surfaces, buttons, chips, switches.
-   Colours come from the --globe-* tokens that GlobeView sets on its root. */
+   Colours come from the --globe-* tokens in app/theme.css. */
 
 .glass {
   border: 1px solid var(--globe-rule);

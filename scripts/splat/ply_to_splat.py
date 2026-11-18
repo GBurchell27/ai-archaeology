@@ -30,6 +30,8 @@ REQUIRED_FIELDS = (
 SPLAT_RECORD = np.dtype([("position", "<f4", 3), ("scale", "<f4", 3), ("rgba", "u1", 4), ("rotation", "u1", 4)])
 # Zeroth spherical-harmonic basis constant: colour = 0.5 + SH_C0 * f_dc.
 SH_C0 = 0.28209479177387814
+# Splats fainter than about 5% add file size and sorting work but nothing you can see.
+MIN_OPACITY_LOGIT = -3.0
 
 
 def read_ply_vertices(stream: BinaryIO) -> np.ndarray:
@@ -73,6 +75,9 @@ def columns(vertices: np.ndarray, names: tuple[str, ...]) -> np.ndarray:
 
 def splat_records(vertices: np.ndarray) -> np.ndarray:
     """Activate the trained parameters and order the splats biggest and most opaque first."""
+    # Training leaves a few rows with NaN in them; one such row blanks the viewer's sort.
+    finite = np.all([np.isfinite(vertices[name]) for name in vertices.dtype.names], axis=0)
+    vertices = vertices[finite & (vertices["opacity"] > MIN_OPACITY_LOGIT)]
     scales = np.exp(columns(vertices, ("scale_0", "scale_1", "scale_2")))
     alpha = 1.0 / (1.0 + np.exp(-vertices["opacity"].astype(np.float64)))
     colour = 0.5 + SH_C0 * columns(vertices, ("f_dc_0", "f_dc_1", "f_dc_2"))
@@ -99,12 +104,13 @@ def convert(ply_path: Path, splat_path: Path) -> int:
 
 def self_check() -> None:
     vertex_type = np.dtype([(name, "<f4") for name in (*REQUIRED_FIELDS, "f_rest_0")])
-    vertices = np.zeros(2, dtype=vertex_type)
-    vertices["x"] = [1.0, 2.0]
+    vertices = np.zeros(4, dtype=vertex_type)
+    vertices["x"] = [1.0, 2.0, np.nan, 3.0]  # the third is broken and must be dropped
+    vertices["opacity"] = [0.0, 0.0, 0.0, -9.0]  # the fourth is invisible and must be dropped
     vertices["rot_0"] = 2.0  # unnormalised identity quaternion
-    vertices["f_dc_0"] = [0.0, 10.0]
-    vertices["scale_0"] = [0.0, 3.0]  # the second splat is larger, so it must come first
-    header = "ply\nformat binary_little_endian 1.0\nelement vertex 2\n"
+    vertices["f_dc_0"] = [0.0, 10.0, 0.0, 0.0]
+    vertices["scale_0"] = [0.0, 3.0, 0.0, 0.0]  # the second splat is larger, so it must come first
+    header = "ply\nformat binary_little_endian 1.0\nelement vertex 4\n"
     header += "".join(f"property float {name}\n" for name in vertex_type.names) + "end_header\n"
     records = splat_records(read_ply_vertices(io.BytesIO(header.encode("ascii") + vertices.tobytes())))
 

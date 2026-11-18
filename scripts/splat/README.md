@@ -27,20 +27,26 @@ Run from the repository root. `gobekli-tepe` stands for the site id in `Anatolia
 
    This writes `data/splat/gobekli-tepe/images/` and `credits.json`. Delete photographs of finds, signs, people and the museum before the next step.
 
-2. **Camera positions.** The command line of this COLMAP build has not been run on this machine yet: check the option names with `colmap.exe automatic_reconstructor -h`.
+2. **Camera positions.** This build has no GPU support, hence `--use_gpu 0`. `--data_type internet` is the setting for photographs from many cameras.
 
    ```bash
-   data/splat/tools/colmap/bin/colmap.exe automatic_reconstructor --workspace_path data/splat/gobekli-tepe --image_path data/splat/gobekli-tepe/images --dense 0 --use_gpu 0
+   data/splat/tools/colmap/bin/colmap.exe automatic_reconstructor --workspace_path data/splat/gobekli-tepe --image_path data/splat/gobekli-tepe/images --data_type internet --dense 0 --use_gpu 0
    ```
+
+   On a laptop short of memory, run the stages one at a time with a thread cap instead: `feature_extractor`, `exhaustive_matcher`, then `mapper`, each with its `num_threads 4` and `use_gpu 0` options. A stopped matcher carries on where it left off. For Göbekli Tepe, 294 photographs took about three hours and 73 registered; 32 photographs of one enclosure alone did not link at all.
 
    It writes `data/splat/gobekli-tepe/sparse/0/`. Read how many photographs it registered. If it is a small share of them, the photographs do not overlap enough and no later step will rescue that.
 
-3. **Training.** Start `data/splat/tools/brush/brush_app.exe`, load the folder `data/splat/gobekli-tepe`, let it train, and export a `.ply` to `data/splat/gobekli-tepe/export.ply`. Brush also has a command line (`brush_app.exe --help`).
+3. **Training.** Add `--with-viewer` to watch it train. 15,000 steps on 73 photographs took about half an hour on an Intel Arc 140V. Brush 0.3.0 sometimes panics at startup with `min > max`; run it again. It reads `sparse/0`, the largest model.
+
+   ```bash
+   data/splat/tools/brush/brush_app.exe data/splat/gobekli-tepe --total-steps 15000 --max-resolution 1280 --export-path data/splat/gobekli-tepe/brush
+   ```
 
 4. **Convert and publish locally.**
 
    ```bash
-   .venv/Scripts/python scripts/splat/ply_to_splat.py data/splat/gobekli-tepe/export.ply Anatolia/atlas/public/splats/gobekli-tepe.splat
+   .venv/Scripts/python scripts/splat/ply_to_splat.py data/splat/gobekli-tepe/brush/export_15000.ply Anatolia/atlas/public/splats/gobekli-tepe.splat
    cp data/splat/gobekli-tepe/credits.json Anatolia/atlas/public/splats/gobekli-tepe.credits.json
    ```
 

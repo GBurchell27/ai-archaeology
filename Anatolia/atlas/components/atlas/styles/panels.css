@@ -1,0 +1,135 @@
+/* The glass panels that open over the map: settings on the left, a place or a chart on the right, the shortcut list. */
+
+.menu,
+.panel,
+.help {
+  position: absolute;
+  z-index: 3;
+  top: var(--top);
+  border: 1px solid var(--globe-rule);
+  border-radius: 4px;
+  background: var(--globe-panel);
+  -webkit-backdrop-filter: var(--globe-blur);
+  backdrop-filter: var(--globe-blur);
+  box-shadow: var(--globe-shadow);
+  color: var(--globe-ink);
+  color-scheme: dark;
+  font-size: 13px;
+  line-height: 1.5;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: var(--globe-scroll-thumb) transparent;
+}
+
+/* Settings */
+.menu {
+  left: var(--edge);
+  /* Ends just short of the timeline bar at 1280px. */
+  width: min(292px, calc(100% - 2 * var(--edge)));
+  max-height: calc(100% - var(--top) - 14px);
+  padding: 2px 18px 16px;
+  overflow: auto;
+}
+
+/* Section labels, in the globe's small capitals. */
+.menu h2,
+.place-layers h2,
+.resources h2 {
+  margin: 16px 0 6px;
+  font-size: 10.5px;
+  font-weight: 600;
+  line-height: 1.45;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--globe-muted);
+}
+
+.menu h2 { padding-top: 13px; border-top: 1px solid var(--globe-rule); }
+.menu h2:first-child { margin-top: 0; border-top: 0; }
+
+.menu label, .panel label { display: flex; gap: 8px; align-items: center; margin-top: 8px; }
+.menu label { justify-content: space-between; cursor: pointer; }
+.menu label.check { justify-content: flex-start; }
+.menu .regional-layer select { max-width: 58%; }
+
+.hint { margin: 10px 0 0; font-size: 12px; line-height: 1.5; color: #b6b9bf; }
+
+.climate-list { display: grid; gap: 4px; margin-top: 8px; }
+
+.climate-list button,
+.guide-related button {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  min-height: 34px;
+  padding: 5px 10px 6px;
+  border: 1px solid var(--globe-rule);
+  border-radius: 3px;
+  background: var(--globe-button);
+  color: var(--globe-ink);
+  font: 15.5px/1.3 var(--globe-serif);
+  text-align: left;
+  cursor: pointer;
+  transition: background 140ms ease, border-color 140ms ease;
+}
+
+.climate-list button:hover,
+.guide-related button:hover { background: var(--globe-hover); border-color: var(--globe-rule-strong); color: var(--globe-ochre-ink); }
+
+/* The side panel */
+.panel {
+  right: var(--edge);
+  bottom: var(--foot);
+  width: min(320px, calc(100% - 2 * var(--edge)));
+  padding: 14px 18px 16px;
+  overflow: auto;
+  transform: translateX(20px);
+  opacity: 0;
+  pointer-events: none;
+  transition: transform 280ms ease, opacity 280ms ease;
+}
+
+.panel.is-in { transform: none; opacity: 1; pointer-events: auto; }
+.panel > h2, .help h2 { margin: 0 0 8px; font: 500 23px/1.14 var(--globe-serif); letter-spacing: 0.005em; text-wrap: balance; }
+.panel p { margin: 8px 0 0; }
+.panel .source-line { margin: 14px 0 4px; font-size: 12px; color: var(--globe-ink-soft); }
+
+/* Palaeoclimate chart: as tall as its content, not the whole side. */
+.chart { bottom: auto; width: min(420px, calc(100% - 2 * var(--edge))); max-height: calc(100% - var(--top) - var(--foot)); }
+.chart svg { width: 100%; height: auto; margin-top: 8px; }
+.chart path { fill: none; stroke: var(--globe-ochre); stroke-width: 1.5; }
+.chart line { stroke: rgba(236, 228, 212, 0.45); stroke-dasharray: 3 3; }
+.chart text { fill: var(--globe-ink-soft); font-size: 11px; }
+
+/* Keyboard shortcuts */
+.help { z-index: 6; right: var(--edge); width: min(310px, calc(100% - 2 * var(--edge))); padding: 14px 18px 16px; }
+.help ul { margin: 0; padding: 0; list-style: none; line-height: 1.75; color: var(--globe-ink-soft); }
+.help kbd { margin-right: 1px; font: 600 12px/1.35 ui-monospace, Consolas, monospace; color: var(--globe-ochre); }
+
+/* Narrow: the side panel becomes a bottom sheet. */
+@media (max-width: 720px) {
+  .menu { max-height: 70vh; }
+  .panel {
+    top: auto;
+    left: var(--edge);
+    right: var(--edge);
+    bottom: 0;
+    width: auto;
+    max-height: 42vh;
+    border-bottom: 0;
+    border-radius: 4px 4px 0 0;
+    transform: translateY(110%);
+  }
+  .panel.is-in { transform: translateY(0); }
+  .chart { max-height: 60vh; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .panel, .climate-list button, .guide-related button { transition: none; }
+}
+
+@media (pointer: coarse) {
+  .menu label, .panel label { min-height: 32px; }
+  .climate-list button, .guide-related button { min-height: 40px; }
+}

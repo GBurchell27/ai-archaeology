@@ -23,7 +23,7 @@ export type WalkSite = {
 // shortcut: alignment is tuned by eye after each build, upgrade to surveyed control points if scale matters.
 const UNTUNED_ALIGNMENT: SplatAlignment = { position: [0, 0, 0], rotation: [0, 0, 0], scale: 1 };
 
-function walkSite(id: string, name: string, walkRadiusM: number): WalkSite {
+function walkSite(id: string, name: string, walkRadiusM: number, alignment = UNTUNED_ALIGNMENT): WalkSite {
   return {
     id,
     name,
@@ -31,12 +31,14 @@ function walkSite(id: string, name: string, walkRadiusM: number): WalkSite {
     creditsUrl: `/splats/${id}.credits.json`,
     eyeHeightM: 1.65,
     walkRadiusM,
-    alignment: UNTUNED_ALIGNMENT,
+    alignment,
   };
 }
 
 export const WALK_SITES: readonly WalkSite[] = [
-  walkSite("gobekli-tepe", "Göbekli Tepe", 25),
+  // Levelled from the photographers' average up direction. The walker starts where they stood, above the
+  // enclosures; the scale of 3 is an estimate, not a measurement.
+  walkSite("gobekli-tepe", "Göbekli Tepe", 25, { position: [-0.22, 1.68, 0.72], rotation: [-0.5284, -0.0151, 0.0559], scale: 3 }),
   walkSite("karahan-tepe", "Karahan Tepe", 25),
 ];
 

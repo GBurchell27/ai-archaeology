@@ -321,12 +321,16 @@ function countTexture(count: number): THREE.CanvasTexture {
   const context = canvas.getContext("2d");
   if (!context) throw new Error("Could not draw a cluster count");
   context.clearRect(0, 0, 128, 64);
-  context.fillStyle = "rgba(244, 239, 230, 0.94)";
+  // The globe's count badge: dark glass, an ochre rim, pale figures.
+  context.fillStyle = "rgba(12, 16, 22, 0.86)";
   context.beginPath();
   roundRect(context, 6, 8, 116, 48, 24);
   context.fill();
-  context.fillStyle = "#1b140f";
-  context.font = "600 28px sans-serif";
+  context.lineWidth = 3;
+  context.strokeStyle = "rgba(219, 165, 69, 0.8)";
+  context.stroke();
+  context.fillStyle = "#f1e7d2";
+  context.font = "700 30px sans-serif";
   context.textAlign = "center";
   context.textBaseline = "middle";
   context.fillText(String(count), 64, 34);

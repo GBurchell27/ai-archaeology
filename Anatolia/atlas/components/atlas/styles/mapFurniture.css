@@ -1,0 +1,262 @@
+/* What sits on the map itself: zoom buttons, the nearby-place card, the key, the scale and north arrow,
+   the data credit and the name labels on pins. */
+
+.map-nav,
+.nearby-place,
+.legend {
+  position: absolute;
+  z-index: 2;
+  border: 1px solid var(--globe-rule);
+  border-radius: 4px;
+  background: var(--globe-panel);
+  -webkit-backdrop-filter: var(--globe-blur);
+  backdrop-filter: var(--globe-blur);
+  box-shadow: var(--globe-shadow);
+  color: var(--globe-ink);
+}
+
+/* Zoom and scroll speed */
+.map-nav { left: var(--edge); bottom: 60px; padding: 5px; }
+.map-nav-tools { display: flex; align-items: center; gap: 3px; }
+
+.map-nav button {
+  width: 34px;
+  height: 34px;
+  padding: 0 0 2px;
+  border: 1px solid transparent;
+  border-radius: 3px;
+  background: none;
+  color: var(--globe-ink-soft);
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 140ms ease, color 140ms ease;
+}
+
+.map-nav button:hover { background: var(--globe-hover); color: var(--globe-ink); }
+
+.map-speed {
+  display: grid;
+  align-content: center;
+  min-height: 34px;
+  margin-left: 4px;
+  padding: 0 4px 0 10px;
+  border-left: 1px solid var(--globe-rule);
+  font-size: 9.5px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--globe-muted);
+}
+
+.atlas .map-speed select {
+  width: 84px;
+  min-height: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  font-size: 12.5px;
+  font-weight: 400;
+  letter-spacing: 0.02em;
+}
+
+.map-gestures { margin: 5px 5px 3px; font-size: 11px; color: var(--globe-muted); }
+
+/* The place the camera is closest to */
+.nearby-place {
+  right: var(--edge);
+  bottom: 104px;
+  width: min(300px, calc(100% - 2 * var(--edge)));
+  padding: 13px 18px 15px;
+  animation: nearby-in 220ms ease-out both;
+}
+
+.nearby-period { margin: 0 0 5px; font-size: 10.5px; font-weight: 600; letter-spacing: 0.13em; text-transform: uppercase; color: var(--globe-ochre); }
+.nearby-place h2 { margin: 0; font: 500 23px/1.14 var(--globe-serif); letter-spacing: 0.005em; text-wrap: balance; }
+
+.nearby-summary {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  overflow: hidden;
+  margin: 8px 0 0;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--globe-prose);
+}
+
+.nearby-place button {
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  min-height: 34px;
+  margin-top: 12px;
+  padding: 6px 13px;
+  border: 1px solid var(--globe-primary-rule);
+  border-radius: 3px;
+  background: var(--globe-primary);
+  color: var(--globe-ochre-ink);
+  font-size: 12.5px;
+  letter-spacing: 0.02em;
+  text-align: left;
+  cursor: pointer;
+  transition: background 140ms ease, border-color 140ms ease;
+}
+
+.nearby-place button:hover { background: var(--globe-primary-hover); border-color: var(--globe-ochre); }
+
+@keyframes nearby-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: none; }
+}
+
+/* The key to the pin colours */
+.legend { left: var(--edge); bottom: 14px; display: flex; gap: 4px; align-items: center; padding: 3px; font-size: 12px; line-height: 1.4; }
+
+.legend-toggle {
+  min-height: 30px;
+  padding: 0 9px;
+  border: 0;
+  border-radius: 3px;
+  background: none;
+  color: var(--globe-muted);
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.legend-toggle:hover { background: var(--globe-hover); color: var(--globe-ink); }
+.legend-body { display: flex; gap: 12px; align-items: center; padding-right: 10px; color: var(--globe-ink-soft); }
+.legend-body > span { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+.legend .open-ring { flex: none; width: 9px; height: 9px; border: 1.5px solid var(--globe-ink); border-radius: 50%; }
+
+/* Scale bar, north arrow and the regional terrain note */
+.readout {
+  position: absolute;
+  z-index: 2;
+  right: var(--edge);
+  bottom: 56px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 5px;
+  color: var(--globe-ink);
+  opacity: 0;
+  transition: opacity 220ms ease;
+  pointer-events: none;
+  text-shadow: 0 0 2px var(--globe-space), 0 1px 8px rgba(4, 6, 10, 0.9);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.06em;
+}
+
+.readout[data-on="true"] { opacity: 1; }
+.regional-readout { padding: 4px 9px; border-radius: 3px; background: var(--globe-readout); text-shadow: none; }
+
+.north {
+  width: 0;
+  height: 0;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-bottom: 12px solid var(--globe-ochre);
+  filter: drop-shadow(0 0 2px rgba(4, 6, 10, 0.9));
+}
+
+.scale { display: flex; flex-direction: column; align-items: flex-end; gap: 3px; }
+.scale i { display: block; height: 6px; border: solid currentColor; border-width: 0 1px 1px; filter: drop-shadow(0 0 2px rgba(4, 6, 10, 0.9)); }
+
+/* Data credit, bottom right like the globe's imagery line */
+.credit {
+  position: absolute;
+  z-index: 3;
+  right: var(--edge);
+  bottom: 14px;
+  max-width: min(520px, 46vw);
+  margin: 0;
+  font-size: 11px;
+  line-height: 1.35;
+  color: var(--globe-muted);
+}
+
+.credit summary,
+.credit p {
+  border-radius: 3px;
+  background: var(--globe-readout);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+}
+
+.credit summary { width: max-content; margin-left: auto; padding: 4px 9px; cursor: pointer; }
+.credit summary:hover { color: var(--globe-ink); }
+
+.credit p {
+  position: absolute;
+  right: 0;
+  bottom: calc(100% + 7px);
+  width: min(430px, calc(100vw - 2 * var(--edge)));
+  max-height: 46vh;
+  margin: 0;
+  padding: 9px 11px;
+  overflow: auto;
+  border: 1px solid var(--globe-rule);
+  background: var(--globe-popover);
+  line-height: 1.5;
+  color: var(--globe-ink-soft);
+}
+
+.credit a { color: inherit; }
+.credit a:hover, .credit a:focus-visible { color: var(--globe-ink); }
+
+/* Names on pins: the serif the globe uses for its sites, boxed so it holds over any terrain. */
+.tip.is-shown {
+  display: inline-block;
+  padding: 2px 9px 3px;
+  border: 1px solid var(--globe-rule);
+  border-radius: 2px;
+  background: rgba(12, 16, 22, 0.8);
+  color: var(--globe-ink);
+  font: italic 14px/1.3 var(--globe-serif);
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+}
+
+/* A curated site, or the traveller on the trip replay. */
+.site-pin-label { transform: translateY(-16px); }
+.tip.is-shown.site-pin-label { border-color: rgba(219, 165, 69, 0.75); color: var(--globe-ink-bright); }
+
+@media (min-width: 721px) {
+  .atlas:is([data-has-panel="true"], [data-has-landscape="true"]) .readout { right: calc(var(--guide-width) + var(--edge) + 14px); }
+}
+
+@media (max-width: 720px) {
+  .legend { bottom: 44px; max-width: calc(100% - 2 * var(--edge)); }
+  .legend-body { flex-wrap: wrap; gap: 3px 12px; padding: 4px 8px 4px 0; }
+  .map-nav { bottom: 118px; }
+  .readout { bottom: 118px; }
+  .nearby-place { top: calc(var(--top) + var(--bar-height) + 48px); bottom: auto; left: var(--edge); right: auto; width: min(264px, calc(100% - 2 * var(--edge))); }
+  .nearby-place h2 { font-size: 20px; }
+  .credit { max-width: calc(100% - 2 * var(--edge)); }
+  /* The sheet takes the lower half: the zoom buttons move under the top bar and the rest steps aside. */
+  .atlas[data-has-panel="true"] .map-nav { top: var(--top); bottom: auto; }
+  body[data-panel="open"] .credit,
+  body[data-panel="open"] .legend,
+  body[data-panel="open"] .readout,
+  .atlas[data-has-landscape="true"] :is(.credit, .legend, .readout) { visibility: hidden; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .readout, .map-nav button, .nearby-place button { transition: none; }
+  .nearby-place { animation: none; }
+}
+
+@media (pointer: coarse) {
+  .map-gestures { display: none; }
+  .map-nav button { width: 40px; height: 40px; }
+  .map-speed { min-height: 40px; }
+  .nearby-place button, .legend-toggle { min-height: 40px; }
+  .credit summary { padding-block: 8px; }
+}

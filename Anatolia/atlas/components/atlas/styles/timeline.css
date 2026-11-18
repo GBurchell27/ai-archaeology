@@ -1,0 +1,125 @@
+/* The year-range bar under the top bar, and the period chips that drop from it. */
+
+.atlas {
+  /* The bar's own height, for whatever has to sit just under it. */
+  --bar-height: 62px;
+  --bar-width: min(640px, calc(100% - 280px));
+  --bar-left: calc((100% - var(--bar-width)) / 2);
+}
+
+.timebar {
+  position: absolute;
+  z-index: 3;
+  top: calc(var(--top) - 4px);
+  left: var(--bar-left);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: var(--bar-width);
+  padding: 8px 14px 9px 10px;
+  border: 1px solid var(--globe-rule);
+  border-radius: 4px;
+  background: var(--globe-panel);
+  -webkit-backdrop-filter: var(--globe-blur);
+  backdrop-filter: var(--globe-blur);
+  box-shadow: var(--globe-shadow);
+  color: var(--globe-ink);
+}
+
+.time-play {
+  flex: none;
+  min-width: 58px;
+  min-height: 32px;
+  padding: 5px 12px;
+  border: 1px solid var(--globe-rule);
+  border-radius: 3px;
+  background: var(--globe-button);
+  color: var(--globe-ink);
+  font-size: 12.5px;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  transition: background 140ms ease, border-color 140ms ease;
+}
+
+.time-play:hover { background: var(--globe-hover); border-color: var(--globe-rule-strong); }
+.time-play[aria-pressed="true"] { border-color: var(--globe-ochre); background: var(--globe-ochre-tint); color: var(--globe-ochre-ink); }
+
+.undated-toggle { flex: none; display: flex; align-items: center; gap: 6px; font-size: 12.5px; color: var(--globe-ink-soft); cursor: pointer; }
+
+.time-readout { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+.time-readout span { font: italic 18px/1.15 var(--globe-serif); font-variant-numeric: lining-nums; }
+
+/* The hit area is taller than the rail it draws. */
+.time-track { position: relative; height: 20px; margin: 0 7px; cursor: pointer; touch-action: none; }
+.time-track::before { content: ""; position: absolute; top: 9px; left: 0; right: 0; height: 2px; border-radius: 2px; background: rgba(236, 228, 212, 0.22); }
+.time-tick { position: absolute; top: 5px; width: 1px; height: 10px; background: var(--globe-rule-strong); pointer-events: none; }
+.time-fill { position: absolute; top: 9px; height: 2px; border-radius: 2px; background: var(--globe-ochre); pointer-events: none; }
+
+.time-thumb {
+  position: absolute;
+  top: 3px;
+  width: 14px;
+  height: 14px;
+  margin-left: -7px;
+  padding: 0;
+  border: 2px solid var(--globe-thumb-rim);
+  border-radius: 50%;
+  background: var(--globe-ochre-ink);
+  box-shadow: 0 0 0 1px var(--globe-ochre);
+  cursor: grab;
+  touch-action: none;
+}
+
+.atlas .time-thumb:focus-visible { outline-offset: 3px; }
+
+/* The typed year fields are for assistive technology and the browser checks. */
+.time-input { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+
+.dock {
+  position: absolute;
+  z-index: 3;
+  top: calc(var(--top) + var(--bar-height) + 2px);
+  left: calc(var(--bar-left) + var(--bar-width) / 2);
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+}
+
+.chips { display: flex; gap: 5px; overflow: auto; max-width: 52vw; scrollbar-width: none; }
+.dock .chips { display: none; }
+.dock.is-open .chips { display: flex; }
+.dock-handle { min-height: 24px; padding: 2px 10px 3px; font-size: 10.5px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; }
+
+/* Beside an open side panel the bar centres in the room that is left. */
+@media (min-width: 721px) {
+  .atlas:is([data-has-panel="true"], [data-has-landscape="true"]) {
+    --bar-width: min(640px, calc(100% - var(--guide-width) - 3 * var(--edge)));
+    --bar-left: max(var(--edge), calc((100% - var(--guide-width) - var(--edge) - var(--bar-width)) / 2));
+  }
+}
+
+@media (max-width: 720px) {
+  .atlas { --bar-width: calc(100% - 2 * var(--edge)); }
+  .timebar { gap: 8px; padding-right: 10px; }
+  .dock { left: auto; right: var(--edge); transform: none; align-items: flex-end; }
+  .dock .chips { max-width: calc(100vw - 2 * var(--edge)); }
+  body[data-panel="open"] .dock,
+  body[data-panel="open"] .timebar { visibility: hidden; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .time-play { transition: none; }
+}
+
+@media (pointer: coarse) {
+  .atlas { --bar-height: 82px; }
+  .time-play { min-height: 40px; }
+  .time-track { height: 40px; }
+  .time-track::before, .time-fill { top: 19px; }
+  .time-tick { top: 15px; }
+  .time-thumb { top: 13px; }
+  /* The thumb stays small; its hit area does not. */
+  .time-thumb::after { content: ""; position: absolute; inset: -13px; }
+}

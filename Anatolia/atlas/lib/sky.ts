@@ -14,8 +14,9 @@ export function hazeBackground(night = false): THREE.CanvasTexture {
     gradient.addColorStop(0, "#101820");
     gradient.addColorStop(1, "#263641");
   } else {
-    gradient.addColorStop(0, "#26383d");
-    gradient.addColorStop(1, "#425454");
+    // A shade lighter than night: the same deep slate the globe's space and the place view sit in.
+    gradient.addColorStop(0, "#0d141b");
+    gradient.addColorStop(1, "#2f414c");
   }
   context.fillStyle = gradient;
   context.fillRect(0, 0, canvas.width, canvas.height);

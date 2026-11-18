@@ -1,4 +1,5 @@
-/* Centred low over the map: the right-hand corner is under the site panel whenever a site is open. */
+/* Centred low over the map: the right-hand corner is under the site panel whenever a site is open.
+   The same shape as the globe's "Enter Anatolia terrain" offer, because it is the same kind of step. */
 .offer {
   position: absolute;
   z-index: 2;
@@ -6,23 +7,25 @@
   bottom: 132px;
   display: grid;
   gap: 2px;
-  padding: 10px 24px 11px;
-  border: 1px solid rgba(244, 228, 201, 0.28);
-  border-bottom-color: #f1c391;
-  border-radius: 14px;
-  background: rgba(30, 23, 17, 0.94);
-  color: #fbf4e7;
-  box-shadow: 0 8px 28px rgba(37, 24, 12, 0.26);
+  padding: 11px 26px 12px;
+  border: 1px solid var(--globe-rule);
+  border-bottom-color: var(--globe-ochre);
+  border-radius: 3px;
+  background: var(--globe-panel);
+  -webkit-backdrop-filter: var(--globe-blur);
+  backdrop-filter: var(--globe-blur);
+  box-shadow: var(--globe-shadow);
+  color: var(--globe-ink);
   text-align: center;
   cursor: pointer;
   transform: translateX(-50%);
-  animation: offer-rise 220ms ease-out both;
+  animation: offer-rise 260ms ease-out both;
 }
 
-.offer:hover { background: rgba(52, 40, 29, 0.96); }
-.offer:focus-visible { outline: 2px solid #f1c391; outline-offset: 3px; }
-.title { font: 500 19px/1.2 Palatino, Georgia, serif; }
-.hint { color: #e4d5bf; font-size: 11px; }
+.offer:hover { background: var(--globe-control-hover); }
+.offer:focus-visible { outline: 2px solid var(--globe-ochre); outline-offset: 3px; }
+.title { font: italic 500 19px/1.2 var(--globe-serif); }
+.hint { font-size: 10.5px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--globe-muted); }
 
 @keyframes offer-rise {
   from { opacity: 0; transform: translate(-50%, 8px); }
@@ -30,7 +33,7 @@
 }
 
 @media (max-width: 640px) {
-  .offer { bottom: 150px; }
+  .offer { bottom: 172px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
