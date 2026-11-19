@@ -2,15 +2,18 @@
 //   ?view=globe&lon=38.00&lat=30.00&alt=13000  (alt is camera altitude in whole km)
 //   ?view=atlas&site=<id>                       (site optional)
 //   ?view=place&site=<id>
-//   ?view=walk&site=<id>                        (the coordinator checks the id has a walk)
+//   ?view=walk&site=<id>&source=photographs     (the coordinator checks the id has a walk; source is left out for the model)
 
 import type { GlobeLook } from "./ellipsoid";
+
+/** Which reconstruction of a site a walk shows. The model is the default, so only the photographs are named in the address. */
+export type WalkSource = "model" | "photographs";
 
 export type WorldViewState =
   | ({ view: "globe" } & GlobeLook)
   | { view: "atlas"; siteId?: string }
   | { view: "place"; siteId: string }
-  | { view: "walk"; siteId: string };
+  | { view: "walk"; siteId: string; source?: WalkSource };
 
 export const DEFAULT_GLOBE_LOOK: GlobeLook = { longitude: 38, latitude: 30, altitude: 13_000_000 };
 export const MIN_GLOBE_ALTITUDE = 100_000;
@@ -37,7 +40,8 @@ export function parseViewUrl(search: SearchInput): WorldViewState {
   const view = readParameter(search, "view");
   const site = readParameter(search, "site");
   const siteId = site && SITE_ID.test(site) ? site : undefined;
-  if ((view === "place" || view === "walk") && siteId) return { view, siteId };
+  if (view === "place" && siteId) return { view, siteId };
+  if (view === "walk" && siteId) return readParameter(search, "source") === "photographs" ? { view, siteId, source: "photographs" } : { view, siteId };
   if (view === "atlas") return siteId ? { view: "atlas", siteId } : { view: "atlas" };
   return {
     view: "globe",
@@ -51,5 +55,7 @@ export function serialiseViewUrl(state: WorldViewState): string {
   if (state.view === "globe") {
     return `?view=globe&lon=${state.longitude.toFixed(2)}&lat=${state.latitude.toFixed(2)}&alt=${Math.round(state.altitude / 1000)}`;
   }
-  return state.siteId ? `?view=${state.view}&site=${encodeURIComponent(state.siteId)}` : `?view=${state.view}`;
+  const site = state.siteId ? `&site=${encodeURIComponent(state.siteId)}` : "";
+  const source = state.view === "walk" && state.source === "photographs" ? "&source=photographs" : "";
+  return `?view=${state.view}${site}${source}`;
 }

@@ -1,17 +1,18 @@
 "use client";
 
-import { Html, useTexture } from "@react-three/drei";
+import { useTexture } from "@react-three/drei";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { Component, Suspense, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode, type RefObject } from "react";
 import * as THREE from "three";
 import { AtlasCamera, type CameraPose, type ZoomCommand } from "@/components/AtlasCamera";
 import { PlaceProximity } from "@/components/PlaceProximity";
 import { CatalogueMarkers } from "@/components/CatalogueMarkers";
-import { sitePinTexture } from "@/components/atlas/sitePinTexture";
-import globeStyles from "@/components/globe/GlobeSites.module.css";
+import { SitePinMarkers, type SitePinMarker } from "@/components/atlas/SitePinMarkers";
+import { sitePinGlowTexture, sitePinTexture } from "@/components/atlas/sitePinTexture";
+import { useCuratedRenown } from "@/components/atlas/useCuratedRenown";
 import { ClimatePins, ContextDrapes, ContextLines, type ClimatePoint, type ContextLineLayer, type ContextRasterLayer } from "@/components/ContextLayers";
 import { NationalTerrain, useTerrainTiles } from "@/components/NationalTerrain";
-import { ATLAS_FOV_DEGREES, worldSizeForPixels } from "@/lib/pinCluster";
+import { ATLAS_FOV_DEGREES } from "@/lib/pinCluster";
 import { DPR_STEPS, INITIAL_DPR_INDEX } from "@/lib/renderQuality";
 import type { WikiFeature } from "@/lib/wikidata";
 import { boundsCenter, boundsContain, detailClipRect, lonLatToMercator, sampleMeshHeight, toLocal, type ClipRect } from "@/lib/geo";
@@ -20,9 +21,13 @@ import { createSurfaceMaterial, prepareTexture, sunDirection } from "@/lib/shade
 import { HAZE_FAR, HAZE_NEAR, HAZE_STRENGTH, hazeBackground } from "@/lib/sky";
 import { stitchDetailToNational } from "@/lib/stitch";
 import { buildTerrainGeometry, coarseTerrainGeometry, type TerrainGrid } from "@/lib/terrain";
+import type { ColourGain, ImageryGrade } from "@/lib/sceneRasters";
 import type { AtlasMetadata, BaseMap, RegionalTerrain, SiteFeature } from "@/lib/types";
 
-const DETAIL_FEATHER = 0.10;
+/** A site window fades into the map over this share of its width on each side. */
+const DETAIL_FEATHER = 0.2;
+/** The regional block fades into the national map over a wider band, so its edge does not read as a line. */
+const REGION_FEATHER = 0.2;
 
 interface AtlasSceneProps {
   metadata: AtlasMetadata;
@@ -40,6 +45,10 @@ interface AtlasSceneProps {
   region: RegionalTerrain | null;
   regionalGrid: TerrainGrid | null;
   regionalUrl: string | null;
+  /** Colour gains that match the regional raster to the national map; null when they already match. */
+  regionalGain: ColourGain | null;
+  /** The grade that sets the selected place's image into the map around it; null when it is shown as it is. */
+  detailGrade: ImageryGrade | null;
   onRegionApproach: () => void;
   onRegionVisibility: (visible: boolean) => void;
   compareUrl: string | null;
@@ -86,7 +95,7 @@ export function AtlasScene(props: AtlasSceneProps) {
     ? stitchDetailToNational(props.regionalGrid, national)
     : null, [props.regionalGrid, national]);
   const regionClip = regionalSurface && props.regionalUrl && regionCover === props.regionalUrl
-    ? detailClipRect(regionalSurface.bounds, origin, DETAIL_FEATHER)
+    ? detailClipRect(regionalSurface.bounds, origin, REGION_FEATHER)
     : null;
   const regionalBase = regionalSurface && props.detail && containsWindow(regionalSurface, props.detail)
     ? regionalSurface
@@ -154,6 +163,7 @@ export function AtlasScene(props: AtlasSceneProps) {
               night={props.night}
               onCover={onRegionCover}
               regional
+              gain={props.regionalGain}
               clip={clip}
             />
           </Suspense>
@@ -174,7 +184,8 @@ export function AtlasScene(props: AtlasSceneProps) {
               compareUrl={props.compareUrl}
               compare={props.compare}
               split={props.split}
-              opacity={props.opacity}
+              opacity={props.opacity * (1 - (props.detailGrade?.wash ?? 0))}
+              gain={props.detailGrade?.gain}
               night={props.night}
               onCover={onCover}
             />
@@ -226,7 +237,6 @@ export function AtlasScene(props: AtlasSceneProps) {
         detail={clip ? props.detail : null}
         origin={origin}
         exaggeration={props.exaggeration}
-        labels={props.labels}
         selectedId={props.selectedId}
         onSelect={props.onSelect}
       />
@@ -329,6 +339,8 @@ function DetailSurface(props: {
   night: boolean;
   onCover: (url: string, covered: boolean) => void;
   regional?: boolean;
+  /** Red, green and blue gains on the draped image. */
+  gain?: ColourGain | null;
   clip?: ClipRect | null;
 }) {
   const { grid, base, origin, datum, textureUrl, onCover } = props;
@@ -373,7 +385,8 @@ function DetailSurface(props: {
   material.uniforms.compare.value = props.compare ? 1 : 0;
   material.uniforms.split.value = props.split;
   material.uniforms.opacity.value = props.opacity;
-  material.uniforms.edgeFeather.value = DETAIL_FEATHER;
+  material.uniforms.edgeFeather.value = props.regional ? REGION_FEATHER : DETAIL_FEATHER;
+  material.uniforms.albedoGain.value.set(...(props.gain ?? [1, 1, 1]));
   material.uniforms.surfacePart.value = 1;
   material.uniforms.lightDirection.value.copy(sunDirection(props.azimuth, props.altitude));
   material.uniforms.hazeNear.value = HAZE_NEAR;
@@ -442,77 +455,30 @@ function SitePins(props: {
   detail: TerrainGrid | null;
   origin: [number, number];
   exaggeration: number;
-  labels: boolean;
   selectedId: string | null;
   onSelect: (siteId: string) => void;
 }) {
-  const { metadata, metres } = props;
-  const national = useMemo(() => ({ ...metadata, metres }), [metadata, metres]);
-  return (
-    <group>
-      {props.sites.map((site) => {
-        const [longitude, latitude] = site.geometry.coordinates;
-        const [east, north] = lonLatToMercator(longitude, latitude);
-        const elevation = elevationAt(national, props.regional, props.detail, east, north);
-        const [x, z] = toLocal(longitude, latitude, props.origin);
-        return <SitePin
-          key={site.id}
-          site={site}
-          position={[x, (elevation - metadata.elevation.min) * props.exaggeration + 18, z]}
-          texture={sitePinTexture(LAYER_STYLE[site.properties.layer].color, site.properties.confidence !== "approximate")}
-          labels={props.labels || (Boolean(props.regional) && !props.selectedId && Boolean(metadata.details[site.id]?.rasters["true-colour"]))}
-          selected={site.id === props.selectedId}
-          onSelect={props.onSelect}
-        />;
-      })}
-    </group>
-  );
-}
-
-function SitePin(props: {
-  site: SiteFeature;
-  position: [number, number, number];
-  texture: THREE.Texture;
-  labels: boolean;
-  selected: boolean;
-  onSelect: (siteId: string) => void;
-}) {
-  const [hovered, setHovered] = useState(false);
-  const height = useThree((state) => state.size.height);
-  // The texture is half halo and shadow: the bright core is about 40% of this width.
-  const scale = worldSizeForPixels(1, ATLAS_FOV_DEGREES, height, props.selected || hovered ? 44 : 34);
-  const hitSize = worldSizeForPixels(1, ATLAS_FOV_DEGREES, height, 27);
-  return (
-    <group position={props.position}>
-      {props.selected ? (
-        <Html center zIndexRange={[2, 1]} style={{ pointerEvents: "none" }}>
-          <span className={globeStyles.ring} data-role="selected-site-ring" />
-        </Html>
-      ) : null}
-      <sprite
-        scale={[hitSize, hitSize, 1]}
-        onClick={(event) => {
-          event.stopPropagation();
-          if (event.delta <= 4) props.onSelect(props.site.id);
-        }}
-        onPointerOver={(event) => {
-          event.stopPropagation();
-          setHovered(true);
-        }}
-        onPointerOut={() => setHovered(false)}
-      >
-        <spriteMaterial transparent opacity={0} depthTest={false} depthWrite={false} sizeAttenuation={false} />
-      </sprite>
-      <sprite scale={[scale, scale, 1]} renderOrder={7}>
-        <spriteMaterial map={props.texture} transparent depthTest={false} depthWrite={false} sizeAttenuation={false} />
-      </sprite>
-      {hovered || props.selected || props.labels ? (
-        <Html zIndexRange={[4, 0]} style={{ pointerEvents: "none" }}>
-          <span className={globeStyles.label} data-role="site-pin-label">{props.site.properties.name}</span>
-        </Html>
-      ) : null}
-    </group>
-  );
+  const { sites, metadata, metres, regional, detail, origin, exaggeration } = props;
+  const renown = useCuratedRenown(sites);
+  const pins = useMemo(() => {
+    const national = { ...metadata, metres };
+    // Best known first: that order decides which names win a crowded view. The sort is stable, so ties keep file order.
+    const byRenown = [...sites].sort((left, right) => (renown.get(right.id) ?? 0) - (renown.get(left.id) ?? 0));
+    return byRenown.map((site): SitePinMarker => {
+      const [longitude, latitude] = site.geometry.coordinates;
+      const [east, north] = lonLatToMercator(longitude, latitude);
+      const elevation = elevationAt(national, regional, detail, east, north);
+      const [x, z] = toLocal(longitude, latitude, origin);
+      return {
+        id: site.id,
+        name: site.properties.name,
+        position: [x, (elevation - metadata.elevation.min) * exaggeration + 18, z],
+        texture: sitePinTexture(LAYER_STYLE[site.properties.layer].color, site.properties.confidence !== "approximate"),
+        glow: site.properties.confidence !== "approximate" ? sitePinGlowTexture(LAYER_STYLE[site.properties.layer].color) : null,
+      };
+    });
+  }, [sites, renown, metadata, metres, regional, detail, origin, exaggeration]);
+  return <SitePinMarkers pins={pins} selectedId={props.selectedId} onSelect={props.onSelect} />;
 }
 
 function elevationAt(

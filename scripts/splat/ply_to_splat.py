@@ -6,10 +6,17 @@ scale_0..2, rot_0..3; higher spherical-harmonic bands are dropped, so colour is 
     python scripts/splat/ply_to_splat.py data/splat/gobekli-tepe/export.ply \
         Anatolia/atlas/public/splats/gobekli-tepe.splat
     python scripts/splat/ply_to_splat.py --self-check
+
+An optional cull, off unless asked for, removes the streaks that training leaves where no photograph looked:
+
+    --evidence-points points3D.txt --max-evidence-distance 0.5
+        drops splats further than that from every structure-from-motion point of the COLMAP text model the
+        splat was trained on. The distance is in that model's units, not metres.
 """
 
 from __future__ import annotations
 
+import argparse
 import io
 import sys
 from pathlib import Path
@@ -94,9 +101,30 @@ def splat_records(vertices: np.ndarray) -> np.ndarray:
     return records[np.argsort(-importance, kind="stable")]
 
 
-def convert(ply_path: Path, splat_path: Path) -> int:
+def read_evidence_points(points_text: str) -> np.ndarray:
+    """The x y z of every point in the text of a COLMAP points3D.txt."""
+    rows = [line.split()[1:4] for line in points_text.splitlines() if line.strip() and not line.startswith("#")]
+    return np.array(rows, dtype=np.float64).reshape(-1, 3)
+
+
+def far_from_evidence(vertices: np.ndarray, evidence_points: np.ndarray, max_distance: float) -> np.ndarray:
+    """True for splats with no structure-from-motion point within `max_distance`: nothing was matched there."""
+    from scipy.spatial import cKDTree  # only this cull needs scipy
+
+    # A broken row has no place; the tree refuses NaN, so it is put far from everything.
+    positions = np.nan_to_num(columns(vertices, ("x", "y", "z")), nan=1e30, posinf=1e30, neginf=-1e30)
+    return cKDTree(evidence_points).query(positions)[0] > max_distance
+
+
+def convert(ply_path: Path, splat_path: Path, evidence_path: Path | None = None, max_evidence_distance: float = np.inf) -> int:
+    """Writes the .splat and returns how many splats it holds."""
     with ply_path.open("rb") as stream:
-        records = splat_records(read_ply_vertices(stream))
+        vertices = read_ply_vertices(stream)
+    if evidence_path is not None:
+        far = far_from_evidence(vertices, read_evidence_points(evidence_path.read_text()), max_evidence_distance)
+        print(f"dropped {int(far.sum()):,} of {len(vertices):,} splats far from every structure-from-motion point")
+        vertices = vertices[~far]
+    records = splat_records(vertices)
     splat_path.parent.mkdir(parents=True, exist_ok=True)
     splat_path.write_bytes(records.tobytes())
     return len(records)
@@ -120,18 +148,37 @@ def self_check() -> None:
     assert records["rgba"][1].tolist() == [128, 128, 128, 128], "zero colour is mid grey, zero opacity is half"
     assert records["rgba"][0, 0] == 255, "colour is clamped"
     assert records["rotation"][0].tolist() == [255, 128, 128, 128], "quaternion is normalised, w first"
+    self_check_cull(vertices)
     print('{"ok": true}')
+
+
+def self_check_cull(vertices: np.ndarray) -> None:
+    """Runs on the four splats of self_check, which sit at x = 1, 2, NaN and 3."""
+    evidence = read_evidence_points("# header\n7 1.1 0 0 255 255 255 0.5 1 2\n8 3.0 0 0 0 0 0 0.1\n")
+    assert evidence.tolist() == [[1.1, 0.0, 0.0], [3.0, 0.0, 0.0]]
+    assert far_from_evidence(vertices, evidence, 0.5).tolist() == [False, True, True, False], "only the splat at x = 2 and the broken one are far"
+    assert parse_arguments(["in.ply", "out.splat"]).evidence_points is None, "the cull is off by default"
+
+
+def parse_arguments(arguments: list[str]) -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+    parser.add_argument("ply", type=Path)
+    parser.add_argument("splat", type=Path)
+    parser.add_argument("--evidence-points", type=Path, help="points3D.txt of the COLMAP text model the splat was trained on")
+    parser.add_argument("--max-evidence-distance", type=float, help="needed with --evidence-points")
+    parsed = parser.parse_args(arguments)
+    if (parsed.evidence_points is None) != (parsed.max_evidence_distance is None):
+        parser.error("--evidence-points and --max-evidence-distance go together")
+    return parsed
 
 
 def main(arguments: list[str]) -> int:
     if arguments == ["--self-check"]:
         self_check()
         return 0
-    if len(arguments) != 2:
-        print(__doc__)
-        return 2
-    count = convert(Path(arguments[0]), Path(arguments[1]))
-    print(f"wrote {count:,} splats ({count * SPLAT_RECORD.itemsize / 1e6:.1f} MB) to {arguments[1]}")
+    parsed = parse_arguments(arguments)
+    count = convert(parsed.ply, parsed.splat, parsed.evidence_points, parsed.max_evidence_distance)
+    print(f"wrote {count:,} splats ({count * SPLAT_RECORD.itemsize / 1e6:.1f} MB) to {parsed.splat}")
     return 0
 
 

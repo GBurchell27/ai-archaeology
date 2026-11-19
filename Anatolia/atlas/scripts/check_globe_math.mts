@@ -64,6 +64,16 @@ check("out of range numbers are clamped or defaulted",
 check("a walk url round trips",
   serialiseViewUrl({ view: "walk", siteId: "karahan-tepe" }) === "?view=walk&site=karahan-tepe"
   && JSON.stringify(parseViewUrl("?view=walk&site=karahan-tepe")) === JSON.stringify({ view: "walk", siteId: "karahan-tepe" }));
+check("a walk url keeps the photographs and leaves the model out",
+  serialiseViewUrl({ view: "walk", siteId: "gobekli-tepe", source: "photographs" }) === "?view=walk&site=gobekli-tepe&source=photographs"
+  && serialiseViewUrl({ view: "walk", siteId: "gobekli-tepe", source: "model" }) === "?view=walk&site=gobekli-tepe"
+  && JSON.stringify(parseViewUrl("?view=walk&site=gobekli-tepe&source=photographs")) === JSON.stringify({ view: "walk", siteId: "gobekli-tepe", source: "photographs" }));
+check("an address with an unknown walk source is rewritten without it",
+  serialiseViewUrl(parseViewUrl("?view=walk&site=gobekli-tepe&source=bogus")) === "?view=walk&site=gobekli-tepe"
+  && serialiseViewUrl(parseViewUrl("?view=walk&site=gobekli-tepe&source=photographs&source=bogus")) === "?view=walk&site=gobekli-tepe&source=photographs");
+check("an unknown walk source is the default, and other views ignore the parameter",
+  JSON.stringify(parseViewUrl("?view=walk&site=gobekli-tepe&source=lidar")) === JSON.stringify({ view: "walk", siteId: "gobekli-tepe" })
+  && JSON.stringify(parseViewUrl("?view=place&site=Q1&source=photographs")) === JSON.stringify({ view: "place", siteId: "Q1" }));
 check("a walk url without a usable site id falls back to the globe",
   parseViewUrl("?view=walk").view === "globe" && parseViewUrl("?view=walk&site=../x").view === "globe");
 check("server-style search params parse", parseViewUrl({ view: "atlas", site: ["gobekli-tepe"] }).view === "atlas");
@@ -92,6 +102,11 @@ check("a camera that starts below the line does not bounce in", !openedLow.enter
 const seenAbove = advanceWalkEntry(false, "offer");
 const crossed = advanceWalkEntry(seenAbove.crossedFromAbove, "enter");
 check("a zoom that crosses the line enters once", seenAbove.crossedFromAbove && crossed.enter && !advanceWalkEntry(crossed.crossedFromAbove, "enter").enter);
+
+const { historyEntryForView } = await import("../lib/globe/viewHistory.ts");
+check("a change of view adds one history entry", historyEntryForView("atlas", "walk", false) === "push" && historyEntryForView("globe", "atlas", false) === "push");
+check("a write within a view rewrites its entry", historyEntryForView("globe", "globe", false) === "replace");
+check("landing on an entry with Back or Forward adds none", historyEntryForView("walk", "atlas", true) === "replace");
 
 if (failed > 0) {
   console.error(`${failed} failed`);

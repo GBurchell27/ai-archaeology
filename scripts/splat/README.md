@@ -53,7 +53,21 @@ Run from the repository root. `gobekli-tepe` stands for the site id in `Anatolia
 
    ```bash
    .venv/Scripts/python scripts/splat/ply_to_splat.py data/splat/gobekli-tepe/brush_undistorted/export_15000.ply Anatolia/atlas/public/splats/gobekli-tepe.splat
-   cp data/splat/gobekli-tepe/credits.json Anatolia/atlas/public/splats/gobekli-tepe.credits.json
+   ```
+
+   Training also leaves splats where no photograph looked: long pale streaks around the edge of the site and behind the photographers. They barely show from the photographed side and fill the screen from every other. The converter can drop the splats that lie far from every structure-from-motion point, which are the ones nothing in the photographs pins down. It is off unless asked for. It needs the COLMAP model that was trained on, as text:
+
+   ```bash
+   data/splat/tools/colmap/bin/colmap.exe model_converter --input_path data/splat/gobekli-tepe/undistorted/sparse --output_path data/splat/gobekli-tepe/sparse_txt --output_type TXT
+   .venv/Scripts/python scripts/splat/ply_to_splat.py data/splat/gobekli-tepe/brush_undistorted/export_15000.ply Anatolia/atlas/public/splats/gobekli-tepe.splat --evidence-points data/splat/gobekli-tepe/sparse_txt/points3D.txt --max-evidence-distance 0.3
+   ```
+
+   The distance is in the model's own units, not metres: multiply by the `scale` of the site's alignment (step 6) to read it in metres. For Göbekli Tepe 0.3 is about 1.65 m and drops 2.4% of the splats that would be drawn (20,951 of 871,941); 0.5 leaves more streaks and 1.0 most of them. The cull takes real things too when they are smooth and far from the stones, because structure from motion matches nothing on them: here the far side of the shelter roof went with the streaks. Write to a new file name first, compare both in the walk from several directions, and keep the uncut file.
+
+   The credits file should name the photographs the splat was trained on, not every photograph fetched. This keeps the rows whose file is in the training folder:
+
+   ```bash
+   .venv/Scripts/python -c "import json,os,sys; c=json.load(open(sys.argv[1],encoding='utf-8')); used=set(os.listdir(sys.argv[2])); c['photographs']=[p for p in c['photographs'] if p['file'] in used]; json.dump(c,open(sys.argv[3],'w',encoding='utf-8'),ensure_ascii=False,indent=1); print(len(c['photographs']),'photographs credited')" data/splat/gobekli-tepe/credits.json data/splat/gobekli-tepe/undistorted/images Anatolia/atlas/public/splats/gobekli-tepe.credits.json
    ```
 
 6. **Align.** Open `/?view=walk&site=gobekli-tepe`. Structure from motion has no real scale and no level floor, so set `alignment` for the site in `walkSites.ts` until the floor is flat at your feet and a pillar is the right height.

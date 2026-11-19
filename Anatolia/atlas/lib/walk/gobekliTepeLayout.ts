@@ -54,9 +54,15 @@ function ring(innerDiameterM: number, pillarCount: number, pillar = PERIMETER_PI
 const TRIANGLE_SIDE_M = 19.25;
 const HALF_SIDE_M = TRIANGLE_SIDE_M / 2;
 const TRIANGLE_HEIGHT_M = 16.67;
-/** [EST] the walker starts just inside D's southern wall, so D's centre is this far north of the origin. */
-const D_NORTH_OF_START_M = 6;
+/**
+ * [EST] the walker starts just inside D's southern wall, in the gap drawn there, so D's centre is this far north of
+ * the origin: far enough back that the heads of the 5.5 m central pair are in view on the first frame.
+ */
+const D_NORTH_OF_START_M = 6.9;
 const SOUTH_SIDE_M = TRIANGLE_HEIGHT_M - D_NORTH_OF_START_M;
+
+/** [EST] narrower than the 3.5 m between the two pillars that flank it, so a stub of wall stands beside each. */
+const D_NORTH_GAP_WIDTH_M = 2.2;
 
 const ENCLOSURES: readonly Enclosure[] = [
   {
@@ -65,9 +71,11 @@ const ENCLOSURES: readonly Enclosure[] = [
     centre: [0, -D_NORTH_OF_START_M],
     // [HG] maximum inner diameter about 14 m, 11 pillars in the wall. A DAI report gives 20 m west to east.
     // [S10] Pillar 43 stands beside a gap in the northern section of the wall, with Pillar 30 across the gap; it is
-    // the north-western of the two, so it takes the slot nearest north-north-west. The gap itself is not drawn.
+    // the north-western of the two, so it takes the slot nearest north-north-west, and the wall is opened between
+    // that slot and the next, which stands due north. [EST] the gap's width, its exact bearing, and that the bench
+    // runs on across it. Pillar 30 is not numbered here because it carries no landmark.
     // [EST] Pillar 33's slot (south-west): its place in the ring was not found in a source that could be read.
-    rings: [ring(14, 11, PERIMETER_PILLAR, { 4: 43, 1: 33 })],
+    rings: [{ ...ring(14, 11, PERIMETER_PILLAR, { 4: 43, 1: 33 }), openings: [{ afterSlot: 4, widthM: D_NORTH_GAP_WIDTH_M }] }],
     // [HG] pedestals 20 to 30 cm high. [EST] spacing. [S10] Pillar 31 is the western and Pillar 18 the eastern
     // pillar, and both carry arms, hands, a belt and a loincloth in flat relief.
     centralPair: { pillar: CENTRAL_PILLAR_D, spacingM: 3.4, pedestalHeightM: 0.25, pillarNumbers: [31, 18], anthropomorphic: true },
@@ -109,9 +117,10 @@ export const GOBEKLI_TEPE_MODEL: WalkModel = {
   // Reaches the far side of Enclosure A from the start inside D.
   walkRadiusM: 36,
   note:
-    "A schematic model of Enclosures A to D drawn from published dimensions, not a survey. Positions, wall heights and " +
-    "pillar proportions are approximate, every enclosure is drawn as a circle on one level, and the only carvings sketched " +
-    "are the arms, belts and loincloths of Enclosure D's central pillars.",
+    "A schematic model of Enclosures A to D drawn from published dimensions, not a survey. Positions, wall heights, " +
+    "pillar proportions and the width of the gap in Enclosure D's northern wall are approximate, every enclosure is drawn " +
+    "as a circle on one level, and the only carvings sketched are the arms, hands, belts and loincloths of Enclosure D's " +
+    "central pillars.",
   sources: [
     { label: "Haklay & Gopher 2020, after the DAI excavation reports", url: "https://doi.org/10.1017/S0959774319000660" },
     { label: "Schmidt 2010", url: "https://doi.org/10.4312/dp.37.21" },

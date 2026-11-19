@@ -1,9 +1,9 @@
 "use client";
 
+import type { WalkSource } from "@/lib/globe/viewUrl";
 import styles from "./WalkView.module.css";
 
-/** Which reconstruction of a site the walk shows. */
-export type WalkSource = "model" | "photographs";
+export type { WalkSource };
 
 const SOURCE_LABEL: Record<WalkSource, string> = { model: "Model", photographs: "Photographs" };
 const SOURCES = Object.keys(SOURCE_LABEL) as WalkSource[];

@@ -5,7 +5,13 @@
 
 import type { ModelSource } from "./enclosureModel";
 
-export type HypothesisLayerId = "roofs" | "surroundings";
+export type HypothesisLayerId = "roofs" | "surroundings" | "backfill";
+
+/** A place to stand and a point to look at, in walk metres from the walker's start. Only a camera position, never a find. */
+export type LayerViewpoint = {
+  standAt: readonly [x: number, z: number];
+  lookAt: readonly [x: number, y: number, z: number];
+};
 
 export type HypothesisLayer = {
   id: HypothesisLayerId;
@@ -13,6 +19,10 @@ export type HypothesisLayer = {
   /** One line: whose hypothesis this is and how contested. */
   note: string;
   sources: readonly ModelSource[];
+  /** Which part of the model the layer changes, for a layer that does not show everywhere. */
+  where?: string;
+  /** Where to stand to see it, for a layer that is out of sight from the walker's start. */
+  viewpoint?: LayerViewpoint;
 };
 
 export const HYPOTHESIS_STANDING_NOTE = "These layers are hypotheses drawn for comparison. They are not findings.";
@@ -23,6 +33,6 @@ export function toggledLayers(active: readonly HypothesisLayerId[], id: Hypothes
 
 /** The sentence the footer adds while any layer is on, or an empty string. */
 export function hypothesisFootnote(layers: readonly HypothesisLayer[], active: readonly HypothesisLayerId[]): string {
-  const shown = layers.filter((layer) => active.includes(layer.id)).map((layer) => layer.label.toLowerCase());
-  return shown.length === 0 ? "" : `Also shown: ${shown.join(" and ")}. That is conjecture, not something excavated.`;
+  const shown = layers.filter((layer) => active.includes(layer.id)).map((layer) => layer.label);
+  return shown.length === 0 ? "" : `Hypothesis layers shown: ${shown.join("; ")}. They are conjecture, not something excavated.`;
 }

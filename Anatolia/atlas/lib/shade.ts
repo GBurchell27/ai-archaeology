@@ -39,6 +39,7 @@ uniform float clipOn;
 uniform vec4 regionClipRect;
 uniform float regionClipOn;
 uniform float night;
+uniform vec3 albedoGain;
 uniform float fastShade;
 varying vec3 vNormal;
 varying vec2 vUv;
@@ -61,7 +62,7 @@ void main() {
   if (surfacePart == 1.0 && edgeDistance < edgeFeather) discard;
   if (surfacePart == 2.0 && edgeDistance >= edgeFeather) discard;
   vec3 baseColor = vec3(0.72, 0.64, 0.52);
-  vec3 rawA = texture2D(mapA, vUv).rgb;
+  vec3 rawA = texture2D(mapA, vUv).rgb * albedoGain;
   vec3 albedo = mix(baseColor, fastShade > 0.5 ? rawA : toLinear(rawA), opacity);
   float screenX = gl_FragCoord.x / resolution.x;
   if (compare > 0.5 && useB > 0.5) {
@@ -75,7 +76,6 @@ void main() {
   }
   float lambert = max(dot(normalize(vNormal), normalize(mat3(viewMatrix) * lightDirection)), 0.0);
   vec3 lit = albedo * (ambient + (1.0 - ambient) * lambert);
-  lit = mix(lit, lit * vec3(0.58, 0.66, 0.78), night);
   float depth = distance(cameraPosition, vWorld);
   float haze = smoothstep(hazeNear, hazeFar, depth) * hazeStrength;
   vec3 fog = fastShade > 0.5 ? hazeColor : pow(hazeColor, vec3(2.2));
@@ -83,10 +83,17 @@ void main() {
   float alpha = surfaceAlpha;
   if (surfacePart == 2.0) alpha *= smoothstep(0.0, edgeFeather, edgeDistance);
   vec3 color = fastShade > 0.5 ? lit : pow(lit, vec3(1.0 / 2.2));
+  // Pale tones are pulled down without a change of hue: sand turns bronze and the site dots can glow on it, grey relief stays grey.
+  float paleness = smoothstep(0.3, 0.85, dot(color, vec3(0.213, 0.715, 0.072)));
+  color *= mix(1.0, 0.7, paleness);
+  // Night comes after that grade, or the grade would lift the darkened tones back: a cool half-light the site dots glow against.
+  color *= mix(vec3(1.0), vec3(0.5, 0.58, 0.72), night);
   if (mapEdge > 0.0) {
     vec3 background = texture2D(backdrop, vec2(0.5, gl_FragCoord.y / resolution.y)).rgb;
     float water = smoothstep(0.018, 0.12, rawA.b - rawA.r) * mapWater;
     color = mix(color, mix(background, vec3(0.11, 0.17, 0.21), 0.55), water);
+    // A thin pale line where land meets water, so the coast is drawn and not only implied by the tint.
+    color += vec3(0.2, 0.17, 0.11) * water * (1.0 - water) * 4.0;
     color = mix(background, color, smoothstep(0.0, mapEdge, edgeDistance));
   }
   gl_FragColor = vec4(color, alpha);
@@ -134,6 +141,7 @@ export function createSurfaceMaterial(): THREE.ShaderMaterial {
       regionClipRect: { value: new THREE.Vector4(0, 0, 0, 0) },
       regionClipOn: { value: 0 },
       night: { value: 0 },
+      albedoGain: { value: new THREE.Vector3(1, 1, 1) },
       fastShade: { value: 0 },
     },
     vertexShader: SURFACE_VERTEX,

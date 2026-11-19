@@ -39,20 +39,28 @@ function loadWorldCatalogue(): Promise<WorldCatalogue> {
   return catalogueRequest;
 }
 
-export function useWorldCatalogue(): { catalogue: WorldCatalogue | null; error: string | null } {
+/**
+ * `deferMs` holds the first request back that long, for a view that is ready without the catalogue: its
+ * 2.6 MB file then cannot keep that view's own loading from finishing. A request already made is joined at once.
+ */
+export function useWorldCatalogue(deferMs = 0): { catalogue: WorldCatalogue | null; error: string | null } {
   const [state, setState] = useState<{ catalogue: WorldCatalogue | null; error: string | null }>(
     { catalogue: null, error: null },
   );
   useEffect(() => {
     let live = true;
-    loadWorldCatalogue().then(
+    const join = () => loadWorldCatalogue().then(
       (catalogue) => { if (live) setState({ catalogue, error: null }); },
       (reason: unknown) => {
         if (live) setState({ catalogue: null, error: reason instanceof Error ? reason.message : "Could not load the site catalogue." });
       },
     );
-    return () => { live = false; };
-  }, []);
+    const timer = window.setTimeout(join, catalogueRequest ? 0 : deferMs);
+    return () => {
+      live = false;
+      window.clearTimeout(timer);
+    };
+  }, [deferMs]);
   return state;
 }
 

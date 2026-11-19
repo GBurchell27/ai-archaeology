@@ -54,6 +54,16 @@ export function useWalkEntry(input: WalkEntryInput): WalkEntry {
     latest.current.onEnterWalk?.(site.id);
   }, []);
 
+  // The walk's code is fetched ahead, so the dive lands in the site and not on an empty screen.
+  const canWalk = Boolean(onEnterWalk) && walkable.length > 0;
+  useEffect(() => {
+    if (!canWalk) return;
+    // Only a warm-up: a chunk that fails to arrive must not take the map down. Entering loads it again.
+    const ignoreFailedWarmUp = () => undefined;
+    import("@/components/walk/WalkView").catch(ignoreFailedWarmUp);
+    import("@/components/walk/ModelScene").catch(ignoreFailedWarmUp);
+  }, [canWalk]);
+
   const enabled = Boolean(onEnterWalk) && zoomEntry && anchors.length > 0;
   useEffect(() => {
     if (!enabled) {

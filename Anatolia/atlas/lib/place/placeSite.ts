@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { fetchWorldFile, loadSiteDetail } from "@/lib/world/catalogueLoader";
+import type { SiteCollection } from "@/lib/types";
 import { cellKeyFor, type FeaturedSite, type SiteColumns, type SiteDetail, type WorldIndex } from "@/lib/world/catalogueTypes";
 import { formatYearRange } from "./placeGeometry";
 
@@ -34,13 +35,33 @@ async function catalogueRow(id: string, detail: SiteDetail): Promise<{ kind: str
   return { kind: detail.types[0] ?? null, dates: null };
 }
 
+/** A curated Anatolia site: the close-up API resolves its id too, so the header names it from the same file. */
+async function curatedPlaceSite(id: string): Promise<PlaceSite | null> {
+  const collection = await fetch("/sites.geojson").then((response) => (response.ok ? response.json() as Promise<SiteCollection> : null), () => null);
+  const site = collection?.features.find((feature) => feature.id === id);
+  if (!site) return null;
+  const { name, period, source, sourceUrl } = site.properties;
+  return {
+    name,
+    longitude: site.geometry.coordinates[0],
+    latitude: site.geometry.coordinates[1],
+    kind: period || null,
+    // The file's years are a bracket for the timeline filter, not a dating: the period name is shown instead.
+    dates: null,
+    country: null,
+    why: null,
+    recordCredit: source || null,
+    recordUrl: sourceUrl || null,
+  };
+}
+
 export async function loadPlaceSite(id: string): Promise<PlaceSite | null> {
   const [detail, featuredSites] = await Promise.all([
     loadSiteDetail(id).catch(() => null),
     fetchJson<FeaturedSite[]>("featured.json"),
   ]);
   const featured = featuredSites?.find((site) => site.id === id);
-  if (!detail && !featured) return null;
+  if (!detail && !featured) return curatedPlaceSite(id);
   const row = featured
     ? { kind: `${readable(featured.category)} · ${featured.period}`, dates: formatYearRange(featured.startYear, featured.endYear) }
     : await catalogueRow(id, detail as SiteDetail);

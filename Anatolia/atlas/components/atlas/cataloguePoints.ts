@@ -4,11 +4,18 @@ import type { CataloguePin } from "@/lib/cataloguePins";
 import { hexToBytes } from "@/lib/globe/siteBlock";
 import { worldSizeForPixels } from "@/lib/pinCluster";
 
-/** Dot diameter in CSS pixels: small from the country overview so density reads, larger over one valley. */
-const FAR_DOT = { distance: 1_400_000, pixels: 6.5 };
-const NEAR_DOT = { distance: 60_000, pixels: 12 };
-/** An undated place is drawn smaller and fainter than a dated one. */
-const UNDATED = { size: 0.8, alpha: 0.88 };
+/**
+ * Dot diameter in CSS pixels and how solid the dot is. From the country overview the dots are small soft
+ * motes, so density reads as a glow; over one valley each is a larger rimmed dot.
+ */
+const FAR_DOT = { distance: 1_400_000, pixels: 5.5, solidity: 0.4 };
+const NEAR_DOT = { distance: 60_000, pixels: 12, solidity: 1 };
+/** The dots are fully solid by this share of the way in. */
+const SOLID_BY = 0.5;
+/** An undated place is drawn smaller and fainter than a dated one, and fainter still from afar, so the periods carry the colour. */
+const UNDATED = { size: 0.8, farAlpha: 0.5, nearAlpha: 0.88 };
+/** At the overview the country is as wide as the screen, so on a narrow screen the markers shrink with it, to no less than this. */
+const NARROW_SCREEN = { fullSizeWidthPx: 1000, smallest: 0.55 };
 const HIT_RADIUS_PX = 9;
 
 // The globe's vertex shader culls by the horizon of an ellipsoid; this map is flat, so it only places and sizes.
@@ -17,33 +24,65 @@ const VERTEX = /* glsl */ `
   #include <logdepthbuf_pars_vertex>
   attribute vec3 tint;
   attribute float size;
-  attribute float shown;
+  attribute float undated;
   uniform float pixelSize;
+  uniform float undatedAlpha;
   varying vec3 vTint;
   varying float vAlpha;
   void main() {
     vTint = tint;
-    vAlpha = shown;
+    vAlpha = mix(1.0, undatedAlpha, undated);
     gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
     #include <logdepthbuf_vertex>
     gl_PointSize = size * pixelSize;
   }
 `;
 
-/** The globe's solid dot (tint inside a thin dark rim), for the flat terrain map. */
+/** The globe's dot (tint inside a thin dark rim, softening to a mote from afar), for the flat terrain map. */
 export function createCataloguePointsMaterial(): THREE.ShaderMaterial {
   return new THREE.ShaderMaterial({
     vertexShader: VERTEX,
     fragmentShader: SITES_FRAGMENT,
-    uniforms: { pixelSize: { value: FAR_DOT.pixels }, solidity: { value: 1 }, orbit: { value: 0 } },
+    uniforms: {
+      pixelSize: { value: FAR_DOT.pixels },
+      undatedAlpha: { value: UNDATED.farAlpha },
+      solidity: { value: FAR_DOT.solidity },
+      orbit: { value: 0 },
+    },
     ...SITE_POINTS_BLENDING,
   });
 }
 
-/** Even steps per halving of the camera distance, as on the globe. */
-export function cataloguePointPixels(cameraDistance: number): number {
+/** 0 at the country overview, 1 over one valley, in even steps per halving of the camera distance, as on the globe. */
+export function cameraCloseness(cameraDistance: number): number {
   const fraction = Math.log(FAR_DOT.distance / Math.max(cameraDistance, 1)) / Math.log(FAR_DOT.distance / NEAR_DOT.distance);
-  return THREE.MathUtils.lerp(FAR_DOT.pixels, NEAR_DOT.pixels, THREE.MathUtils.clamp(fraction, 0, 1));
+  return THREE.MathUtils.clamp(fraction, 0, 1);
+}
+
+/** Straight-line distance from the camera to the point its controls orbit. */
+export function cameraDistanceToTarget(camera: THREE.Camera, controls: unknown): number {
+  const target = (controls as { target?: THREE.Vector3 } | null)?.target;
+  return target ? camera.position.distanceTo(target) : camera.position.length();
+}
+
+/** How much smaller than usual a marker is drawn: below 1 only on a narrow screen, and only until the camera comes close. */
+export function markerScale(closeness: number, viewportWidth: number): number {
+  const narrow = THREE.MathUtils.clamp(viewportWidth / NARROW_SCREEN.fullSizeWidthPx, NARROW_SCREEN.smallest, 1);
+  return THREE.MathUtils.lerp(narrow, 1, closeness);
+}
+
+/** Sizes and hardens the dots for the camera distance. `pixelRatio` is the canvas's, which the quality ladder changes. */
+export function tuneCataloguePointsMaterial(
+  material: THREE.ShaderMaterial,
+  cameraDistance: number,
+  pixelRatio: number,
+  viewportWidth: number,
+): void {
+  const closeness = cameraCloseness(cameraDistance);
+  const pixels = THREE.MathUtils.lerp(FAR_DOT.pixels, NEAR_DOT.pixels, closeness) * markerScale(closeness, viewportWidth);
+  material.uniforms.pixelSize.value = pixels * pixelRatio;
+  material.uniforms.undatedAlpha.value = THREE.MathUtils.lerp(UNDATED.farAlpha, UNDATED.nearAlpha, closeness);
+  material.uniforms.solidity.value = THREE.MathUtils.lerp(FAR_DOT.solidity, NEAR_DOT.solidity, THREE.MathUtils.smoothstep(closeness, 0, SOLID_BY));
 }
 
 /** Every pin as one draw call. Row order is pin order, so a picked row is an index into `pins`. */
@@ -51,18 +90,18 @@ export function buildCatalogueGeometry(pins: readonly CataloguePin[]): THREE.Buf
   const positions = new Float32Array(pins.length * 3);
   const tints = new Uint8Array(pins.length * 3);
   const sizes = new Float32Array(pins.length);
-  const shown = new Float32Array(pins.length);
+  const undated = new Float32Array(pins.length);
   pins.forEach((pin, row) => {
     positions.set([pin.x, pin.y, pin.z], row * 3);
     tints.set(hexToBytes(pin.color), row * 3);
     sizes[row] = pin.muted ? UNDATED.size : 1;
-    shown[row] = pin.muted ? UNDATED.alpha : 1;
+    undated[row] = pin.muted ? 1 : 0;
   });
   const geometry = new THREE.BufferGeometry();
   geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
   geometry.setAttribute("tint", new THREE.BufferAttribute(tints, 3, true));
   geometry.setAttribute("size", new THREE.BufferAttribute(sizes, 1));
-  geometry.setAttribute("shown", new THREE.BufferAttribute(shown, 1));
+  geometry.setAttribute("undated", new THREE.BufferAttribute(undated, 1));
   return geometry;
 }
 

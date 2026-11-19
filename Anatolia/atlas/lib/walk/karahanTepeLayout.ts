@@ -361,10 +361,94 @@ export const KARAHAN_TEPE_WALKER_START: WalkerStart = { position: { eastM: 0, no
 /** [EST] reaches the far side of Structure AC from the origin. */
 export const KARAHAN_TEPE_WALK_RADIUS_M = 40;
 
+// ---------------------------------------------------------------------------------------------------------------
+// The fill the buildings were found under
+// ---------------------------------------------------------------------------------------------------------------
+
+/** [K21] AB's fill from the floor up: 0.4 to 0.5 m of sterile reddish soil, 1.5 m of dark fill with stones, then large flat stones. */
+export const AB_FILL = { sterileSoilM: 0.45, darkFillM: 1.5 } as const;
+
+// ---------------------------------------------------------------------------------------------------------------
+// Decisions made by eye for the walk model. Every one is [EST]: none is a published figure, and none was checked
+// against a plan or a photograph. They are kept here, apart from the published figures, so they are easy to find.
+// ---------------------------------------------------------------------------------------------------------------
+
+export const KARAHAN_TEPE_DRAWING_ESTIMATES = {
+  /**
+   * [EST] AB's floor below the rock surface as drawn. [TT]'s 3.5 m is the only published depth, but [K21]'s own fill
+   * sequence (0.45 m + 1.5 m + capping stones) and its 1.6 to 1.7 m pillars that "reach just below the surface" need
+   * a floor about 2.3 m down. The excavator's paper is the one drawn, so 2.3 m is used and 3.5 m stays on record above.
+   */
+  abDrawnDepthM: 2.3,
+  /** [EST] AD is drawn as a circle 23 m across ([K21] "nearly rectangular with rounded corners", [AM24] oval or round). */
+  adDrawnAsCircle: true,
+  /** [EST] AB and AA are drawn as rectangles with rounded corners of this radius. Which end of each trapezoid is the narrow one is not published, so no taper is drawn. */
+  roomCornerRadiusM: 1,
+  /** [EST] the head of a T-pillar in AD, as shares of its width and its height. No AD pillar is described in the sources. */
+  tPillarHeadLengthPerWidth: 1.6,
+  tPillarHeadHeightShare: 0.2,
+  /** [EST] AD's central pair, centre to centre. They are drawn standing, side by side east and west; they were found collapsed [K21]. */
+  adCentralPairSpacingM: 3,
+  /**
+   * [EST] the ground east of AD lies at AD's floor, so its built eastern wall stands free [K21] and the rock-cut western
+   * half is the edge of a terrace. The edge runs from AD's north and south points through these points (metres from
+   * AD's centre). [K21] says only that AD's west is cut into the rock and that the bedrock "descends sharply again"
+   * near AC. The real hill is a slope, not one step.
+   */
+  terraceEdgeNorthOfAd: [{ eastM: 3.5, northM: 13.5 }, { eastM: 5, northM: 21 }, { eastM: 2, northM: 34 }],
+  terraceEdgeSouthOfAd: [{ eastM: -6, northM: -40 }, { eastM: -1.5, northM: -16 }],
+  /** [EST] AB's two rows of bedrock pillars: distance from the west wall, and places along it north (+) and south (-) of the head. */
+  abFrontRowFromWestWallM: 1.5,
+  abFrontRowAlongWallM: [-1.8, -0.9, 0.9, 1.8],
+  abBackRowFromWestWallM: 3.5,
+  abBackRowSpacingM: 0.9,
+  /** [EST] the eleventh pillar, the flat slab. LOW CONFIDENCE: [K21] does not say where it stands. */
+  abSlabFromWestWallM: 4.9,
+  abSlabNorthOfCentreM: -2.2,
+  /**
+   * [EST] the carved head as a plain rounded form with no face: its three diameters. No size is published. It juts out
+   * of the upper front of the ledge, because [K21] has the centre of the ridge "shaped into" the head.
+   */
+  abHeadBossM: { deepM: 0.5, highM: 0.6, wideM: 0.45 },
+  /** [EST] how far the head is turned toward the entrance stairs in the south. [K21] says only "slightly". */
+  abHeadTurnDeg: 15,
+  /**
+   * [EST] the neck of rock the head grows from: how far it reaches past the head's middle, and its height and width
+   * where it leaves the wall. It is drawn in to three fifths of that behind the head. Not described in a source: [K21]
+   * says only that the centre of the ridge is shaped into the head.
+   */
+  abHeadNeckM: { pastHeadMiddleM: 0.1, highM: 0.56, wideM: 0.62 },
+  /**
+   * [EST] the porthole is drawn in AB's south wall, in line with AB's centre, with the five steps inside AB below it.
+   * [K21] gives the 0.7 m circle and the five steps but not clearly which comes first, nor any step size.
+   * An artefact follows and is not a published fact: five 0.25 m steps above a floor drawn 2.3 m down put the sill
+   * 1.05 m below the rock surface, and AD's floor is 4.3 m below it, so on AD's side the hole opens about 3.3 m up
+   * the wall (3.6 m to its middle). No source opened says how high the opening is above either floor. With [TT]'s
+   * 3.5 m depth for AB it would still be about 2 m up. [K21] has the steps reached "from both the adjacent Str. AD
+   * and the ground level", which does not settle it.
+   */
+  portholeStepRiseM: 0.25,
+  portholeStepTreadM: 0.3,
+  stepWidthM: 0.9,
+  /** [EST] the four rough exit steps climb the east wall into the north-east corner. Tread only: the rise is a fifth of the depth. */
+  exitStepTreadM: 0.4,
+  /** [EST] the serpentine channel on the rock surface north of AB: length, sideways swing and width. None is published. */
+  channel: { lengthM: 5, swingM: 0.5, widthM: 0.22 },
+  /** [EST] AA's two steps to the outside stand at the south end of its bench. [K21] says "one end". */
+  aaStepsAtSouthEnd: true,
+  /** [EST] AC as found: a kerb this high round a cap of flat stones. Its interior is not excavated in [K21], so none is drawn. */
+  acKerbHeightM: 0.5,
+  /** [EST] a capping stone. [K21] gives one stone only, 2.65 by 1.65 m, over AB. */
+  cappingSlab: { lengthM: 1.9, widthM: 1.3, thicknessM: 0.3 },
+} as const;
+
 export const KARAHAN_TEPE_MODEL_NOTE =
-  "A schematic of Structures AA to AD drawn from dimensions stated in published text, not a survey. Sizes of AB, AA and " +
-  "AC and the 23 m span of AD are published; the positions of the buildings relative to one another, every pillar " +
-  "height in AD and all bench sizes are estimates.";
+  "A schematic of Structures AA to AD drawn from dimensions stated in published text, not a survey. The sizes of AB, AA and " +
+  "AC and the 23 m span of AD are published. The positions of the buildings relative to one another, every pillar height in " +
+  "AD, all bench sizes, the 2.3 m depth drawn for AB and the single rock step beside AD are estimates. AD is drawn as a " +
+  "circle with no entrance, since none is published, and its two central pillars, found collapsed, are drawn standing. " +
+  "The carved head is a plain rounded form with no face, and no engraving is drawn. The porthole opens high in AD's wall only " +
+  "because of the depths drawn for the two floors: its height above either floor is not published.";
 
 export const KARAHAN_TEPE_SOURCES: readonly { key: string; label: string; url: string }[] = [
   { key: "K21", label: "Karul 2021, Türk Arkeoloji ve Etnografya Dergisi 82", url: "https://dergipark.org.tr/en/pub/arkeolojiveetnografya/issue/63476/909296" },

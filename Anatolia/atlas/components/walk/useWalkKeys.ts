@@ -43,3 +43,14 @@ export function useKeyCommand(code: string, onPress: () => void) {
     return () => window.removeEventListener("keydown", press);
   }, [code]);
 }
+
+/** Runs `onPress` whenever a movement key goes down. */
+export function useMoveKeyPress(onPress: () => void) {
+  useEffect(() => {
+    const press = (event: KeyboardEvent) => {
+      if (MOVE_KEYS.has(event.code) && !isShortcut(event)) onPress();
+    };
+    window.addEventListener("keydown", press);
+    return () => window.removeEventListener("keydown", press);
+  }, [onPress]);
+}

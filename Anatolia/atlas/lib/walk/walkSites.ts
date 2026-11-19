@@ -10,7 +10,7 @@ export type SplatAlignment = {
 };
 
 /** Modelled reconstructions, held in walkModels.ts. */
-export type WalkModelId = "gobekli-tepe-enclosures";
+export type WalkModelId = "gobekli-tepe-enclosures" | "karahan-tepe-structures";
 
 export type WalkSite = {
   id: string;
@@ -43,10 +43,11 @@ function walkSite(id: string, name: string, walkRadiusM: number, alignment = UNT
 
 export const WALK_SITES: readonly WalkSite[] = [
   // Levelled from the photographers' cameras. The walker starts on the visitor walkway where one wide photograph
-  // was taken, looking the way it looked; the scale of 4.5 is an estimate from the depth of the enclosures.
-  walkSite("gobekli-tepe", "Göbekli Tepe", 25, { position: [-0.76, 1.23, -14.08], rotation: [-0.593, -0.313, -0.157], scale: 4.5 }, "gobekli-tepe-enclosures"),
-  // A fragment from 11 photographs. The walker starts where Gir_Ke_el3.jpg was taken; the scale is an estimate.
-  walkSite("karahan-tepe", "Karahan Tepe", 25, { position: [-0.81, 1.47, -4.46], rotation: [-1.828, -1.287, -1.837], scale: 1.5 }),
+  // was taken, looking the way it looked; the radius of 36 m reaches every landmark placed in the photographs; the scale of 5.5 comes from the published spacing of Enclosures B, C and D and the height of Pillar 18.
+  walkSite("gobekli-tepe", "Göbekli Tepe", 36, { position: [-0.93, 1.14, -17.21], rotation: [-0.593, -0.313, -0.157], scale: 5.5 }, "gobekli-tepe-enclosures"),
+  // A fragment from 17 photographs. The walker starts where Gir_Ke_el3.jpg was taken; the scale is an estimate.
+  // The radius and alignment are for that fragment: the model brings its own radius.
+  walkSite("karahan-tepe", "Karahan Tepe", 25, { position: [-0.87, 1.79, -4.87], rotation: [-1.221, -1.146, -1.227], scale: 2 }, "karahan-tepe-structures"),
 ];
 
 export function findWalkSite(id: string | undefined): WalkSite | null {

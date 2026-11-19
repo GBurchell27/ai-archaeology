@@ -1,104 +1,207 @@
+/* The walk view's chrome. Colours and type come from the --globe-* tokens in app/theme.css, like the globe's.
+   No backdrop blur here: it would be redrawn over a moving WebGL canvas every frame. */
 .walk {
-  --walk-ink: #ece4d4;
-  --walk-ochre: #dba545;
-  --walk-glass: rgba(12, 16, 22, 0.8);
-  --walk-rule: rgba(236, 228, 212, 0.16);
+  --walk-side: min(380px, calc(100% - 44px));
   position: fixed;
   inset: 0;
   overflow: hidden;
   background: linear-gradient(#101820, #263641);
-  color: var(--walk-ink);
+  color: var(--globe-ink);
 }
 
 .stage { position: absolute; inset: 0; }
+/* The photographs fade toward the edge of the screen, where a splat is at its roughest. */
+.walk[data-walk-source="photographs"] .stage::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at center, transparent 58%, rgba(6, 9, 13, 0.5) 100%);
+  pointer-events: none;
+}
 .walk canvas { display: block; }
-.walk :focus-visible { outline: 2px solid var(--walk-ochre); outline-offset: 3px; }
-.walk a { color: var(--walk-ink); }
+.walk :focus-visible { outline: 2px solid var(--globe-ochre); outline-offset: 3px; }
+.walk a { color: var(--globe-link); text-decoration-color: var(--globe-link-rule); }
+.walk a:hover { color: var(--globe-link-hover); }
 .walk button { color: inherit; font: inherit; cursor: pointer; }
 
-/* The chrome never eats the click that locks the pointer; links and buttons opt back in. */
+/* The chrome never eats the click that locks the pointer; links, buttons and disclosures opt back in. */
 .chrome { position: absolute; inset: 0; z-index: 5; pointer-events: none; }
-.chrome a, .chrome button { pointer-events: auto; }
+/* So do the footer and a showing landmark card: the wheel over a panel must reach the panel, not lift the walker off. */
+.chrome a, .chrome button, .chrome details, .footer, .landmark[data-shown="true"] { pointer-events: auto; }
 
-.header { position: absolute; top: 18px; left: 22px; }
-
-.exit, .mode {
-  padding: 6px 13px 7px;
-  border: 1px solid var(--walk-rule);
+.exit, .mode, .sources button, .disclosure, .landmark, .note, .footer, .prompt {
+  border: 1px solid var(--globe-rule);
   border-radius: 3px;
-  background: var(--walk-glass);
-  font-size: 12.5px;
-  letter-spacing: 0.04em;
-  text-decoration: none;
+  background: var(--globe-panel);
 }
-.exit { display: inline-block; }
-.exit:hover, .mode:hover { border-color: var(--walk-ochre); }
+.disclosure[open], .landmark, .footer, .prompt { box-shadow: var(--globe-shadow); }
+
+.header {
+  position: absolute;
+  top: 18px;
+  left: 22px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  max-width: calc(100% - var(--walk-side) - 56px);
+}
+
+.exit, .mode, .sources button { padding: 6px 13px 7px; font-size: 12.5px; letter-spacing: 0.04em; text-decoration: none; }
+.walk a.exit { color: var(--globe-ink); }
+.exit:hover, .mode:hover { border-color: var(--globe-ochre); }
 
 .name {
   margin: 16px 0 0;
-  font: 500 clamp(27px, 3.4vw, 42px)/1.08 Palatino, "Palatino Linotype", "Book Antiqua", Georgia, serif;
+  font: 500 clamp(27px, 3.4vw, 42px)/1.08 var(--globe-serif);
+  letter-spacing: 0.005em;
+  text-wrap: balance;
   text-shadow: 0 1px 14px rgba(4, 6, 10, 0.7);
 }
 
-.mode { position: absolute; top: 18px; right: 22px; transition: opacity 0.3s; }
-.mode strong { color: var(--walk-ochre); font-weight: 600; }
-.mode span { opacity: 0.7; }
+.note, .footer { padding: 9px 14px 10px; font-size: 12.5px; line-height: 1.5; }
+.note { margin: 12px 0 0; max-width: 460px; }
+
+/* The right-hand column, top to bottom: the controls, the disclosures, and the landmark card at the foot. */
+.side {
+  position: absolute;
+  top: 18px;
+  right: 22px;
+  bottom: 18px;
+  width: var(--walk-side);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.controls, .panels { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; }
+
+.mode { transition: opacity 0.3s; }
+.mode strong { color: var(--globe-ochre); font-weight: 600; }
+.mode span { color: var(--globe-ink-soft); }
 /* With the pointer locked it cannot be clicked, so it steps back to a quiet indicator. */
 .mode[data-locked="true"] { opacity: 0.6; border-color: transparent; }
 
-/* Model or photographs: two joined buttons under the mode button. */
-.sources { position: absolute; top: 62px; right: 22px; display: flex; transition: opacity 0.3s; }
-.sources button {
-  padding: 6px 13px 7px;
-  border: 1px solid var(--walk-rule);
-  background: var(--walk-glass);
-  font-size: 12.5px;
-  letter-spacing: 0.04em;
-}
+/* Model or photographs: two joined buttons. */
+.sources { display: flex; transition: opacity 0.3s; }
 .sources button:first-child { border-radius: 3px 0 0 3px; }
 .sources button:last-child { border-radius: 0 3px 3px 0; margin-left: -1px; }
-.sources button:hover, .sources button[aria-pressed="true"] { position: relative; border-color: var(--walk-ochre); }
-.sources button[aria-pressed="true"] { color: var(--walk-ochre); font-weight: 600; }
+.sources button:hover, .sources button[aria-pressed="true"] { position: relative; border-color: var(--globe-ochre); }
+.sources button[aria-pressed="true"] { background: var(--globe-control-on); color: var(--globe-ochre-ink); }
 .sources[data-locked="true"] { opacity: 0.6; }
 
+/* Keys and the conjectural layers: closed, each is a small label; the open one drops below as a panel. When the
+   column is short the panels give way to the card and scroll. */
+.panels { align-content: flex-start; min-height: 34px; overflow-y: auto; scrollbar-width: thin; scrollbar-color: var(--globe-scroll-thumb) transparent; }
+.disclosure { font-size: 12.5px; line-height: 1.45; transition: opacity 0.3s; }
+.disclosure[open] { order: 2; flex-basis: 100%; }
+.disclosure[data-locked="true"] { opacity: 0.6; }
+.disclosure summary, .footer summary { font-size: 10.5px; letter-spacing: 0.14em; text-transform: uppercase; cursor: pointer; }
+.disclosure summary { padding: 9px 13px; color: var(--globe-ink-soft); }
+/* Inside the scrolling column an outline drawn outward would be cut off. */
+.disclosure summary:focus-visible { outline-offset: -3px; }
+.disclosure summary:hover, .disclosure[open] summary { color: var(--globe-ochre); }
+.disclosure p { margin: 0; padding: 0 13px 8px; }
+
+.legend { display: grid; gap: 6px; margin: 0; padding: 2px 13px 11px; }
+.legendRow { display: grid; grid-template-columns: 9.8em 1fr; gap: 10px; align-items: baseline; }
+.legendRow dd { margin: 0; }
+.legendRow kbd { font: 600 12px/1.35 ui-monospace, Consolas, monospace; color: var(--globe-ochre); }
+.disclosure .legendHint { padding-top: 9px; border-top: 1px solid var(--globe-rule); color: var(--globe-prose); }
+
+.hypothesesNote { font-style: italic; }
+.hypothesis { padding-top: 8px; border-top: 1px solid var(--globe-rule); }
+.hypothesis label { display: block; padding: 0 13px 4px; font-weight: 600; cursor: pointer; }
+.hypothesis input { accent-color: var(--globe-ochre); margin: 0 6px 0 0; vertical-align: -1px; }
+.hypothesis p { color: var(--globe-prose); }
+.hypothesisSources { display: flex; flex-wrap: wrap; gap: 2px 12px; }
+.disclosure .hypothesisWhere { color: var(--globe-ink); }
+.hypothesisWhere button { margin-left: 4px; padding: 1px 9px 2px; border: 1px solid var(--globe-rule); border-radius: 3px; background: none; color: var(--globe-ochre); font-size: 12px; }
+.hypothesisWhere button:hover { border-color: var(--globe-ochre); }
+
+/* The way in. The same shape as the atlas's "Walk this site" offer, because it is the next step after it. */
 .prompt {
   position: absolute;
-  top: 50%;
   left: 50%;
-  transform: translate(-50%, -50%);
-  width: min(400px, calc(100% - 44px));
-  padding: 20px 24px 22px;
-  border: 1px solid var(--walk-rule);
-  border-radius: 4px;
-  background: var(--walk-glass);
-  text-align: left;
-}
-.prompt[hidden] { display: none; }
-.prompt:hover { border-color: var(--walk-ochre); }
-.promptTitle {
-  display: block;
-  margin-bottom: 14px;
-  font: 500 24px/1.1 Palatino, "Palatino Linotype", "Book Antiqua", Georgia, serif;
+  bottom: 132px;
+  transform: translateX(-50%);
+  display: grid;
+  gap: 3px;
+  padding: 11px 26px 12px;
+  border-bottom-color: var(--globe-ochre);
   text-align: center;
 }
-.legend { display: grid; gap: 7px; font-size: 13px; line-height: 1.35; }
-.legendRow { display: grid; grid-template-columns: 9.5em 1fr; gap: 12px; align-items: baseline; }
-.legendRow kbd { font: 600 12px/1.35 ui-monospace, Consolas, monospace; color: var(--walk-ochre); text-align: right; }
+.prompt[hidden] { display: none; }
+.prompt:hover { background: var(--globe-control-hover); }
+.promptTitle { margin-bottom: 2px; font: italic 500 19px/1.2 var(--globe-serif); }
+.promptHint { font-size: 10.5px; letter-spacing: 0.14em; text-transform: uppercase; color: var(--globe-muted); }
+/* Once the visitor has set off: one line at the foot of the screen, so it covers no name over a marker. */
+.prompt[data-compact="true"] { bottom: 18px; padding: 6px 16px 7px; }
+.prompt[data-compact="true"] .promptTitle { margin: 0; font-size: 15px; }
+.prompt[data-compact="true"] .promptHint { display: none; }
 
-.note, .footer {
+/* What the reconstruction is, in one line; its limits and sources open upward from the corner. */
+.footer {
   position: absolute;
   left: 22px;
-  max-width: min(560px, calc(100% - 44px));
-  padding: 10px 14px;
-  border: 1px solid var(--walk-rule);
-  border-radius: 3px;
-  background: var(--walk-glass);
+  bottom: 18px;
+  max-width: min(400px, calc(100% - var(--walk-side) - 56px));
+  max-height: calc(100% - 190px);
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--globe-scroll-thumb) transparent;
+}
+.footer strong { color: var(--globe-ochre-ink); font-weight: 600; }
+.footer details { margin-top: 5px; }
+.footer summary { color: var(--globe-ink-soft); }
+.footer summary:hover, .footer details[open] summary { color: var(--globe-ochre); }
+.footer p { margin: 7px 0 0; color: var(--globe-prose); }
+
+/* What the walker has come up to. It needs no click: the pointer is usually locked. */
+.landmark {
+  flex: none;
+  margin-top: auto;
+  padding: 12px 16px 10px;
+  border-left: 2px solid var(--globe-ochre);
   font-size: 13px;
   line-height: 1.5;
+  transition: opacity 0.35s;
 }
-.note { top: 130px; margin: 0; }
-.footer { bottom: 18px; }
+.landmark[data-shown="false"] { opacity: 0; }
+.landmark p { margin: 0 0 6px; color: var(--globe-prose); }
+.landmarkTitle { margin: 0 0 6px; font: 500 20px/1.15 var(--globe-serif); color: var(--globe-ochre); }
+.landmark .landmarkSource { font-size: 12px; color: var(--globe-ink-soft); }
+
+/* A name floating over a landmark in the scene, shown while flying. */
+.landmarkName {
+  padding: 1px 7px 2px;
+  border-radius: 2px;
+  background: rgba(12, 16, 22, 0.62);
+  color: var(--globe-ink);
+  font: 500 13px/1.3 var(--globe-serif);
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+/* Where a centred prompt would reach the card, it is centred in what is left of the column instead, above the
+   footer; and it steps aside while the footer is open. A click on the scene still starts the look. */
+@media (max-width: 1200px) {
+  .prompt {
+    left: calc((100% - var(--walk-side) - 12px) / 2);
+    bottom: 200px;
+    max-width: calc(100% - var(--walk-side) - 56px);
+    padding-inline: 16px;
+  }
+  /* Here the footer has the foot of the screen, so the one line stays above it. */
+  .prompt[data-compact="true"] { bottom: 200px; }
+  .chrome:has(.footer details[open]) .prompt { display: none; }
+}
+/* Too narrow for two columns: the footer takes the bottom edge and the column ends above it. */
+@media (max-width: 700px) {
+  .header { max-width: calc(100% - 44px); }
+  .side { top: 112px; bottom: 150px; }
+  .footer { max-width: calc(100% - 44px); max-height: 120px; }
+  .prompt { display: none; }
+}
 
 @media (prefers-reduced-motion: reduce) {
-  .mode, .sources { transition: none; }
+  .mode, .sources, .disclosure, .landmark { transition: none; }
 }

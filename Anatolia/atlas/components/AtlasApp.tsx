@@ -24,6 +24,7 @@ import { useInitialSite } from "@/components/atlas/useInitialSite";
 import { useMapDisplay } from "@/components/atlas/useMapDisplay";
 import { usePlaceTerrain } from "@/components/atlas/usePlaceTerrain";
 import { useRegionalTerrain } from "@/components/atlas/useRegionalTerrain";
+import { useSiteAddress } from "@/components/atlas/useSiteAddress";
 import { useTimelineState } from "@/components/atlas/useTimelineState";
 import { useWalkEntry } from "@/components/atlas/useWalkEntry";
 import { WalkOffer } from "@/components/atlas/WalkOffer";
@@ -48,11 +49,13 @@ export interface AtlasAppProps {
   initialSiteId?: string;
   /** Present when the atlas sits under the world globe: called to hand the view back. */
   onExitToGlobe?: (look: GlobeLook) => void;
+  /** The selected place changed; null when none is. Its id goes in the address. */
+  onSelectSite?: (siteId: string | null) => void;
   /** Present when the atlas sits under the coordinator: called with a walkable site's id to open its walk. */
   onEnterWalk?: (siteId: string) => void;
 }
 
-export function AtlasApp({ regional, initialLook, initialSiteId, onExitToGlobe, onEnterWalk }: AtlasAppProps) {
+export function AtlasApp({ regional, initialLook, initialSiteId, onExitToGlobe, onSelectSite, onEnterWalk }: AtlasAppProps) {
   const preferences = useAtlasPreferences();
   const display = useMapDisplay();
   const camera = useCameraCommands();
@@ -103,7 +106,8 @@ export function AtlasApp({ regional, initialLook, initialSiteId, onExitToGlobe, 
     onHelp: () => undefined,
   });
   useAtlasKeys(keys);
-  useInitialSite(initialSiteId, camera.ready, sites, wikiSites, navigation.flyTo, navigation.openWiki);
+  const initialSettled = useInitialSite(initialSiteId, camera.ready, data, navigation.flyTo, navigation.openWiki);
+  useSiteAddress(selection.selectedId ?? wikiSite?.id ?? null, initialSettled, onSelectSite);
   const exitToGlobe = useGlobeExit(onExitToGlobe, metadata?.bounds ?? null);
   const walkEntry = useWalkEntry({ onEnterWalk, zoomEntry: !tripSession.open, sites, metadata, metres, exaggeration, camera });
 
@@ -164,6 +168,8 @@ export function AtlasApp({ regional, initialLook, initialSiteId, onExitToGlobe, 
         region={regional}
         regionalGrid={region.regionalGrid}
         regionalUrl={rasters.regionalUrl}
+        regionalGain={rasters.regionalGain}
+        detailGrade={rasters.detailGrade}
         onRegionApproach={region.prepareRegion}
         onRegionVisibility={region.setRegionalVisible}
         compareUrl={placeLayers.compare ? rasters.compareUrl : null}

@@ -8,6 +8,8 @@ export interface AtlasData {
   sites: SiteFeature[];
   metres: Float32Array | null;
   wikiSites: WikiFeature[];
+  /** True once the catalogue has arrived or failed to. */
+  wikiLoaded: boolean;
   error: string | null;
 }
 
@@ -18,6 +20,7 @@ export function useAtlasData(onLoaded: (atlas: AtlasMetadata, metres: Float32Arr
   const [sites, setSites] = useState<SiteFeature[]>([]);
   const [metres, setMetres] = useState<Float32Array | null>(null);
   const [wikiSites, setWikiSites] = useState<WikiFeature[]>([]);
+  const [wikiLoaded, setWikiLoaded] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const loaded = useRef(onLoaded);
   loaded.current = onLoaded;
@@ -26,7 +29,8 @@ export function useAtlasData(onLoaded: (atlas: AtlasMetadata, metres: Float32Arr
     fetch("/wikidata/sites.geojson")
       .then((response) => response.json())
       .then((collection: { features: WikiFeature[] }) => setWikiSites(collection.features))
-      .catch(() => undefined);
+      .catch(() => undefined)
+      .finally(() => setWikiLoaded(true));
   }, []);
 
   useEffect(() => {
@@ -59,5 +63,5 @@ export function useAtlasData(onLoaded: (atlas: AtlasMetadata, metres: Float32Arr
     };
   }, []);
 
-  return { metadata, sites, metres, wikiSites, error };
+  return { metadata, sites, metres, wikiSites, wikiLoaded, error };
 }

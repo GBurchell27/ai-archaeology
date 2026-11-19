@@ -8,6 +8,8 @@ const RIM = "#0d0905";
 /** The globe's featured marker burns towards this at its core. */
 const CORE_LIGHT = "#fff8e6";
 
+const GLOW_STRENGTH = 0.55;
+
 const textures = new Map<string, THREE.CanvasTexture>();
 
 /**
@@ -16,7 +18,26 @@ const textures = new Map<string, THREE.CanvasTexture>();
  * `filled` false is the hollow ring of an approximate location.
  */
 export function sitePinTexture(color: string, filled: boolean): THREE.CanvasTexture {
-  const key = `${color}|${filled}`;
+  return cachedTexture(`${color}|${filled}`, (context) => paintPin(context, color, filled));
+}
+
+/**
+ * The light a curated site throws on the map around it, as the globe's featured markers do: its colour,
+ * strongest at the pin and gone by the edge. Drawn with additive blending, under the pin.
+ */
+export function sitePinGlowTexture(color: string): THREE.CanvasTexture {
+  return cachedTexture(`${color}|glow`, (context) => {
+    const gradient = fade(context, color, transparent(color), 0, CENTRE);
+    // Most of the light sits close to the pin, with a long faint tail.
+    gradient.addColorStop(0.35, `rgba(${hexToBytes(color).join(", ")}, 0.3)`);
+    // Faint enough that a cluster of sites adds up to their colour, not to white.
+    context.globalAlpha = GLOW_STRENGTH;
+    paintDisc(context, CENTRE, gradient);
+  });
+}
+
+/** One texture per key, painted once on a square canvas. */
+function cachedTexture(key: string, paint: (context: CanvasRenderingContext2D) => void): THREE.CanvasTexture {
   const cached = textures.get(key);
   if (cached) return cached;
   const canvas = document.createElement("canvas");
@@ -24,6 +45,14 @@ export function sitePinTexture(color: string, filled: boolean): THREE.CanvasText
   canvas.height = SIZE;
   const context = canvas.getContext("2d");
   if (!context) throw new Error("Could not draw a site marker");
+  paint(context);
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.colorSpace = THREE.NoColorSpace;
+  textures.set(key, texture);
+  return texture;
+}
+
+function paintPin(context: CanvasRenderingContext2D, color: string, filled: boolean): void {
   paintDisc(context, SIZE / 2, fade(context, "rgba(4, 6, 10, 0.5)", "rgba(4, 6, 10, 0)", 22, 62));
   context.globalAlpha = 0.6;
   paintDisc(context, 50, fade(context, color, transparent(color), 24, 50));
@@ -36,13 +65,10 @@ export function sitePinTexture(color: string, filled: boolean): THREE.CanvasText
     context.globalCompositeOperation = "destination-out";
     paintDisc(context, 20, RIM);
     context.globalCompositeOperation = "source-over";
-    paintRing(context, 23, 11, RIM);
-    paintRing(context, 23, 6, mixHex(color, CORE_LIGHT, 0.25));
+    paintRing(context, 23, 12, RIM);
+    // Lit as far as a filled pin's core, or the ring reads as a dark hole on the terrain.
+    paintRing(context, 23, 7, mixHex(color, CORE_LIGHT, 0.6));
   }
-  const texture = new THREE.CanvasTexture(canvas);
-  texture.colorSpace = THREE.NoColorSpace;
-  textures.set(key, texture);
-  return texture;
 }
 
 function fade(context: CanvasRenderingContext2D, from: string, to: string, inner: number, outer: number): CanvasGradient {

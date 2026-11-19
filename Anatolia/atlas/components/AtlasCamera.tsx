@@ -48,7 +48,6 @@ export function AtlasCamera(props: {
   const { pose, span, cancelToken, zoomSpeed, zoomCommand, onArrival, onReady } = props;
   const controls = useRef<OrbitControlsImpl>(null);
   const camera = useThree((state) => state.camera) as THREE.PerspectiveCamera;
-  const scene = useThree((state) => state.scene);
   const canvas = useThree((state) => state.gl.domElement);
   const flight = useRef<Flight | null>(null);
   const zoom = useRef({ remaining: 0, anchor: new THREE.Vector3() });
@@ -160,12 +159,10 @@ export function AtlasCamera(props: {
     const debug = window as Window & {
       __atlasCamera?: THREE.Camera;
       __atlasControls?: OrbitControlsImpl | null;
-      __atlasScene?: THREE.Scene;
     };
     debug.__atlasCamera = camera;
     debug.__atlasControls = controls.current;
-    debug.__atlasScene = scene;
-  }, [camera, scene]);
+  }, [camera]);
 
   useFrame((_, delta) => {
     if (controls.current) controls.current.dampingFactor = 1 - Math.exp(-11 * Math.min(delta, 0.14));

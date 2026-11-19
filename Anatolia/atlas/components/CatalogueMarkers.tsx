@@ -6,9 +6,10 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
 import {
   buildCatalogueGeometry,
-  cataloguePointPixels,
+  cameraDistanceToTarget,
   createCataloguePointsMaterial,
   pickCataloguePin,
+  tuneCataloguePointsMaterial,
 } from "@/components/atlas/cataloguePoints";
 import ringStyles from "@/components/globe/GlobeSites.module.css";
 import { placeCatalogue, type CataloguePin } from "@/lib/cataloguePins";
@@ -45,10 +46,8 @@ export function CatalogueMarkers(props: {
   useEffect(() => () => geometry.dispose(), [geometry]);
   const material = useMemo(() => createCataloguePointsMaterial(), []);
   useEffect(() => () => material.dispose(), [material]);
-  useFrame(({ camera, controls, viewport }) => {
-    const target = (controls as { target?: THREE.Vector3 } | null)?.target;
-    const distance = target ? camera.position.distanceTo(target) : camera.position.length();
-    material.uniforms.pixelSize.value = cataloguePointPixels(distance) * viewport.dpr;
+  useFrame(({ camera, controls, gl, size }) => {
+    tuneCataloguePointsMaterial(material, cameraDistanceToTarget(camera, controls), gl.getPixelRatio(), size.width);
   });
   const viewportHeight = useThree((state) => state.size.height);
   const [hovered, setHovered] = useState<CataloguePin | null>(null);

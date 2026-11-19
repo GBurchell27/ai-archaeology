@@ -56,7 +56,8 @@ export function PeriodDock(props: { periodId: string; onPeriod: (id: string) => 
         className="dock-handle"
         aria-expanded={open}
         aria-controls="period-dock"
-        onClick={() => setOpen((value) => !value)}
+        // Hover and focus have already opened the dock by the time a pointer click lands, so only the keyboard (detail 0) toggles.
+        onClick={(event) => (event.detail === 0 ? setOpen((value) => !value) : arm())}
       >
         Periods
       </button>

@@ -27,6 +27,9 @@ Do not run a download script unless the owner of the repository asked for that d
 - [`docs/world-catalogue.md`](docs/world-catalogue.md): sources, merge rules, and how to add or correct a featured monument.
 - [`docs/suitability-model.md`](docs/suitability-model.md): the model layer and its limits.
 - [`docs/inspiration.md`](docs/inspiration.md): the projects and papers this work learned from, with licences.
+- [`docs/philosophy.md`](docs/philosophy.md): what the atlas is for, and how ideas and theories are treated.
+- [`docs/todo.md`](docs/todo.md): open work, decisions waiting, and what is unverified.
+- [`AGENTS.md`](AGENTS.md): the working rules for coding agents, with the run and check commands.
 
 ## Code
 

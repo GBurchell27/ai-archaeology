@@ -175,7 +175,7 @@ function applyNationalMaterial(
   material.uniforms.mapA.value = prepareTexture(texture, Math.min(8, gl.capabilities.getMaxAnisotropy()));
   material.uniforms.mapB.value = material.uniforms.mapA.value;
   material.uniforms.backdrop.value = props.background;
-  material.uniforms.mapEdge.value = 0.045;
+  material.uniforms.mapEdge.value = 0.08;
   material.uniforms.mapWater.value = props.baseMap === "hypsometric" ? 1 : 0;
   material.uniforms.useB.value = 0;
   material.uniforms.compare.value = 0;

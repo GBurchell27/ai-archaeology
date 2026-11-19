@@ -3,7 +3,8 @@
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { isOnNearSide } from "../lib/globe/visibleSites.ts";
-import { placeLabels } from "../lib/globe/labelLayout.ts";
+import { AROUND_MARKER, labelBox, placeLabels } from "../lib/globe/labelLayout.ts";
+import { pinSeparationPx, prominentPoints } from "../lib/atlas/pinDeclutter.ts";
 import { buildSiteGrid, countShownByBucket, nearestSite } from "../lib/globe/siteGrid.ts";
 import {
   cellKeyFor, detailBucket, siteDetailFromStored, sourceUrlFor,
@@ -93,6 +94,14 @@ check("an overlapping label takes the other side", labels.length === 3 && labels
 check("labels keep clear of obstacles",
   placeLabels([{ name: "Carnac", screenX: 400, screenY: 500 }], 5, viewport, [{ left: 0, right: 800, top: 480, bottom: 520 }]).length === 0);
 
+const hemmedIn = { name: "Karahan Tepe", screenX: 400, screenY: 300 };
+const flanks = [{ left: 410, right: 600, top: 290, bottom: 310 }, { left: 200, right: 390, top: 290, bottom: 310 }];
+check("a name with both flanks taken stays off unless it may go above", placeLabels([hemmedIn], 5, viewport, flanks).length === 0);
+check("a name with both flanks taken goes above its marker", placeLabels([hemmedIn], 5, viewport, flanks, 0, AROUND_MARKER)[0]?.side === "above");
+check("a name under the top edge goes below its marker",
+  placeLabels([{ ...hemmedIn, screenY: 20 }], 5, viewport, [{ left: 410, right: 600, top: 10, bottom: 30 }, { left: 200, right: 390, top: 10, bottom: 30 }], 0, AROUND_MARKER)[0]?.side === "below");
+check("a wider marker pushes its name out", labelBox({ ...hemmedIn, markerGapPx: 27 }, "right").left === 427 && labelBox(hemmedIn, "right").left === 413);
+
 check("source records derive from the id",
   sourceUrlFor("Q39671") === "https://www.wikidata.org/wiki/Q39671"
   && sourceUrlFor("579885") === "https://pleiades.stoa.org/places/579885"
@@ -140,6 +149,14 @@ if (existsSync(world + "index.json") && existsSync(world + "core.json")) {
   }
   onDisk = { core: count, cells: cellFiles.length, names };
 }
+
+// Crowded curated pins on the terrain map: the best known stand, their close neighbours stand back.
+const crowd = [{ screenX: 100, screenY: 100 }, { screenX: 110, screenY: 105 }, { screenX: 135, screenY: 100 }, { screenX: 400, screenY: 300 }];
+const standing = prominentPoints(crowd, 30);
+check("a pin close to a better-known one stands back", standing.length === 3 && [crowd[0], crowd[2], crowd[3]].every((pin, place) => standing[place] === pin));
+check("with no separation every pin stands", prominentPoints(crowd, 0).length === crowd.length);
+check("pins separate fully at the overview and not at all close up", pinSeparationPx(0, 30, 0.4) === 30
+  && pinSeparationPx(0.2, 30, 0.4) === 15 && pinSeparationPx(0.4, 30, 0.4) === 0 && pinSeparationPx(1, 30, 0.4) === 0);
 
 if (failed > 0) {
   console.error(`${failed} failed`);

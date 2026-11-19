@@ -2,10 +2,12 @@
 
 import type { WalkModel } from "./enclosureModel";
 import { GOBEKLI_TEPE_MODEL } from "./gobekliTepeLayout";
+import { KARAHAN_TEPE_MODEL } from "./karahanModel";
 import type { WalkModelId, WalkSite } from "./walkSites";
 
 const WALK_MODELS: Record<WalkModelId, WalkModel> = {
   "gobekli-tepe-enclosures": GOBEKLI_TEPE_MODEL,
+  "karahan-tepe-structures": KARAHAN_TEPE_MODEL,
 };
 
 export function findWalkModel(site: WalkSite): WalkModel | null {

@@ -94,6 +94,50 @@ check("the names file keeps its best-known-first order among equal lengths apart
 check("a names-file prefix match beats a core match inside a word", merged.indexOf("+Stonehenge Cursus") < merged.indexOf("Blackstone Edge"));
 check("the merged list is capped", both("stone").length === 8);
 
+// Which curated Anatolia sites are best known, read from the catalogue.
+const { curatedRenown } = await import("../lib/atlas/curatedRenown.ts");
+const curated = [
+  { id: "antioch", names: ["Antioch", "Antakya"], longitude: 36.2, latitude: 36.2 },
+  { id: "sayburc", names: ["Sayburç"], longitude: 38.6, latitude: 37.1 },
+  { id: "ephesus", names: ["Ephesus"], longitude: 27.3, latitude: 37.9 },
+  { id: "ravendel", names: ["Ravendel"], longitude: 37.2, latitude: 36.8 },
+  { id: "tarsus", names: ["Tarsus"], longitude: 34.9, latitude: 36.9 },
+  { id: "goreme", names: ["Göreme", "Cappadocia"], longitude: 34.8, latitude: 38.6 },
+  { id: "harran", names: ["Harran"], longitude: 39, latitude: 36.9 },
+];
+const renown = curatedRenown(curated, {
+  core: {
+    name: ["Antioch", "Antioch", "EPHESUS", "Sayburc", "Tarsus?/Antiochia ad Cydnum", "Göreme National Park", "Harran", "Harran University", "New Ravendel"],
+    lon: [31.2, 36.1, 27.4, 38.5, 34.9, 34.9, 39, 39, 37.2],
+    lat: [38.3, 36.3, 38, 37.2, 36.9, 38.7, 36.9, 36.9, 36.8],
+    importance: [90, 80, 97, 4, 7, 37, 4, 60, 50],
+  },
+  featured: [{ name: "Sayburç", lon: 38.6, lat: 37.1 }],
+});
+check("a namesake far away lends no renown", renown.get("antioch") === 80);
+check("names match without case or diacritics", renown.get("ephesus") === 97);
+check("a featured monument outranks any sitelink count", renown.get("sayburc")! > renown.get("ephesus")! && renown.get("sayburc")! % 100 === 4);
+check("a site the catalogue does not know scores nothing", renown.get("ravendel") === 0);
+check("one of several names in a catalogue title is enough", renown.get("tarsus") === 7);
+check("a longer catalogue name that begins with the site's name counts when nothing matches exactly", renown.get("goreme") === 37);
+check("an exact match is not outbid by a longer name", renown.get("harran") === 4);
+
+// Which curated site a catalogue record stands for: what "Open in Anatolia atlas" on a globe card selects.
+const { curatedSiteForRecord } = await import("../lib/atlas/curatedMatch.ts");
+const standsFor = (name: string, lon: number, lat: number) => curatedSiteForRecord(curated, { name, lon, lat });
+check("a catalogue record selects the curated site that shares its name close by", standsFor("EPHESUS", 27.4, 38) === "ephesus");
+check("a namesake far away selects nothing", standsFor("Antioch", 31.2, 38.3) === null);
+check("one of several names in a catalogue title is enough to select", standsFor("Tarsus?/Antiochia ad Cydnum", 34.9, 36.9) === "tarsus");
+check("a longer catalogue name selects the site it begins with", standsFor("Göreme National Park", 34.9, 38.7) === "goreme");
+check("a record no curated site matches selects nothing", standsFor("Miletus", 27.3, 37.5) === null);
+const twins = [
+  { id: "far-twin", names: ["Twin"], longitude: 30.2, latitude: 40 },
+  { id: "near-twin", names: ["Twin"], longitude: 30.05, latitude: 40 },
+  { id: "twin-fort", names: ["Twin Fort"], longitude: 30, latitude: 40 },
+];
+check("of several namesakes close by, the nearest is selected", curatedSiteForRecord(twins, { name: "Twin", lon: 30, lat: 40 }) === "near-twin");
+check("a shared name is preferred to a longer name that begins with it", curatedSiteForRecord(twins, { name: "Twin Fort", lon: 30.2, lat: 40 }) === "twin-fort");
+
 // The addresses a found site's card links to.
 const { commonsFilePage, commonsThumbnail, osmElementPage } = await import("../lib/world/siteMedia.ts");
 const picture = "https://commons.wikimedia.org/wiki/Special:FilePath/Stonehenge%202007.jpg";
