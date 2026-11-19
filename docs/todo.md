@@ -51,7 +51,34 @@ The splat is sharp only near where photographers stood. 41 of 294 downloaded pho
 - [ ] The splat is a fragment from 17 photographs; open sources have no more site imagery. Tasks 1, 3 and 4 above apply here too.
 - [ ] Decide on the Sketchfab models: a whole-site model under CC BY (built from someone else's drone footage, so its licence is unverified) and per-structure models under CC BY-NC-SA. Download needs a signed-in account.
 
+## Publishing on Vercel
+
+[`deploy.md`](deploy.md) has the settings and the steps. The production build passes and was run locally as a hosted copy would run; nothing has been deployed.
+
+- [ ] **Not verified on Vercel.** On the first deploy, read the build log for the size of the close-up function (a few megabytes expected; the exclusion in `next.config.ts` cannot be seen working on Windows) and go through the checks in `deploy.md`.
+- [ ] **The globe's EOX credit uses the earlier wording.** EOX's licence page now gives `EOxCloudless https://cloudless.eox.at by EOX IT Services GmbH (Contains modified Copernicus Sentinel data "year")`. Update `lib/globe/basemaps.ts` and the row in `data-sources.md`.
+- [ ] **Two controls still lead to the close-up API on a hosted copy:** "View terrain" on a globe site card (it opens the place view's "not available here" message) and "Relief close-up" in the Anatolia site panel's Resources (it opens the plain 503 text). Hide both where close-ups are off.
+- [ ] Vercel's terms on who may use the free plan were not read.
+
+## Accounts (optional sign-in, saved sites, votes)
+
+[`accounts.md`](accounts.md) has what is stored, the schema and the setup steps. The code is built and its logic is checked against an in-memory database. It is off until two settings are present, and no Supabase project exists.
+
+- [ ] **Never run against a real service.** Signing in (Google and email link), signing out, the return from a sign-in (`?code=` read in `lib/account/accountClient.ts`), every call in `supabaseAccountBackend.ts`, and `supabase/schema.sql` itself are untried. Row level security is the intent of that file, not a tested fact: try it with two accounts and with no session.
+- [ ] **The signed-in screens have not been seen in a browser:** "Your places" with rows, a pressed button on a site card, "Most voted" with sites in it. The not-configured and signed-out states were looked at in headless Chrome, the second in a throwaway build with settings that point nowhere.
+- [ ] An email sign-in link works only in the browser that asked for it.
+- [ ] Trip planning (a route through saved sites) was raised and not built.
+
 ## Decisions waiting
+
+- [ ] Accounts: create the Supabase project and the Google OAuth client, run `supabase/schema.sql`, and set the two settings (steps in `accounts.md`). Supabase was chosen for the owner; say if another service is wanted.
+- [ ] Accounts: a privacy notice is needed before real visitors sign in, because Supabase will hold their email addresses (and, with Google, their profile name and picture). Where the project is hosted (region) belongs in it.
+- [ ] Accounts: deleting an account is done by hand in the Supabase dashboard. Add a "Delete my account" button (one more database function), or keep it by request?
+- [ ] Accounts: OpenStreetMap megaliths cannot be saved or voted for, to keep share-alike records out of the lists. Keep, or allow them?
+- [ ] Accounts: a visitor may vote for any number of sites. Keep, or cap it?
+- [ ] Publish on Vercel with terrain close-ups switched off? They need the repository's Python, which Vercel's Node functions do not have. `deploy.md` lists four ways to bring them back and what each costs.
+- [ ] Commit the Şanlıurfa regional files (`Anatolia/atlas/public/terrain/regions/`, 12 files, 2.7 MB, ignored by git today)? Without them the hosted Anatolia map has no 120 m block around Şanlıurfa. They derive from Copernicus GLO-30 and Sentinel-2, and their source files are already tracked under `Anatolia/explorer/public/terrain/`. It needs the ignore line removed and an exception for `height.u16`.
+- [ ] The default globe imagery on a public site. EOX's licence allows non-commercial use with the credit shown, and its tile service calls itself a demo service with rate limiting; no page read says a public website may use the free endpoint. Keep it, ask EOX, or make NASA Blue Marble (no restriction read) the default for the hosted copy.
 
 - [ ] Rerun the Brush training that the system stopped for low memory (about half an hour, nothing else heavy running).
 - [ ] Rent an NVIDIA GPU for a trainer built for tourist photographs. It needs an account and the photographs uploaded to the provider.

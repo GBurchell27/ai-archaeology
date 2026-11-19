@@ -11,7 +11,8 @@ import { useSiteFilter, type SiteFilterViewModel } from "./useSiteFilter";
 import { useSiteSelection, type SiteSelectionViewModel } from "./useSiteSelection";
 import { useTheoryLens, type TheoryLensViewModel } from "./useTheoryLens";
 
-export type ExplorerPanel = "wonders" | "theories" | "settings" | "about";
+/** "most-voted" and "account" are offered only when accounts are configured (docs/accounts.md). */
+export type ExplorerPanel = "wonders" | "theories" | "settings" | "about" | "most-voted" | "account";
 
 export interface WonderTourViewModel {
   stops: FeaturedSite[];

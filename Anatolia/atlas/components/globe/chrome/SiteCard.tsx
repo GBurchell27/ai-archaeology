@@ -16,6 +16,9 @@ import { PanelShell } from "./PanelShell";
 import styles from "./SiteCard.module.css";
 import { SiteCardRecord } from "./SiteCardRecord";
 import { SiteTheories } from "@/components/theories/SiteTheories";
+import { SiteAccountControls } from "@/components/account/SiteAccountControls";
+import type { AccountViewModel } from "@/components/account/useAccount";
+import { isAccountSiteId } from "@/lib/account/accountSiteId";
 
 /** The close-up service refuses windows this near the poles. */
 const CLOSEUP_LATITUDE_LIMIT = 80;
@@ -61,6 +64,9 @@ export function SiteCard(props: {
   onEnterWalk(siteId: string): void;
   /** A theory picked from the card's questions: the Theories panel opens on it. */
   onOpenTheory(theoryId: string): void;
+  /** Null when accounts are not configured: the card then has no save or vote controls. */
+  account: AccountViewModel | null;
+  onRequestSignIn(): void;
 }) {
   const { site, wonder } = props;
   const detail = useSiteDetail(site.id);
@@ -107,6 +113,10 @@ export function SiteCard(props: {
         {dates ?? "No dates recorded in the catalogue"}
         {wonder ? <span className={ui.muted}> · {[wonder.period, wonder.country].filter(Boolean).join(", ")}</span> : null}
       </p>
+      {/* The visitor's own lists and vote, not part of the record. OpenStreetMap records are left out of both. */}
+      {props.account && isAccountSiteId(site.id) ? (
+        <SiteAccountControls account={props.account} siteId={site.id} onRequestSignIn={props.onRequestSignIn} />
+      ) : null}
       {wonder ? <p className={`${ui.serif} ${styles.why}`}>{wonder.why}</p> : null}
       {status ? (
         <p className={styles.status}><span className={ui.badge}>{status.badge}</span>{status.note}</p>

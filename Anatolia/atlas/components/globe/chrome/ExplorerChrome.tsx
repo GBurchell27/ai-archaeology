@@ -1,8 +1,11 @@
 "use client";
 
-import { memo, useEffect, useMemo, type ReactNode } from "react";
+import { memo, useCallback, useEffect, useMemo, type ReactNode } from "react";
 import type { WorldSource } from "@/lib/world/catalogueTypes";
 import type { NamedPeriod } from "@/lib/world/namedPeriods";
+import { AccountPanel } from "../../account/AccountPanel";
+import { MostVotedPanel } from "../../account/MostVotedPanel";
+import { useAccount } from "../../account/useAccount";
 import type { PickedSite } from "../GlobeSites";
 import { PaleoChip } from "../paleo/PaleoChip";
 import type { GlobeExplorerViewModel } from "../useGlobeExplorer";
@@ -54,6 +57,9 @@ export const ExplorerChrome = memo(function ExplorerChrome(props: ExplorerChrome
     [catalogue, selected],
   );
   const closePanel = explorer.closeTop;
+  const account = useAccount();
+  const { togglePanel } = explorer;
+  const openSignIn = useCallback(() => togglePanel("account"), [togglePanel]);
 
   return (
     <div
@@ -70,6 +76,7 @@ export const ExplorerChrome = memo(function ExplorerChrome(props: ExplorerChrome
           catalogue={catalogue}
           catalogueFailed={explorer.catalogueError !== null}
           openPanel={selected ? null : panel}
+          accountLabel={account ? (account.session === "signedIn" ? "Account" : "Sign in") : null}
           onVisit={selection.visit}
           onTogglePanel={explorer.togglePanel}
         />
@@ -87,6 +94,8 @@ export const ExplorerChrome = memo(function ExplorerChrome(props: ExplorerChrome
             onEnterAtlas={props.onEnterAtlas}
             onEnterWalk={props.onEnterWalk}
             onOpenTheory={explorer.openTheory}
+            account={account}
+            onRequestSignIn={openSignIn}
           />
         ) : null}
         {/* The panel stays mounted under the card, so its scroll position and filter survive a visit. */}
@@ -113,6 +122,12 @@ export const ExplorerChrome = memo(function ExplorerChrome(props: ExplorerChrome
           ) : null}
           {panel === "settings" ? (
             <GlobeSettingsPanel explorer={explorer} namedPeriods={props.namedPeriods} basemapId={props.basemapId} modelSlot={props.modelSlot} onClose={closePanel} />
+          ) : null}
+          {account && panel === "most-voted" ? (
+            <MostVotedPanel loadVoteCounts={account.loadVoteCounts} catalogue={catalogue} onVisit={selection.visit} onClose={closePanel} />
+          ) : null}
+          {account && panel === "account" ? (
+            <AccountPanel account={account} catalogue={catalogue} onVisit={selection.visit} onClose={closePanel} />
           ) : null}
           {panel === "about" ? <AboutPanel index={catalogue?.index ?? null} onClose={closePanel} /> : null}
         </div>
