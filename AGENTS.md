@@ -1,6 +1,18 @@
 # Notes for agents
 
-This is a private learning and research hobby: a world atlas of published archaeological sites. It is not a product and not a search for loot.
+This is a personal learning and research hobby: a world atlas of published archaeological sites. It is not a product and not a search for loot.
+
+## The repository is public
+
+Everything committed here can be read by anyone. Write and check every change with that in mind.
+
+- No personal details: no names of private people, email addresses, employers, home or travel details, or account names the owner has not asked to publish.
+- No local paths (a user's home folder, temp folders), machine names or hardware serials in tracked files. Paths are relative to the repository root.
+- No secrets: keys, tokens, cookies, `.env` files.
+- No media or data whose licence does not allow redistribution, and nothing share-alike mixed into other files. The walk-view splats are published in `Anatolia/atlas/public/splats/` under CC BY-SA 4.0 with their credits beside them; the photographs they were trained from, and every training file, stay local under `data/`.
+- No working notes that only make sense in private: session logs, scratch output, review screenshots. Those live under `data/` (ignored).
+- Docs and comments are written for a stranger: plain, sourced, and free of claims the evidence does not support.
+- Before a commit is offered, scan the files to be committed for the items above.
 
 ## Ethics
 
@@ -17,7 +29,7 @@ This is a private learning and research hobby: a world atlas of published archae
 
 ## Data
 
-Keep large rasters out of git. Document download scripts in `scripts/` instead of committing the rasters they fetch. `data/`, `outputs/`, common raster extensions, `*.ply`, `*.splat`, `Anatolia/atlas/public/splats/` and `candidates_private*` are gitignored.
+Keep large rasters out of git. Document download scripts in `scripts/` instead of committing the rasters they fetch. `data/`, `outputs/`, common raster extensions, `*.ply`, `*.splat` (except the published ones in `Anatolia/atlas/public/splats/`) and `candidates_private*` are gitignored.
 
 Do not download real datasets unless the person responsible for this repo explicitly asks for that download. That covers photographs, video, 3D models and model weights too. Never fetch from a source without a clear open licence and permission for automated access.
 
@@ -95,7 +107,7 @@ cd ../.. && .venv/Scripts/python -m pytest -q
 
 - Commit or push only when the owner asks.
 - Remove temporary debug hooks before you finish (`window.__…` camera handles and the like). `__atlasCamera` and `__atlasControls` in `components/AtlasCamera.tsx` are intended and stay.
-- Keep a backup under `data/splat/<site>/` before replacing a published splat.
+- Keep a backup under `data/splat/<site>/` before replacing a published splat. A replaced splat is a new 2 to 30 MB file in git history, so replace one only for a real improvement, and update its credits file and `public/splats/README.md` in the same change.
 - One heavy job at a time (COLMAP or Brush). The machine is short on memory: cap COLMAP at four threads and pass `use_gpu 0`. If the system stops a job for low memory, do not restart it unasked.
 - When several agents work at once, agree which files each owns and stay out of the others'. Never run a scratch script you did not write.
 - Decisions that belong to the owner go in `docs/todo.md` under "Decisions waiting". Do not make them.

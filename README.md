@@ -1,6 +1,6 @@
 # AI archaeology
 
-A private hobby project: a world atlas of published early monuments and archaeological sites, drawn on a 3D globe, with terrain you can drop into and a coarse, heavily caveated model layer on top.
+A personal hobby project: a world atlas of published early monuments and archaeological sites, drawn on a 3D globe, with terrain you can drop into and a coarse, heavily caveated model layer on top.
 
 It grew out of a pipeline for learning how ancient structures can show up in public terrain and satellite data, and how to check those hints against published records before a person takes them seriously. That part is still here.
 
@@ -138,6 +138,7 @@ What works with Node alone, because it is committed as static files:
 - the globe, the site catalogue, search, timeline, filters, the featured monuments and the site cards
 - the OpenStreetMap megalith layer and the model layers
 - the Anatolia terrain atlas with its baked national and place terrain
+- the walk view of Göbekli Tepe and Karahan Tepe: the modelled reconstructions, and the photograph splats in `Anatolia/atlas/public/splats/` (CC BY-SA 4.0, credits beside them)
 
 What needs more:
 

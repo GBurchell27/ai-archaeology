@@ -52,7 +52,11 @@ dist/
 .mypy_cache/
 .ruff_cache/
 
-# Gaussian splats and their photo credits. Built from share-alike photographs: local only.
-Anatolia/atlas/public/splats/
+# Gaussian splats. Training files and trials stay local. The published splats and their
+# credits are committed: see Anatolia/atlas/public/splats/README.md for their licence.
 *.ply
 *.splat
+!Anatolia/atlas/public/splats/*.splat
+
+# GPU tuning cache written by the Brush splat trainer.
+target/

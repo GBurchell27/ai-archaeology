@@ -1,6 +1,6 @@
 # Contributing
 
-This is a private hobby research repository. Keep changes small and readable.
+This is a personal hobby research repository, and it is public. Keep changes small and readable.
 
 ## Ethics
 

@@ -1,6 +1,6 @@
 # Gaussian splats for the walk view
 
-These steps turn photographs of a published, excavated site into a splat that `/?view=walk&site=<id>` in the atlas can walk through. Everything they download or build stays under `data/splat/` and `Anatolia/atlas/public/splats/`, both gitignored. The photographs are mostly CC BY-SA, so the splat built from them is share-alike too: keep it local, and keep the credits file beside it.
+These steps turn photographs of a published, excavated site into a splat that `/?view=walk&site=<id>` in the atlas can walk through. The photographs, COLMAP models and training files stay under `data/splat/`, which is gitignored. The finished splat and its credits file go in `Anatolia/atlas/public/splats/` and are committed. The photographs are mostly CC BY-SA, so the splat built from them is share-alike too: it is published under CC BY-SA 4.0, and its credits file must name every photograph it was trained on (see `Anatolia/atlas/public/splats/README.md`).
 
 A splat is only as good as its photographs. Visitors' photographs come from many cameras, years and excavation states, and mostly from the walkways. Expect holes and smears wherever nobody stood. It is a picture of the photographs, not a survey.
 

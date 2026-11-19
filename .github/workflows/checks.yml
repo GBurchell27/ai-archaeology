@@ -1,0 +1,39 @@
+name: Checks
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: Anatolia/atlas/package-lock.json
+      - name: Install Python package
+        run: pip install -e .
+      - name: Install web dependencies
+        working-directory: Anatolia/atlas
+        run: npm ci
+      - name: Type check
+        working-directory: Anatolia/atlas
+        run: npx tsc --noEmit
+      # The three deselected tests drive a browser against a running dev server.
+      - name: Tests
+        run: >
+          pytest -q
+          --deselect tests/test_detail_coverage.py
+          --deselect tests/test_panel_flight.py::test_rapid_clicks_escape_and_midflight_close
+          --deselect tests/test_timeline_keys.py
