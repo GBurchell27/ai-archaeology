@@ -143,6 +143,23 @@ check("sites on opposite sides of the Earth fall back to the first", opposite !=
 check("no sites give no span, and a wider span needs a higher camera",
   spanOfSites([]) === null && acrossEquator !== null && oneSite !== null && altitudeToSee(acrossEquator) > altitudeToSee(oneSite));
 
+// A walk reached from the globe: which card offers it, and where its exit leads.
+const { walkOfferedOnGlobe, walkReturn, walkSiteForCard } = await import("../lib/globe/walkHandoff.ts");
+const { findWalkSite } = await import("../lib/walk/walkSites.ts");
+const gizaWalk = findWalkSite("Q12508");
+const gobekliWalk = findWalkSite("gobekli-tepe");
+check("the Giza complex and the Great Pyramid both offer the Giza walk on the globe", gizaWalk !== null && walkOfferedOnGlobe("Q12508") === gizaWalk && walkOfferedOnGlobe("Q37200") === gizaWalk);
+check("no other globe card offers a walk: Göbekli Tepe's is offered by the Anatolia map", walkOfferedOnGlobe("Q214944") === null && walkOfferedOnGlobe("gobekli-tepe") === null && walkOfferedOnGlobe("Q1") === null);
+check("an address may name the walk or a card that offers it", walkSiteForCard("Q37200") === gizaWalk && walkSiteForCard("Q12508") === gizaWalk && walkSiteForCard("gobekli-tepe") === gobekliWalk && walkSiteForCard("Q214944") === null && walkSiteForCard(undefined) === null);
+check("the Giza walk parses as a walk address", JSON.stringify(parseViewUrl("?view=walk&site=Q12508")) === JSON.stringify({ view: "walk", siteId: "Q12508" }) && serialiseViewUrl({ view: "walk", siteId: "Q12508" }) === "?view=walk&site=Q12508");
+check("a walk entered from a globe card returns to the globe with that card open",
+  gizaWalk !== null && JSON.stringify(walkReturn(gizaWalk, "Q37200")) === JSON.stringify({ view: "globe", siteId: "Q37200" }) && walkReturn(gizaWalk, "Q12508").siteId === "Q12508");
+check("opened by its address, or after another site's card, it returns to the card of the complex",
+  gizaWalk !== null && JSON.stringify(walkReturn(gizaWalk)) === JSON.stringify({ view: "globe", siteId: "Q12508" }) && walkReturn(gizaWalk, "Q214944").siteId === "Q12508");
+check("an Anatolian walk returns to the Anatolia map whatever card the globe last showed",
+  gobekliWalk !== null && JSON.stringify(walkReturn(gobekliWalk, "Q12508")) === JSON.stringify({ view: "atlas", siteId: "gobekli-tepe" }) && walkReturn(findWalkSite("karahan-tepe")!).view === "atlas");
+check("leaving a walk for the globe is a change of view like any other", historyEntryForView("walk", "globe", false) === "push" && historyEntryForView("globe", "walk", true) === "replace");
+
 if (failed > 0) {
   console.error(`${failed} failed`);
   process.exit(1);

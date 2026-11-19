@@ -4,6 +4,7 @@ import dynamic from "next/dynamic";
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { GlobeLook, LonLat } from "@/lib/globe/ellipsoid";
 import { globeLookFromAtlas, type AtlasLook } from "@/lib/globe/handoff";
+import { walkReturn, walkSiteForCard } from "@/lib/globe/walkHandoff";
 import { DEFAULT_GLOBE_LOOK, parseViewUrl, serialiseViewUrl, type WalkSource, type WorldViewState } from "@/lib/globe/viewUrl";
 import type { RegionalTerrain } from "@/lib/types";
 import { findWalkSite } from "@/lib/walk/walkSites";
@@ -46,8 +47,13 @@ function globeSiteFromAddress(): string | undefined {
 }
 
 function sceneFromUrl(state: WorldViewState): WorldScene {
-  // A site with no walk opens the atlas, which ignores an id it does not know.
-  if (state.view === "walk" && !findWalkSite(state.siteId)) return { view: "atlas", siteId: state.siteId };
+  if (state.view === "walk") {
+    const site = walkSiteForCard(state.siteId);
+    // A site with no walk opens the atlas, which ignores an id it does not know.
+    if (!site) return { view: "atlas", siteId: state.siteId };
+    // The id of a globe card that offers the walk becomes the walk's own, and a model with no photographs has no source to name.
+    return { view: "walk", siteId: site.id, source: site.modelOnly ? undefined : state.source };
+  }
   if (state.view !== "globe") return state;
   const siteId = globeSiteFromAddress();
   const { longitude, latitude, altitude, theoryId } = state;
@@ -166,17 +172,23 @@ export function WorldCoordinator(props: { regional: RegionalTerrain | null; init
     show({ view: "place", siteId });
   }, [show]);
 
+  /** From the atlas with a curated id, or from a globe card with the id of the card, which need not be the walk's own. */
   const openWalk = useCallback((siteId: string) => {
-    if (!findWalkSite(siteId)) return;
+    const site = walkSiteForCard(siteId);
+    if (!site) return;
     // The atlas entry left behind names the site, so Back from a walk entered by zooming returns to it selected.
+    // The globe's entry already names its open card.
     trackAtlasSite(siteId);
-    show({ view: "walk", siteId });
+    show({ view: "walk", siteId: site.id });
   }, [show, trackAtlasSite]);
   const exitWalk = useCallback(() => {
     const scene = currentScene.current;
-    // Back in the atlas the site just walked is selected again.
-    show({ view: "atlas", siteId: scene.view === "walk" ? scene.siteId : undefined });
-  }, [show]);
+    const site = scene.view === "walk" ? findWalkSite(scene.siteId) : null;
+    if (!site) return show({ view: "atlas" });
+    // Back in the view that holds the site, it is selected again: on the globe, the card the visitor came from.
+    const back = walkReturn(site, globeSiteId.current);
+    show(back.view === "globe" ? { ...globeSceneNow(), siteId: back.siteId } : back);
+  }, [show, globeSceneNow]);
   /** Model or photographs rides along in the address, so a reload or a copied link opens the same one. */
   const trackWalkSource = useCallback((source: WalkSource) => {
     const scene = currentScene.current;
@@ -213,6 +225,7 @@ export function WorldCoordinator(props: { regional: RegionalTerrain | null; init
         onSelectTheory={trackGlobeTheory}
         onOpenPlace={openPlace}
         onEnterAtlas={enterAtlas}
+        onEnterWalk={openWalk}
         modelSlot={<ModelControls model={model} />}
         sceneLayers={<GlobeModelOverlay model={model} />}
       />

@@ -12,6 +12,7 @@ register(`data:text/javascript,${encodeURIComponent(`
 const registry = await import("../lib/theories/theoryRegistry.ts");
 const { STATUS_LADDER, STATUS_LABELS, STATUS_MEANINGS, THEORY_ID_PATTERN, currentStatus, firstStatus, statusLabel } = await import("../lib/theories/theoryStatus.ts");
 const { GOBEKLI_TEPE_LANDMARKS } = await import("../lib/walk/gobekliTepeLandmarks.ts");
+const { GIZA_LANDMARKS } = await import("../lib/walk/gizaLandmarks.ts");
 const { ALL_EVIDENCE, ALL_FACTS, ALL_QUESTIONS, ALL_THEORIES, findEvidence, findFact, findQuestion, findTheory } = registry;
 
 let failed = 0;
@@ -75,11 +76,12 @@ function checkTheory(theory: Theory): void {
   checkStatusLog(theory);
 }
 
-function checkQuestion(question: OpenQuestion, landmarkIds: ReadonlySet<string>): void {
+/** `walkLandmarkIds` holds the landmark ids of each walk, by the id of its walk site. */
+function checkQuestion(question: OpenQuestion, walkLandmarkIds: Readonly<Record<string, ReadonlySet<string>>>): void {
   check(`${question.id} asks a question about a site`, question.question.trim().endsWith("?") && question.siteIds.length > 0);
   check(`${question.id} rests on facts that exist`, question.factIds.every((id) => findFact(id) !== null));
   check(`${question.id} lists theories that exist`, question.theoryIds.every((id) => findTheory(id) !== null));
-  check(`${question.id} names landmarks of the walk`, (question.landmarkIds ?? []).every((id) => question.siteIds.includes("gobekli-tepe") && landmarkIds.has(id)));
+  check(`${question.id} names landmarks of the walk`, (question.landmarkIds ?? []).every((id) => question.siteIds.some((siteId) => walkLandmarkIds[siteId]?.has(id))));
 }
 
 // Integrity of the records
@@ -92,8 +94,9 @@ check("no id is shared between kinds of record", new Set(everyId).size === every
 ALL_FACTS.forEach(checkFact);
 ALL_EVIDENCE.forEach(checkEvidence);
 ALL_THEORIES.forEach(checkTheory);
-const landmarkIds = new Set(GOBEKLI_TEPE_LANDMARKS.landmarks.map((landmark) => landmark.id));
-ALL_QUESTIONS.forEach((question) => checkQuestion(question, landmarkIds));
+const idsOf = (site: { landmarks: readonly { id: string }[] }) => new Set(site.landmarks.map((landmark) => landmark.id));
+const walkLandmarkIds = { "gobekli-tepe": idsOf(GOBEKLI_TEPE_LANDMARKS), Q12508: idsOf(GIZA_LANDMARKS) };
+ALL_QUESTIONS.forEach((question) => checkQuestion(question, walkLandmarkIds));
 
 const usedEvidence = new Set(ALL_THEORIES.flatMap((theory) => [...theory.evidenceFor, ...theory.evidenceAgainst]));
 check("every evidence entry is listed by a theory", ALL_EVIDENCE.every((entry) => usedEvidence.has(entry.id)));
@@ -129,6 +132,9 @@ check("questions are found by site", registry.questionsForSite("gobekli-tepe").l
 const atPillar43 = registry.questionsForLandmark("gobekli-tepe", "pillar-43");
 check("Pillar 43 has its question", atPillar43.length === 1 && atPillar43[0].id === "gobekli-tepe-what-does-pillar-43-show");
 check("Enclosure D has the roof and burial questions", registry.questionsForLandmark("gobekli-tepe", "enclosure-d").length === 2);
+const atKhufu = registry.questionsForLandmark("Q12508", "khufu");
+check("the Great Pyramid's card in the Giza walk has all four questions, and the other two pyramids the one about the layout",
+  atKhufu.length === 4 && ["khafre", "menkaure"].every((id) => registry.questionsForLandmark("Q12508", id).map((question) => question.id).join() === "giza-why-this-layout-and-alignment"));
 check("a landmark belongs to its site only", registry.questionsForLandmark("Q12508", "pillar-43").length === 0 && registry.questionsForLandmark("gobekli-tepe", "pillar-2").length === 0);
 check("a question gives its theories in order", registry.theoriesForQuestion(atPillar43[0]).map((theory) => theory.id).join() === atPillar43[0].theoryIds.join());
 check("evidence and facts are found by id", findEvidence("giza-evidence-wet-sand-sledge")?.kind === "experiment" && findFact("giza-fact-base-sides")?.kind === "measurement" && findQuestion("giza-what-was-it-for") !== null);

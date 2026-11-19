@@ -11,11 +11,24 @@ export type MoveLimits = {
   flyRadiusM: number;
   flyFloorM: number;
   flyCeilingM: number;
+  /** How many times faster than on a site of buildings the walker moves and the wheel climbs. */
+  speedFactor: number;
   /** The height of the ground under a point, where a site's floors are not all at y = 0. */
   groundHeightM: GroundHeight;
   /** Where a walker who meant to go from one floor point to another ends up. A flyer passes through everything. */
   walkerStep: WalkerStep;
 };
+
+/** How a site far larger than a building is moved through. */
+export type MoveScale = {
+  /** Walking and flying are this many times faster, and the wheel climbs this many times further. */
+  speedFactor: number;
+  /** A flyer rises no higher than this, however wide the site. */
+  highestCeilingM: number;
+};
+
+/** A site of buildings a few tens of metres across: Göbekli Tepe and Karahan Tepe. */
+export const BUILDING_MOVE_SCALE: MoveScale = { speedFactor: 1, highestCeilingM: 40 };
 
 export type WalkerStep = (from: readonly [x: number, z: number], to: readonly [x: number, z: number]) => readonly [x: number, z: number];
 
@@ -28,20 +41,27 @@ const VELOCITY_RESPONSE_S = 0.12;
 const EYE_SETTLE_S = 0.25;
 const FLY_RADIUS_FACTOR = 3;
 const FLY_FLOOR_M = 0.4;
-const HIGHEST_CEILING_M = 40;
 const CLIMB_RESPONSE_S = 0.15;
 const CLIMB_M_PER_WHEEL_UNIT = 0.015;
 const LARGEST_PENDING_CLIMB_M = 20;
 const FLAT_GROUND: GroundHeight = () => 0;
 const UNOBSTRUCTED: WalkerStep = (_from, to) => to;
 
-export function moveLimits(eyeHeightM: number, walkRadiusM: number, groundHeightM: GroundHeight = FLAT_GROUND, walkerStep: WalkerStep = UNOBSTRUCTED): MoveLimits {
+/** `scale` is for a site far larger than a building; without it the limits are those of the pillar sites. */
+export function moveLimits(
+  eyeHeightM: number,
+  walkRadiusM: number,
+  groundHeightM: GroundHeight = FLAT_GROUND,
+  walkerStep: WalkerStep = UNOBSTRUCTED,
+  scale: MoveScale = BUILDING_MOVE_SCALE,
+): MoveLimits {
   return {
     eyeHeightM,
     walkRadiusM,
     flyRadiusM: walkRadiusM * FLY_RADIUS_FACTOR,
     flyFloorM: FLY_FLOOR_M,
-    flyCeilingM: Math.min(walkRadiusM * 2, HIGHEST_CEILING_M),
+    flyCeilingM: Math.min(walkRadiusM * 2, scale.highestCeilingM),
+    speedFactor: scale.speedFactor,
     groundHeightM,
     walkerStep,
   };
@@ -167,7 +187,7 @@ export function moveStep(
   seconds: number,
   climbM = 0,
 ): MoveState {
-  const wish = wishVelocity(mode, look, intent);
+  const wish = wishVelocity(mode, look, intent).map((speed) => speed * limits.speedFactor);
   const [velocityX, flyVelocityY, velocityZ] = from.velocity.map((speed, axis) =>
     easeToward(speed, wish[axis], seconds, VELOCITY_RESPONSE_S),
   );
@@ -181,6 +201,6 @@ export function moveStep(
     const y = easeToward(fromY, groundM + limits.eyeHeightM, seconds, EYE_SETTLE_S);
     return { position: [x, y, z], velocity: [velocityX, 0, velocityZ] };
   }
-  const y = Math.min(limits.flyCeilingM, Math.max(groundM + limits.flyFloorM, fromY + flyVelocityY * seconds + climbM));
+  const y = Math.min(limits.flyCeilingM, Math.max(groundM + limits.flyFloorM, fromY + flyVelocityY * seconds + climbM * limits.speedFactor));
   return { position: [x, y, z], velocity: [velocityX, flyVelocityY, velocityZ] };
 }

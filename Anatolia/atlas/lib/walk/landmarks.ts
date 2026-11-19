@@ -36,6 +36,8 @@ export type PlacedLandmark = {
   rangeM: number;
   /** True when the walker stands inside it (a building), so there is nothing to face and anything faced in it wins. */
   surrounds: boolean;
+  /** How far above or below the walker's eyes it may be and still show its card, for something much taller than a pillar. */
+  reachHeightM?: number;
 };
 
 /** Where a landmark stands, before it is joined to its text. */
@@ -82,7 +84,7 @@ function placeOnEnclosure(landmark: Landmark, enclosure: Enclosure): PlacedLandm
 /** Each landmark at the place, pillar or enclosure it names. One the model does not hold is left out. */
 export function placeOnModel(landmarks: readonly Landmark[], model: WalkModel): PlacedLandmark[] {
   return landmarks.flatMap((landmark) => {
-    const place = landmark.placeId ? model.rockCut?.landmarkPlaces[landmark.placeId] : undefined;
+    const place = landmark.placeId ? model.rockCut?.landmarkPlaces[landmark.placeId] ?? model.pyramidField?.landmarkPlaces[landmark.placeId] : undefined;
     if (place) return [{ landmark, ...place }];
     const enclosure = model.enclosures.find((candidate) => candidate.id === landmark.enclosureId);
     const placed = enclosure ? placeOnEnclosure(landmark, enclosure) : null;
@@ -129,7 +131,7 @@ const KEEP_FACING_COSINE = 0;
 function isNoticed(placed: PlacedLandmark, position: Vec3, look: Vec3, isShown: boolean): boolean {
   const awayM = floorDistanceM(position, placed.positionM);
   const extraM = isShown ? KEEP_EXTRA_M : 0;
-  if (awayM > placed.rangeM + extraM || Math.abs(placed.positionM[1] - position[1]) > REACH_HEIGHT_M + extraM) return false;
+  if (awayM > placed.rangeM + extraM || Math.abs(placed.positionM[1] - position[1]) > (placed.reachHeightM ?? REACH_HEIGHT_M) + extraM) return false;
   // The walker stands inside an enclosure, so there is nothing to face.
   if (placed.surrounds || awayM <= TOUCHING_M + extraM) return true;
   return facingCosine(position, look, placed.positionM) >= (isShown ? KEEP_FACING_COSINE : FACING_COSINE);

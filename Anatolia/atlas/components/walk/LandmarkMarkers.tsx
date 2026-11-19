@@ -20,14 +20,14 @@ function GoldMaterial() {
 /**
  * A still gold ring and bead above each landmark, and its name while `showNames` is set (when flying), so landmarks
  * can be found from the air. Where names would cover one another only the nearest shows. Nothing moves, so there is
- * nothing to stop for reduced motion.
+ * nothing to stop for reduced motion. `scale` enlarges the ring for a site seen from hundreds of metres.
  */
-export function LandmarkMarkers({ landmarks, showNames }: { landmarks: readonly PlacedLandmark[]; showNames: boolean }) {
-  const namedIds = useUnclutteredNames(landmarks, NAME_LIFT_M, showNames);
+export function LandmarkMarkers({ landmarks, showNames, scale = 1 }: { landmarks: readonly PlacedLandmark[]; showNames: boolean; scale?: number }) {
+  const namedIds = useUnclutteredNames(landmarks, NAME_LIFT_M * scale, showNames);
   return (
     <>
       {landmarks.map(({ landmark, markerM }) => (
-        <group key={landmark.id} position={[...markerM]}>
+        <group key={landmark.id} position={[...markerM]} scale={scale}>
           <mesh rotation={[Math.PI / 2, 0, 0]}>
             <torusGeometry args={[0.22, 0.03, 8, 28]} />
             <GoldMaterial />

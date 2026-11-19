@@ -61,5 +61,5 @@ export function enclosureObstacles(enclosure: Enclosure): Obstacle[] {
 }
 
 export function modelObstacles(model: WalkModel): Obstacle[] {
-  return [...model.enclosures.flatMap(enclosureObstacles), ...(model.rockCut?.obstacles ?? [])];
+  return [...model.enclosures.flatMap(enclosureObstacles), ...(model.rockCut?.obstacles ?? []), ...(model.pyramidField?.obstacles ?? [])];
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { walkOfferedOnGlobe } from "@/lib/globe/walkHandoff";
 import { loadSiteDetail } from "@/lib/world/catalogueLoader";
 import type { FeaturedSite, SiteDetail } from "@/lib/world/catalogueTypes";
 import { isSiteInAtlas } from "@/lib/world/sitePick";
@@ -56,6 +57,8 @@ export function SiteCard(props: {
   onFlyCloser(): void;
   onOpenPlace(siteId: string): void;
   onEnterAtlas(site: PickedSite): void;
+  /** "Walk the site", on the card of a site whose walk is reached from the globe. */
+  onEnterWalk(siteId: string): void;
   /** A theory picked from the card's questions: the Theories panel opens on it. */
   onOpenTheory(theoryId: string): void;
 }) {
@@ -78,6 +81,11 @@ export function SiteCard(props: {
       ) : hasCloseup ? (
         <button type="button" className={`${ui.button} ${ui.buttonPrimary}`} data-action="view-terrain" onClick={() => props.onOpenPlace(site.id)}>
           View terrain
+        </button>
+      ) : null}
+      {walkOfferedOnGlobe(site.id) ? (
+        <button type="button" className={`${ui.button} ${ui.buttonPrimary}`} data-action="walk-site" onClick={() => props.onEnterWalk(site.id)}>
+          Walk the site
         </button>
       ) : null}
       <button type="button" className={ui.button} data-action="copy-link" onClick={link.copy}>

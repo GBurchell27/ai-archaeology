@@ -134,6 +134,8 @@ const QUESTIONS: readonly OpenQuestion[] = [
     id: "giza-how-were-the-blocks-raised",
     question: "How were the blocks, among them granite beams of tens of tons, raised to their places?",
     siteIds: GIZA_SITE_IDS,
+    // Landmarks of the walk, lib/walk/gizaLandmarks.ts.
+    landmarkIds: ["khufu"],
     factIds: ["giza-fact-block-supply-rate", "giza-fact-kings-chamber-roof", "giza-fact-heaviest-beams", "giza-fact-hatnub-ramp"],
     theoryIds: ["giza-external-ramps", "giza-internal-ramp"],
   },
@@ -141,6 +143,8 @@ const QUESTIONS: readonly OpenQuestion[] = [
     id: "giza-who-built-it-and-when",
     question: "Who built the Great Pyramid, and when?",
     siteIds: GIZA_SITE_IDS,
+    // Landmarks of the walk, lib/walk/gizaLandmarks.ts.
+    landmarkIds: ["khufu"],
     factIds: ["giza-fact-merer-logbook", "giza-fact-gang-graffiti", "giza-fact-workers-town", "giza-fact-workers-cemetery", "giza-fact-radiocarbon-dates"],
     theoryIds: ["giza-khufu-tomb-state-workforce", "giza-older-lost-civilisation"],
   },
@@ -148,6 +152,8 @@ const QUESTIONS: readonly OpenQuestion[] = [
     id: "giza-what-was-it-for",
     question: "What was the Great Pyramid built for?",
     siteIds: GIZA_SITE_IDS,
+    // Landmarks of the walk, lib/walk/gizaLandmarks.ts.
+    landmarkIds: ["khufu"],
     factIds: ["giza-fact-granite-coffer", "giza-fact-kings-chamber-roof"],
     theoryIds: ["giza-khufu-tomb-state-workforce", "giza-power-plant"],
   },
@@ -155,6 +161,8 @@ const QUESTIONS: readonly OpenQuestion[] = [
     id: "giza-why-this-layout-and-alignment",
     question: "Why are the pyramids laid out as they are, and how was the Great Pyramid set so close to true north?",
     siteIds: GIZA_SITE_IDS,
+    // Landmarks of the walk, lib/walk/gizaLandmarks.ts.
+    landmarkIds: ["khufu", "khafre", "menkaure"],
     factIds: ["giza-fact-petrie-alignment", "giza-fact-alignment-later-surveys", "giza-fact-base-sides"],
     theoryIds: ["giza-orion-correlation"],
   },

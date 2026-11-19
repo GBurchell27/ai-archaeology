@@ -4,8 +4,10 @@
  */
 
 import type { HypothesisLayer } from "./hypothesisLayers";
+import type { PyramidField } from "./pyramidModel";
 import type { RockCutModel } from "./rockCutModel";
 import type { Vec3 } from "./walkMovement";
+import type { WalkScale } from "./walkScale";
 
 export type PlanPoint = readonly [eastM: number, southM: number];
 
@@ -70,6 +72,10 @@ export type WalkModel = {
   hypotheses: readonly HypothesisLayer[];
   /** Buildings cut down into bedrock, for a site that is not rings standing on a flat floor. */
   rockCut?: RockCutModel;
+  /** Pyramids standing on open ground, for a site that is neither. */
+  pyramidField?: PyramidField;
+  /** For a site far larger than a building: how fast it is crossed and how far its light and horizon reach. */
+  scale?: Partial<WalkScale>;
 };
 
 export type PillarPlacement = {

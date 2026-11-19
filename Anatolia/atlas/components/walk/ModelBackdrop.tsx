@@ -2,7 +2,8 @@
 
 import { useEffect, useRef } from "react";
 import type { DirectionalLight } from "three";
-import { EVENING_LIGHT, SUN_SHADOW } from "./eveningLight";
+import { BUILDING_SCALE, type WalkScale } from "@/lib/walk/walkScale";
+import { EVENING_LIGHT, sunShadowReaching } from "./eveningLight";
 import { ModelFloor } from "./ModelFloor";
 import { ModelSky } from "./ModelSky";
 
@@ -21,9 +22,9 @@ function useStillShadows(castersKey: string) {
 }
 
 /** The sun with its shadow map, and the shadowless fills that shape whatever stands in shade. */
-function EveningLights({ castersKey }: { castersKey: string }) {
+function EveningLights({ castersKey, shadowReachM }: { castersKey: string; shadowReachM: number }) {
   const { sun, skyFill, sunGlow, farSky } = EVENING_LIGHT;
-  const { reachM, mapPx, distanceM, bias, normalBias } = SUN_SHADOW;
+  const { reachM, mapPx, distanceM, bias, normalBias } = sunShadowReaching(shadowReachM);
   const sunLight = useStillShadows(castersKey);
   // The sine of the sun's height: how much shorter the ground looks along the ray than across it.
   const foreshortening = sun.direction.y;
@@ -51,18 +52,20 @@ function EveningLights({ castersKey }: { castersKey: string }) {
 /**
  * Everything around a model that is not the model: evening sky, far hills, the ground, the light and haze.
  * `groundLevelM` lowers the ground and the hills for a site whose model stands above the plain. `shadowCastersKey`
- * names what is drawn: the shadows are drawn again when it changes.
+ * names what is drawn: the shadows are drawn again when it changes. `scale` moves the haze, the hills, the sky and
+ * the edge of the ground further off, and stretches the shadow map, for a site far larger than a building.
  */
-export function ModelBackdrop({ grassed, groundLevelM = 0, shadowCastersKey }: { grassed: boolean; groundLevelM?: number; shadowCastersKey: string }) {
+export function ModelBackdrop({ grassed, groundLevelM = 0, shadowCastersKey, scale = BUILDING_SCALE }: { grassed: boolean; groundLevelM?: number; shadowCastersKey: string; scale?: WalkScale }) {
   const { haze } = EVENING_LIGHT;
+  const further = scale.backdropFactor;
   return (
     <>
-      <fog attach="fog" args={[haze.colour, haze.nearM, haze.farM]} />
-      <ModelSky groundLevelM={groundLevelM} />
+      <fog attach="fog" args={[haze.colour, haze.nearM * further, haze.farM * further]} />
+      <ModelSky groundLevelM={groundLevelM} scale={further} />
       <group position={[0, groundLevelM, 0]}>
-        <ModelFloor radiusM={FLOOR_RADIUS_M} grassed={grassed} />
+        <ModelFloor radiusM={FLOOR_RADIUS_M * further} grassed={grassed} />
       </group>
-      <EveningLights castersKey={shadowCastersKey} />
+      <EveningLights castersKey={shadowCastersKey} shadowReachM={scale.shadowReachM} />
     </>
   );
 }

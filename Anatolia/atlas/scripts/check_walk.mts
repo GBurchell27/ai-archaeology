@@ -199,7 +199,7 @@ function leastStepInWallsM(stones: readonly Stone[]): number {
   return steps.length > 300 ? Math.min(...steps) : 0;
 }
 check("no two neighbouring wall stones share a face or cross within their overlap", leastStepInWallsM(boxes) > 0.003);
-check("both sites name a model", WALK_SITES.filter((site) => site.modelId).map((site) => site.id).join() === "gobekli-tepe,karahan-tepe");
+check("every site names a model", WALK_SITES.filter((site) => site.modelId).map((site) => site.id).join() === "gobekli-tepe,karahan-tepe,Q12508");
 
 // Named pillars and landmarks
 const { landmarks } = GOBEKLI_TEPE_LANDMARKS;
@@ -625,6 +625,60 @@ check("every landmark placed in the photographs can be read with the splat still
 const { LANDMARK_TABS, tabIndexAfterKey } = await import("../lib/walk/landmarkTabs.ts");
 check("the card opens on its own text, with the open questions second", LANDMARK_TABS.map((tab) => tab.id).join() === "about,questions");
 check("the arrows move round the tabs, Home and End go to the ends, and other keys are left alone", tabIndexAfterKey("ArrowRight", 1, 2) === 0 && tabIndexAfterKey("ArrowLeft", 0, 2) === 1 && tabIndexAfterKey("Home", 1, 2) === 0 && tabIndexAfterKey("End", 0, 2) === 1 && tabIndexAfterKey("KeyW", 0, 2) === null);
+
+// Giza: three pyramids from Petrie's figures, at a scale of their own that leaves the two pillar sites as they were
+const { GIZA_MODEL } = await import("../lib/walk/gizaModel.ts");
+const { GIZA_DIRECT_DISTANCES_M, GIZA_PYRAMIDS } = await import("../lib/walk/gizaLayout.ts");
+const { GIZA_LANDMARKS } = await import("../lib/walk/gizaLandmarks.ts");
+const { casingSideAtM, coreSideAtM, heightFromSlopeM } = await import("../lib/walk/pyramidModel.ts");
+const { BUILDING_SCALE, walkScaleOf } = await import("../lib/walk/walkScale.ts");
+const giza = GIZA_MODEL.pyramidField!;
+const gizaSite = findWalkSite("Q12508");
+const pyramidOf = (id: string) => giza.pyramids.find((pyramid) => pyramid.id === id)!;
+const centresApart = (first: string, second: string) => apart(pyramidOf(first).centre, pyramidOf(second).centre);
+check("Giza is a walk site with a model, no photographs, and the two globe cards that offer it", gizaSite?.modelId === "giza-pyramids" && gizaSite.modelOnly === true && gizaSite.globeCardIds?.join() === "Q12508,Q37200" && placedLandmarks("Q12508", null).length === 0);
+check("the three pyramids are drawn, largest first", giza.pyramids.map((pyramid) => pyramid.id).join() === "khufu,khafre,menkaure" && GIZA_PYRAMIDS.length === 3);
+// Petrie gives each height with its error: 7, 13 and 15 inches. Half a metre covers the widest.
+check("each published height follows from the published base and slope", giza.pyramids.every((pyramid) => near(heightFromSlopeM(pyramid.casingBaseM, pyramid.faceAngleDeg), pyramid.originalHeightM, 0.5)));
+check("the Great Pyramid's figures are those of the facts file: 9068.8 inches a side, turned 3′43″ west of north", near(pyramidOf("khufu").casingBaseM, 230.35, 0.005) && near(pyramidOf("khufu").azimuthArcmin, -(3 + 43 / 60)) && pyramidOf("menkaure").azimuthArcmin > 0);
+check("each core stands inside its casing and below its first height", giza.pyramids.every((pyramid) => pyramid.coreBaseM < pyramid.casingBaseM && pyramid.presentHeightM < pyramid.originalHeightM && coreSideAtM(pyramid, pyramid.presentHeightM) > 0 && coreSideAtM(pyramid, pyramid.presentHeightM) <= casingSideAtM(pyramid, pyramid.presentHeightM) + 1e-9));
+check("the casing narrows to a point at the published height", giza.pyramids.every((pyramid) => near(casingSideAtM(pyramid, 0), pyramid.casingBaseM) && casingSideAtM(pyramid, pyramid.originalHeightM) === 0));
+check("the centres stand apart by Petrie's straight distances, which the layout does not use", near(centresApart("khufu", "khafre"), GIZA_DIRECT_DISTANCES_M.khufuToKhafre, 0.01) && near(centresApart("khufu", "menkaure"), GIZA_DIRECT_DISTANCES_M.khufuToMenkaure, 0.01));
+check("each lies south-west of the one before", ["khafre", "menkaure"].every((id, index) => { const [before, here] = [pyramidOf(["khufu", "khafre"][index]).centre, pyramidOf(id).centre]; return here[0] < before[0] && here[1] > before[1]; }));
+check("no two pyramids overlap", giza.pyramids.every((pyramid, index) => giza.pyramids.slice(index + 1).every((other) => apart(pyramid.centre, other.centre) > (pyramid.casingBaseM + other.casingBaseM) / Math.SQRT2)));
+const coursesOf = (id: string) => giza.courses.filter((course) => course.centre[0] === pyramidOf(id).centre[0]);
+check("the courses of a core stack from the ground to its top, each narrower than the one below", giza.pyramids.every((pyramid) => {
+  const courses = coursesOf(pyramid.id);
+  const topM = pyramid.casingStandsFromM ?? pyramid.presentHeightM;
+  const stacked = courses.every((course, index) => near(course.centre[1] - course.size[1] / 2, index * course.size[1], 1e-6) && (index === 0 || course.size[0] < courses[index - 1].size[0]));
+  return stacked && near(courses.length * courses[0].size[1], topM, 1e-6) && near(courses[0].size[0], pyramid.coreBaseM) && near(courses[0].size[1], pyramid.courseHeightM, 0.05);
+}));
+check("the model is light: a few hundred blocks in all", giza.courses.length > 200 && giza.courses.length < 600 && GIZA_MODEL.enclosures.length === 0);
+check("Khafre keeps a cap of casing up to its present top, and only Khafre", giza.standingCasing.length === 1 && giza.standingCasing[0].topM === pyramidOf("khafre").presentHeightM && near(giza.standingCasing[0].bottomSideM, casingSideAtM(pyramidOf("khafre"), giza.standingCasing[0].bottomM)));
+check("each shadow solid stands inside its core", giza.shadowSolids.length === 3 && giza.shadowSolids.every((solid, index) => solid.bottomSideM < giza.pyramids[index].coreBaseM && solid.topM === giza.pyramids[index].presentHeightM));
+const gizaObstacles = modelObstacles(GIZA_MODEL);
+const gizaScale = walkScaleOf(GIZA_MODEL);
+const gizaLimits = moveLimits(EYE_M, GIZA_MODEL.walkRadiusM, FLAT, obstructedBy(gizaObstacles, FLAT), gizaScale);
+const farthestCornerM = Math.max(...giza.pyramids.map((pyramid) => Math.hypot(...pyramid.centre) + pyramid.casingBaseM / Math.SQRT2));
+check("the start is free, and every pyramid can be walked round inside the walk radius", gizaObstacles.length === 3 && isClearOf(gizaObstacles, [0, 0]) && farthestCornerM + 10 < GIZA_MODEL.walkRadiusM && gizaSite?.walkRadiusM === GIZA_MODEL.walkRadiusM);
+check("the shadow map reaches every pyramid and the fly ceiling clears the tallest", gizaScale.shadowReachM > farthestCornerM && gizaLimits.flyCeilingM > pyramidOf("khufu").originalHeightM && gizaLimits.flyRadiusM < 300 * gizaScale.backdropFactor);
+const khafre = pyramidOf("khafre");
+const intoKhafre = journey(gizaLimits, [khafre.centre[0], khafre.centre[1] + khafre.coreBaseM / 2 + 40], LOOK_NORTH, 20);
+check("a walker heading at a pyramid is stopped at its foot", intoKhafre.every((point) => isClearOf(gizaObstacles, point)) && near(endOf(intoKhafre)[1], khafre.centre[1] + khafre.coreBaseM / 2 + WALKER_RADIUS_M, 0.3));
+check("a flyer on the same course passes over it", endOf(journey(gizaLimits, [khafre.centre[0], khafre.centre[1] + khafre.coreBaseM / 2 + 40], LOOK_NORTH, 20, "fly"))[1] < khafre.centre[1]);
+check("Giza is crossed five times faster", near(speed(moveStep({ position: [0, EYE_M, 0], velocity: REST }, "walk", LOOK_NORTH, keys("KeyW"), gizaLimits, 10).velocity), 5 * speed(walkAhead), 1e-6));
+const gizaPlaced = placeOnModel(GIZA_LANDMARKS.landmarks, GIZA_MODEL);
+check("each Giza landmark has a source, two to four sentences and a pyramid of the model", gizaPlaced.length === 3 && GIZA_LANDMARKS.landmarks.every((landmark) => landmark.source.url.startsWith("https://") && landmark.source.label.length > 10 && giza.landmarkPlaces[landmark.placeId ?? ""] !== undefined && [2, 3, 4].includes(landmark.description.split(/(?<=[.″])\s+(?=[A-Z])/).length)));
+const atKhafresFoot: Vec3 = [khafre.centre[0], EYE_M, khafre.centre[1] + khafre.coreBaseM / 2 + 5];
+const aboveKhufu: Vec3 = [pyramidOf("khufu").centre[0], 180, pyramidOf("khufu").centre[1]];
+check("a pyramid's card shows at its foot, and to a flyer over its top, and no card shows at the start", nearestLandmark(gizaPlaced, atKhafresFoot, LOOK_EAST)?.landmark.id === "khafre" && nearestLandmark(gizaPlaced, aboveKhufu, LOOK_EAST)?.landmark.id === "khufu" && nearestLandmark(gizaPlaced, [0, EYE_M, 0], LOOK_NORTH) === null);
+check("a pillar is still out of reach from 12 m above it", nearestLandmark(placeOnModel(GOBEKLI_TEPE_LANDMARKS.landmarks, GOBEKLI_TEPE_MODEL), [enclosureD.centre[0], 20, enclosureD.centre[1]], LOOK_NORTH) === null);
+check("Giza's one layer is the casing as built, off until asked for, and drawn up to each published height", GIZA_MODEL.hypotheses.map((layer) => layer.id).join() === "casing" && GIZA_MODEL.hypotheses[0].sources.length === 3 && Math.max(...(giza.layerDrawings.casing ?? []).map((part) => part.topM)) === pyramidOf("khufu").originalHeightM && (giza.layerDrawings.casing ?? []).filter((part) => part.tone === "granite").length === 1);
+check("the footer names the layer while it is on", hypothesisFootnote(GIZA_MODEL.hypotheses, ["casing"]).includes("Casing and point as first built"));
+// The scale is Giza's alone.
+const pillarSiteLimits = [gobekliLimits, karahanWalkLimits];
+check("the two pillar sites name no scale and so keep the building scale", [GOBEKLI_TEPE_MODEL, KARAHAN_TEPE_MODEL].every((model) => model.scale === undefined && JSON.stringify(walkScaleOf(model)) === JSON.stringify(BUILDING_SCALE)) && JSON.stringify(BUILDING_SCALE) === JSON.stringify({ speedFactor: 1, highestCeilingM: 40, shadowReachM: 128, backdropFactor: 1, markerScale: 1 }));
+check("their walk radius, fly dome, ceiling and speed are unchanged", GOBEKLI_TEPE_MODEL.walkRadiusM === 36 && gobekliLimits.flyRadiusM === 108 && pillarSiteLimits.every((limits) => limits.flyCeilingM === 40 && limits.speedFactor === 1 && limits.flyRadiusM === 3 * limits.walkRadiusM) && near(speed(walkAhead), 2.2));
 
 console.log(JSON.stringify({ ok: failed === 0, failed }));
 process.exit(failed === 0 ? 0 : 1);

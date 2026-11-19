@@ -33,9 +33,11 @@ function useWalkSource(hasModel: boolean, initialSource: WalkSource | undefined,
   return [source, choose];
 }
 
-function useSplatState(splatUrl: string): WalkState {
+/** `splatUrl` is null for a site with a model and no photographs: nothing is looked for. */
+function useSplatState(splatUrl: string | null): WalkState {
   const [state, setState] = useState<WalkState>("checking");
   useEffect(() => {
+    if (!splatUrl) return setState("missing");
     let current = true;
     setState("checking");
     fetch(splatUrl, { method: "HEAD" })
@@ -137,9 +139,9 @@ type WalkViewProps = {
  */
 export function WalkView({ site, initialSource, onSourceChange, onExit }: WalkViewProps) {
   const siteModel = findWalkModel(site);
-  const [source, chooseSource] = useWalkSource(Boolean(siteModel), initialSource, onSourceChange);
+  const [source, chooseSource] = useWalkSource(Boolean(siteModel), site.modelOnly ? "model" : initialSource, onSourceChange);
   const model = source === "model" ? siteModel : null;
-  const splatState = useSplatState(site.splatUrl);
+  const splatState = useSplatState(site.modelOnly ? null : site.splatUrl);
   const state = model ? "ready" : splatState;
   const [mode, toggleMode, liftOff] = useMoveMode();
   const hasSetOff = useHasSetOff(mode);
@@ -171,7 +173,7 @@ export function WalkView({ site, initialSource, onSourceChange, onExit }: WalkVi
         <WalkStage site={site} model={model} mode={mode} landmarks={landmarks} hypotheses={hypotheses} viewpoints={viewpoints} walker={walker} onNearestLandmark={setNearLandmarkId} onLockChange={setLocked} onLiftOff={liftOff} onShown={markShown} />
       ) : null}
       <WalkChrome
-        site={site} hasModel={Boolean(siteModel)} model={model} source={source} state={state} shown={shown} locked={locked} mode={mode} hasSetOff={hasSetOff}
+        site={site} hasModel={Boolean(siteModel) && !site.modelOnly} model={model} source={source} state={state} shown={shown} locked={locked} mode={mode} hasSetOff={hasSetOff}
         landmarkCount={landmarks.length} nearLandmark={nearLandmark} hypotheses={hypotheses} viewpointCount={viewpoints.length} viewpoint={viewpoint}
         onExit={onExit} onChooseSource={chooseSource} onToggleMode={toggleMode} onToggleHypothesis={toggleHypothesis} onShowLayer={showLayer} onStepViewpoint={stepViewpoint}
       />

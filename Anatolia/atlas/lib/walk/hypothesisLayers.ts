@@ -5,7 +5,7 @@
 
 import type { ModelSource } from "./enclosureModel";
 
-export type HypothesisLayerId = "roofs" | "surroundings" | "backfill";
+export type HypothesisLayerId = "roofs" | "surroundings" | "backfill" | "casing";
 
 /** A place to stand and a point to look at, in walk metres from the walker's start. Only a camera position, never a find. */
 export type LayerViewpoint = {

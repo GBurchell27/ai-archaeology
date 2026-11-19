@@ -1,4 +1,5 @@
 import { Vector3 } from "three";
+import { BUILDING_SCALE } from "@/lib/walk/walkScale";
 
 const fromCompass = (east: number, up: number, south: number) => new Vector3(east, up, south).normalize();
 
@@ -44,10 +45,19 @@ export const EVENING_SKY = {
  * Nothing in a model moves, so the map is drawn once and again only when a layer is switched.
  */
 export const SUN_SHADOW = {
-  reachM: 128,
+  reachM: BUILDING_SCALE.shadowReachM,
   /** Across the light. The map's other side is this times the sine of the sun's height, which keeps its texels square. */
   mapPx: 4096,
   distanceM: 150,
   bias: -0.0004,
   normalBias: 0.08,
 } as const;
+
+/**
+ * The same map stretched to reach `reachM`, for a site far larger than a building. Its texels grow with it, so the
+ * offset that keeps a lit face out of its own shadow grows too. At the reach above it is the map above.
+ */
+export function sunShadowReaching(reachM: number) {
+  const stretch = reachM / SUN_SHADOW.reachM;
+  return { ...SUN_SHADOW, reachM, distanceM: SUN_SHADOW.distanceM * stretch, normalBias: SUN_SHADOW.normalBias * stretch };
+}
