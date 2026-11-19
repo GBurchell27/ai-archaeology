@@ -1,13 +1,12 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState, useSyncExternalStore } from "react";
-import type { SupabaseClient } from "@supabase/supabase-js";
 import type { SavedStatus, SiteVoteCount } from "@/lib/account/accountBackend";
-import { loadAccountClient } from "@/lib/account/accountClient";
-import { ACCOUNT_CONFIG } from "@/lib/account/accountConfig";
+import { loadAccountClient, restoreReturnedVerifier, type AccountClient } from "@/lib/account/accountClient";
+import { ACCOUNTS_ON } from "@/lib/account/accountConfig";
 import { EMPTY_ACCOUNT_STATE, createAccountStore, type AccountState } from "@/lib/account/accountStore";
-import { createSupabaseAccountBackend, fetchVoteCounts } from "@/lib/account/supabaseAccountBackend";
-import { LEADERBOARD_LENGTH, orderVoteCounts } from "@/lib/account/voteLeaderboard";
+import { createFetchAccountBackend, fetchVoteCounts } from "@/lib/account/fetchAccountBackend";
+import { orderVoteCounts } from "@/lib/account/voteLeaderboard";
 
 export interface AccountViewModel {
   /** "loading" until the session this browser kept has been read. */
@@ -20,88 +19,100 @@ export interface AccountViewModel {
   deleteSavedData(): void;
   /** Leaves the page for Google. False when the sign-in could not start. */
   signInWithGoogle(): Promise<boolean>;
-  /** False when the link could not be sent. */
-  sendSignInLink(email: string): Promise<boolean>;
+  /** Has a code sent to the address. False when it could not be sent. */
+  sendSignInCode(email: string): Promise<boolean>;
+  /** False when the code is wrong or too old. */
+  signInWithCode(email: string, code: string): Promise<boolean>;
   signOut(): void;
   /** The public vote totals, most voted first. Rejects when they cannot be read. */
   loadVoteCounts(): Promise<SiteVoteCount[]>;
 }
 
-/** A sign-in returns to the bare page: the redirect allow-list of the project then needs one entry. */
-function returnAddress(): string {
-  return window.location.origin + window.location.pathname;
-}
-
-interface AccountSession {
-  client: SupabaseClient | null;
+interface Visitor {
   /** `undefined` while the kept session is being read, `null` when signed out. */
   userId: string | null | undefined;
   email: string | null;
 }
 
-function useAccountSession(): AccountSession {
-  const [session, setSession] = useState<AccountSession>({ client: null, userId: undefined, email: null });
-  useEffect(() => {
-    if (!ACCOUNT_CONFIG) return;
-    let stopListening = () => {};
-    let live = true;
-    loadAccountClient(ACCOUNT_CONFIG).then((client) => {
-      if (!live) return;
-      // Fires at once with the kept session, then on every sign-in and sign-out.
-      const { data } = client.auth.onAuthStateChange((_event, current) => {
-        setSession({ client, userId: current?.user.id ?? null, email: current?.user.email ?? null });
-      });
-      stopListening = () => data.subscription.unsubscribe();
-    }, () => { if (live) setSession({ client: null, userId: null, email: null }); });
-    return () => {
-      live = false;
-      stopListening();
-    };
+const SIGNED_OUT: Visitor = { userId: null, email: null };
+
+/** The auth client reports a refusal in its result, and a failed request by throwing. */
+async function succeeded(request: Promise<{ error?: unknown }> | undefined): Promise<boolean> {
+  try {
+    const result = await request;
+    return result !== undefined && !result.error;
+  } catch {
+    return false;
+  }
+}
+
+function useAccountSession() {
+  const [client, setClient] = useState<AccountClient | null>(null);
+  const [visitor, setVisitor] = useState<Visitor>({ userId: undefined, email: null });
+  const readSession = useCallback(async () => {
+    try {
+      const loaded = await loadAccountClient();
+      restoreReturnedVerifier();
+      const { data } = await loaded.auth.getSession();
+      setClient(loaded);
+      setVisitor({ userId: data?.user?.id ?? null, email: data?.user?.email ?? null });
+    } catch {
+      setVisitor(SIGNED_OUT);
+    }
   }, []);
-  return session;
+  useEffect(() => { if (ACCOUNTS_ON) void readSession(); }, [readSession]);
+  const markSignedOut = useCallback(() => setVisitor(SIGNED_OUT), []);
+  return { client, ...visitor, readSession, markSignedOut };
 }
 
 const neverChanges = () => () => {};
 
 /** The signed-in visitor's saved sites and votes; empty while signed out. */
-function useAccountPlaces(client: SupabaseClient | null, userId: string | null | undefined) {
-  const store = useMemo(
-    () => (client && userId ? createAccountStore(createSupabaseAccountBackend(client, userId)) : null),
-    [client, userId],
-  );
+function useAccountPlaces(userId: string | null | undefined, onSignedOut: () => void) {
+  const store = useMemo(() => (userId ? createAccountStore(createFetchAccountBackend(onSignedOut)) : null), [userId, onSignedOut]);
   useEffect(() => { void store?.load(); }, [store]);
   const places = useSyncExternalStore(store?.subscribe ?? neverChanges, store?.getState ?? (() => EMPTY_ACCOUNT_STATE));
   return { store, places };
 }
 
-/** Optional accounts for the globe. Null when the two Supabase settings are absent: then nothing is fetched and nothing shows. */
+function useSignInActions(session: ReturnType<typeof useAccountSession>) {
+  const { client, readSession, markSignedOut } = session;
+  return useMemo(() => {
+    // The client also drops its own copy of the session; the service may already have ended it.
+    const leave = async () => {
+      await succeeded(client?.auth.signOut());
+      markSignedOut();
+    };
+    return {
+      signInWithGoogle: () => succeeded(client?.auth.signIn.social({ provider: "google", callbackURL: window.location.origin })),
+      sendSignInCode: (address: string) => succeeded(client?.auth.emailOtp.sendVerificationOtp({ email: address, type: "sign-in" })),
+      async signInWithCode(address: string, code: string) {
+        const signedIn = await succeeded(client?.auth.signIn.emailOtp({ email: address, otp: code }));
+        if (signedIn) await readSession();
+        return signedIn;
+      },
+      signOut: () => void leave(),
+    };
+  }, [client, readSession, markSignedOut]);
+}
+
+const loadVoteCounts = async () => orderVoteCounts(await fetchVoteCounts());
+
+/** Optional accounts for the globe. Null when the server settings were absent at build: then nothing is fetched and nothing shows. */
 export function useAccount(): AccountViewModel | null {
-  const { client, userId, email } = useAccountSession();
-  const { store, places } = useAccountPlaces(client, userId);
+  const session = useAccountSession();
+  const { userId, email } = session;
+  const { store, places } = useAccountPlaces(userId, session.markSignedOut);
+  const signIn = useSignInActions(session);
 
-  const signInWithGoogle = useCallback(async () => {
-    const result = await client?.auth.signInWithOAuth({ provider: "google", options: { redirectTo: returnAddress() } });
-    return result !== undefined && !result.error;
-  }, [client]);
-  const sendSignInLink = useCallback(async (address: string) => {
-    const result = await client?.auth.signInWithOtp({ email: address, options: { emailRedirectTo: returnAddress() } });
-    return result !== undefined && !result.error;
-  }, [client]);
-  const loadVoteCounts = useCallback(async () => {
-    if (!ACCOUNT_CONFIG) return [];
-    return orderVoteCounts(await fetchVoteCounts(await loadAccountClient(ACCOUNT_CONFIG), LEADERBOARD_LENGTH));
-  }, []);
-
-  return useMemo(() => (ACCOUNT_CONFIG ? {
+  return useMemo(() => (ACCOUNTS_ON ? {
     session: userId === undefined ? "loading" : userId ? "signedIn" : "signedOut",
     email,
     places,
     setSaved: (siteId, status) => void store?.setSaved(siteId, status),
     setVote: (siteId, voted) => void store?.setVote(siteId, voted),
     deleteSavedData: () => void store?.deleteSavedData(),
-    signInWithGoogle,
-    sendSignInLink,
-    signOut: () => void client?.auth.signOut(),
+    ...signIn,
     loadVoteCounts,
-  } : null), [client, userId, email, store, places, signInWithGoogle, sendSignInLink, loadVoteCounts]);
+  } : null), [userId, email, store, places, signIn]);
 }

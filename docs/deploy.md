@@ -7,7 +7,7 @@ The app is described in [`world-atlas.md`](world-atlas.md). Paths below are rela
 ## What the site is made of
 
 - **Static files.** Everything the atlas shows is a file under `public/`: the world catalogue (`public/world/`), the Anatolia site files, the terrain rasters, the recording-pattern and ice layers, and the walk view's splats. The browser fetches them as it needs them. A host serves them as they are.
-- **No database.** The atlas reads no database and writes nothing. A visitor's choices (theme, relief source) are kept in that visitor's browser. Accounts, if they are added, are separate work with their own setup and are not covered here.
+- **No database for the atlas itself.** The atlas reads no database and writes nothing. A visitor's choices (theme, relief source) are kept in that visitor's browser. The optional accounts (saved sites and votes) are the exception: they use a Neon database and Neon Auth through two server functions, `/api/auth/*` and `/api/account/*`, and need three environment variables. Without those variables the atlas is complete and the two functions answer 503. [`accounts.md`](accounts.md) has the setup, including what to set in Vercel and the trusted domain for the deployed address.
 - **One page rendered on request.** `/` reads the address (`?view=…&site=…`) on the server and sends the page for that view. With no parameters it is the globe, so a visitor lands straight in it. On Vercel that is one small function call per page load.
 - **Two prerendered pages.** `/puzzles` and `/api/landscape-benchmark` are built once at build time. The second reads `Anatolia/eval/metrics.json`, which lies outside the app folder: see the build setting below.
 - **One API that needs a program Vercel does not run.** `/api/closeup`: see "What does not work".
@@ -25,7 +25,7 @@ Deploy from the Git repository, not with the `vercel` command line: the command 
 | Install command | The default, `npm install`. |
 | Output directory | The default. Do not set `ATLAS_DIST_DIR` on Vercel. |
 | Node.js version | 22 or later. |
-| Environment variables | None are needed. |
+| Environment variables | None are needed for the atlas. Accounts need three: see [`accounts.md`](accounts.md). |
 
 Environment variables the app reads:
 
@@ -35,14 +35,15 @@ Environment variables the app reads:
 | `ATLAS_CLOSEUPS` | `on` or `off` overrides that guess. Leave it unset on Vercel. `off` is useful on any host without the repository's Python. |
 | `ATLAS_PYTHON`, `ATLAS_CLOSEUP_DIR`, `ATLAS_CLOSEUP_MAX_BYTES`, `ATLAS_CLOSEUP_CONCURRENCY` | The close-up worker's settings. They do nothing where close-ups are off. |
 | `ATLAS_DIST_DIR` | Build output folder, for a local check build only (below). |
+| `DATABASE_URL`, `NEON_AUTH_BASE_URL`, `NEON_AUTH_COOKIE_SECRET` | Accounts only, and all three or none ([`accounts.md`](accounts.md)). The first and last are secrets. The build reads them to tell the page whether accounts are on, so a change needs a redeploy. |
 
-No key or token is needed anywhere. The globe library (`3d-tiles-renderer`) is used only to drape plain XYZ image tiles on an ellipsoid; nothing in the app calls a keyed service.
+No key or token is needed for the atlas itself. The globe library (`3d-tiles-renderer`) is used only to drape plain XYZ image tiles on an ellipsoid; nothing in the app calls a keyed service.
 
 ## Steps for the owner
 
 1. Decide the open points under "Decisions waiting" in [`todo.md`](todo.md) that concern publishing: the Şanlıurfa regional files, and the base map's terms.
 2. Commit and push the changes this document came with.
-3. In Vercel, create a project from the repository and apply the settings in the table above. No environment variables.
+3. In Vercel, create a project from the repository and apply the settings in the table above. No environment variables, unless accounts are wanted.
 4. Deploy. Open the address Vercel gives: it should show the globe.
 5. Check on the deployed site: a site card opens; "Open in Anatolia atlas" shows the terrain map; `/?view=walk&site=gobekli-tepe&source=photographs` loads the splat; "View terrain" shows the message "Terrain close-ups are not available here" and a way back; `/puzzles` opens.
 6. Look at the build log for the size of each function. The close-up function should be a few megabytes. If the log reports hundreds, the exclusion in `next.config.ts` did not apply: see "The close-up function's size".

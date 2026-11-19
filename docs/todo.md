@@ -62,18 +62,22 @@ The splat is sharp only near where photographers stood. 41 of 294 downloaded pho
 
 ## Accounts (optional sign-in, saved sites, votes)
 
-[`accounts.md`](accounts.md) has what is stored, the schema and the setup steps. The code is built and its logic is checked against an in-memory database. It is off until two settings are present, and no Supabase project exists.
+[`accounts.md`](accounts.md) has what is stored, the schema, the settings and the setup steps. Accounts run on Neon (Neon Auth and Postgres) behind the atlas's own server routes, and are off until three server settings are present. On 2026-11-19 they were run against the real Neon project from a production build on this machine, with one throwaway account, since deleted.
 
-- [ ] **Never run against a real service.** Signing in (Google and email link), signing out, the return from a sign-in (`?code=` read in `lib/account/accountClient.ts`), every call in `supabaseAccountBackend.ts`, and `supabase/schema.sql` itself are untried. Row level security is the intent of that file, not a tested fact: try it with two accounts and with no session.
-- [ ] **The signed-in screens have not been seen in a browser:** "Your places" with rows, a pressed button on a site card, "Most voted" with sites in it. The not-configured and signed-out states were looked at in headless Chrome, the second in a throwaway build with settings that point nowhere.
-- [ ] An email sign-in link works only in the browser that asked for it.
+- [ ] **Google sign-in has never been completed.** It needs a person at a browser. The return from Google (`neon_auth_session_verifier` on the address, kept by `lib/account/accountClient.ts`) is the least certain part.
+- [ ] **Nobody has signed in with a correct emailed code,** and a first sign-in by code for an address with no account was not tried. Sending a code and refusing a wrong one were seen.
+- [ ] **Not run on Vercel.** The account routes ran under `next start` only.
+- [ ] **Tried with one account.** That a visitor cannot reach another's rows rests on the check script, not on a test with two accounts.
+- [ ] The dev server's address `http://127.0.0.1:43127` is not an origin Neon Auth trusts, so a sign-in from it is refused; `http://localhost:43127` is trusted. Add the first as a trusted domain or use the second (`accounts.md`, "Setting it up").
+- [ ] `@neon/auth` asks for Next 16. It is installed beside Next 15 through an `overrides` entry in `package.json` and was seen to work. Remove the entry when the atlas moves to Next 16.
 - [ ] Trip planning (a route through saved sites) was raised and not built.
 
 ## Decisions waiting
 
-- [ ] Accounts: create the Supabase project and the Google OAuth client, run `supabase/schema.sql`, and set the two settings (steps in `accounts.md`). Supabase was chosen for the owner; say if another service is wanted.
-- [ ] Accounts: a privacy notice is needed before real visitors sign in, because Supabase will hold their email addresses (and, with Google, their profile name and picture). Where the project is hosted (region) belongs in it.
-- [ ] Accounts: deleting an account is done by hand in the Supabase dashboard. Add a "Delete my account" button (one more database function), or keep it by request?
+- [ ] Accounts: a privacy notice is needed before real visitors sign in, because Neon will hold their email addresses, the IP address and browser name of each session and, with Google, their profile name and picture. Where the project is hosted (region) belongs in it.
+- [ ] Accounts: before real visitors, Neon's production checklist: your own Google OAuth credentials, your own mail sender, the application name, the deployed address as a trusted domain, and "Allow localhost" off (`accounts.md`, "Before real visitors sign in").
+- [ ] Accounts: deleting an account is done by hand with `neon neon-auth user delete`. Neon Auth's own delete route answered 404, so a "Delete my account" button needs a server route that deletes the `neon_auth` user row itself. Add it, or keep deletion by request?
+- [ ] Accounts: `neon init` declared a sample function (`Anatolia/atlas/hello.ts`) and a private storage bucket (`assets`) in `Anatolia/atlas/neon.ts`. The atlas uses neither. Remove both, or keep them?
 - [ ] Accounts: OpenStreetMap megaliths cannot be saved or voted for, to keep share-alike records out of the lists. Keep, or allow them?
 - [ ] Accounts: a visitor may vote for any number of sites. Keep, or cap it?
 - [ ] Publish on Vercel with terrain close-ups switched off? They need the repository's Python, which Vercel's Node functions do not have. `deploy.md` lists four ways to bring them back and what each costs.

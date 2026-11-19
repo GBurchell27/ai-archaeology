@@ -1,32 +1,26 @@
-// Whether the optional accounts feature is switched on. It is on only when both public settings are present.
+// Whether the optional accounts feature is switched on. This file imports nothing, so next.config.ts can read it.
 
-export interface AccountConfig {
-  /** The Supabase project address. */
-  url: string;
-  /** The project's public browser key. Row level security, not this key, is what protects the rows. */
-  anonKey: string;
+export interface AccountSettings {
+  /** The pooled Postgres address. Secret. */
+  databaseUrl: string;
+  /** The Neon Auth address of the branch. */
+  authBaseUrl: string;
+  /** Signs the session cookies. Secret. */
+  cookieSecret: string;
 }
 
-/** Plain http is accepted only for a Supabase running on this machine. */
-function isProjectAddress(value: string): boolean {
-  try {
-    const address = new URL(value);
-    const local = address.hostname === "localhost" || address.hostname === "127.0.0.1";
-    return address.protocol === "https:" || (address.protocol === "http:" && local);
-  } catch {
-    return false;
-  }
+/** Neon Auth refuses a shorter secret. */
+const SHORTEST_COOKIE_SECRET = 32;
+
+/** The three server settings, or null when any is missing. Null means: no accounts at all. */
+export function readAccountSettings(environment: Record<string, string | undefined>): AccountSettings | null {
+  const databaseUrl = environment.DATABASE_URL?.trim() ?? "";
+  const authBaseUrl = environment.NEON_AUTH_BASE_URL?.trim() ?? "";
+  const cookieSecret = environment.NEON_AUTH_COOKIE_SECRET?.trim() ?? "";
+  const complete = databaseUrl && authBaseUrl && cookieSecret.length >= SHORTEST_COOKIE_SECRET;
+  return complete ? { databaseUrl, authBaseUrl, cookieSecret } : null;
 }
 
-/** The settings as a config, or null when either is missing or the address is not one. Null means: no accounts at all. */
-export function readAccountConfig(settings: { url?: string; anonKey?: string }): AccountConfig | null {
-  const url = settings.url?.trim() ?? "";
-  const anonKey = settings.anonKey?.trim() ?? "";
-  return anonKey && isProjectAddress(url) ? { url, anonKey } : null;
-}
-
-// Written out in full: Next replaces exactly these two expressions with their values when it builds the page.
-export const ACCOUNT_CONFIG = readAccountConfig({
-  url: process.env.NEXT_PUBLIC_SUPABASE_URL,
-  anonKey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
-});
+// The settings are server-only, so the page cannot read them. next.config.ts writes this one value into the page
+// when it builds: "on" when all three were present. Written out in full, because Next replaces exactly this expression.
+export const ACCOUNTS_ON = process.env.NEXT_PUBLIC_ATLAS_ACCOUNTS === "on";

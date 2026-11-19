@@ -34,7 +34,7 @@ outputs/
 # Precise candidate locations. Do not commit these (looting risk).
 candidates_private*
 
-# Local settings. The two account settings are public values, but no env file belongs in git (docs/accounts.md).
+# Local settings. The account settings hold a database password and a cookie secret (docs/accounts.md).
 .env*
 
 # Node

@@ -1,4 +1,5 @@
-// What the account store needs from a database. The Supabase client implements it; the check script runs a fake.
+// What the account store needs from a database. The browser implements it with requests to /api/account, the server
+// with SQL; the check script runs a fake.
 
 export type SavedStatus = "want" | "visited";
 
