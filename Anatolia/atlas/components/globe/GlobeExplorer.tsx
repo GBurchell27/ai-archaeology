@@ -2,10 +2,12 @@
 
 import { useCallback, useMemo, useRef, useState, type ReactNode } from "react";
 import type { GlobeLook } from "@/lib/globe/ellipsoid";
+import { GLOBE_BASEMAPS } from "@/lib/globe/basemaps";
 import { ENTER_ATLAS_ALTITUDE, atlasLookFromGlobe, type AtlasLook } from "@/lib/globe/handoff";
 import { namedPeriodsForRegions, periodRegionKeyAt } from "@/lib/world/namedPeriods";
 import { ExplorerChrome } from "./chrome/ExplorerChrome";
 import { GlobeSites, type PickedSite } from "./GlobeSites";
+import { useGlobeBasemap } from "./GlobeSurface";
 import { GlobeView } from "./GlobeView";
 import { useGlobeExplorer } from "./useGlobeExplorer";
 
@@ -25,7 +27,9 @@ export interface GlobeExplorerProps {
   onOpenPlace(siteId: string): void;
   /** Zooming in over Turkey, or "Open in Anatolia atlas" on a site card (then `siteId` is set). */
   onEnterAtlas(look: AtlasLook, siteId?: string): void;
-  /** DOM controls for the predictive layer, mounted in the Layers panel. */
+  /** "Walk the site" on the card of a site whose walk is reached from the globe. */
+  onEnterWalk(siteId: string): void;
+  /** DOM controls for the predictive layer, mounted in the Layers section of the settings panel. */
   modelSlot?: ReactNode;
   /** Extra three.js layers (the predictive overlay), rendered inside the globe Canvas after the sites. */
   sceneLayers?: ReactNode;
@@ -55,6 +59,9 @@ export function GlobeExplorer(props: GlobeExplorerProps) {
   const periodRegions = look ? periodRegionKeyAt(look.longitude, look.latitude, look.altitude) : "";
   const namedPeriods = useMemo(() => namedPeriodsForRegions(periodRegions), [periodRegions]);
 
+  const automaticBasemap = useGlobeBasemap();
+  const basemap = GLOBE_BASEMAPS.find((candidate) => candidate.id === explorer.basemapId) ?? automaticBasemap;
+
   const { catalogue, selection } = explorer;
   return (
     <GlobeView
@@ -62,7 +69,8 @@ export function GlobeExplorer(props: GlobeExplorerProps) {
       onLookChange={trackLook}
       onEnterAtlas={onEnterAtlas}
       flyTo={selection.flyTo}
-      overlay={<ExplorerChrome explorer={explorer} namedPeriods={namedPeriods} modelSlot={props.modelSlot} onOpenPlace={props.onOpenPlace} onEnterAtlas={enterAtlasAtSite} />}
+      basemap={basemap}
+      overlay={<ExplorerChrome explorer={explorer} namedPeriods={namedPeriods} basemapId={basemap.id} modelSlot={props.modelSlot} onOpenPlace={props.onOpenPlace} onEnterAtlas={enterAtlasAtSite} onEnterWalk={props.onEnterWalk} />}
     >
       {catalogue ? (
         <GlobeSites

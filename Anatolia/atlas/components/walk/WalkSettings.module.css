@@ -1,0 +1,6 @@
+/* The settings disclosure of the walk's right-hand column. The box, the summary and the fade while the pointer is
+   locked are the disclosure's own (WalkView.module.css); this only spaces what is inside. No backdrop blur. */
+.body { padding: 0 13px 4px; }
+.choices { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+/* Two classes, so the disclosure's paragraph padding does not apply. */
+.body .line { flex-basis: 100%; margin: 0; padding: 0; font-size: 12px; line-height: 1.5; color: #b6b9bf; }

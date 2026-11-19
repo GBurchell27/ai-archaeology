@@ -267,31 +267,12 @@ export function AtlasApp({ regional, initialLook, initialSiteId, onExitToGlobe, 
       </div>
       {settingsOpen ? (
         <SettingsMenu
-          baseMap={baseMap}
+          display={display}
+          preferences={preferences}
+          timeline={timeline}
+          context={context}
           regional={regional}
-          regionalLayer={region.regionalLayer}
-          onRegionalLayer={region.setRegionalLayer}
-          layers={layers}
-          exaggeration={exaggeration}
-          azimuth={display.azimuth}
-          altitude={display.altitude}
-          labels={display.labels}
-          onBase={display.setBaseMap}
-          onLayer={display.setLayer}
-          onExaggeration={display.setExaggeration}
-          onAzimuth={display.setAzimuth}
-          onAltitude={display.setAltitude}
-          onLabels={display.setLabels}
-          terrainSource={terrainSource}
-          onTerrain={preferences.changeTerrainSource}
-          wikiOn={wikiOn}
-          onWiki={display.setWikiOn}
-          contextOn={context.contextOn}
-          contextOpacity={context.contextOpacity}
-          roadsInPeriod={context.roadsInPeriod}
-          climateRecords={context.climateRecords}
-          onContext={context.setContext}
-          onContextOpacity={context.setContextOpacity}
+          region={region}
           onClimate={navigation.showClimateFromSettings}
         />
       ) : null}

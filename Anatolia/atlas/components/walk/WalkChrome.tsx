@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef } from "react";
+import { walkReturn } from "@/lib/globe/walkHandoff";
 import type { WalkModel } from "@/lib/walk/enclosureModel";
 import type { HypothesisLayer, HypothesisLayerId } from "@/lib/walk/hypothesisLayers";
 import type { PlacedLandmark } from "@/lib/walk/landmarks";
@@ -35,8 +36,9 @@ function useCloseOpenPanels() {
   return chrome;
 }
 
-/** Names where it leads: the walk is entered from the Anatolia map and goes back to it, with this site selected. */
-function ExitControl({ siteName, onExit }: { siteName: string; onExit?: () => void }) {
+/** Names where it leads: back to the view that holds the site, the Anatolia map or the globe, with this site selected. */
+function ExitControl({ site, onExit }: { site: WalkSite; onExit?: () => void }) {
+  const leadsTo = walkReturn(site).view === "globe" ? { label: "Globe", name: "globe" } : { label: "Anatolia map", name: "Anatolia map" };
   if (!onExit) {
     return (
       <a className={styles.exit} href="/" data-action="walk-exit">
@@ -45,8 +47,8 @@ function ExitControl({ siteName, onExit }: { siteName: string; onExit?: () => vo
     );
   }
   return (
-    <button type="button" className={styles.exit} data-action="walk-exit" aria-label={`Back to the Anatolia map at ${siteName}`} onClick={onExit}>
-      <span aria-hidden="true">←</span> Anatolia map
+    <button type="button" className={styles.exit} data-action="walk-exit" aria-label={`Back to the ${leadsTo.name} at ${site.name}`} onClick={onExit}>
+      <span aria-hidden="true">←</span> {leadsTo.label}
     </button>
   );
 }
@@ -106,7 +108,7 @@ export function WalkChrome({ site, hasModel, model, source, state, shown, locked
   return (
     <div className={styles.chrome} ref={chrome}>
       <header className={styles.header}>
-        <ExitControl siteName={site.name} onExit={actions.onExit} />
+        <ExitControl site={site} onExit={actions.onExit} />
         <h1 className={styles.name}>{site.name}</h1>
         <StatusNote state={state} shown={shown} />
       </header>

@@ -1,0 +1,20 @@
+/* The settings panel's own layout. It sits inside each view's existing surface (the globe's panel shell, the
+   Anatolia map's menu, a disclosure of the walk), so it draws no box of its own. Colours are the --globe-* tokens. */
+
+.section { padding: 12px 0 14px; border-top: 1px solid var(--globe-rule); }
+.section:first-child { border-top: 0; }
+.panel .heading { margin: 0 0 8px; }
+.panel .subhead { margin: 14px 0 2px; }
+
+.presets, .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.presets button:disabled { opacity: 0.45; cursor: default; }
+
+/* Two classes, so the paragraph and label rules of the surface around it do not restyle these. */
+.panel .note { margin: 7px 0 0; padding: 0; font-size: 12px; line-height: 1.5; color: #b6b9bf; }
+.panel .heading + .note { margin-top: 0; }
+.panel .toggle { justify-content: flex-start; margin: 0; }
+
+.panel .choice { display: flex; justify-content: flex-start; align-items: center; gap: 8px; margin: 6px 0 0; font-size: 12.5px; cursor: pointer; }
+.choice input { margin: 0; accent-color: var(--globe-ochre); }
+.readout { margin: 0 0 8px; font-size: 17px; line-height: 1.2; }
+.chips + .chips, .chips + .toggle { margin-top: 8px; }

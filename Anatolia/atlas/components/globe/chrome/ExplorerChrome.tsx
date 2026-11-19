@@ -11,7 +11,7 @@ import styles from "./ExplorerChrome.module.css";
 import { ExplorerLegend } from "./ExplorerLegend";
 import { ExplorerTopbar } from "./ExplorerTopbar";
 import { GlobeTimeline } from "./GlobeTimeline";
-import { LayersPanel } from "./LayersPanel";
+import { GlobeSettingsPanel } from "./GlobeSettingsPanel";
 import { SiteCard } from "./SiteCard";
 import { TheoriesPanel } from "./TheoriesPanel";
 import { TourBar } from "./TourBar";
@@ -21,9 +21,12 @@ export interface ExplorerChromeProps {
   explorer: GlobeExplorerViewModel;
   /** Period chips for the region in view. The array keeps its identity until the set changes, because the chrome is memoised. */
   namedPeriods: readonly NamedPeriod[];
+  /** The imagery on the globe now: the visitor's pick, or the default or its fallback. */
+  basemapId: string;
   modelSlot?: ReactNode;
   onOpenPlace(siteId: string): void;
   onEnterAtlas(site: PickedSite): void;
+  onEnterWalk(siteId: string): void;
 }
 
 function useEscapeToClose(closeTop: () => boolean): void {
@@ -42,7 +45,7 @@ function useEscapeToClose(closeTop: () => boolean): void {
  */
 export const ExplorerChrome = memo(function ExplorerChrome(props: ExplorerChromeProps) {
   const { explorer } = props;
-  const { catalogue, filters, selection, tour, theoryLens, panel } = explorer;
+  const { catalogue, selection, tour, theoryLens, panel } = explorer;
   const selected = selection.selected;
   useEscapeToClose(explorer.closeTop);
   const wonder = useMemo(
@@ -79,6 +82,7 @@ export const ExplorerChrome = memo(function ExplorerChrome(props: ExplorerChrome
             onFlyCloser={selection.flyCloser}
             onOpenPlace={props.onOpenPlace}
             onEnterAtlas={props.onEnterAtlas}
+            onEnterWalk={props.onEnterWalk}
             onOpenTheory={explorer.openTheory}
           />
         ) : null}
@@ -104,18 +108,8 @@ export const ExplorerChrome = memo(function ExplorerChrome(props: ExplorerChrome
               onClose={closePanel}
             />
           ) : null}
-          {panel === "layers" ? (
-            <LayersPanel
-              osmMegaliths={catalogue?.index.osmMegaliths}
-              showOsmMegaliths={explorer.showOsmMegaliths}
-              showLabels={explorer.showLabels}
-              onShowLabels={explorer.setShowLabels}
-              featuredOnly={filters.featuredOnly}
-              onShowOsmMegaliths={explorer.setShowOsmMegaliths}
-              onFeaturedOnly={filters.setFeaturedOnly}
-              modelSlot={props.modelSlot}
-              onClose={closePanel}
-            />
+          {panel === "settings" ? (
+            <GlobeSettingsPanel explorer={explorer} namedPeriods={props.namedPeriods} basemapId={props.basemapId} modelSlot={props.modelSlot} onClose={closePanel} />
           ) : null}
           {panel === "about" ? <AboutPanel index={catalogue?.index ?? null} onClose={closePanel} /> : null}
         </div>

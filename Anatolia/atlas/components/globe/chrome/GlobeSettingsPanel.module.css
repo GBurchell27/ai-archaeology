@@ -1,9 +1,10 @@
-.layer { padding: 14px 0; border-bottom: 1px solid var(--globe-rule); }
-.layer:last-child { border-bottom: 0; }
+.layer { padding: 0 0 12px; }
+.layer + .layer { padding-top: 12px; border-top: 1px solid var(--globe-rule); }
+.layer:last-child { padding-bottom: 0; }
 .layerSwitch { display: flex; }
 .layerTitle { font-size: 14px; }
 .note { margin: 5px 0 0 36px; font-size: 12px; line-height: 1.5; color: #b6b9bf; }
 .note i { display: inline-block; margin-right: 2px; }
 
 /* The model layer speaks in a cooler tone than the ochre of the sites. */
-.model { margin-top: 2px; padding: 14px 0 0; border-top: 1px solid rgba(134, 190, 220, 0.35); }
+.model { margin-top: 12px; padding: 14px 0 0; border-top: 1px solid rgba(134, 190, 220, 0.35); }

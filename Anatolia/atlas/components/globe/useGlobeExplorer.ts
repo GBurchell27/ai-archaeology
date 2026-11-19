@@ -2,6 +2,7 @@
 
 import { useCallback, useMemo, useRef, useState, type RefObject } from "react";
 import type { GlobeLook } from "@/lib/globe/ellipsoid";
+import { GLOBE_PRESETS, type SettingsPresetId } from "@/lib/settings/settingsPresets";
 import { useWorldCatalogue, type WorldCatalogue } from "@/lib/world/catalogueLoader";
 import type { FeaturedSite, SiteColumns } from "@/lib/world/catalogueTypes";
 import { randomAcceptedWonder, tourStops } from "@/lib/world/wonders";
@@ -9,7 +10,7 @@ import { useSiteFilter, type SiteFilterViewModel } from "./useSiteFilter";
 import { useSiteSelection, type SiteSelectionViewModel } from "./useSiteSelection";
 import { useTheoryLens, type TheoryLensViewModel } from "./useTheoryLens";
 
-export type ExplorerPanel = "wonders" | "theories" | "layers" | "about";
+export type ExplorerPanel = "wonders" | "theories" | "settings" | "about";
 
 export interface WonderTourViewModel {
   stops: FeaturedSite[];
@@ -41,6 +42,11 @@ export interface GlobeExplorerViewModel {
   /** Escape: closes the site card if one is open, otherwise the open panel. Returns false when nothing was open. */
   closeTop(): boolean;
   setShowOsmMegaliths(show: boolean): void;
+  /** The imagery the visitor picked, or null for the default with its fallback. */
+  basemapId: string | null;
+  setBasemapId(basemapId: string): void;
+  /** Sets the year range, the type filter and the megalith layer to a settings preset. */
+  applyPreset(presetId: SettingsPresetId): void;
   visitRandomWonder(): void;
 }
 
@@ -90,6 +96,17 @@ export function useGlobeExplorer(options: {
     look: options.look, flyToLook: selection.flyToLook, onSelectTheory: options.onSelectTheory,
   });
   const [showOsmMegaliths, setShowOsmMegaliths] = useState(false);
+  const [basemapId, setBasemapId] = useState<string | null>(null);
+
+  const { setYearSpan, setShowUndated, setFeaturedOnly, showOnlyTypes } = filters;
+  const applyPreset = useCallback((presetId: SettingsPresetId) => {
+    const preset = GLOBE_PRESETS[presetId];
+    setYearSpan(preset.yearSpan);
+    setShowUndated(preset.showUndated);
+    setFeaturedOnly(preset.featuredOnly);
+    showOnlyTypes(preset.onlyTypes);
+    setShowOsmMegaliths(preset.osmMegaliths);
+  }, [setYearSpan, setShowUndated, setFeaturedOnly, showOnlyTypes]);
 
   const open = useRef({ selected: selection.selected, panel });
   open.current = { selected: selection.selected, panel };
@@ -125,10 +142,10 @@ export function useGlobeExplorer(options: {
   }, [catalogue, visitById]);
 
   return useMemo(() => ({
-    catalogue, catalogueError, filters, selection, tour, theoryLens, panel, showOsmMegaliths, showLabels,
-    togglePanel, openTheory, closeTop, setShowOsmMegaliths, setShowLabels, setLoadedCells, visitRandomWonder,
+    catalogue, catalogueError, filters, selection, tour, theoryLens, panel, showOsmMegaliths, showLabels, basemapId,
+    togglePanel, openTheory, closeTop, setShowOsmMegaliths, setShowLabels, setLoadedCells, setBasemapId, applyPreset, visitRandomWonder,
   }), [
-    catalogue, catalogueError, filters, selection, tour, theoryLens, panel, showOsmMegaliths, showLabels,
-    togglePanel, openTheory, closeTop, visitRandomWonder,
+    catalogue, catalogueError, filters, selection, tour, theoryLens, panel, showOsmMegaliths, showLabels, basemapId,
+    togglePanel, openTheory, closeTop, applyPreset, visitRandomWonder,
   ]);
 }

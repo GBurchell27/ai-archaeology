@@ -26,7 +26,7 @@ function OpacitySlider({ opacity, onChange }: { opacity: number; onChange(opacit
   );
 }
 
-/** The recording-pattern layer's controls, for the Layers panel slot. The statement shows whether it is on or off. */
+/** The recording-pattern layer's controls, for the Layers section of the settings panel. The statement shows whether it is on or off. */
 export function ModelControls({ model }: { model: ModelLayerViewModel }) {
   const { index, layer } = model;
   return (

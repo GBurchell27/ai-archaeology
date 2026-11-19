@@ -5,6 +5,7 @@ import type { WorldCatalogue } from "@/lib/world/catalogueLoader";
 import type { SiteColumns } from "@/lib/world/catalogueTypes";
 import { countSites, type SiteCounts } from "@/lib/world/siteCounts";
 import type { SiteFilter } from "@/lib/world/siteFilter";
+import { hiddenTypesFor } from "@/lib/settings/settingsPresets";
 import { ALL_TIME, filterRangeFor, type YearSpan } from "@/lib/world/worldEras";
 
 export interface SiteFilterViewModel {
@@ -22,6 +23,8 @@ export interface SiteFilterViewModel {
   /** Show only this type; asking again for the only type showing brings every type back. */
   soloType(siteType: string): void;
   showAllTypes(): void;
+  /** Show these types and no others; null brings every type back. A settings preset uses it. */
+  showOnlyTypes(onlyTypes: readonly string[] | null): void;
 }
 
 const NO_TYPES: ReadonlySet<string> = new Set();
@@ -57,9 +60,13 @@ export function useSiteFilter(catalogue: WorldCatalogue | null, loadedCells: rea
     return alreadySolo ? NO_TYPES : new Set(others);
   }), [siteTypes]);
   const showAllTypes = useCallback(() => setHiddenTypes(NO_TYPES), []);
+  const showOnlyTypes = useCallback((onlyTypes: readonly string[] | null) => {
+    const hidden = hiddenTypesFor(onlyTypes, siteTypes ?? []);
+    setHiddenTypes(hidden.length ? new Set(hidden) : NO_TYPES);
+  }, [siteTypes]);
 
   return useMemo(() => ({
     filter, counts, yearSpan, showUndated, featuredOnly, hiddenTypes,
-    setYearSpan, setShowUndated, setFeaturedOnly, toggleType, soloType, showAllTypes,
-  }), [filter, counts, yearSpan, showUndated, featuredOnly, hiddenTypes, toggleType, soloType, showAllTypes]);
+    setYearSpan, setShowUndated, setFeaturedOnly, toggleType, soloType, showAllTypes, showOnlyTypes,
+  }), [filter, counts, yearSpan, showUndated, featuredOnly, hiddenTypes, toggleType, soloType, showAllTypes, showOnlyTypes]);
 }

@@ -11,7 +11,8 @@ import { atlasLookFromGlobe, handoffStage, type AtlasLook, type HandoffStage } f
 import { DEFAULT_GLOBE_LOOK } from "@/lib/globe/viewUrl";
 import { GlobeAtmosphere } from "./GlobeAtmosphere";
 import { GlobeFlight, type GlobeFlyTo } from "./GlobeFlight";
-import { GlobeSurface, useGlobeBasemap } from "./GlobeSurface";
+import type { GlobeBasemap } from "@/lib/globe/basemaps";
+import { GlobeSurface } from "./GlobeSurface";
 import styles from "./GlobeView.module.css";
 
 export interface GlobeViewProps {
@@ -23,6 +24,8 @@ export interface GlobeViewProps {
   onEnterAtlas?: (look: AtlasLook) => void;
   /** Fly to a place; change `token` to fly again. */
   flyTo?: GlobeFlyTo | null;
+  /** The imagery draped on the globe, and credited under it. */
+  basemap: GlobeBasemap;
   /** Rendered inside the Canvas, in the ECEF-metre scene frame of lib/globe/ellipsoid.ts. */
   children?: ReactNode;
   /** DOM chrome laid over the canvas. The layer ignores the pointer; set `pointer-events: auto` on controls. */
@@ -33,9 +36,8 @@ const SPACE = "#04060a";
 const REPORT_INTERVAL_MS = 120;
 
 export function GlobeView(props: GlobeViewProps) {
-  const { onLookChange, onEnterAtlas } = props;
+  const { onLookChange, onEnterAtlas, basemap } = props;
   const opening = useRef(props.initialLook ?? DEFAULT_GLOBE_LOOK);
-  const basemap = useGlobeBasemap();
   const [stage, setStage] = useState<HandoffStage>("none");
   const latestLook = useRef<GlobeLook>(opening.current);
   const readout = useRef<HTMLParagraphElement>(null);
