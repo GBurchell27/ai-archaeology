@@ -59,6 +59,7 @@ Read the one that covers your change before editing:
 | `docs/world-catalogue.md` | Sources, merge rules, the featured tier, and the web file formats. |
 | `docs/suitability-model.md` | The coarse recording-pattern layer, its metrics, and its limits. |
 | `docs/data-sources.md` | Every dataset and published source in use, with its licence. Add a row before using a new one. |
+| `docs/theories.md` | The "Questions and theories" layer: the record format for facts, evidence, theories and open questions, how to add one, and the status-change rule. |
 | `scripts/splat/README.md` | Photographs to COLMAP to Brush to `.splat`, with the settings that worked. |
 | `docs/todo.md` | Open work, decisions waiting on the owner, and what is unverified. Update it when you finish or find something. |
 

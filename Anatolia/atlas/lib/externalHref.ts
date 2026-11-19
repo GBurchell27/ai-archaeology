@@ -78,6 +78,12 @@ const EXACT_HOSTS = new Set([
   "almanac.upenn.edu",
   "aeraweb.org",
   "www.ifao.egnet.net",
+  "arxiv.org",
+  "www.pbs.org",
+  "archaeology.org",
+  "archive.archaeology.org",
+  "phys.org",
+  "www.ronaldbirdsall.com",
   "github.com", // the project's own repository docs; exact host only, so no gists, raw files or user pages
 ]);
 

@@ -1,0 +1,34 @@
+/* The theory card and the question list. Colours are the shared --globe-* tokens of app/theme.css. */
+
+.card { font-size: 13px; line-height: 1.5; color: var(--globe-ink); }
+.title { margin: 4px 0 0; font-size: 20px; font-weight: 500; line-height: 1.15; text-wrap: balance; }
+.proponents { display: grid; gap: 3px; margin: 12px 0 0; }
+.claim { margin: 10px 0 0; font-size: 16px; line-height: 1.45; color: var(--globe-ink-bright); text-wrap: pretty; }
+
+.status { display: grid; gap: 4px; margin: 12px 0 0; padding: 9px 11px 10px; border-left: 2px solid var(--globe-primary-rule); background: var(--globe-ochre-tint); font-size: 12.5px; color: var(--globe-prose); }
+.statusLabel { font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--globe-ochre-ink); }
+
+.section { margin: 16px 0 0; }
+.section h4 { margin: 0 0 6px; }
+.entries, .sources, .log, .questions, .theories { margin: 0; padding: 0; list-style: none; }
+.entries { display: grid; gap: 10px; }
+.entry { padding-top: 9px; border-top: 1px solid var(--globe-rule); }
+.summary { margin: 4px 0 0; color: var(--globe-prose); }
+.note { margin: 3px 0 0; font-size: 12px; color: var(--globe-muted); }
+.source { display: block; margin-top: 4px; font-size: 11.5px; line-height: 1.45; color: var(--globe-muted); }
+.sources { display: grid; gap: 5px; }
+
+.kind { display: inline-block; padding: 1px 6px 2px; border: 1px solid var(--globe-rule-strong); border-radius: 2px; font-size: 10px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--globe-ink-soft); }
+.experiment { border-color: var(--globe-primary-rule); background: var(--globe-primary); color: var(--globe-ochre-ink); }
+
+.history { margin: 16px 0 0; padding-top: 10px; border-top: 1px solid var(--globe-rule); font-size: 12px; color: var(--globe-muted); }
+.history summary { cursor: pointer; }
+.history summary:focus-visible { outline: 2px solid var(--globe-ochre); outline-offset: 2px; border-radius: 2px; }
+.log { display: grid; gap: 6px; margin-top: 8px; }
+
+.questions { display: grid; gap: 14px; font-size: 13px; line-height: 1.5; color: var(--globe-ink); }
+.question { margin: 0; font-size: 15.5px; line-height: 1.35; color: var(--globe-ink-bright); text-wrap: pretty; }
+.theories { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 7px; }
+.theories .theoryButton { height: auto; white-space: normal; text-align: left; color: var(--globe-ink); cursor: pointer; }
+.theoryButton:focus-visible { outline: 2px solid var(--globe-ochre); outline-offset: 2px; }
+.theoryStatus { font-size: 11px; color: var(--globe-muted); }
