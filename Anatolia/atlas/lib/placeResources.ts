@@ -36,6 +36,9 @@ export function osmHref(longitude: number, latitude: number): string {
 }
 
 /** Same-origin close-up route. Not an external image. */
+/** Set at build time by next.config.ts: off where the server cannot build a close-up (docs/deploy.md). */
+export const CLOSEUPS_ON = process.env.NEXT_PUBLIC_ATLAS_CLOSEUPS === "on";
+
 export function closeupHref(placeId: string): string | null {
   if (/^Q\d+$/.test(placeId) || /^\d+$/.test(placeId) || /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(placeId)) {
     return `/api/closeup?id=${encodeURIComponent(placeId)}&part=hillshade`;

@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { SafeLink } from "@/components/SafeLink";
 import { safeExternalHref } from "@/lib/externalHref";
-import { closeupHref, osmHref, resourceUrl, type PlaceResource } from "@/lib/placeResources";
+import { CLOSEUPS_ON, closeupHref, osmHref, resourceUrl, type PlaceResource } from "@/lib/placeResources";
 
 export function PlaceResources(props: { id: string; longitude: number; latitude: number }) {
   const [record, setRecord] = useState<PlaceResource | null>(null);
@@ -37,7 +37,7 @@ export function PlaceResources(props: { id: string; longitude: number; latitude:
       cancel = true;
     };
   }, [props.id]);
-  const closeup = closeupHref(props.id);
+  const closeup = CLOSEUPS_ON ? closeupHref(props.id) : null;
   return (
     <section className="resources" data-role="resources" data-resources={state} aria-label="Resources">
       <h2>Resources</h2>

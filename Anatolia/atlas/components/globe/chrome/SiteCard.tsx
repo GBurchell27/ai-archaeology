@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { walkOfferedOnGlobe } from "@/lib/globe/walkHandoff";
+import { CLOSEUPS_ON } from "@/lib/placeResources";
 import { loadSiteDetail } from "@/lib/world/catalogueLoader";
 import type { FeaturedSite, SiteDetail } from "@/lib/world/catalogueTypes";
 import { isSiteInAtlas } from "@/lib/world/sitePick";
@@ -75,7 +76,7 @@ export function SiteCard(props: {
   const dates = formatSiteDates(site.startYear, site.endYear);
   const status = wonder ? WONDER_STATUS[wonder.status] : null;
   // The close-up finds a site through its detail record, so without one there is no terrain to offer.
-  const hasCloseup = detail !== null && Math.abs(site.lat) <= CLOSEUP_LATITUDE_LIMIT;
+  const hasCloseup = CLOSEUPS_ON && detail !== null && Math.abs(site.lat) <= CLOSEUP_LATITUDE_LIMIT;
 
   const footer = (
     <>

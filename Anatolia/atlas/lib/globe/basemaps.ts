@@ -19,8 +19,8 @@ export const GLOBE_BASEMAPS: GlobeBasemap[] = [
     // The globe hands off to terrain long before level 12 runs out; this also keeps load on a free service low.
     maxLevel: 12,
     licence: "CC BY-NC-SA 4.0",
-    attribution: "Sentinel-2 cloudless – https://s2maps.eu by EOX IT Services GmbH (Contains modified Copernicus Sentinel data 2020)",
-    attributionUrl: "https://s2maps.eu",
+    attribution: "EOxCloudless https://cloudless.eox.at by EOX IT Services GmbH (Contains modified Copernicus Sentinel data 2020)",
+    attributionUrl: "https://cloudless.eox.at",
   },
   {
     id: "gibs-blue-marble",

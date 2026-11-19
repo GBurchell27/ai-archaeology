@@ -45,7 +45,7 @@ No key or token is needed for the atlas itself. The globe library (`3d-tiles-ren
 2. Commit and push the changes this document came with.
 3. In Vercel, create a project from the repository and apply the settings in the table above. No environment variables, unless accounts are wanted.
 4. Deploy. Open the address Vercel gives: it should show the globe.
-5. Check on the deployed site: a site card opens; "Open in Anatolia atlas" shows the terrain map; `/?view=walk&site=gobekli-tepe&source=photographs` loads the splat; "View terrain" shows the message "Terrain close-ups are not available here" and a way back; `/puzzles` opens.
+5. Check on the deployed site: a site card opens; "Open in Anatolia atlas" shows the terrain map; `/?view=walk&site=gobekli-tepe&source=photographs` loads the splat; a site card outside Anatolia has no "View terrain" button; `/puzzles` opens.
 6. Look at the build log for the size of each function. The close-up function should be a few megabytes. If the log reports hundreds, the exclusion in `next.config.ts` did not apply: see "The close-up function's size".
 
 ## What does not work when deployed, and why
@@ -54,7 +54,7 @@ No key or token is needed for the atlas itself. The globe library (`3d-tiles-ren
 
 - The place view shows "Terrain close-ups are not available here", says the site record is fine, and offers the way back. It does not offer "Try again", and it does not wait.
 - On the Anatolia map, a catalogue place with no prebuilt relief stays open on the national terrain, with the line "Close-up relief is not built on this hosted copy of the atlas." The 24 sites with prebuilt relief under `public/terrain/details/` are unaffected.
-- Two controls still point at the API and now lead to that message or to the plain 503 text: "View terrain" on a globe site card, and the "Relief close-up" link in the Anatolia site panel's Resources. Hiding them on a hosted copy is a small change that has not been made.
+- The two controls that lead to the API are not shown where close-ups are off: "View terrain" on a globe site card, and the "Relief close-up" link in the Anatolia site panel's Resources. `next.config.ts` tells the page at build time (`CLOSEUPS_ON` in `lib/placeResources.ts`). The message above is still what an old place-view address shows.
 
 The rule that the API takes a published id and never coordinates is unchanged: a request with `lon` or `lat` is still refused with 400.
 
@@ -92,8 +92,6 @@ The deployed site makes the visitor's browser fetch from these hosts. The pages 
 | `commons.wikimedia.org` | The photograph on a globe site card, loaded from Commons at a set width. | Commons, "Reusing content outside Wikimedia/technical": "Hotlinking is allowed from Wikimedia servers, but is not generally recommended", and "it is still necessary to follow the licensing conditions". The card links the file's own page, which carries author and licence. |
 
 Not fetched by a deployed site: the elevation hosts the close-up worker reads (`storage.googleapis.com` for GEM-15, `copernicus-dem-30m.s3.amazonaws.com` for GLO-30) and the EOX tiles it stitches. They are used only where close-ups are built. Their licences are in [`data-sources.md`](data-sources.md); their hosts' terms for automated use were not read again for this document.
-
-The globe's attribution line still uses EOX's earlier wording ("Sentinel-2 cloudless – https://s2maps.eu …"). `lib/globe/basemaps.ts` should take the current one: it is in [`todo.md`](todo.md).
 
 Vercel's free plan: its documentation lists 100 GB of data transfer, 1,000,000 function calls and 4 CPU-hours a month, and says that past a limit the feature is unavailable until 30 days have passed. Vercel's terms on who may use the free plan were not read; read them before publishing.
 
