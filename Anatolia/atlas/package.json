@@ -8,21 +8,31 @@
     "start": "next start -p 43127 -H 127.0.0.1"
   },
   "dependencies": {
+    "@neon/auth": "^0.8.2",
+    "@neon/config": "^1.14.4",
+    "@neon/env": "^2.1.7",
     "@react-three/drei": "^10.0.0",
     "@react-three/fiber": "^9.0.0",
-    "@supabase/supabase-js": "^2.119.2",
+    "@vercel/functions": "^3.11.3",
     "3d-tiles-renderer": "0.5.4",
     "next": "^15.1.0",
+    "pg": "^8.23.1",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "three": "^0.170.0"
   },
   "devDependencies": {
     "@types/node": "^22.10.0",
+    "@types/pg": "^8.23.1",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "@types/three": "^0.170.0",
     "puppeteer-core": "^24.0.0",
     "typescript": "^5.7.0"
+  },
+  "overrides": {
+    "@neon/auth": {
+      "next": "$next"
+    }
   }
 }
