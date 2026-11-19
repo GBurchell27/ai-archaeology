@@ -53,7 +53,9 @@ export function reliefLoadFailure(status: number): ReliefLoadFailure {
   return {
     panelOpen: true,
     detailState: "error",
-    message: missing
+    message: status === 503
+      ? "Close-up relief is not built on this hosted copy of the atlas. The place stays open on the national terrain."
+      : missing
       ? "This relief grid is missing. The place stays open on the national terrain."
       : "This relief grid did not load. The place stays open on the national terrain.",
   };

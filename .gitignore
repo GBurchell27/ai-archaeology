@@ -34,9 +34,14 @@ outputs/
 # Precise candidate locations. Do not commit these (looting risk).
 candidates_private*
 
+# Local settings. The two account settings are public values, but no env file belongs in git (docs/accounts.md).
+.env*
+
 # Node
 node_modules/
 .next/
+# Check builds beside a running dev server (docs/deploy.md).
+Anatolia/atlas/.next-*/
 *.tsbuildinfo
 Anatolia/explorer/screenshots/
 Anatolia/atlas/public/terrain/regions/

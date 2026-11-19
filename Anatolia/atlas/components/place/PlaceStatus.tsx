@@ -24,7 +24,7 @@ export function PlaceError(props: { failure: PlaceFailure; onRetry: () => void; 
       <p className={styles.statusTitle}>{text.title}</p>
       <p className={styles.statusBody}>{text.body}</p>
       <div className={styles.statusActions}>
-        {props.failure === "outside" ? null : <button type="button" className={styles.reset} onClick={props.onRetry}>Try again</button>}
+        {props.failure === "outside" || props.failure === "unavailable" ? null : <button type="button" className={styles.reset} onClick={props.onRetry}>Try again</button>}
         <button type="button" className={styles.reset} onClick={props.onExit}>← Back to the globe</button>
       </div>
     </div>

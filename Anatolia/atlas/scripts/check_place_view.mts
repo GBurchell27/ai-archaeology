@@ -8,6 +8,7 @@ import {
   scaleBarFor,
   verticalScale,
 } from "../lib/place/placeGeometry.ts";
+import { FAILURE_TEXT, placeFailureForStatus } from "../lib/place/placeFailure.ts";
 
 let failed = 0;
 
@@ -60,6 +61,12 @@ check("range across the eras", formatYearRange(-200, 400) === "200 BCE – 400 C
 check("CE range", formatYearRange(1000, 1450) === "1000–1450 CE");
 check("open start", formatYearRange(null, -800) === "until 800 BCE");
 check("undated", formatYearRange(null, null) === null);
+
+// A server that builds no close-ups (503) is its own failure, with words for it; the others are unchanged.
+check("503 means close-ups are unavailable", placeFailureForStatus(503) === "unavailable");
+check("404 and 400 mean no close-up for this place", placeFailureForStatus(404) === "outside" && placeFailureForStatus(400) === "outside");
+check("502 is a failed build", placeFailureForStatus(502) === "failed");
+check("the unavailable text does not ask to try again", !/try again/i.test(FAILURE_TEXT.unavailable.body) && FAILURE_TEXT.unavailable.title.length > 0);
 
 if (failed > 0) {
   console.error(`${failed} failed`);

@@ -2,7 +2,8 @@ import { chmod, lstat, mkdtemp, mkdir, symlink, writeFile } from "node:fs/promis
 import os from "node:os";
 import path from "node:path";
 import { spawn } from "node:child_process";
-import { CLOSEUP_QUEUE_LIMIT, coalesce, createPrivateCache, evictCache, isSiteId, killOnTimeout, pythonCommand, readCloseup, resolveCacheFile } from "../lib/closeupCache.ts";
+import {
+  closeupsAvailable, CLOSEUP_QUEUE_LIMIT, coalesce, createPrivateCache, evictCache, isSiteId, killOnTimeout, pythonCommand, readCloseup, resolveCacheFile } from "../lib/closeupCache.ts";
 import { findPublishedPoint } from "../lib/closeupCatalog.ts";
 
 // Windows has no POSIX modes or signals, and symlinks need a privilege most accounts lack.
@@ -128,6 +129,15 @@ for (const query of ["id=..%2F..%2Fetc", "id=..", "id=Q99%2F..%2FQ99", "id=Q99&p
 }
 if (lookups !== 0) fail("a refused request still reached the catalogue");
 if ((await readCloseup("http://x/api/closeup?id=zz-not-a-published-site", (id) => findPublishedPoint(id))).status !== 404) fail("unknown id is not a 404");
+
+// A host with no Python (Vercel) refuses before the catalogue is read, and a setting overrides the guess.
+if (!closeupsAvailable({}) || closeupsAvailable({ VERCEL: "1" })) fail("close-ups should be off on Vercel and on elsewhere");
+if (!closeupsAvailable({ VERCEL: "1", ATLAS_CLOSEUPS: "on" }) || closeupsAvailable({ ATLAS_CLOSEUPS: "off" })) fail("ATLAS_CLOSEUPS ignored");
+process.env.ATLAS_CLOSEUPS = "off";
+const switchedOff = await readCloseup("http://x/api/closeup?id=Q99", countingLookup);
+if (switchedOff.status !== 503 || switchedOff.body !== "close-up-unavailable" || lookups !== 0) fail(`unavailable close-up answered ${switchedOff.status}`);
+if ((await readCloseup("http://x/api/closeup?id=Q99&lon=1&lat=2", countingLookup)).status !== 400) fail("an unavailable server accepted raw coordinates");
+delete process.env.ATLAS_CLOSEUPS;
 
 process.env.ATLAS_PYTHON = "custom-python";
 if (pythonCommand() !== "custom-python") fail("ATLAS_PYTHON ignored");

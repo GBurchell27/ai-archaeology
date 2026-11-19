@@ -30,6 +30,16 @@ export function isCloseupPart(value: string): value is CloseupPart {
   return Object.hasOwn(PARTS, value);
 }
 
+/**
+ * Building a close-up runs the repository's Python, which a serverless host does not have.
+ * ATLAS_CLOSEUPS=on or off decides; unset, they are off on Vercel (which sets VERCEL) and on elsewhere.
+ */
+export function closeupsAvailable(env: Record<string, string | undefined> = process.env): boolean {
+  if (env.ATLAS_CLOSEUPS === "on") return true;
+  if (env.ATLAS_CLOSEUPS === "off") return false;
+  return !env.VERCEL;
+}
+
 type Point = PublishedPoint;
 export type PointLookup = (id: string) => Promise<Point | undefined>;
 
@@ -283,6 +293,9 @@ export async function readCloseup(requestUrl: string, findPoint: PointLookup): P
   const source = terrainSource(url.searchParams.get("terrain"));
   if (!isSiteId(id) || !isCloseupPart(part)) {
     return { status: 400, body: "bad-request", contentType: "text/plain" };
+  }
+  if (!closeupsAvailable()) {
+    return { status: 503, body: "close-up-unavailable", contentType: "text/plain" };
   }
   const point = await findPoint(id);
   if (!point || Math.abs(point.latitude) > MAX_LATITUDE) {

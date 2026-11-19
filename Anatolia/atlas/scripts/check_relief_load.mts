@@ -8,6 +8,10 @@ if (!missing.panelOpen || missing.detailState !== "error" || !missing.message.in
 if (!failed.panelOpen || failed.detailState !== "error" || !failed.message.includes("did not load")) {
   throw new Error(`502 outcome ${JSON.stringify(failed)}`);
 }
+const unavailable = reliefLoadFailure(503);
+if (!unavailable.panelOpen || !unavailable.message.includes("not built on this hosted copy")) {
+  throw new Error(`503 outcome ${JSON.stringify(unavailable)}`);
+}
 
 const memory = new Map<string, string>();
 Object.assign(globalThis, {

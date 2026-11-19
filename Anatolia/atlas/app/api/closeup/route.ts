@@ -11,7 +11,8 @@ export async function GET(request: Request) {
     status: result.status,
     headers: {
       "content-type": result.contentType,
-      "cache-control": "private, max-age=3600",
+      // A refusal is not kept: the next request may reach a server that can build.
+      "cache-control": result.status === 200 ? "private, max-age=3600" : "no-store",
     },
   });
 }
