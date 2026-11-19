@@ -4,15 +4,19 @@ Written 2026-11-19. Background and before/after screenshots for everything here 
 
 ## Features built on 2026-11-19, and what is left of each
 
-Features 1 to 8 and 11 of the list agreed on 2026-11-19 are built; [`world-atlas.md`](world-atlas.md) and [`theories.md`](theories.md) describe them. Everything was judged in a software-rendered test browser. What remains:
+Features 1 to 9 and 11 of the list agreed on 2026-11-19 are built; [`world-atlas.md`](world-atlas.md) and [`theories.md`](theories.md) describe them. Everything was judged in a software-rendered test browser. What remains:
 
 - [ ] **Theory records: sources read only second-hand.** The Merer papyri, Bauval & Gilbert, Hancock, Krupp, Fairall and Dunn records rest on Wikipedia or publisher blurbs; Banning 2011, Stocks 2001, Bonani et al. 2001 and Dash's 3.6 arcminutes on abstracts, press releases or a note in another paper. Read the originals or mark the records.
-- [ ] **Theory records: no rows in `data-sources.md`.** The published sources cited under `lib/theories/` are not registered there yet.
+- [ ] **Citations differ between `lib/theories/` and `lib/reading/`.** Hancock 1995's publisher (Crown or Heinemann); Clare 2020's address and pages; the kind given to Schmidt 2010; Çelik 2011's pages (241–254 or 241–253); the address forms for Karul 2021 and the Zenodo records; Wadi al-Jarf or el-Jarf; `KOCH_PROJECT_1999` names two works in one record; the NOVA entries in the reading lists lack a year. Settle each against the source.
 - [ ] **Theory records: first statuses.** Each is one reading of the listed evidence. The owner should review them, above all the slope-slide fill and inhabited-settlement theories (contested) and the power plant (unsupported so far).
 - [ ] **Reading lists: details not confirmed.** Pages for Clare 2020, Notroff et al. 2017, Sweatman & Tsikritsis 2017 and Hauptmann 1993 and 1999; the one-line notes on the books are descriptions, not quotations. The Tepe Telegrams blog would not open and is left out.
 - [ ] **6. Follow links. Owner:** collect the social accounts. Only official project pages are listed; the place for accounts is the end of `FOLLOW_LINKS` in `lib/reading/followLinks.ts`.
 - [ ] **4. Named periods.** Only Anatolia and Egypt have a table. Pottery Neolithic, Chalcolithic, Early Bronze Age and the Hittite Old Kingdom and Empire split are left out because no source would open. Hittite and Phrygian dates are one site's sequence (Gordion). The Younger Dryas dates come from a handout reproducing Rasmussen et al. 2014, not the article.
-- [ ] **9. Sea level and ice extent through time on the globe.** Not built: it needs a registered dataset, and no dataset is downloaded without the owner asking. The Younger Dryas band on the timeline is built.
+- [ ] **9. Ice and former land on the globe.** Built from CHELSA-TraCE21k (CC0) as the "Ice and sea level" layer, off by default. Limits:
+  - It gives no sea level figure: none is registered. Register a published sea level curve to show one.
+  - Ice is drawn where the dataset's ice surface stands 150 m or more above the land, a threshold chosen here. The present day draws nothing.
+  - The layer follows the middle of the timeline range, in steps of 500 years back to 20,000 BCE.
+  - Not looked at on the real GPU.
 - [ ] **10. A regional atlas generated on demand.** Not built. Giza is walkable (model only).
 - [ ] **10. Giza model.** The present heights of Khafre and Menkaure, and that they lie south-west of Khufu, rest on Wikipedia; replace with a survey. Lehner, the AERA survey notes and Nell & Ruggles's full text were not read. The Sphinx, temples, causeways, boat pits and queens' pyramids are not drawn for want of a source giving both size and position.
 - [ ] **5. Settings panel.** The place view has none. "Megaliths only" does nothing on the Anatolia map, which has no site type filter.
@@ -21,7 +25,11 @@ Features 1 to 8 and 11 of the list agreed on 2026-11-19 are built; [`world-atlas
 
 The splat is sharp only near where photographers stood. 41 of 294 downloaded photographs trained it; the rest never linked. Views from anywhere else dissolve into streaks. In rough order of value for effort:
 
-- [ ] **1. Link more of the photographs we already have.** Free, runs on the laptop, needs the GPU only for the retrain.
+- [ ] **1. Link more of the photographs we already have.** Structure from motion done 2026-11-19 with learned features; the splat is not retrained yet.
+  - Result: 47 photographs in one model against 41 (52 with five SIFT-only close-ups merged back). 11 wide views gained. The close-ups of single pillars still do not link to the wide views. Expect a few more sharp directions from the walkway, not close-up coverage. Detail in `scripts/splat/README.md`, step 2.
+  - Left: train in Brush on `data/splat/gobekli-tepe-aliked/train` with nothing else heavy running, convert, compare with the published splat, and replace it only if it is better. The system stopped the first training run for low memory.
+  - Karahan Tepe was not tried.
+  - The plan as written before the run:
   - Rerun COLMAP with learned features in place of SIFT: `--FeatureExtraction.type ALIKED_N16ROT` (or `ALIKED_N32`) and a LightGlue matcher (`--FeatureMatching.type`, see `colmap exhaustive_matcher -h`). They match across much larger changes of angle and light.
   - Needs four small ONNX model files from COLMAP's GitHub releases (the URLs are the defaults of the `*_model_path` options). Record the download in `docs/data-sources.md`.
   - Use the roofed-era photographs only (2018 and later) and drop stitched panoramas.
@@ -31,7 +39,7 @@ The splat is sharp only near where photographers stood. 41 of 294 downloaded pho
   - [ ] The fade is one opacity for the whole scene, so the aerial overview is lost. `SHARP_WITHIN_M` and `GONE_BEYOND_M` in `lib/walk/photoViewpoints.ts` are the dial.
   - [ ] It patches one line of drei 10.7's splat shader: recheck on an upgrade.
   - [ ] In the photographs a landmark card sometimes shows after a viewpoint step and is gone within a second. Not investigated.
-- [ ] **3. A trainer built for tourist photographs.** Needs an NVIDIA GPU, so a rented one for a few hours.
+- [ ] **3. A trainer built for tourist photographs.** Needs an NVIDIA GPU; this machine has none. A rented one means an account and uploading the photographs: see Decisions waiting.
   - Candidates: nerfstudio `splatfacto-w` or another "in the wild" Gaussian-splat method (per-photo appearance), with depth or normal regularisation against floaters.
   - Brush, used now, treats all photographs as one consistent scene and has no such guidance.
 - [ ] **4. Better source material.** The real fix.
@@ -45,6 +53,11 @@ The splat is sharp only near where photographers stood. 41 of 294 downloaded pho
 
 ## Decisions waiting
 
+- [ ] Rerun the Brush training that the system stopped for low memory (about half an hour, nothing else heavy running).
+- [ ] Rent an NVIDIA GPU for a trainer built for tourist photographs. It needs an account and the photographs uploaded to the provider.
+- [ ] Better footage of either site has to be the owner's own, or footage with permission.
+- [ ] PaleoMIST ice sheet reconstructions (3.5 GB): the host forbids scripted download, so the owner would fetch it by hand. Worth it?
+- [ ] The "Ice and sea level" layer gives no sea level figure. Rename it, or register a sea level curve.
 - [ ] Satellite as the terrain map's default base. Compare `map_review_2/after/9_turkey_satellite.png` with `8_globe.png`.
 - [ ] Shelter roof in the Göbekli Tepe splat: the streak cull removed its far side. The uncut file is `data/splat/gobekli-tepe/gobekli-tepe.hd-unculled.splat`.
 - [ ] Browser Back after "← Anatolia map" returns to the walk. Keep or skip that entry.
