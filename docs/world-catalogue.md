@@ -2,7 +2,7 @@
 
 Code: `src/ai_archaeology/world/`. Scripts: `scripts/fetch_world_*.py`, `scripts/fetch_featured_coordinates.py`, `scripts/build_world_catalogue.py`. Output: `Anatolia/atlas/public/world/`.
 
-The catalogue holds **published site records from open sources**. No detector output is an input, and no candidate or unpublished location may enter it. Numbers in this file are from the build of 17 November 2026.
+The catalogue holds **published site records from open sources**. No detector output is an input, and no candidate or unpublished location may enter it. Numbers in this file are from the build of 19 November 2026, except the coverage and rough-location figures under "Known data problems", which are from the build of 17 November and were not recounted.
 
 ## Sources
 
@@ -10,12 +10,12 @@ Licences are registered in [`data-sources.md`](data-sources.md). Read that row b
 
 | Source | Licence | Records | What it contributes |
 | --- | --- | ---: | --- |
-| Wikidata | CC0 1.0 | 99,885 | Most pins. Name, point, type, sitelink count, Wikipedia link, image, heritage listing, World Heritage and Pleiades identifiers, sparse dating. |
-| Pleiades | CC BY 3.0, "Pleiades contributors" | 24,970 read, 17,365 left as their own pins after the merge | Ancient places of the Mediterranean and Near East. Most of the dating in the catalogue. |
+| Wikidata | CC0 1.0 | 99,884 | Most pins. Name, point, type, sitelink count, Wikipedia link, image, heritage listing, World Heritage and Pleiades identifiers, sparse dating. |
+| Pleiades | CC BY 3.0, "Pleiades contributors" | 24,970 read, 18,572 left as their own pins after the merge | Ancient places of the Mediterranean and Near East. Most of the dating in the catalogue. |
 | OpenStreetMap megaliths | ODbL 1.0, "© OpenStreetMap contributors" | 15,845 | A separate layer. Never merged with the two above. |
 | p3k14c | CC0, cite Bird et al. 2022 | 35,250 dated sites | Dates for pins that already exist. Its coordinates are fuzzed on purpose. |
 | XRONOS | CC BY 4.0 | 46,521 dated sites | Dates for pins that already exist. |
-| Featured list | curated in this repository | 396 | Dates, a category, a status and one line of text for the best-known early monuments. No coordinates. |
+| Featured list | curated in this repository | 419 | Dates, a category, a status and one line of text for the best-known early monuments. No coordinates. |
 
 What each ingester keeps:
 
@@ -51,7 +51,7 @@ Radiocarbon records are a different, smaller shape in `data/world/dating/xronos_
 
 1. **Coordinate fixes.** Wikidata records listed in `featured_coordinate_fixes.json` are moved to their published location.
 2. **Implausible dates are removed.** A start before 3.4 million years ago, or a start after its end, is treated as no date. Ten Wikidata records lost a geological "inception" this way.
-3. **Featured curation.** Curated dates replace source dates. The curated category fills in a type only where the source said `other`. A featured monument that Wikidata did not return is added from its fetched coordinate. None needed that in this build.
+3. **Featured curation.** Curated dates replace source dates. The curated category fills in a type only where the source said `other`. A featured monument that Wikidata did not return is added from its fetched coordinate. 23 were added that way in this build.
 4. **Merge** Wikidata with Pleiades.
 5. **Radiocarbon dating** of sites that still have no date.
 6. **Packing** into the web files. OpenStreetMap joins only here, as its own file.
@@ -65,21 +65,21 @@ Featured comes before the merge so that a featured monument is still de-duplicat
 1. **By identifier.** A Wikidata item that names a Pleiades id is that place. The item is kept, and the Pleiades record is absorbed. 5,987 places were linked this way.
 2. **Spatially**, for the Pleiades places left over. Only Wikidata items that name no Pleiades id are candidates for a match: an item that names a different Pleiades place is by its own statement somewhere else. A place matches the nearest item within **3 km** that has the **same folded name** (lower case, diacritics and Turkish letters folded, letters and digits only). Nearness alone never merges: in a dense site the next monument is metres away, and a wrong merge is worse than a second pin. An item absorbs one place at most. When several places claim it, the nearest wins and the others stay.
 
-   1,618 places were linked this way.
+   411 places were linked this way.
 3. Everything else stays. A different monument nearby is a different record.
 
 When a place is absorbed, the Wikidata record wins: its name, point and type are kept. It gains the Pleiades id. If it has no date and the Pleiades place has one, it takes that date, and the Pleiades credit and licence are appended to its own.
 
-99,885 Wikidata records and 24,970 Pleiades places became 117,250 sites.
+99,884 Wikidata records, 23 featured monuments added from their fetched coordinates, and 24,970 Pleiades places became 118,479 sites.
 
 ## The featured tier
 
-`featured_monuments.json` is a hand-kept list of 396 monuments, keyed by Wikidata QID. It carries **no coordinates**. Those come from Wikidata when the catalogue is built.
+`featured_monuments.json` is a hand-kept list of 419 monuments, keyed by Wikidata QID. It carries **no coordinates**. Those come from Wikidata when the catalogue is built.
 
 Each entry has exactly these fields: `qid`, `name`, `country`, `category`, `period`, `startYear`, `endYear`, `datingConfidence`, `status`, `why`, `source`. `featured.py: featured_problems` enforces the rules. `tests/test_world_featured.py` runs it on the committed list, checks that the list holds no coordinate keys, and checks that every coordinate fix cites a source.
 
 - `category`: `megalith`, `city`, `settlement`, `burial`, `rock-art`, `other`, `pyramid-or-platform`, `monumental-enclosure`, `earthwork`, `rock-cut`, `tell`, `geoglyph`.
-- `status`: `accepted` (385), `contested` (7), or `natural-or-pseudo` (4). The last two are listed so a claim can be weighed against the evidence. The interface marks them.
+- `status`: `accepted` (408), `contested` (7), or `natural-or-pseudo` (4). The last two are listed so a claim can be weighed against the evidence. The interface marks them.
 - `datingConfidence`: `high`, `medium` or `low`.
 - `why`: at most 40 words. Plain, no superlatives it cannot support.
 - `source`: a link a reader can check.
@@ -115,7 +115,7 @@ The rule: **a fix must cite a published source that gives the location**, and sa
 - the two **name keys** are equal
 - the radiocarbon record lies within **5 km** of the site
 
-The nearest such record wins. In this build 756 sites were dated this way.
+The nearest such record wins. In this build 745 sites were dated this way.
 
 The name key is the folded name with generic site words removed ("cave", "tell", "tomb", "of", "la" and so on), so "Cave of El Castillo" matches "Castillo". Numbers are never dropped, and at least one word of four or more letters must remain. Otherwise the whole folded name is the key. That stops a register stub such as "Odensala 460:1" from taking a parish's date.
 
@@ -160,19 +160,19 @@ There is no enforced size limit. The build prints the sizes, and these are the o
 | --- | ---: | --- |
 | `index.json` | 3 KB | at start |
 | `core.json` | 2.6 MB | at start |
-| `featured.json` | 148 KB | at start |
+| `featured.json` | 159 KB | at start |
 | `names.json` | 4.8 MB | first use of search |
-| `cells/` (184 files) | 5.2 MB in all, largest 2.4 MB | by cell, below 2,500 km |
-| `detail/` (100 shards) | 33.5 MB in all, largest 354 KB | one shard per opened card |
+| `cells/` (184 files) | 5.3 MB in all, largest 2.4 MB | by cell, below 2,500 km |
+| `detail/` (100 shards) | 33.7 MB in all, largest 354 KB | one shard per opened card |
 | `osm-megaliths.json` | 1.2 MB | when the layer is switched on |
 
-The whole folder is 47 MB and is committed. The sizes above are uncompressed. A new source that adds many sites should grow the cells and the detail shards, not the core. The largest cell is `19_14` (10–20°E, 50–60°N). If it grows much further, a smaller cell size is the fix.
+The whole folder is 48 MB and is committed. The sizes above are uncompressed. A new source that adds many sites should grow the cells and the detail shards, not the core. The largest cell is `19_14` (10–20°E, 50–60°N). If it grows much further, a smaller cell size is the fix.
 
 ## Known data problems
 
-- **Type "other".** 20,005 sites, about one in six, have no usable type. Wikidata's class labels did not match any rule, or the item is typed only as "archaeological site". The type filter cannot separate them.
-- **Register stubs.** 76,358 sites have a sitelink count of 0. Many are a name, a point and a register number. They are real published records, and they carry little else.
-- **Sparse dating.** 30,374 of 117,250 sites have a date (25.9%). Of those, 21,145 come from Pleiades, 8,084 from Wikidata, 756 from radiocarbon and 389 from the featured list. A Wikidata "inception" is sometimes the year a monument was registered. Inceptions after 1900 on ancient types are dropped for that reason.
+- **Type "other".** 20,287 sites, about one in six, have no usable type. Wikidata's class labels did not match any rule, or the item is typed only as "archaeological site". The type filter cannot separate them.
+- **Register stubs.** 77,588 sites have a sitelink count of 0. Many are a name, a point and a register number. They are real published records, and they carry little else.
+- **Sparse dating.** 30,731 of 118,479 sites have a date (25.9%). Of those, 21,492 come from Pleiades, 8,084 from Wikidata, 745 from radiocarbon and 410 from the featured list. A Wikidata "inception" is sometimes the year a monument was registered. Inceptions after 1900 on ancient types are dropped for that reason.
 - **Uneven coverage.** Using rough longitude and latitude boxes, 89,503 of the 99,885 Wikidata records fall in Europe, 4,525 in Asia, 2,806 in Africa and the nearer Near East, 2,243 in North America, 680 in South America, and 73 in Oceania. Pleiades is 78% in the Europe box and has nothing outside the ancient Mediterranean world and the Near East. The OpenStreetMap megaliths are 98% European.
 - **Rough locations.** 709 sites carry a Pleiades location that is not marked precise. The globe draws them like any other point.
 - **Duplicates that survive.** Two records for one place stay separate when neither names the other's identifier and their folded names differ, however close they are. "Tumulus de Péré" and "Péré tumulus" are two pins. That is the price of never merging two different monuments.

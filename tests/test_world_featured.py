@@ -25,7 +25,7 @@ from ai_archaeology.world.records import WorldSite
 def test_curated_list_is_valid():
     monuments = load_featured()
     qids = [monument["qid"] for monument in monuments]
-    assert len(qids) == len(set(qids)) == 396
+    assert len(qids) == len(set(qids)) == 419
     for monument in monuments:
         assert monument["category"] in CATEGORIES
         assert monument["status"] in STATUSES

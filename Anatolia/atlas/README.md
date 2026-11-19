@@ -29,7 +29,7 @@ The globe and the Anatolia atlas run on Node alone. The place view also needs th
 ## The globe
 
 - **Sites.** About 40,000 of the best-known sites load at once. The rest load by 10° cell as you zoom below 2,500 km. The colour of a point is its type. Click a point for its card.
-- **Wonders.** 396 hand-picked monuments, with a line on why each matters. Browse them, take the tour, or jump to a random one. Contested and pseudo-archaeological entries are marked as such.
+- **Wonders.** 419 hand-picked monuments, with a line on why each matters. Browse them, take the tour, or jump to a random one. Contested and pseudo-archaeological entries are marked as such.
 - **Search** covers every name in the catalogue.
 - **Timeline.** Drag the range to filter by calendar year. Most sites have no date. A switch shows or hides them.
 - **Layers.** Labels, wonders only, the OpenStreetMap megaliths (a separate layer under ODbL), and the recording-pattern layer. That last one shows where published sites of a kind tend to be recorded, at about 28 km cells. It is not a map of undiscovered sites. Its caveats are shown with it. See [`docs/suitability-model.md`](../../docs/suitability-model.md).
