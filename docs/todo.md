@@ -2,29 +2,20 @@
 
 Written 2026-11-19. Background and before/after screenshots for everything here are in `data/splat/_diagnose/overnight_log.md` (not in git). How the splats are built is in `scripts/splat/README.md`.
 
-## Features to build
+## Features built on 2026-11-19, and what is left of each
 
-Ideas agreed on 2026-11-19. The reasoning behind them is in [`philosophy.md`](philosophy.md). No aesthetic changes are wanted: these are features. Focus stays on Anatolia and the very ancient.
+Features 1 to 8 and 11 of the list agreed on 2026-11-19 are built; [`world-atlas.md`](world-atlas.md) and [`theories.md`](theories.md) describe them. Everything was judged in a software-rendered test browser. What remains:
 
-- [ ] **1. A "Questions and theories" layer. Build first.**
-  - A theory is a record of its own, like a site: the claim, who proposes it, the sites it touches, evidence for, evidence against, what would settle it, and a status from the ladder in `philosophy.md`.
-  - Each piece of evidence is its own entry with a source and a kind: measurement, excavation, experiment, text, argument.
-  - Status changes are logged with a date and a reason. Nothing is deleted.
-  - Measured facts are stored apart from readings of them (for the Great Pyramid: alignment, block weights, the dated workers' town are facts; "power plant" is a theory attached to them).
-  - Draft the record format first, then seed it with Göbekli Tepe and Giza.
-  - `AGENTS.md` already allows attributed, graded theories in their own layer.
-- [ ] **2. "What we don't know" on landmark cards.** A second tab on each walk-view card listing its open questions, each linking to theory records. Göbekli Tepe to start: how the pillars were moved, roofed or open, why the enclosures were buried, what Pillar 43 depicts.
-- [ ] **3. A theory lens on the globe and map.** Pick a theory and the sites it touches light up, with its status and evidence in a side card. Pick a site and see every theory that touches it.
-- [ ] **4. Named eras beside the date slider.** Date bands stay, since they work worldwide. Era chips depend on where the view is: Pre-Pottery Neolithic and Hittite over Anatolia, Old Kingdom over Egypt. A few are global (the end of the last Ice Age, the Bronze Age collapse). Needs a small sourced table of periods per region.
-- [ ] **5. One settings panel.** Layers, timeline, base map, theme, labels and walk options are scattered. One panel with the same sections in every view, plus a few presets ("Deep past", "Megaliths only").
-- [ ] **6. "Follow this site" links.** No API. A curated list per site of accounts and pages to follow (X accounts, excavation project pages, feeds), opening in a new tab. Stored as a small data file of names and links.
-  - [ ] **Owner:** collect the account names and say which site or topic each belongs to.
-  - [ ] Then: the data file, a section on the site card, and a "Follow" list for the whole atlas.
-- [ ] **7. A puzzles index.** One page listing the standing questions across all sites (the heaviest blocks, the oldest dates, the most precise alignments), each a measured fact with its source, linking to the theories that try to explain it.
-- [ ] **8. Experiments beside claims.** Where a claim is "this could not be done with the tools of the time", show the experimental archaeology that tested it (stone moving, cutting, lifting), for and against, on the same card.
-- [ ] **9. Context layers for the deep past.** Sea level and ice extent through time on the globe, and the Younger Dryas interval marked on the timeline, each from a registered source, so date-based questions can be looked at against the world as it was.
-- [ ] **10. Going global.** The close-up terrain already opens for any published site. Next: a regional atlas generated on demand, as Şanlıurfa has. Giza is the second walkable site: plentiful open data, and the centre of the questions above.
-- [ ] **11. A reading list per site.** The excavation reports and the main books on every side, each labelled by kind (excavation report, peer-reviewed paper, popular book).
+- [ ] **Theory records: sources read only second-hand.** The Merer papyri, Bauval & Gilbert, Hancock, Krupp, Fairall and Dunn records rest on Wikipedia or publisher blurbs; Banning 2011, Stocks 2001, Bonani et al. 2001 and Dash's 3.6 arcminutes on abstracts, press releases or a note in another paper. Read the originals or mark the records.
+- [ ] **Theory records: no rows in `data-sources.md`.** The published sources cited under `lib/theories/` are not registered there yet.
+- [ ] **Theory records: first statuses.** Each is one reading of the listed evidence. The owner should review them, above all the slope-slide fill and inhabited-settlement theories (contested) and the power plant (unsupported so far).
+- [ ] **Reading lists: details not confirmed.** Pages for Clare 2020, Notroff et al. 2017, Sweatman & Tsikritsis 2017 and Hauptmann 1993 and 1999; the one-line notes on the books are descriptions, not quotations. The Tepe Telegrams blog would not open and is left out.
+- [ ] **6. Follow links. Owner:** collect the social accounts. Only official project pages are listed; the place for accounts is the end of `FOLLOW_LINKS` in `lib/reading/followLinks.ts`.
+- [ ] **4. Named periods.** Only Anatolia and Egypt have a table. Pottery Neolithic, Chalcolithic, Early Bronze Age and the Hittite Old Kingdom and Empire split are left out because no source would open. Hittite and Phrygian dates are one site's sequence (Gordion). The Younger Dryas dates come from a handout reproducing Rasmussen et al. 2014, not the article.
+- [ ] **9. Sea level and ice extent through time on the globe.** Not built: it needs a registered dataset, and no dataset is downloaded without the owner asking. The Younger Dryas band on the timeline is built.
+- [ ] **10. A regional atlas generated on demand.** Not built. Giza is walkable (model only).
+- [ ] **10. Giza model.** The present heights of Khafre and Menkaure, and that they lie south-west of Khufu, rest on Wikipedia; replace with a survey. Lehner, the AERA survey notes and Nell & Ruggles's full text were not read. The Sphinx, temples, causeways, boat pits and queens' pyramids are not drawn for want of a source giving both size and position.
+- [ ] **5. Settings panel.** The place view has none. "Megaliths only" does nothing on the Anatolia map, which has no site type filter.
 
 ## Sharper Göbekli Tepe photographs (the splat)
 
@@ -36,10 +27,10 @@ The splat is sharp only near where photographers stood. 41 of 294 downloaded pho
   - Use the roofed-era photographs only (2018 and later) and drop stitched panoramas.
   - Then undistort, train in Brush (`--sh-degree 0`), convert with the evidence cull, realign, and move the landmark positions (`PHOTOGRAPHS_POSITIONS_M` in `Anatolia/atlas/lib/walk/gobekliTepeLandmarks.ts`; scripts in `data/splat/_diagnose/landmarks/`).
   - Expect: more sharp directions around Enclosures B, C and D. Not every angle.
-- [ ] **2. Hide what the photographs never saw.** Free, no GPU.
-  - Fade splats out as the walker moves away from the training camera positions, so the trainer's guesses stop showing as streaks.
-  - Mark the sharp viewpoints (the camera positions) so a visitor can jump between them.
-  - Adds no detail; it stops the mess showing.
+- [x] **2. Hide what the photographs never saw.** Built 2026-11-19: the whole splat fades with distance from the nearest training camera (full within 6 m, gone at 22 m), and the camera positions are marked and can be stepped between.
+  - [ ] The fade is one opacity for the whole scene, so the aerial overview is lost. `SHARP_WITHIN_M` and `GONE_BEYOND_M` in `lib/walk/photoViewpoints.ts` are the dial.
+  - [ ] It patches one line of drei 10.7's splat shader: recheck on an upgrade.
+  - [ ] In the photographs a landmark card sometimes shows after a viewpoint step and is gone within a second. Not investigated.
 - [ ] **3. A trainer built for tourist photographs.** Needs an NVIDIA GPU, so a rented one for a few hours.
   - Candidates: nerfstudio `splatfacto-w` or another "in the wild" Gaussian-splat method (per-photo appearance), with depth or normal regularisation against floaters.
   - Brush, used now, treats all photographs as one consistent scene and has no such guidance.
@@ -58,28 +49,33 @@ The splat is sharp only near where photographers stood. 41 of 294 downloaded pho
 - [ ] Shelter roof in the Göbekli Tepe splat: the streak cull removed its far side. The uncut file is `data/splat/gobekli-tepe/gobekli-tepe.hd-unculled.splat`.
 - [ ] Browser Back after "← Anatolia map" returns to the walk. Keep or skip that entry.
 - [ ] A globe card for a site the map does not have opens the map with nothing selected and no message.
-- [ ] Commit the overnight work (nothing is committed).
+- [ ] Karahan Tepe: a walker who starts in Structure AD cannot leave on foot, because no entrance is published and none is drawn. Keep, or add a labelled way out.
+- [ ] Late Bronze Age collapse is shown as a worldwide period chip, though it is an eastern Mediterranean event.
+- [ ] The splat is fully faded 22 m from every camera. Keep, or leave a faint overview for a flyer.
 
 ## Check on the real GPU
 
 Everything overnight was judged in a software-rendered test browser.
 
 - [ ] Frame rate in Göbekli Tepe's Photographs mode (872,000 splats) and in both models.
+- [ ] Giza: frame rate, the 900 m shadow map, depth precision, walking speed (five times the other sites), and a faint horizontal line seen on Khufu's far face.
+- [ ] Collision and keyboard turning (arrows, Page Up and Page Down) together with mouse look.
+- [ ] The lifted site windows at Sayburç, Nevalı Çori and Harran.
 - [ ] Mouse look, the dive transition, and the pixel ratio settling without visible resizing.
 - [ ] Zooming into a site from the map must arrive walking, not flying (R recovers it).
 - [ ] Thin dotted vertical lines on Karahan Tepe's built east wall: real, or a test-renderer artefact?
 
 ## Known gaps
 
-- [ ] No collision with walls or pillars; steps cannot be climbed.
-- [ ] Without a mouse a visitor can move but not turn.
+- [ ] Collision is for a walker in the models only. Göbekli Tepe's benches and pedestals are walked through, and there is no touch input.
 - [ ] The repeat-visit fix for the splat (`components/walk/SiteSplat.tsx`) relies on drei 10.7 internals: recheck on an upgrade.
-- [ ] The "Periods" panel on the map closes after about 3 s under a resting pointer.
-- [ ] The selected-site image window is graded for Göbekli Tepe; Sayburç, Nevalı Çori and Harran are much darker and want a per-window gain.
 
 ## Accuracy to confirm against the sources
 
-- [ ] Göbekli Tepe dimensions were read from a web summary of Haklay & Gopher 2020, not the PDF.
-- [ ] Göbekli Tepe: Enclosures D and C are drawn as circles; they are oval, but only one diameter was found.
-- [ ] Karahan Tepe: Structure AB is drawn 2.3 m deep against a published 3.5 m; which side of AB Structure AA lies on is a guess; Structure AD's pillar heights are estimates; the porthole's height follows from those estimates.
-- [ ] Karahan Tepe: Karul's publications after 2021 were not found.
+Checked on 2026-11-19 against Haklay & Gopher 2020, Karul 2021 and Schmidt 2010 as published. Still open:
+
+- [ ] Göbekli Tepe: Enclosures D and C are oval but only a maximum diameter is published (14 m, 11 m), so both are drawn as circles.
+- [ ] Karahan Tepe: Structure AB stays 2.3 m deep, read by eye off the scale bar of Karul 2021 Fig. 8; the 3.5 m is on the Taş Tepeler page only.
+- [ ] Karahan Tepe: Structure AD's pillar heights and the porthole's height are in no source found.
+- [ ] Karahan Tepe: Karul 2021 Fig. 3 suggests AD is about 19 m east to west, against the 23 m circle drawn; Fig. 2 suggests AB sits on AD's north-south axis, not 3 m west.
+- [ ] Karahan Tepe: no open excavation report later than 2021 was found.
