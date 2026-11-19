@@ -1,6 +1,7 @@
 /**
  * Göbekli Tepe: the sources, the facts and the evidence entries its questions and theories draw on.
- * Every statement was checked against the source named beside it. A reading is worded as its author's.
+ * Each statement names its source. Some sources were read only second-hand (an abstract, a reply, a
+ * press release): docs/data-sources.md says which. A reading is worded as its author's.
  * No coordinates belong in this file.
  */
 

@@ -1,6 +1,7 @@
 /**
  * Giza and the Great Pyramid: the measured and excavated facts, kept apart from readings of them.
- * Every figure was checked against the source named beside it. No coordinates belong in this file.
+ * Each figure names its source. Some sources were read only second-hand (an abstract, an encyclopedia
+ * article): docs/data-sources.md says which. No coordinates belong in this file.
  */
 
 import type { Fact, TheorySource } from "./theoryTypes";
