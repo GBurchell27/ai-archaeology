@@ -33,6 +33,8 @@ export function AboutPanel(props: { index: WorldIndex | null; onClose(): void })
           Dates are the sources&rsquo; own and are often rough or missing; undated sites can be hidden from the time filter.
           The wonders are a hand-picked list. A few are marked contested, or natural or pseudo-archaeology, so the claim can be read against the evidence.
         </p>
+        <h3 className={ui.eyebrow}>Questions and theories</h3>
+        <p><a href="/puzzles" data-action="open-puzzles">The standing questions</a>, site by site, with the facts, theories and experiments that bear on each.</p>
         <h3 className={ui.eyebrow}>Sources</h3>
         {index ? <SourceTable index={index} /> : <p>Loading the catalogue…</p>}
         <p className={styles.small}>

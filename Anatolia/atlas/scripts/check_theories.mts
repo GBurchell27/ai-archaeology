@@ -134,5 +134,21 @@ check("a question gives its theories in order", registry.theoriesForQuestion(atP
 check("evidence and facts are found by id", findEvidence("giza-evidence-wet-sand-sledge")?.kind === "experiment" && findFact("giza-fact-base-sides")?.kind === "measurement" && findQuestion("giza-what-was-it-for") !== null);
 check("evidence entries come back in the order asked, without unknown ids", registry.evidenceEntries(["giza-evidence-belt-pattern", "nothing", "giza-evidence-hatnub-ramp"]).map((entry) => entry.id).join() === "giza-evidence-belt-pattern,giza-evidence-hatnub-ramp");
 
+// The puzzles index
+const { experimentsBearingOn, puzzleFor, puzzlesBySite } = await import("../lib/theories/puzzlesIndex.ts");
+const sitePuzzles = puzzlesBySite();
+check("the puzzles index groups every question under a named site", sitePuzzles.map((site) => `${site.siteName}:${site.puzzles.length}`).join() === "Göbekli Tepe:5,Giza:4" && sitePuzzles.every((site) => site.siteName !== site.siteId));
+const raising = puzzleFor(findQuestion("giza-how-were-the-blocks-raised")!);
+check("a puzzle carries its facts and theories in the order recorded", raising.facts.map((fact) => fact.id).join() === raising.question.factIds.join() && raising.theories.map((theory) => theory.id).join() === raising.question.theoryIds.join());
+check("a puzzle lists the experiments its theories list, with the theory each supports", raising.experiments.map((experiment) => `${experiment.entry.id}:${experiment.bearings.map((bearing) => `${bearing.side}:${bearing.theory.id}`).join("+")}`).join() === "giza-evidence-nova-block-trials:supports:giza-external-ramps,giza-evidence-wet-sand-sledge:supports:giza-external-ramps");
+const purpose = puzzleFor(findQuestion("giza-what-was-it-for")!);
+check("an experiment a theory lists against itself goes against it", purpose.experiments.length === 4 && purpose.experiments.every((experiment) => experiment.entry.kind === "experiment" && experiment.bearings.length === 1 && experiment.bearings[0].side === "goes-against" && experiment.bearings[0].theory.id === "giza-power-plant"));
+const sledgeFor: Theory = { ...ALL_THEORIES[0], id: "sledge-for", evidenceFor: ["giza-evidence-wet-sand-sledge", "giza-evidence-hatnub-ramp"], evidenceAgainst: [] };
+const sledgeAgainst: Theory = { ...sledgeFor, id: "sledge-against", evidenceFor: [], evidenceAgainst: ["giza-evidence-wet-sand-sledge"] };
+const sharedExperiments = experimentsBearingOn([sledgeFor, sledgeAgainst]);
+check("one experiment listed by two theories appears once with both bearings, and other kinds are left out", sharedExperiments.length === 1 && sharedExperiments[0].bearings.map((bearing) => `${bearing.side}:${bearing.theory.id}`).join() === "supports:sledge-for,goes-against:sledge-against");
+const unanswered = puzzlesBySite([{ id: "unanswered", question: "Not known?", siteIds: ["no-such-site"], factIds: ["nothing"], theoryIds: [] }]);
+check("a question with no theory stands with empty lists, under its id when the site has no name", unanswered.length === 1 && unanswered[0].siteName === "no-such-site" && unanswered[0].puzzles[0].theories.length === 0 && unanswered[0].puzzles[0].experiments.length === 0 && unanswered[0].puzzles[0].facts.length === 0);
+
 console.log(JSON.stringify({ ok: failed === 0, failed, facts: ALL_FACTS.length, evidence: ALL_EVIDENCE.length, theories: ALL_THEORIES.length, questions: ALL_QUESTIONS.length }));
 process.exit(failed === 0 ? 0 : 1);
