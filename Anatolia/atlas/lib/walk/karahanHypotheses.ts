@@ -15,11 +15,12 @@ import { cappingSlabs, type LayerDrawing, type Prism, type RockCutModel } from "
 const sourceByKey = (key: string) => KARAHAN_TEPE_SOURCES.filter((source) => source.key === key).map(({ label, url }) => ({ label, url }));
 
 /**
- * Where "Show me" stands the walker, since neither layer can be seen from the start inside AD: on the terrace at the
- * southern end of the rock left between AB and AA, a room on either side. A camera position only, chosen by eye.
+ * Where "Show me" stands the walker, since neither layer can be seen from the start inside AD: on the terrace west of
+ * AB, a little south of its middle, with AB to the right and AA ahead to the north. A camera position only, chosen by eye.
  */
 const BESIDE_THE_ROOMS_M = 2;
-const STAND_BETWEEN_ROOMS = [(roomWalls("AB").westM + roomWalls("AA").eastM) / 2, roomWalls("AB").southM + BESIDE_THE_ROOMS_M] as const;
+const SOUTH_OF_AB_MIDDLE_M = 1;
+const STAND_BESIDE_ROOMS = [roomWalls("AB").westM - BESIDE_THE_ROOMS_M, centreOf("AB")[1] + SOUTH_OF_AB_MIDDLE_M] as const;
 
 export const KARAHAN_TEPE_HYPOTHESES: readonly HypothesisLayer[] = [
   {
@@ -31,7 +32,7 @@ export const KARAHAN_TEPE_HYPOTHESES: readonly HypothesisLayer[] = [
       "AB's two fill layers are drawn at their published thickness. AA's fill, the size of the stones and the open southern half of each cap, left off so the room can be seen, are this model's own.",
     sources: [...sourceByKey("K21"), ...sourceByKey("AM24")],
     where: "Drawn in Structures AB and AA, on the terrace behind the rock wall north-west of the start.",
-    viewpoint: { standAt: STAND_BETWEEN_ROOMS, lookAt: [STAND_BETWEEN_ROOMS[0], FLOOR_M.AA, centreOf("AB")[1]] },
+    viewpoint: { standAt: STAND_BESIDE_ROOMS, lookAt: [roomWalls("AB").westM, FLOOR_M.AA, roomWalls("AB").northM] },
   },
   {
     id: "roofs",
@@ -42,7 +43,7 @@ export const KARAHAN_TEPE_HYPOTHESES: readonly HypothesisLayer[] = [
       "No roof is drawn for Structure AD: no source describes one, and 23 m is a very long span.",
     sources: sourceByKey("K21"),
     where: "Drawn over Structure AB, on the terrace behind the rock wall north of the start.",
-    viewpoint: { standAt: STAND_BETWEEN_ROOMS, lookAt: [centreOf("AB")[0], 0, centreOf("AB")[1]] },
+    viewpoint: { standAt: STAND_BESIDE_ROOMS, lookAt: [centreOf("AB")[0], 0, centreOf("AB")[1]] },
   },
 ];
 

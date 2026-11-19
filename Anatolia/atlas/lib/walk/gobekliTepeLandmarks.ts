@@ -125,7 +125,7 @@ const LANDMARKS: readonly Landmark[] = [
     pillarNumber: 9,
     description:
       "One of Enclosure B's two central pillars. A fox about 110 cm long is carved on its western broad side, and a stone bowl was found set into the floor in front of it. " +
-      "Which of the pair stands east and which west is an estimate in this model.",
+      "It is drawn as the eastern pillar: Haklay and Gopher 2020 place both foxes of this pair on the inner sides.",
     source: ENCLOSURE_B_NOTE,
   },
   {
@@ -155,7 +155,7 @@ const LANDMARKS: readonly Landmark[] = [
     description:
       "A central pillar of Enclosure A. One broad side carries a net-like pattern, possibly of snakes, with a ram. " +
       "The front has a vertical groove with five snakes in low relief, which may show a stole-like garment. " +
-      "Which of the pair stands east and which west is an estimate in this model.",
+      "It is drawn as the western pillar, since Haklay and Gopher 2020 name Pillar 2 as the eastern one.",
     source: ENCLOSURE_A_NOTE,
   },
   {

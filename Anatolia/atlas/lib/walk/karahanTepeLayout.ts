@@ -1,10 +1,14 @@
 /**
  * Schematic layout of Structures AA, AB, AC and AD at Karahan Tepe, in local metres from an arbitrary origin at the
  * centre of Structure AD. A diagram from figures stated in published text, not a survey. No real-world coordinates
- * belong in this file. Nothing here was measured from a plan or a photograph.
+ * belong in this file. Three things come from the figures of [K21], each marked "Fig." where it is used: the level
+ * labels printed on the section through AD (Fig. 3), lengths read by eye against the scale bars of the two sections
+ * (Fig. 3 and Fig. 8), and which side of AB Structure AA lies on (Fig. 2 and Fig. 5). A length read against a scale
+ * bar is approximate and stays [EST].
  *
  * [K21] = Karul 2021, "Buried Buildings at Pre-Pottery Neolithic Karahantepe", Türk Arkeoloji ve Etnografya Dergisi
  *         82, 21-31. The excavator's preliminary report after the 2019 and 2020 seasons. AD was then about half dug.
+ *         Text and figures were checked against the article's PDF in 2026-11.
  * [TT]  = Taş Tepeler project page for Karahantepe, tastepeler.org/en/settlements/karahantepe (read 2026-11).
  * [C11] = Çelik 2011, "Karahan Tepe: a new cultural centre in the Urfa area in Turkey", Documenta Praehistorica 38,
  *         241-253, doi:10.4312/dp.38.19. Surface survey before excavation.
@@ -12,8 +16,9 @@
  * [EST] = estimated for this model. Not a published figure.
  *
  * Where sources disagree, both figures are in the comment and the excavator's paper [K21] is the one drawn.
- * Not found in any source opened: pillar heights in AD, AD's entrance, AB's east-west offset from AD, which side of
- * AB Structure AA lies on, AC's depth. Those are all [EST] and a modeller should check them against site photographs.
+ * Not found in any source opened: pillar heights in AD, AD's entrance, AB's east-west offset from AD, the height of
+ * the porthole above either floor, AC's depth. Those are all [EST] and a modeller should check them against site
+ * photographs. No report by the excavator later than [K21] was found open to read (searched 2026-11).
  */
 
 /** Local plan position. East and north are positive. The origin is the centre of Structure AD. */
@@ -87,6 +92,12 @@ export type WalkerStart = { position: PlanPosition; facingBearingDeg: number; st
 /** [K21] "the diameter of the structure reaches 23 meters". [TT] "an internal diameter of 23 meters". */
 const AD_DIAMETER_M = 23;
 /**
+ * [EST] read against the 5 m scale bar of [K21] Fig. 3, the east-west section "crossing the middle" of AD: about
+ * 19 m from the east wall to the western rock face. If the 23 m is the other axis, AD is longer north to south than
+ * east to west, which would fit "nearly rectangular". Recorded only: the drawing is a circle 23 m across.
+ */
+export const AD_EAST_WEST_READ_FROM_SECTION_M = 19;
+/**
  * [K21] the western half is cut into bedrock and that rock face, which forms the wall, is 4.3 m high.
  * [TT] gives 4.5 m for the same cut. The eastern half is partly bedrock, partly a free-standing stone wall [K21].
  */
@@ -131,8 +142,12 @@ const AD_BENCHES: readonly Bench[] = [
     id: "ad-wall-bench",
     tiers: 2, // [K21] "benches with two steps" on the rock-cut side, continuing along the built wall. [TT] agrees.
     lengthM: null,
-    heightM: 0.9, // [EST] both tiers together. No bench size is published.
-    depthM: 1.2, // [EST] both tiers together.
+    // [K21] Fig. 3 prints three levels on the rock-cut western side: the floor, the lower step 0.56 m above it and
+    // the upper step 0.68 m above that. Drawn as two equal steps of 0.62 m.
+    heightM: 1.24,
+    // [EST] both tiers together, read against the 5 m scale bar of the same section: a lower step about 1.3 m deep
+    // and an upper one about 0.9 m. No bench size is stated in the text.
+    depthM: 2.2,
     placement: "Along the whole wall, between the pillars [K21] [TT].",
   },
 ];
@@ -172,10 +187,11 @@ const STRUCTURE_AD: Structure = {
 const AB_NORTH_SOUTH_M = 7;
 const AB_EAST_WEST_M = 6;
 /**
- * [TT] "3.5 meters deep". [K21] gives no depth; its fill sequence (0.4 to 0.5 m of sterile soil, then 1.5 m of dark
- * fill, then capping stones) and front pillars of 1.6 to 1.7 m that "reach just below the surface" suggest the floor
- * near the pillars is nearer 2 to 2.5 m down. A figure of about 2.3 m circulates but was not found in a source
- * opened for this file. The published 3.5 m is recorded; the modeller may prefer the shallower reading.
+ * [TT] "3.5 meters deep", the only depth stated in words. [K21] states none, but its Fig. 8, the drawn north-south
+ * section through the middle of AB with a 2 m scale bar, shows the floor about 2.0 m (south) to 2.3 m (north) below
+ * the rock at the two ends, and its text agrees: 0.4 to 0.5 m of sterile soil, then 1.5 m of dark fill, then capping
+ * stones, and front pillars of 1.6 to 1.7 m that "reach just below the surface". What [TT] measures its 3.5 m from
+ * is not said. The 3.5 m is recorded here; the depth drawn is `abDrawnDepthM` below.
  */
 const AB_DEPTH_M = 3.5;
 
@@ -247,7 +263,10 @@ const STRUCTURE_AB: Structure = {
 // Structure AA: the shallow building with the snake bench
 // ---------------------------------------------------------------------------------------------------------------
 
-/** [K21] "measures 8.5 x 7 meters and is nearly trapezoidal with rounded edges". [EST] which side runs north-south. */
+/**
+ * [K21] "measures 8.5 x 7 meters and is nearly trapezoidal with rounded edges". The long side is drawn north-south:
+ * on the aerial view [K21] Fig. 2 it runs along the row AD, AB, AA.
+ */
 const AA_NORTH_SOUTH_M = 8.5;
 const AA_EAST_WEST_M = 7;
 
@@ -255,9 +274,13 @@ const STRUCTURE_AA: Structure = {
   id: "AA",
   name: "Structure AA",
   // [K21] AA is "adjacent" to AB and there is "a connection from Str. AB to Str. AA"; AA, AB and AD are "three adjacent
-  // structures". [EST] the direction: no source opened says which side of AB it lies on. Drawn to the west with 1 m
-  // of rock between, on the reasoning used for AB. LOW CONFIDENCE: check against a published plan before modelling.
-  centre: { eastM: STRUCTURE_AB.centre.eastM - AB_EAST_WEST_M / 2 - 1 - AA_EAST_WEST_M / 2, northM: STRUCTURE_AB.centre.northM },
+  // structures". The text does not say which side of AB it lies on, but the figures show it: on the aerial view
+  // Fig. 2 and the view "from Northwest" Fig. 5, AA lies beyond AB from AD and a little toward the rock-cut side,
+  // with the channel running past AA's east side. AB is "north of Str. AD", so AA is drawn north of AB and a little
+  // west. (The north arrow on Fig. 2 points about 40° off the direction the text implies, which would turn the whole
+  // row toward the north-west; the text is the frame drawn.) [EST] the 1 m of rock between the two, and the offset
+  // west, which puts AA's east wall 1 m west of AB's centre line so the channel clears it.
+  centre: { eastM: STRUCTURE_AB.centre.eastM - 1 - AA_EAST_WEST_M / 2, northM: STRUCTURE_AB.centre.northM + AB_NORTH_SOUTH_M / 2 + 1 + AA_NORTH_SOUTH_M / 2 },
   footprint: {
     shape: "rounded-trapezoid",
     eastWestM: AA_EAST_WEST_M,
@@ -375,12 +398,12 @@ export const AB_FILL = { sterileSoilM: 0.45, darkFillM: 1.5 } as const;
 
 export const KARAHAN_TEPE_DRAWING_ESTIMATES = {
   /**
-   * [EST] AB's floor below the rock surface as drawn. [TT]'s 3.5 m is the only published depth, but [K21]'s own fill
-   * sequence (0.45 m + 1.5 m + capping stones) and its 1.6 to 1.7 m pillars that "reach just below the surface" need
-   * a floor about 2.3 m down. The excavator's paper is the one drawn, so 2.3 m is used and 3.5 m stays on record above.
+   * [EST] AB's floor below the rock surface as drawn: the deeper end of the section [K21] Fig. 8, read against its
+   * 2 m scale bar (about 2.0 to 2.3 m). [TT]'s 3.5 m is the only depth stated in words and stays on record above;
+   * the excavator's paper is the one drawn. See `AB_DEPTH_M`.
    */
   abDrawnDepthM: 2.3,
-  /** [EST] AD is drawn as a circle 23 m across ([K21] "nearly rectangular with rounded corners", [AM24] oval or round). */
+  /** [EST] AD is drawn as a circle 23 m across ([K21] "nearly rectangular with rounded corners", [AM24] oval or round). See `AD_EAST_WEST_READ_FROM_SECTION_M`. */
   adDrawnAsCircle: true,
   /** [EST] AB and AA are drawn as rectangles with rounded corners of this radius. Which end of each trapezoid is the narrow one is not published, so no taper is drawn. */
   roomCornerRadiusM: 1,
@@ -444,8 +467,10 @@ export const KARAHAN_TEPE_DRAWING_ESTIMATES = {
 
 export const KARAHAN_TEPE_MODEL_NOTE =
   "A schematic of Structures AA to AD drawn from dimensions stated in published text, not a survey. The sizes of AB, AA and " +
-  "AC and the 23 m span of AD are published. The positions of the buildings relative to one another, every pillar height in " +
-  "AD, all bench sizes, the 2.3 m depth drawn for AB and the single rock step beside AD are estimates. AD is drawn as a " +
+  "AC and the 23 m span of AD are published, and so is the 1.24 m height of AD's bench. The order of the buildings from south " +
+  "to north (AD, AB, AA) follows the report's text and views; the distances between them, every pillar height in AD, the other " +
+  "bench sizes and the single rock step beside AD are estimates. AB is drawn 2.3 m deep, read from the report's section drawing; " +
+  "the project's web page says 3.5 m. AD is drawn as a " +
   "circle with no entrance, since none is published, and its two central pillars, found collapsed, are drawn standing. " +
   "The carved head is a plain rounded form with no face, and no engraving is drawn. The porthole opens high in AD's wall only " +
   "because of the depths drawn for the two floors: its height above either floor is not published.";
