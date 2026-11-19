@@ -6,14 +6,17 @@ import type { WalkModel } from "@/lib/walk/enclosureModel";
 import { toggledLayers, type HypothesisLayer, type HypothesisLayerId } from "@/lib/walk/hypothesisLayers";
 import type { PlacedLandmark } from "@/lib/walk/landmarks";
 import { MODE_KEY, RESET_KEY } from "@/lib/walk/walkKeys";
+import type { PhotoViewpoint } from "@/lib/walk/photoViewpoints";
 import { placedLandmarks } from "@/lib/walk/walkLandmarks";
 import { findWalkModel } from "@/lib/walk/walkModels";
 import type { MoveMode } from "@/lib/walk/walkMovement";
 import type { WalkSite } from "@/lib/walk/walkSites";
+import { photoViewpoints } from "@/lib/walk/walkViewpoints";
 import { pointerLockTrigger } from "./pointerLockTrigger";
 import { WalkChrome, type WalkState } from "./WalkChrome";
 import type { WalkerHandle } from "./WalkControls";
 import type { WalkSource } from "./WalkSourceToggle";
+import { useViewpointSteps } from "./useViewpointSteps";
 import { useKeyCommand, useMoveKeyPress } from "./useWalkKeys";
 import styles from "./WalkView.module.css";
 
@@ -99,6 +102,8 @@ type WalkStageProps = {
   mode: MoveMode;
   landmarks: readonly PlacedLandmark[];
   hypotheses: readonly HypothesisLayerId[];
+  /** The sharp viewpoints of the photographs. A model has none. */
+  viewpoints: readonly PhotoViewpoint[];
   walker: RefObject<WalkerHandle | null>;
   onNearestLandmark: (landmarkId: string | null) => void;
   onLockChange: (locked: boolean) => void;
@@ -106,13 +111,13 @@ type WalkStageProps = {
   onShown: () => void;
 };
 
-function WalkStage({ site, model, hypotheses, walker, onShown, ...scene }: WalkStageProps) {
+function WalkStage({ site, model, hypotheses, viewpoints, walker, onShown, ...scene }: WalkStageProps) {
   return (
     <div className={styles.stage} {...pointerLockTrigger}>
       {model ? (
         <ModelScene model={model} eyeHeightM={site.eyeHeightM} hypotheses={hypotheses} walker={walker} onShown={onShown} {...scene} />
       ) : (
-        <WalkScene site={site} onSplatShown={onShown} {...scene} />
+        <WalkScene site={site} viewpoints={viewpoints} walker={walker} onSplatShown={onShown} {...scene} />
       )}
     </div>
   );
@@ -142,6 +147,8 @@ export function WalkView({ site, initialSource, onSourceChange, onExit }: WalkVi
   const [hypotheses, toggleHypothesis] = useHypotheses(model);
   const [walker, showLayer] = useShowLayer(hypotheses, toggleHypothesis);
   const [landmarks, nearLandmark, setNearLandmarkId] = useLandmarks(site.id, model);
+  const viewpoints = useMemo(() => (model ? [] : photoViewpoints(site.id)), [model, site.id]);
+  const [viewpoint, stepViewpoint] = useViewpointSteps(viewpoints, site.eyeHeightM, walker);
   // Remembering which source was shown makes a switch count as not shown yet, with nothing to reset.
   const [shownSource, setShownSource] = useState<WalkSource | null>(null);
   const markShown = useCallback(() => setShownSource(source), [source]);
@@ -156,16 +163,17 @@ export function WalkView({ site, initialSource, onSourceChange, onExit }: WalkVi
     "data-walk-shown": shown,
     "data-walk-landmark": nearLandmark?.landmark.id ?? "",
     "data-walk-hypotheses": hypotheses.join(" "),
+    "data-walk-viewpoint": viewpoint === null || model ? "" : viewpoint + 1,
   };
   return (
     <div className={styles.walk} {...hooks}>
       {state === "ready" ? (
-        <WalkStage site={site} model={model} mode={mode} landmarks={landmarks} hypotheses={hypotheses} walker={walker} onNearestLandmark={setNearLandmarkId} onLockChange={setLocked} onLiftOff={liftOff} onShown={markShown} />
+        <WalkStage site={site} model={model} mode={mode} landmarks={landmarks} hypotheses={hypotheses} viewpoints={viewpoints} walker={walker} onNearestLandmark={setNearLandmarkId} onLockChange={setLocked} onLiftOff={liftOff} onShown={markShown} />
       ) : null}
       <WalkChrome
         site={site} hasModel={Boolean(siteModel)} model={model} source={source} state={state} shown={shown} locked={locked} mode={mode} hasSetOff={hasSetOff}
-        landmarkCount={landmarks.length} nearLandmark={nearLandmark} hypotheses={hypotheses}
-        onExit={onExit} onChooseSource={chooseSource} onToggleMode={toggleMode} onToggleHypothesis={toggleHypothesis} onShowLayer={showLayer}
+        landmarkCount={landmarks.length} nearLandmark={nearLandmark} hypotheses={hypotheses} viewpointCount={viewpoints.length} viewpoint={viewpoint}
+        onExit={onExit} onChooseSource={chooseSource} onToggleMode={toggleMode} onToggleHypothesis={toggleHypothesis} onShowLayer={showLayer} onStepViewpoint={stepViewpoint}
       />
     </div>
   );

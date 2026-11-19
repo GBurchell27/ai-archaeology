@@ -1,0 +1,39 @@
+/* The tabs of a landmark card and its "What we don't know" side. The card itself is .landmark in WalkView.module.css.
+   Colours are the --globe-* tokens of app/theme.css. No transitions, so there is no motion to reduce. */
+
+/* The questions, and a theory more so, can be taller than the column: then the card takes what is left and scrolls. */
+.card:has(.questions) {
+  flex: 0 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: var(--globe-scroll-thumb) transparent;
+}
+
+/* The same small capitals as the labels of the disclosures above the card. */
+.tabs { display: flex; gap: 16px; margin: 0 0 9px; border-bottom: 1px solid var(--globe-rule); }
+.tabs .tab {
+  margin-bottom: -1px;
+  padding: 3px 0 6px;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  background: none;
+  color: var(--globe-ink-soft);
+  font-size: 10.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+.tabs .tab:hover, .tabs .tab[aria-selected="true"] { color: var(--globe-ochre); }
+.tabs .tab[aria-selected="true"] { border-bottom-color: var(--globe-ochre); }
+
+.questions { padding: 3px 0 6px; }
+.theory .back {
+  margin: 0 0 12px;
+  padding: 1px 9px 2px;
+  border: 1px solid var(--globe-rule);
+  border-radius: 3px;
+  background: none;
+  color: var(--globe-ochre);
+  font-size: 12px;
+}
+.theory .back:hover { border-color: var(--globe-ochre); }

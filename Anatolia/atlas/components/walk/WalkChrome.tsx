@@ -8,9 +8,11 @@ import type { MoveMode } from "@/lib/walk/walkMovement";
 import type { WalkSite } from "@/lib/walk/walkSites";
 import { HypothesisPanel } from "./HypothesisPanel";
 import { LandmarkCard } from "./LandmarkCard";
+import { ViewpointStepper } from "./ViewpointStepper";
 import { SourceFootnote } from "./WalkFootnote";
 import { LookPrompt, ModeButton } from "./WalkHud";
 import { WalkKeyLegend } from "./WalkKeyLegend";
+import { WalkSettings } from "./WalkSettings";
 import { WalkSourceToggle, type WalkSource } from "./WalkSourceToggle";
 import { useKeyCommand } from "./useWalkKeys";
 import styles from "./WalkView.module.css";
@@ -19,9 +21,9 @@ import styles from "./WalkView.module.css";
 export type WalkState = "checking" | "ready" | "missing";
 
 /** Shown under the key legend in the photographs: a splat is only sharp from where its photographs were taken. */
-const PHOTOGRAPHS_HINT = "Sharpest from where the photographers stood, which is where you start. Elsewhere it thins out into streaks. R brings you back.";
+const PHOTOGRAPHS_HINT = "Sharpest from where the photographers stood: you start at one such place, and a pale ring on the ground marks each. Away from them the photographs fade out, because nothing there was seen. The arrows beside Sharp viewpoints step between them, and R brings you back to the start.";
 /** The third line of the entry prompt: the one thing worth knowing first about the reconstruction on screen. */
-const PHOTOGRAPHS_TIP = "Sharpest near the start · R returns there";
+const PHOTOGRAPHS_TIP = "Sharpest at the pale rings · R returns to the start";
 const LANDMARKS_TIP = "Walk up to a gold ring to read about it";
 const START_TIP = "R returns to the start";
 const CLOSE_KEY = "Escape";
@@ -86,15 +88,19 @@ export type WalkChromeProps = {
   landmarkCount: number;
   nearLandmark: PlacedLandmark | null;
   hypotheses: readonly HypothesisLayerId[];
+  /** How many sharp viewpoints the photographs on screen have, and the one last jumped to. None for a model. */
+  viewpointCount: number;
+  viewpoint: number | null;
   onExit?: () => void;
   onChooseSource: (source: WalkSource) => void;
   onToggleMode: () => void;
   onToggleHypothesis: (layerId: HypothesisLayerId) => void;
   onShowLayer: (layer: HypothesisLayer) => void;
+  onStepViewpoint: (step: 1 | -1) => void;
 };
 
 /** Everything of the walk view that is not the scene: the header, the entry prompt, the right-hand column and the footer. */
-export function WalkChrome({ site, hasModel, model, source, state, shown, locked, mode, hasSetOff, landmarkCount, nearLandmark, hypotheses, ...actions }: WalkChromeProps) {
+export function WalkChrome({ site, hasModel, model, source, state, shown, locked, mode, hasSetOff, landmarkCount, nearLandmark, hypotheses, viewpointCount, viewpoint, ...actions }: WalkChromeProps) {
   const chrome = useCloseOpenPanels();
   const ready = state === "ready";
   return (
@@ -110,14 +116,19 @@ export function WalkChrome({ site, hasModel, model, source, state, shown, locked
         <div className={styles.controls}>
           {hasModel ? <WalkSourceToggle source={source} locked={locked} onChoose={actions.onChooseSource} /> : null}
           {ready ? <ModeButton mode={mode} locked={locked} onToggleMode={actions.onToggleMode} /> : null}
+          {ready && viewpointCount > 0 ? <ViewpointStepper count={viewpointCount} current={viewpoint} locked={locked} onStep={actions.onStepViewpoint} /> : null}
         </div>
         <div className={styles.panels}>
           {ready ? <WalkKeyLegend locked={locked} hint={model ? undefined : PHOTOGRAPHS_HINT} /> : null}
           {model && model.hypotheses.length > 0 ? (
             <HypothesisPanel layers={model.hypotheses} active={hypotheses} locked={locked} onToggle={actions.onToggleHypothesis} onShow={actions.onShowLayer} />
           ) : null}
+          <WalkSettings
+            locked={locked} hasModel={hasModel} hasLayers={Boolean(model && model.hypotheses.length > 0)} ready={ready}
+            source={source} mode={mode} onChooseSource={actions.onChooseSource} onToggleMode={actions.onToggleMode}
+          />
         </div>
-        <LandmarkCard placed={ready ? nearLandmark : null} />
+        <LandmarkCard siteId={site.id} placed={ready ? nearLandmark : null} />
       </div>
       {ready ? <SourceFootnote site={site} model={model} hypotheses={hypotheses} /> : null}
     </div>

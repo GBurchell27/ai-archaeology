@@ -2,8 +2,9 @@
 
 import { PerformanceMonitor, type PerformanceMonitorApi } from "@react-three/drei";
 import { Canvas } from "@react-three/fiber";
-import { Suspense, useCallback, useMemo, useState } from "react";
+import { Suspense, useCallback, useMemo, useState, type RefObject } from "react";
 import type { PlacedLandmark } from "@/lib/walk/landmarks";
+import type { PhotoViewpoint } from "@/lib/walk/photoViewpoints";
 import { moveLimits, type MoveMode } from "@/lib/walk/walkMovement";
 import type { WalkSite } from "@/lib/walk/walkSites";
 import { LandmarkMarkers } from "./LandmarkMarkers";
@@ -11,7 +12,8 @@ import { LandmarkWatcher } from "./LandmarkWatcher";
 import { ShownSignal } from "./ShownSignal";
 import { SiteSplat } from "./SiteSplat";
 import { SplatBackdrop } from "./SplatBackdrop";
-import { WalkControls } from "./WalkControls";
+import { ViewpointMarkers } from "./ViewpointMarkers";
+import { WalkControls, type WalkerHandle } from "./WalkControls";
 
 type WalkSceneProps = {
   site: WalkSite;
@@ -22,6 +24,10 @@ type WalkSceneProps = {
   onLockChange: (locked: boolean) => void;
   onLiftOff: () => void;
   onSplatShown: () => void;
+  /** Where the photographs were taken from, each marked on the ground. */
+  viewpoints: readonly PhotoViewpoint[];
+  /** Lets the chrome stand the walker at one of them. */
+  walker?: RefObject<WalkerHandle | null>;
 };
 
 /** The frame-rate monitor counts every step up or down; after this many it stops, so the sharpness cannot seesaw. */
@@ -39,7 +45,7 @@ function useAdaptivePixelRatio(): [number, (monitor: PerformanceMonitorApi) => v
 }
 
 /** The splat of one site with a walker inside it. Default export so the view can load it lazily. */
-export default function WalkScene({ site, mode, landmarks, onNearestLandmark, onLockChange, onLiftOff, onSplatShown }: WalkSceneProps) {
+export default function WalkScene({ site, mode, landmarks, onNearestLandmark, onLockChange, onLiftOff, onSplatShown, viewpoints, walker }: WalkSceneProps) {
   const limits = useMemo(() => moveLimits(site.eyeHeightM, site.walkRadiusM), [site.eyeHeightM, site.walkRadiusM]);
   const [pixelRatio, followFrameRate] = useAdaptivePixelRatio();
   return (
@@ -53,8 +59,9 @@ export default function WalkScene({ site, mode, landmarks, onNearestLandmark, on
         <ShownSignal onShown={onSplatShown} />
       </Suspense>
       <LandmarkMarkers landmarks={landmarks} showNames={mode === "fly"} />
+      <ViewpointMarkers viewpoints={viewpoints} />
       <LandmarkWatcher landmarks={landmarks} onNearest={onNearestLandmark} />
-      <WalkControls mode={mode} limits={limits} onLockChange={onLockChange} onLiftOff={onLiftOff} />
+      <WalkControls mode={mode} limits={limits} onLockChange={onLockChange} onLiftOff={onLiftOff} walker={walker} />
     </Canvas>
   );
 }

@@ -29,7 +29,7 @@
 /* So do the footer and a showing landmark card: the wheel over a panel must reach the panel, not lift the walker off. */
 .chrome a, .chrome button, .chrome details, .footer, .landmark[data-shown="true"] { pointer-events: auto; }
 
-.exit, .mode, .sources button, .disclosure, .landmark, .note, .footer, .prompt {
+.exit, .mode, .sources button, .viewpoints, .disclosure, .landmark, .note, .footer, .prompt {
   border: 1px solid var(--globe-rule);
   border-radius: 3px;
   background: var(--globe-panel);
@@ -87,6 +87,14 @@
 .sources button:hover, .sources button[aria-pressed="true"] { position: relative; border-color: var(--globe-ochre); }
 .sources button[aria-pressed="true"] { background: var(--globe-control-on); color: var(--globe-ochre-ink); }
 .sources[data-locked="true"] { opacity: 0.6; }
+
+/* The sharp viewpoints of the photographs: a label between a step back and a step on. */
+.viewpoints { display: flex; align-items: center; font-size: 12.5px; letter-spacing: 0.04em; transition: opacity 0.3s; }
+.viewpoints button { padding: 6px 12px 7px; border: 0; background: none; color: var(--globe-ochre); }
+.viewpoints button:hover { background: var(--globe-hover); }
+.viewpoints button:focus-visible { outline-offset: -2px; }
+.viewpoints > span { padding: 0 3px; color: var(--globe-ink-soft); }
+.viewpoints[data-locked="true"] { opacity: 0.6; }
 
 /* Keys and the conjectural layers: closed, each is a small label; the open one drops below as a panel. When the
    column is short the panels give way to the card and scroll. */
@@ -166,7 +174,8 @@
   transition: opacity 0.35s;
 }
 .landmark[data-shown="false"] { opacity: 0; }
-.landmark p { margin: 0 0 6px; color: var(--globe-prose); }
+/* Only the card's own text: the questions and a theory record beside it bring their own paragraph styles. */
+.landmarkAbout p { margin: 0 0 6px; color: var(--globe-prose); }
 .landmarkTitle { margin: 0 0 6px; font: 500 20px/1.15 var(--globe-serif); color: var(--globe-ochre); }
 .landmark .landmarkSource { font-size: 12px; color: var(--globe-ink-soft); }
 
@@ -203,5 +212,5 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .mode, .sources, .disclosure, .landmark { transition: none; }
+  .mode, .sources, .viewpoints, .disclosure, .landmark { transition: none; }
 }

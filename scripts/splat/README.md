@@ -72,9 +72,20 @@ Run from the repository root. `gobekli-tepe` stands for the site id in `Anatolia
 
 6. **Align.** Open `/?view=walk&site=gobekli-tepe`. Structure from motion has no real scale and no level floor, so set `alignment` for the site in `walkSites.ts` until the floor is flat at your feet and a pillar is the right height.
 
+7. **Sharp viewpoints.** The walk fades the splat out away from where its photographs were taken, marks those places and lets a visitor step between them (see "Sharp viewpoints" in `docs/world-atlas.md`). Export them once the alignment is settled, and again after any retrain or change of alignment:
+
+   ```bash
+   .venv/Scripts/python scripts/splat/export_viewpoints.py gobekli-tepe data/splat/gobekli-tepe/undistorted/sparse/images.bin Anatolia/atlas/lib/walk/gobekliTepeViewpoints.ts
+   ```
+
+   It reads the `images.bin` of the COLMAP model the splat was trained on (the binary one, no conversion needed) and the site's `alignment` from `walkSites.ts`, and writes the camera positions in walk metres, each with a point 10 m along its view. Cameras within 1.5 m that look within 30° of each other become one viewpoint. Give it the model that was actually trained on: the published Göbekli Tepe table came from the 41-photograph subset model (`data/splat/gobekli-tepe/modern_hd/sparse/0/images.bin`, 26 viewpoints) and the Karahan Tepe one from `data/splat/karahan-tepe-all/undistorted/sparse/images.bin` (17 photographs, 8 viewpoints). A new site also needs a row in `Anatolia/atlas/lib/walk/walkViewpoints.ts`. The table holds positions in the walk's own frame, rounded to a centimetre, and no geographic coordinates.
+
+   To tell whether the frame is right: the photograph the alignment started from should come out at the walker's start, `[0, 1.65, 0]`, or close to it.
+
 ## Checks
 
 ```bash
+.venv/Scripts/python scripts/splat/export_viewpoints.py --self-check
 .venv/Scripts/python scripts/splat/ply_to_splat.py --self-check
 node --experimental-strip-types Anatolia/atlas/scripts/check_walk.mts
 ```

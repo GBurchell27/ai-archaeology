@@ -604,5 +604,27 @@ const upAaSteps = journey(karahanWalkLimits, endOf(ontoAaBench), LOOK_SOUTH, 8);
 check("AA's bench is stepped onto, and the two steps at its south end climb to the rock surface", groundAt(endOf(ontoAaBench)) > FLOOR_M.AA && groundAt(endOf(upAaSteps)) === 0 && endOf(upAaSteps)[1] > aaWalls.southM + 1);
 check("a walker may step off the terrace down into AB", groundAt([abEast, abWalls.southM + 1]) === 0 && groundAt(endOf(journey(karahanWalkLimits, [abEast, abWalls.southM + 1], LOOK_NORTH, 2))) < -1);
 
+// The photographs' sharp viewpoints: where the training cameras stood, and the fade away from them.
+const { GONE_BEYOND_M, SHARP_WITHIN_M, nearestViewpointDistanceM, splatOpacityAt, standingViewpoint, steppedViewpointIndex } = await import("../lib/walk/photoViewpoints.ts");
+const { photoViewpoints } = await import("../lib/walk/walkViewpoints.ts");
+const gobekliViewpoints = photoViewpoints("gobekli-tepe");
+const twoCameras = [{ positionM: [0, 2, 0], lookAtM: [0, 0, -10] }, { positionM: [30, 2, 0], lookAtM: [30, 2, -10] }] as const;
+check("the distance to the nearest camera is measured in all three directions", near(nearestViewpointDistanceM(twoCameras, [27, 6, 0]), 5) && nearestViewpointDistanceM([], [0, 0, 0]) === Infinity);
+check("the splat is whole near a camera and gone far from every one", splatOpacityAt(twoCameras, [0, 2, SHARP_WITHIN_M]) === 1 && splatOpacityAt(twoCameras, [15, 2 + GONE_BEYOND_M, 0]) === 0);
+const fadingOut = [8, 12, 16, 20].map((away) => splatOpacityAt(twoCameras, [0, 2, away]));
+check("between the two it fades steadily, with no jump", fadingOut.every((opacity, index) => opacity > 0 && opacity < 1 && (index === 0 || opacity < fadingOut[index - 1])) && near(splatOpacityAt(twoCameras, [0, 2, (SHARP_WITHIN_M + GONE_BEYOND_M) / 2]), 0.5));
+check("a site with no cameras listed is drawn in full", splatOpacityAt([], [99, 99, 99]) === 1 && photoViewpoints("nowhere").length === 0);
+check("stepping goes round and round, and starts at the first or the last", steppedViewpointIndex(null, 1, 3) === 0 && steppedViewpointIndex(null, -1, 3) === 2 && steppedViewpointIndex(2, 1, 3) === 0 && steppedViewpointIndex(0, -1, 3) === 2);
+const stood = standingViewpoint(twoCameras[0], 1.65);
+check("the walker stands under the camera and looks the way it looked", stood.standAt.join() === "0,0" && near(stood.lookAt[1], -0.35) && stood.lookAt[2] === -10);
+check("each site's photographs have a few dozen viewpoints at most", ["gobekli-tepe", "karahan-tepe"].every((id) => photoViewpoints(id).length > 0 && photoViewpoints(id).length <= 40));
+check("the walker starts at a sharp viewpoint", WALK_SITES.every((site) => splatOpacityAt(photoViewpoints(site.id), startPosition(moveLimits(site.eyeHeightM, site.walkRadiusM))) === 1));
+check("every landmark placed in the photographs can be read with the splat still showing", placeOnPhotographs(GOBEKLI_TEPE_LANDMARKS).every(({ markerM }) => splatOpacityAt(gobekliViewpoints, [markerM[0], 1.65, markerM[2]]) > 0.25));
+
+// The landmark card's tab row. That every landmark a question names exists is checked in check_theories.mts.
+const { LANDMARK_TABS, tabIndexAfterKey } = await import("../lib/walk/landmarkTabs.ts");
+check("the card opens on its own text, with the open questions second", LANDMARK_TABS.map((tab) => tab.id).join() === "about,questions");
+check("the arrows move round the tabs, Home and End go to the ends, and other keys are left alone", tabIndexAfterKey("ArrowRight", 1, 2) === 0 && tabIndexAfterKey("ArrowLeft", 0, 2) === 1 && tabIndexAfterKey("Home", 1, 2) === 0 && tabIndexAfterKey("End", 0, 2) === 1 && tabIndexAfterKey("KeyW", 0, 2) === null);
+
 console.log(JSON.stringify({ ok: failed === 0, failed }));
 process.exit(failed === 0 ? 0 : 1);
