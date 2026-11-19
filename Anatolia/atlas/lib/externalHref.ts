@@ -76,6 +76,8 @@ const EXACT_HOSTS = new Set([
   "www.oeaw.ac.at",
   "kups.ub.uni-koeln.de",
   "almanac.upenn.edu",
+  "aeraweb.org",
+  "www.ifao.egnet.net",
   "github.com", // the project's own repository docs; exact host only, so no gists, raw files or user pages
 ]);
 

@@ -1,6 +1,7 @@
 "use client";
 
 import { SafeLink } from "@/components/SafeLink";
+import { AtlasFollowLinks } from "@/components/SiteReading";
 import type { WorldIndex } from "@/lib/world/catalogueTypes";
 import ui from "./chrome.module.css";
 import styles from "./AboutPanel.module.css";
@@ -39,6 +40,7 @@ export function AboutPanel(props: { index: WorldIndex | null; onClose(): void })
           <SafeLink href={DATA_SOURCES_DOC}>docs/data-sources.md</SafeLink> in the project repository.
           {index ? ` Catalogue built ${index.generated}.` : ""}
         </p>
+        <AtlasFollowLinks headingClassName={ui.eyebrow} />
         <p className={styles.small}>A private hobby project. It is a reading aid, not a research result.</p>
       </div>
     </PanelShell>

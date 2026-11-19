@@ -3,6 +3,7 @@ import { PlaceGuide } from "@/components/PlaceGuide";
 import { PlaceMaps, closeupCreditNote } from "@/components/PlaceMaps";
 import { PlaceResources } from "@/components/PlaceResources";
 import { SafeLink } from "@/components/SafeLink";
+import { SiteFollowLinks, SiteReadingList } from "@/components/SiteReading";
 import { formatYear } from "@/lib/periods";
 import { RASTER_TITLES } from "@/lib/rasterLayers";
 import type { YearRange } from "@/lib/timeline";
@@ -92,6 +93,8 @@ export function SitePanel(props: {
           {properties.pleiadesUrl ? <> · <SafeLink href={properties.pleiadesUrl}>Pleiades</SafeLink> CC BY 3.0 US</> : null}
         </p>
         <PlaceResources id={props.site.id} longitude={props.site.geometry.coordinates[0]} latitude={props.site.geometry.coordinates[1]} />
+        <SiteReadingList siteId={props.site.id} className="guide-overview" />
+        <SiteFollowLinks siteId={props.site.id} className="guide-overview" />
       </>}
       maps={<>
       <PlaceMaps

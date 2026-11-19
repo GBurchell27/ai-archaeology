@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { SafeLink } from "@/components/SafeLink";
+import { SiteFollowLinks, SiteReadingList } from "@/components/SiteReading";
 import type { SiteDetail } from "@/lib/world/catalogueTypes";
 import { commonsFilePage, commonsThumbnail, osmElementPage } from "@/lib/world/siteMedia";
 import { OSM_MEGALITH_STYLE } from "@/lib/world/siteTypeStyle";
@@ -47,6 +48,8 @@ export function SiteCardRecord(props: { site: PickedSite; detail: SiteDetail | n
         {detail.wikipedia ? <li><SafeLink href={detail.wikipedia}>Read about it on Wikipedia</SafeLink></li> : null}
         <li><SafeLink href={detail.sourceUrl}>Open the source record</SafeLink></li>
       </ul>
+      <SiteReadingList siteId={site.id} className={`${ui.prose} ${styles.fact}`} headingClassName={ui.eyebrow} />
+      <SiteFollowLinks siteId={site.id} className={`${ui.prose} ${styles.fact}`} headingClassName={ui.eyebrow} />
       {site.source === "osm" ? <OsmCredit /> : (
         <p className={styles.credit}>Record: {detail.attribution}, {detail.licence}.</p>
       )}

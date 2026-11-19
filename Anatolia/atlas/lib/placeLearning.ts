@@ -8,7 +8,8 @@ export interface Reading {
   title: string;
   credit: string;
   note: string;
-  href: string;
+  /** A printed work may have no address; it is then shown unlinked. */
+  href?: string;
 }
 
 export interface PlaceLesson {

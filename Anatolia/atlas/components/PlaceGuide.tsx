@@ -10,8 +10,8 @@ export function ReadingList({ entries }: { entries: readonly Reading[] }) {
   return (
     <ul className="guide-readings">
       {entries.map(({ href, title, credit, note }) => (
-        <li key={href}>
-          <SafeLink href={href}>{title}</SafeLink>
+        <li key={href ?? title}>
+          {href ? <SafeLink href={href}>{title}</SafeLink> : <strong>{title}</strong>}
           <span>{credit}</span>
           <p>{note}</p>
         </li>
