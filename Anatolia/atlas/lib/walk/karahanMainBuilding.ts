@@ -10,6 +10,8 @@ import { centreOf, HALF_CIRCLE_SEGMENTS, LOW_GROUND_M, radiusOf, ROOTED_IN_ROCK_
 import { AD_BUILT_WALL_HEIGHT_M, AD_BUILT_WALL_THICKNESS_M, KARAHAN_TEPE_DRAWING_ESTIMATES as ESTIMATES, type PillarGroup } from "./karahanTepeLayout";
 import { ringSectorOutline } from "./planOutline";
 import { cappingSlabs, liftedBy, type RockMass } from "./rockCutModel";
+import { pillarObstacle, ringWallObstacles } from "./modelObstacles";
+import { roundObstacle, type Obstacle } from "./walkObstacles";
 
 const WEST = 270;
 const EAST = 90;
@@ -88,6 +90,25 @@ export function adRockMasses(): RockMass[] {
     bottomM: LOW_GROUND_M + footM,
     topM: LOW_GROUND_M + topM,
   }));
+}
+
+/** The built bench on AD's eastern half as ground to stand on, in the same two steps as the rock-cut half. */
+export function adBuiltBenchGround(): RockMass[] {
+  return benchTiers().map(({ depthM, footM, topM }, tier) => ({
+    id: `ad-built-bench-${tier}`,
+    outline: ringSectorOutline(centreOf("AD"), radiusOf("AD") - depthM, radiusOf("AD"), 0, SOUTH, HALF_CIRCLE_SEGMENTS),
+    bottomM: LOW_GROUND_M + footM,
+    topM: LOW_GROUND_M + topM,
+  }));
+}
+
+/** What a walker cannot pass in AD and AC: the built wall, each pillar's shaft, and AC under its cap of stones. */
+export function mainBuildingObstacles(): Obstacle[] {
+  const ad = adAsRing();
+  const [{ innerRadiusM, wallThicknessM }] = ad.rings;
+  const midRadiusM = innerRadiusM + wallThicknessM / 2;
+  const builtWall = ringWallObstacles(centreOf("AD"), { gapBearingDeg: WEST, gapWidthM: Math.PI * midRadiusM }, midRadiusM, wallThicknessM);
+  return [...builtWall, ...enclosurePillars(ad).map(pillarObstacle), roundObstacle(centreOf("AC"), radiusOf("AC") + AC_KERB_DEPTH_M)];
 }
 
 function adBuiltWall(random: () => number): StoneBox[] {

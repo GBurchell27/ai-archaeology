@@ -13,7 +13,11 @@ export type MoveLimits = {
   flyCeilingM: number;
   /** The height of the ground under a point, where a site's floors are not all at y = 0. */
   groundHeightM: GroundHeight;
+  /** Where a walker who meant to go from one floor point to another ends up. A flyer passes through everything. */
+  walkerStep: WalkerStep;
 };
+
+export type WalkerStep = (from: readonly [x: number, z: number], to: readonly [x: number, z: number]) => readonly [x: number, z: number];
 
 export type GroundHeight = (x: number, z: number) => number;
 
@@ -29,8 +33,9 @@ const CLIMB_RESPONSE_S = 0.15;
 const CLIMB_M_PER_WHEEL_UNIT = 0.015;
 const LARGEST_PENDING_CLIMB_M = 20;
 const FLAT_GROUND: GroundHeight = () => 0;
+const UNOBSTRUCTED: WalkerStep = (_from, to) => to;
 
-export function moveLimits(eyeHeightM: number, walkRadiusM: number, groundHeightM: GroundHeight = FLAT_GROUND): MoveLimits {
+export function moveLimits(eyeHeightM: number, walkRadiusM: number, groundHeightM: GroundHeight = FLAT_GROUND, walkerStep: WalkerStep = UNOBSTRUCTED): MoveLimits {
   return {
     eyeHeightM,
     walkRadiusM,
@@ -38,6 +43,7 @@ export function moveLimits(eyeHeightM: number, walkRadiusM: number, groundHeight
     flyFloorM: FLY_FLOOR_M,
     flyCeilingM: Math.min(walkRadiusM * 2, HIGHEST_CEILING_M),
     groundHeightM,
+    walkerStep,
   };
 }
 
@@ -97,6 +103,31 @@ export function climbThisFrame(pendingClimbM: number, seconds: number): number {
   return pendingClimbM - easeToward(pendingClimbM, 0, seconds, CLIMB_RESPONSE_S);
 }
 
+/** The view's turn about the upright axis (three.js: positive is to the left) and its tilt up, with how fast each is changing. */
+export type LookState = { yawRad: number; pitchRad: number; yawRadPerS: number; pitchRadPerS: number };
+
+const TURN_RAD_PER_S = 1.6;
+const TILT_RAD_PER_S = 1;
+const STEEPEST_PITCH_RAD = 1.5;
+const STILL_RAD_PER_S = 1e-4;
+
+/**
+ * One frame of looking by the keys. The rates ease like the walker's velocity, so a turn starts and stops smoothly at
+ * any frame rate, and come to rest at exactly zero so a still view is left alone. A tilt the mouse took past the
+ * steepest the keys allow is kept, not pulled back.
+ */
+export function lookStep(from: LookState, intent: MoveIntent, seconds: number): LookState {
+  const eased = (rate: number, wished: number) => {
+    const next = easeToward(rate, wished, seconds, VELOCITY_RESPONSE_S);
+    return wished === 0 && Math.abs(next) < STILL_RAD_PER_S ? 0 : next;
+  };
+  const yawRadPerS = eased(from.yawRadPerS, -intent.turn * TURN_RAD_PER_S);
+  const pitchRadPerS = eased(from.pitchRadPerS, intent.tilt * TILT_RAD_PER_S);
+  const [lowest, steepest] = [Math.min(from.pitchRad, -STEEPEST_PITCH_RAD), Math.max(from.pitchRad, STEEPEST_PITCH_RAD)];
+  const pitchRad = Math.min(steepest, Math.max(lowest, from.pitchRad + pitchRadPerS * seconds));
+  return { yawRad: from.yawRad + yawRadPerS * seconds, pitchRad, yawRadPerS, pitchRadPerS };
+}
+
 /**
  * The velocity the keys ask for. `look` is the camera's view direction (any length).
  * Walking follows the look direction flattened onto the floor. Flying follows it fully, and rises along world up.
@@ -123,6 +154,7 @@ function withinRadius(x: number, z: number, radiusM: number): [number, number] {
 
 /**
  * One frame of movement: ease the velocity towards what the keys ask for, move, then stay inside the limits.
+ * A walker then goes where the limits' `walkerStep` lets them: walkObstacles.ts keeps them out of walls and pillars.
  * A walker's height eases to eye level above the ground under them, so leaving fly mode or stepping into a sunken room
  * glides down instead of snapping. A flyer stays above that same ground.
  */
@@ -142,7 +174,8 @@ export function moveStep(
   const [fromX, fromY, fromZ] = from.position;
   // A walker who landed outside the walk radius is not dragged back: they just cannot go further out.
   const radiusM = mode === "fly" ? limits.flyRadiusM : Math.max(limits.walkRadiusM, Math.hypot(fromX, fromZ));
-  const [x, z] = withinRadius(fromX + velocityX * seconds, fromZ + velocityZ * seconds, radiusM);
+  const wanted = withinRadius(fromX + velocityX * seconds, fromZ + velocityZ * seconds, radiusM);
+  const [x, z] = mode === "walk" ? limits.walkerStep([fromX, fromZ], wanted) : wanted;
   const groundM = limits.groundHeightM(x, z);
   if (mode === "walk") {
     const y = easeToward(fromY, groundM + limits.eyeHeightM, seconds, EYE_SETTLE_S);

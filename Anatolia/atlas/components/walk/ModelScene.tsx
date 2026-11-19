@@ -5,8 +5,10 @@ import { useMemo, type RefObject } from "react";
 import { modelBoxes, type WalkModel } from "@/lib/walk/enclosureModel";
 import type { HypothesisLayerId } from "@/lib/walk/hypothesisLayers";
 import type { PlacedLandmark } from "@/lib/walk/landmarks";
+import { modelObstacles } from "@/lib/walk/modelObstacles";
 import { reliefBoxes } from "@/lib/walk/pillarRelief";
 import { groundHeightM } from "@/lib/walk/rockCutModel";
+import { obstructedBy } from "@/lib/walk/walkObstacles";
 import { moveLimits, startPosition, type MoveMode } from "@/lib/walk/walkMovement";
 import { EnclosureFloors } from "./EnclosureFloors";
 import { EnclosureStones } from "./EnclosureStones";
@@ -39,9 +41,9 @@ export default function ModelScene({ model, eyeHeightM, mode, landmarks, hypothe
   const { enclosures, rockCut } = model;
   const boxes = useMemo(() => [...modelBoxes(enclosures), ...reliefBoxes(enclosures)], [enclosures]);
   const limits = useMemo(() => {
-    const ground = rockCut ? (x: number, z: number) => groundHeightM(rockCut, x, z) : undefined;
-    return moveLimits(eyeHeightM, model.walkRadiusM, ground);
-  }, [eyeHeightM, model.walkRadiusM, rockCut]);
+    const ground = rockCut ? (x: number, z: number) => groundHeightM(rockCut, x, z) : () => 0;
+    return moveLimits(eyeHeightM, model.walkRadiusM, ground, obstructedBy(modelObstacles(model), ground));
+  }, [eyeHeightM, model, rockCut]);
   const start = useMemo(() => [...startPosition(limits)] as [number, number, number], [limits]);
   const surroundingsShown = hypotheses.includes("surroundings");
   return (

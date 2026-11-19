@@ -39,7 +39,9 @@ const speed = (velocity: Vec3) => Math.hypot(...velocity);
 // Keys
 check("W walks forward", keys("KeyW").forward === 1 && keys("KeyW").strafe === 0);
 check("opposite keys cancel", keys("KeyW", "ArrowDown").forward === 0);
-check("D strafes right, A left", keys("KeyD").strafe === 1 && keys("ArrowLeft").strafe === -1);
+check("D strafes right, A left", keys("KeyD").strafe === 1 && keys("KeyA").strafe === -1);
+check("the left and right arrows turn the view and do not strafe", keys("ArrowLeft").turn === -1 && keys("ArrowRight").turn === 1 && keys("ArrowLeft").strafe === 0 && keys("ArrowLeft", "ArrowRight").turn === 0 && keys("KeyA").turn === 0);
+check("the up and down arrows still move, and Page Up and Page Down tilt the view", keys("ArrowUp").forward === 1 && keys("ArrowDown").forward === -1 && keys("PageUp").tilt === 1 && keys("PageDown").tilt === -1 && MOVE_KEYS.has("PageUp") && MOVE_KEYS.has("ArrowLeft"));
 check("E rises, Q sinks", keys("KeyE").rise === 1 && keys("KeyQ").rise === -1);
 check("either Shift is fast", keys("ShiftRight").fast && keys("ShiftLeft").fast && !keys("KeyW").fast);
 check("mode and reset keys are not movement keys", !MOVE_KEYS.has("KeyF") && !MOVE_KEYS.has("KeyR") && MOVE_KEYS.has("KeyE"));
@@ -514,6 +516,93 @@ for (const layer of karahanLayers) {
 }
 check("the Göbekli layers show from the start and need no viewpoint", hypotheses.every((layer) => layer.viewpoint === undefined));
 check("the Karahan footnote names the layer shown", hypothesisFootnote(karahanLayers, ["backfill"]).includes("Buried on purpose"));
+
+// Turning by the keys, for a visitor without a mouse
+const { lookStep } = await import("../lib/walk/walkMovement.ts");
+type LookState = Parameters<typeof lookStep>[0];
+const STILL_VIEW: LookState = { yawRad: 0, pitchRad: 0, yawRadPerS: 0, pitchRadPerS: 0 };
+const lookFor = (codes: string[], seconds: number, frameS = 1 / 60, from = STILL_VIEW) => {
+  let view = from;
+  for (let elapsed = 0; elapsed < seconds - 1e-9; elapsed += frameS) view = lookStep(view, keys(...codes), frameS);
+  return view;
+};
+const turnedRight = lookFor(["ArrowRight"], 1);
+check("the right arrow turns the view to the right, which three.js counts as a negative turn", turnedRight.yawRad < -1 && turnedRight.pitchRad === 0 && lookFor(["ArrowLeft"], 1).yawRad > 1);
+check("a turn eases in instead of starting at full speed", Math.abs(lookFor(["ArrowRight"], 1 / 60).yawRadPerS) < Math.abs(turnedRight.yawRadPerS) / 2);
+check("a turn barely depends on the frame rate", near(lookFor(["ArrowRight"], 1, 1 / 20).yawRad, turnedRight.yawRad, 0.08));
+const settled = lookFor([], 3, 1 / 60, turnedRight);
+check("a released turn coasts to exactly still, so a view at rest is left to the mouse", settled.yawRadPerS === 0 && settled.yawRad < turnedRight.yawRad && lookStep(STILL_VIEW, keys("KeyW"), 1 / 60).yawRad === 0);
+check("Page Up tilts the view up and stops short of straight up", lookFor(["PageUp"], 5).pitchRad > 1.4 && lookFor(["PageUp"], 5).pitchRad < Math.PI / 2 && lookFor(["PageDown"], 5).pitchRad < -1.4);
+check("a steeper tilt set by the mouse is kept", lookStep({ ...STILL_VIEW, pitchRad: 1.55 }, keys(), 1 / 60).pitchRad === 1.55);
+
+// Collision: a walker is kept out of walls and pillars, a flyer is not
+const { modelObstacles } = await import("../lib/walk/modelObstacles.ts");
+const { HIGHEST_STEP_M, WALKER_RADIUS_M, obstructedBy, pushedOut } = await import("../lib/walk/walkObstacles.ts");
+type Obstacles = ReturnType<typeof modelObstacles>;
+type Limits = ReturnType<typeof moveLimits>;
+const isClearOf = (obstacles: Obstacles, [east, south]: PlanPoint) => obstacles.every((obstacle) => { const [toEast, toSouth] = pushedOut([east, south], obstacle); return near(toEast, east, 1e-6) && near(toSouth, south, 1e-6); });
+/** Every frame of someone holding W from a plan point, looking one way. */
+function journey(limits: Limits, from: PlanPoint, look: Vec3, seconds: number, mode: MoveMode = "walk"): PlanPoint[] {
+  let state: MoveState = { position: standingAt(limits, from[0], from[1]), velocity: REST };
+  return Array.from({ length: Math.round(seconds * 60) }, () => {
+    state = moveStep(state, mode, look, keys("KeyW"), limits, 1 / 60);
+    return [state.position[0], state.position[2]] as PlanPoint;
+  });
+}
+const endOf = (path: PlanPoint[]) => path[path.length - 1];
+const LOOK_EAST: Vec3 = [1, 0, 0];
+const LOOK_SOUTH: Vec3 = [0, 0, 1];
+const gobekliObstacles = modelObstacles(GOBEKLI_TEPE_MODEL);
+const FLAT = () => 0;
+const gobekliLimits = moveLimits(EYE_M, walkRadiusM, FLAT, obstructedBy(gobekliObstacles, FLAT));
+const fromCentreD = (point: PlanPoint) => apart(point, enclosureD.centre);
+check("the obstacles are a few footprints, not the thousands of stones", gobekliObstacles.length > 50 && gobekliObstacles.length < 400 && site.obstacles.length < 100);
+check("the start is free in both models", isClearOf(gobekliObstacles, [0, 0]) && isClearOf(site.obstacles, [0, 0]));
+const southOfCentre: PlanPoint = [enclosureD.centre[0], enclosureD.centre[1] + 2];
+const intoWall = journey(gobekliLimits, southOfCentre, LOOK_EAST, 8);
+check("a walker heading into D's wall never enters it or a pillar", intoWall.every((point) => isClearOf(gobekliObstacles, point) && fromCentreD(point) < ringD.innerRadiusM));
+check("and slides along it instead of stopping dead", endOf(intoWall)[0] > southOfCentre[0] + 4 && Math.abs(endOf(intoWall)[1] - southOfCentre[1]) > 0.3);
+check("a flyer on the same course passes through", fromCentreD(endOf(journey(gobekliLimits, southOfCentre, LOOK_EAST, 8, "fly"))) > ringD.innerRadiusM + ringD.wallThicknessM);
+const [, pillar18Shaft] = centralPillars(enclosureD);
+const besidePillar18: PlanPoint = [pillar18Shaft.centre[0] + pillar18Shaft.size.thicknessM / 2 + 0.05, pillar18Shaft.centre[1] + 3];
+const roundPillar = journey(gobekliLimits, besidePillar18, LOOK_NORTH, 4);
+check("a walker who clips the corner of Pillar 18 is turned aside round it and walks on", roundPillar.every((point) => isClearOf(gobekliObstacles, point)) && endOf(roundPillar)[1] < pillar18Shaft.centre[1] - 1 && endOf(roundPillar)[0] > besidePillar18[0] + 0.1);
+const headOn = journey(gobekliLimits, [pillar18Shaft.centre[0], pillar18Shaft.centre[1] + 3], LOOK_NORTH, 4);
+check("a walker who meets Pillar 18 head on stops a radius short of it", near(endOf(headOn)[1], pillar18Shaft.centre[1] + pillar18Shaft.size.shaftWidthM / 2 + WALKER_RADIUS_M, 1e-6));
+const towardsGap = pointAtBearing([0, 0], 1, northGapBearingDeg);
+const beforeGap = pointAtBearing(enclosureD.centre, ringD.innerRadiusM - 3, northGapBearingDeg);
+const throughGap = journey(gobekliLimits, beforeGap, [towardsGap[0], 0, towardsGap[1]], 5);
+check("the gap in D's northern wall is walked through", fromCentreD(endOf(throughGap)) > ringD.innerRadiusM + ringD.wallThicknessM + 1 && throughGap.every((point) => isClearOf(gobekliObstacles, point)));
+const sealedLimits = moveLimits(EYE_M, walkRadiusM, FLAT, obstructedBy(modelObstacles({ ...GOBEKLI_TEPE_MODEL, enclosures: [sealedD] }), FLAT));
+check("and with the gap walled up the same walk stops at the wall", fromCentreD(endOf(journey(sealedLimits, beforeGap, [towardsGap[0], 0, towardsGap[1]], 5))) < ringD.innerRadiusM);
+check("the walker can leave D by the southern entrance they start in", endOf(journey(gobekliLimits, [0, 0], LOOK_SOUTH, 3))[1] > 3);
+const insideTheWall = pointAtBearing(enclosureD.centre, wallMidRadiusM - 0.2, 90);
+check("a flyer who lands inside a wall is put down beside it", isClearOf(gobekliObstacles, endOf(journey(gobekliLimits, insideTheWall, LOOK_NORTH, 1 / 60))) && !isClearOf(gobekliObstacles, insideTheWall));
+
+// Collision at Karahan Tepe: a rock face blocks, the drawn steps are climbed
+const { roomWalls } = await import("../lib/walk/karahanPlan.ts");
+const karahanGround = (x: number, z: number) => groundHeightM(site, x, z);
+const karahanWalkLimits = moveLimits(EYE_M, KARAHAN_TEPE_MODEL.walkRadiusM, karahanGround, obstructedBy(site.obstacles, karahanGround));
+const adBenchTopM = FLOOR_M.AD + structures.find((structure) => structure.id === "AD")!.benches[0].heightM;
+const sixteenWays: Vec3[] = Array.from({ length: 16 }, (_, turn) => [Math.sin((turn * Math.PI) / 8), 0, -Math.cos((turn * Math.PI) / 8)]);
+const roundAd = sixteenWays.map((look) => journey(karahanWalkLimits, [0, 0], look, 25));
+check("whichever way they walk from the start, AD's rock face and built wall keep the walker inside AD", roundAd.every((path) => path.every((point) => inside("AD", point) && groundAt(point) <= adBenchTopM + 1e-9 && isClearOf(site.obstacles, point))));
+check("on the way they step up AD's bench, built or rock-cut", roundAd.filter((path) => near(groundAt(endOf(path)), adBenchTopM)).length >= 8);
+check("a flyer leaves AD over the rock", !inside("AD", endOf(journey(karahanWalkLimits, [0, 0], [-1, 0, 0], 5, "fly"))));
+const abWalls = roomWalls("AB");
+const aaWalls = roomWalls("AA");
+const halfStepWidthM = karahanLayout.KARAHAN_TEPE_DRAWING_ESTIMATES.stepWidthM / 2;
+check("a step is under a metre, and AB's ledge is too tall to be one", HIGHEST_STEP_M < 1 && site.rockMasses.find((mass) => mass.id === "ab-west-ledge")!.topM - FLOOR_M.AB > HIGHEST_STEP_M);
+const upExitSteps = journey(karahanWalkLimits, [abWalls.eastM - halfStepWidthM, abWalls.northM + 3], LOOK_NORTH, 6);
+check("AB's exit steps are climbed from its floor to the rock surface", near(groundAt(upExitSteps[0]), FLOOR_M.AB) && groundAt(endOf(upExitSteps)) === 0 && endOf(upExitSteps)[1] < abWalls.northM - 1);
+const toPorthole = journey(karahanWalkLimits, [abEast, abWalls.southM - 3], LOOK_SOUTH, 6);
+check("the steps below the porthole are climbed to its sill, and the wall behind them stops the walker", near(groundAt(endOf(toPorthole)), porthole.from[1] - porthole.radiusM) && endOf(toPorthole)[1] < abWalls.southM);
+const besideExitSteps = journey(karahanWalkLimits, [abEast, abWalls.northM + 3], LOOK_NORTH, 6);
+check("beside the steps AB's rock wall stops them a radius short", near(groundAt(endOf(besideExitSteps)), FLOOR_M.AB) && near(endOf(besideExitSteps)[1], abWalls.northM + WALKER_RADIUS_M, 0.05));
+const ontoAaBench = journey(karahanWalkLimits, [aaWalls.westM + 2, (aaWalls.northM + aaWalls.southM) / 2], [-1, 0, 0], 3);
+const upAaSteps = journey(karahanWalkLimits, endOf(ontoAaBench), LOOK_SOUTH, 8);
+check("AA's bench is stepped onto, and the two steps at its south end climb to the rock surface", groundAt(endOf(ontoAaBench)) > FLOOR_M.AA && groundAt(endOf(upAaSteps)) === 0 && endOf(upAaSteps)[1] > aaWalls.southM + 1);
+check("a walker may step off the terrace down into AB", groundAt([abEast, abWalls.southM + 1]) === 0 && groundAt(endOf(journey(karahanWalkLimits, [abEast, abWalls.southM + 1], LOOK_NORTH, 2))) < -1);
 
 console.log(JSON.stringify({ ok: failed === 0, failed }));
 process.exit(failed === 0 ? 0 : 1);

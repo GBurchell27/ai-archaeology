@@ -19,7 +19,7 @@ export function LookPrompt({ shown, compact, tip }: { shown: boolean; compact: b
     // Hidden, not unmounted: see pointerLockTrigger.
     <button type="button" className={styles.prompt} hidden={!shown} data-compact={compact} data-role="walk-prompt" {...pointerLockTrigger}>
       <strong className={styles.promptTitle}>Click to look around</strong>
-      <span className={styles.promptHint}>W A S D to move · scroll down to fly</span>
+      <span className={styles.promptHint}>W A S D to move · arrows to turn · scroll down to fly</span>
       <span className={styles.promptHint}>{tip}</span>
     </button>
   );

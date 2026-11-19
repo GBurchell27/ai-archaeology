@@ -3,12 +3,13 @@
 import { PointerLockControls } from "@react-three/drei";
 import { useFrame, useThree } from "@react-three/fiber";
 import { useCallback, useEffect, useImperativeHandle, useMemo, useRef, type RefObject } from "react";
-import { Vector3 } from "three";
+import { Euler, Vector3 } from "three";
 import type { LayerViewpoint } from "@/lib/walk/hypothesisLayers";
 import { RESET_KEY, intentFromKeys } from "@/lib/walk/walkKeys";
 import {
   climbAfterWheel,
   climbThisFrame,
+  lookStep,
   moveStep,
   standingAt,
   startPosition,
@@ -81,7 +82,22 @@ function useWalkerPlacing(limits: MoveLimits, velocity: RefObject<Vec3>, walker?
   }), [camera, limits, velocity]);
 }
 
-/** Mouse look by pointer lock, keys to walk or fly, the wheel to climb, R to return to the start. */
+/** Turns the view by the keys, so a visitor without a mouse can look around. Pointer lock is not needed for it. */
+function useKeyLook(pressedCodes: RefObject<ReadonlySet<string>>) {
+  const camera = useThree((state) => state.camera);
+  // The order pointer lock turns the camera in: about the upright axis first, then up or down.
+  const view = useMemo(() => new Euler(0, 0, 0, "YXZ"), []);
+  const rates = useRef({ yawRadPerS: 0, pitchRadPerS: 0 });
+  useFrame((_, delta) => {
+    view.setFromQuaternion(camera.quaternion);
+    const turned = lookStep({ yawRad: view.y, pitchRad: view.x, ...rates.current }, intentFromKeys(pressedCodes.current), Math.min(delta, LONGEST_FRAME_S));
+    rates.current = { yawRadPerS: turned.yawRadPerS, pitchRadPerS: turned.pitchRadPerS };
+    // A view at rest is the mouse's alone.
+    if (turned.yawRadPerS !== 0 || turned.pitchRadPerS !== 0) camera.quaternion.setFromEuler(view.set(turned.pitchRad, turned.yawRad, 0));
+  });
+}
+
+/** Mouse look by pointer lock, keys to turn, walk or fly, the wheel to climb, R to return to the start. */
 export function WalkControls({ mode, limits, onLockChange, onLiftOff, walker }: WalkControlsProps) {
   const pressedCodes = usePressedMoveKeys();
   const camera = useThree((state) => state.camera);
@@ -92,6 +108,7 @@ export function WalkControls({ mode, limits, onLockChange, onLiftOff, walker }: 
   const reportUnlocked = useCallback(() => onLockChange(false), [onLockChange]);
 
   useWalkerPlacing(limits, velocity, walker);
+  useKeyLook(pressedCodes);
 
   useFrame((_, delta) => {
     const seconds = Math.min(delta, LONGEST_FRAME_S);

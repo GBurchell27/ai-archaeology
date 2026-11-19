@@ -8,6 +8,7 @@ import type { HypothesisLayerId } from "./hypothesisLayers";
 import type { LandmarkPlace } from "./landmarks";
 import { outlineBounds, pointInOutline, scaledOutline, type Outline, type OutlineBounds } from "./planOutline";
 import type { Vec3 } from "./walkMovement";
+import type { Obstacle } from "./walkObstacles";
 
 /** A room cut into the terrace. Its outline must lie wholly inside the terrace outline. */
 export type SunkenRoom = { id: string; outline: Outline; floorM: number };
@@ -60,18 +61,28 @@ export type RockCutModel = {
   roundPillars: readonly Block[];
   bosses: readonly RoundedForm[];
   rockMasses: readonly RockMass[];
+  /** Laid stonework a walker stands on, such as a built bench. Its stones are drawn from `boxes`, not from here. */
+  laidGround: readonly RockMass[];
+  /** What a walker cannot pass: laid walls and standing pillars. A rock face stops them by its height instead. */
+  obstacles: readonly Obstacle[];
   bores: readonly Bore[];
   /** Where a landmark stands, by the `placeId` it names. */
   landmarkPlaces: Readonly<Record<string, LandmarkPlace>>;
   layerDrawings: Readonly<Partial<Record<HypothesisLayerId, LayerDrawing>>>;
 };
 
-/** The height a walker stands on: the floor of the room they are in, the terrace, or the low ground beside it. */
+const highestTopM = (masses: readonly RockMass[], point: PlanPoint, aboveM: number) =>
+  masses.reduce((highestM, mass) => (mass.topM > highestM && pointInOutline(mass.outline, point) ? mass.topM : highestM), aboveM);
+
+/**
+ * The height a walker stands on: the floor of the room they are in, the terrace, or the low ground beside it, and
+ * above those the top of any bench, ledge or step over the point.
+ */
 export function groundHeightM(site: RockCutModel, east: number, south: number): number {
   const point: PlanPoint = [east, south];
   const room = site.rooms.find((candidate) => pointInOutline(candidate.outline, point));
-  if (room) return room.floorM;
-  return pointInOutline(site.terraceOutline, point) ? 0 : site.lowGroundM;
+  const floorM = room ? room.floorM : pointInOutline(site.terraceOutline, point) ? 0 : site.lowGroundM;
+  return highestTopM(site.laidGround, point, highestTopM(site.rockMasses, point, floorM));
 }
 
 /** Rock walls that stand on a floor of their own: the bounds within which a cut face belongs to that room, and its floor. */

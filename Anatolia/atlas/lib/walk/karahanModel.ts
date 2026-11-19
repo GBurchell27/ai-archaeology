@@ -7,15 +7,22 @@
 import { seededRandom, type WalkModel } from "./enclosureModel";
 import { KARAHAN_TEPE_HYPOTHESES, karahanLayerDrawings } from "./karahanHypotheses";
 import { karahanLandmarkPlaces } from "./karahanLandmarkPlaces";
-import { acBoxes, acRockMasses, adBoxes, adRockMasses } from "./karahanMainBuilding";
+import { acBoxes, acRockMasses, adBoxes, adBuiltBenchGround, adRockMasses, mainBuildingObstacles } from "./karahanMainBuilding";
 import { FLOOR_M, LOW_GROUND_M, structureOutline, sunkenRooms, terraceOutline } from "./karahanPlan";
 import { rockRoomParts } from "./karahanRockRooms";
 import { KARAHAN_TEPE_MODEL_NOTE, KARAHAN_TEPE_SOURCES, KARAHAN_TEPE_WALK_RADIUS_M, KARAHAN_TEPE_WALKER_START } from "./karahanTepeLayout";
 import type { RockCutModel } from "./rockCutModel";
+import { blockObstacle, roundObstacle, type Obstacle } from "./walkObstacles";
 
 const STONE_SEED = 2019;
 /** AD's floor patch lies just above the low ground it is level with, so the two never fight for the same depth. */
 const FLOOR_LIFT_M = 0.02;
+
+/** AB's round pillars and its slab. The ledge, benches and steps are ground, climbed or not by their height. */
+function rockRoomObstacles({ roundPillars, boxes }: ReturnType<typeof rockRoomParts>): Obstacle[] {
+  const pillars = roundPillars.map(({ centre, size }) => roundObstacle([centre[0], centre[2]], size[0] / 2));
+  return [...pillars, ...boxes.filter((box) => box.kind === "dressed").map(blockObstacle)];
+}
 
 function karahanRockCut(): RockCutModel {
   const random = seededRandom(STONE_SEED);
@@ -29,6 +36,8 @@ function karahanRockCut(): RockCutModel {
     floors: [...rooms.map(({ id, outline, floorM }) => ({ id, outline, heightM: floorM })), { id: "AD", outline: structureOutline("AD"), heightM: FLOOR_M.AD + FLOOR_LIFT_M }],
     boxes: [...adBoxes(random), ...acBoxes(random), ...parts.boxes],
     rockMasses: [...adRockMasses(), ...acRockMasses(), ...parts.rockMasses],
+    laidGround: adBuiltBenchGround(),
+    obstacles: [...mainBuildingObstacles(), ...rockRoomObstacles(parts)],
     landmarkPlaces: karahanLandmarkPlaces(),
     layerDrawings: karahanLayerDrawings(),
   };

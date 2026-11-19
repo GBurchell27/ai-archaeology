@@ -4,7 +4,9 @@ import styles from "./WalkView.module.css";
 
 const KEY_LEGEND: ReadonlyArray<readonly [keys: string, action: string]> = [
   ["Mouse", "Look around"],
-  ["W A S D or arrows", "Move"],
+  ["W A S D", "Move"],
+  ["← →", "Turn without the mouse (↑ ↓ also move)"],
+  ["Page Up / Page Down", "Look up / down without the mouse"],
   ["Shift", "Move faster"],
   ["F", "Switch between walking and flying"],
   ["Scroll or E / Q", "Up / down (scroll down to rise; it also takes off)"],
