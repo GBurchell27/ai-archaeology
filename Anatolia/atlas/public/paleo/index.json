@@ -1,0 +1,199 @@
+{
+  "generated": "2026-11-19",
+  "cellDegrees": 0.25,
+  "northLimitDegrees": 84.0,
+  "classes": {
+    "0": "Sea, or north of 84°N where the source has no data",
+    "20": "Land at this step that is also land today (not drawn)",
+    "1": "Land at this step where the source has sea today",
+    "2": "Ice at this step standing at least 150 m above today's surface"
+  },
+  "steps": [
+    {
+      "year": -20000,
+      "file": "-20000.png"
+    },
+    {
+      "year": -19500,
+      "file": "-19500.png"
+    },
+    {
+      "year": -19000,
+      "file": "-19000.png"
+    },
+    {
+      "year": -18500,
+      "file": "-18500.png"
+    },
+    {
+      "year": -18000,
+      "file": "-18000.png"
+    },
+    {
+      "year": -17500,
+      "file": "-17500.png"
+    },
+    {
+      "year": -17000,
+      "file": "-17000.png"
+    },
+    {
+      "year": -16500,
+      "file": "-16500.png"
+    },
+    {
+      "year": -16000,
+      "file": "-16000.png"
+    },
+    {
+      "year": -15500,
+      "file": "-15500.png"
+    },
+    {
+      "year": -15000,
+      "file": "-15000.png"
+    },
+    {
+      "year": -14500,
+      "file": "-14500.png"
+    },
+    {
+      "year": -14000,
+      "file": "-14000.png"
+    },
+    {
+      "year": -13500,
+      "file": "-13500.png"
+    },
+    {
+      "year": -13000,
+      "file": "-13000.png"
+    },
+    {
+      "year": -12500,
+      "file": "-12500.png"
+    },
+    {
+      "year": -12000,
+      "file": "-12000.png"
+    },
+    {
+      "year": -11500,
+      "file": "-11500.png"
+    },
+    {
+      "year": -11000,
+      "file": "-11000.png"
+    },
+    {
+      "year": -10500,
+      "file": "-10500.png"
+    },
+    {
+      "year": -10000,
+      "file": "-10000.png"
+    },
+    {
+      "year": -9500,
+      "file": "-9500.png"
+    },
+    {
+      "year": -9000,
+      "file": "-9000.png"
+    },
+    {
+      "year": -8500,
+      "file": "-8500.png"
+    },
+    {
+      "year": -8000,
+      "file": "-8000.png"
+    },
+    {
+      "year": -7500,
+      "file": "-7500.png"
+    },
+    {
+      "year": -7000,
+      "file": "-7000.png"
+    },
+    {
+      "year": -6500,
+      "file": "-6500.png"
+    },
+    {
+      "year": -6000,
+      "file": "-6000.png"
+    },
+    {
+      "year": -5500,
+      "file": "-5500.png"
+    },
+    {
+      "year": -5000,
+      "file": "-5000.png"
+    },
+    {
+      "year": -4500,
+      "file": "-4500.png"
+    },
+    {
+      "year": -4000,
+      "file": "-4000.png"
+    },
+    {
+      "year": -3500,
+      "file": "-3500.png"
+    },
+    {
+      "year": -3000,
+      "file": "-3000.png"
+    },
+    {
+      "year": -2500,
+      "file": "-2500.png"
+    },
+    {
+      "year": -2000,
+      "file": "-2000.png"
+    },
+    {
+      "year": -1500,
+      "file": "-1500.png"
+    },
+    {
+      "year": -1000,
+      "file": "-1000.png"
+    },
+    {
+      "year": -500,
+      "file": "-500.png"
+    },
+    {
+      "year": 0,
+      "file": "0.png"
+    },
+    {
+      "year": 500,
+      "file": "500.png"
+    },
+    {
+      "year": 1000,
+      "file": "1000.png"
+    },
+    {
+      "year": 1500,
+      "file": "1500.png"
+    },
+    {
+      "year": 2000,
+      "file": "2000.png"
+    }
+  ],
+  "source": {
+    "name": "CHELSA-TraCE21k, centennial topographic data (orog, glz)",
+    "licence": "CC0 1.0",
+    "citation": "Karger, D. N., Nobis, M. P., Normand, S., Graham, C. H., and Zimmermann, N. E. (2023), CHELSA-TraCE21k: high-resolution (1 km) downscaled transient temperature and precipitation data since the Last Glacial Maximum, Climate of the Past 19, 439–456",
+    "url": "https://doi.org/10.5194/cp-19-439-2023"
+  }
+}

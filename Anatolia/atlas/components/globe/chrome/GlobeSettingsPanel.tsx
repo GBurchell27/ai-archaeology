@@ -7,6 +7,7 @@ import { SavedThemeSetting } from "@/components/settings/ThemeSetting";
 import { GLOBE_PRESETS, SETTINGS_PRESETS, activeGlobePreset } from "@/lib/settings/settingsPresets";
 import type { NamedPeriod } from "@/lib/world/namedPeriods";
 import { OSM_MEGALITH_STYLE } from "@/lib/world/siteTypeStyle";
+import { PaleoControls } from "../paleo/PaleoControls";
 import type { GlobeExplorerViewModel } from "../useGlobeExplorer";
 import ui from "./chrome.module.css";
 import { GlobeBasemapSetting } from "./GlobeBasemapSetting";
@@ -64,6 +65,7 @@ function GlobeLayerSettings({ explorer, siteTypes, modelSlot }: { explorer: Glob
           onShowAll={filters.showAllTypes}
         />
       </div>
+      <section className={styles.model} aria-label="Ice and sea level layer" data-role="paleo-slot"><PaleoControls paleo={explorer.paleo} /></section>
       {/* The recording-pattern layer's controls, mounted as they are: this panel knows nothing else about that layer. */}
       {modelSlot ? <section className={styles.model} aria-label="Recording-pattern layer" data-role="model-slot">{modelSlot}</section> : null}
     </>

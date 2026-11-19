@@ -8,6 +8,7 @@ import { namedPeriodsForRegions, periodRegionKeyAt } from "@/lib/world/namedPeri
 import { ExplorerChrome } from "./chrome/ExplorerChrome";
 import { GlobeSites, type PickedSite } from "./GlobeSites";
 import { useGlobeBasemap } from "./GlobeSurface";
+import { GlobePaleoOverlay } from "./paleo/GlobePaleoOverlay";
 import { GlobeView } from "./GlobeView";
 import { useGlobeExplorer } from "./useGlobeExplorer";
 
@@ -86,6 +87,8 @@ export function GlobeExplorer(props: GlobeExplorerProps) {
           onClusterPick={selection.flyToLook}
         />
       ) : null}
+      {/* Here and not in sceneLayers: its step follows the timeline, which this component's view model holds. */}
+      <GlobePaleoOverlay paleo={explorer.paleo} />
       {props.sceneLayers}
     </GlobeView>
   );

@@ -56,7 +56,7 @@ Things that catch people out:
 
 - The canvas uses a **logarithmic depth buffer** (near 10 km, far 10⁹ m). A custom `ShaderMaterial` needs the `logdepthbuf` shader chunks or it will z-fight or vanish.
 - `GlobeControls` raycasts the tiles only, so points and atmosphere shells never become the drag pivot. Give a new mesh a no-op `raycast`.
-- Draw order is set by `renderOrder`: model overlay 3, haze 4, glow 5, site points 6 and above.
+- Draw order is set by `renderOrder`: ice and sea level 2, model overlay 3, haze 4, glow 5, site points 6 and above.
 - The camera cannot come closer than 60 km. Detail belongs to the place view.
 - `GlobeView` reports the look (centre point and altitude) about 8 times a second. Keep it in a ref unless the component really must re-render.
 
@@ -126,6 +126,25 @@ Hooks: `[data-action='open-settings']` and `[data-role='globe-settings']` on the
 On the Anatolia map the same section sits in the Story tab of the site panel, as its own section outside the catalogue overview. A theory picked there opens its card under the questions, in the panel, and pressing it again closes it. While it is open the curated sites the theory is about wear the ring (`components/atlas/useSiteTheoryLens.ts`, `[data-role='theory-site-ring']` on a site that is not the selected one, and `data-theory` on `.atlas`). The lens belongs to the selected site: closing the panel or selecting another place turns it off. Today every theory about an Anatolian site is about Göbekli Tepe alone, which is the selected site and already ringed, so the map shows no second ring yet. The map has no theories panel of its own and its address does not carry the theory.
 
 The recording-pattern layer is separate: `components/globe/model/`. `useModelLayer.ts` holds its state, `GlobeModelOverlay.tsx` draws the raster on a shell with nearest-neighbour sampling so each cell is one flat colour, and `ModelControls.tsx` mounts in the Layers section of the settings panel. It is off by default. It fades out as the camera comes low enough for a single cell to look like detail. All of its wording is in `modelWording.ts`, so the honesty of the text can be reviewed in one file.
+
+### The ice and sea level layer
+
+A context layer for date-based questions: where a model puts the ice sheets and the land above today's sea at a past date. `components/globe/paleo/`, off by default, switched on under "Context layer" in the Layers section of the settings panel.
+
+- **Data.** `public/paleo/` holds one 1440×720 class raster per step, every 500 years from 20,000 BCE to the present (45 files, about 1 MB together), and `index.json` with each step's year and the source's credit. The rasters use the recording-pattern layer's grid and its rule for values: 0 is sea, 1 is land where the sea is today, 2 is ice, 20 is other land, and only 1 and 2 are drawn. They are built from CHELSA-TraCE21k (CC0 1.0, see `docs/data-sources.md`) by `scripts/fetch_paleo_context.py` and `scripts/build_paleo_context.py`; the pure part is `src/ai_archaeology/paleo_context.py`.
+- **Drawing.** `GlobePaleoOverlay.tsx` draws one ellipsoid shell with the recording-pattern layer's class-raster material (`createModelOverlayMaterial`), two of its ten colours set to the layer's two tones. Like that layer it tests the surface by front-face culling and neither reads nor writes the depth buffer, samples the raster without filtering, ignores raycasts, and fades out as the camera comes low enough for a cell to pass for detail. A change of step swaps one texture; nothing runs over the data per frame. It is rendered by `GlobeExplorer` beside `sceneLayers`, not through that prop, because its step follows the timeline, whose state lives in `useGlobeExplorer`.
+- **Which year.** `usePaleoLayer.ts` and `lib/world/paleoIndex.ts`. The layer shows the step nearest the middle of the years picked on the timeline (`paleoYearForSpan`, `nearestPaleoStep`), so the Younger Dryas chip shows 10,500 BCE. With the timeline on all time it is at the present day and draws nothing. The timeline starts at 12,000 BCE, so the panel also has a "Time step" list that picks any step by hand, back to the Last Glacial Maximum; "Follow the timeline" hands it back.
+- **What the visitor is told.** The panel shows a statement whether the layer is on or off, the step, a legend, how the year is picked, and the source with its licence. A label over the globe (`PaleoChip.tsx`, top left, under the recording-pattern layer's label when both are on) says the same in short for as long as the layer shows. All of the wording is in `paleoWording.ts`.
+- **Hooks.** `[data-role='globe-explorer']` carries `data-paleo` (`off`, `loading`, or the step's year). In the panel: `[data-role='paleo-slot']`, `[data-role='paleo-enabled']`, `[data-role='paleo-statement']`, `select[data-role='paleo-step']` (`timeline` or a year), `[data-role='paleo-readout']` with `data-year`, `[data-role='paleo-legend']`, `[data-role='paleo-credit']`. Over the globe: `[data-role='paleo-chip']` with `data-year` and `data-too-close`.
+- It is not in the address and not in any preset: the "Deep past" preset sets only the timeline and filters, and the layer then follows that range once it is switched on.
+
+Limits. Say these whenever the layer is described:
+
+- **It is one model, not a record.** The ice is the ICE-6G_C reconstruction (Peltier and others 2015) as CHELSA-TraCE21k interpolated it between that model's 500-year steps, with glacier outlines from two glacier databases. Other reconstructions draw the margins differently.
+- **It is not a coastline.** The source lowers one global sea level over present-day sea-floor depths. It leaves out the sinking of land under ice and its rise afterwards, sediment laid down since, and tectonics. A cell is about 28 km wide. The layer cannot say whether a given site stood on a shore.
+- **It gives no sea level figure.** The layer shows where the source model has land that is sea today. The source publishes no sea level for its steps, and the atlas does not state one of its own: a figure read back from the files would be the atlas's number with no source behind it.
+- **Ice is drawn only where it stands at least 150 m above today's surface.** The source's ice-surface field has values far beyond the ice (over most of Scandinavia at the present day), so it cannot be used as a mask alone. The build therefore also asks for the step's surface to stand 150 m above today's. Ice that is as thick today (Greenland, Antarctica, mountain glaciers) and the thin edge of an ice sheet are not drawn, and at the present day nothing is.
+- **Nothing north of 84°N,** where the source has no data, and each cell is the nearest pixel of the source's 8 arc-minute overview, not an average.
 
 ## The place view
 
@@ -219,7 +238,7 @@ It shows a surface model at 15 m. It can show a tell, a terrace or a large enclo
 
 **A new setting.** Keep its state where the view keeps the rest (`useGlobeExplorer`, the hooks under `components/atlas/`, `WalkView`) and pass its control into the matching section of `SettingsPanel` from that view's wrapper: `chrome/GlobeSettingsPanel.tsx`, `components/SettingsMenu.tsx` or `components/walk/WalkSettings.tsx`. Do not add a section for one view: the six in `lib/settings/settingsSections.ts` are the same everywhere, and a new one needs its line for the views without it. A new preset goes in `lib/settings/settingsPresets.ts`, with the state it sets in each view that can apply it and a case in `check_settings.mts`; it may only set state that already exists.
 
-**A new layer on the globe.** Pass it through the `sceneLayers` prop of `GlobeExplorer`, as the model overlay does. Work in the ECEF frame, include the log-depth chunks, and choose a `renderOrder`.
+**A new layer on the globe.** Pass it through the `sceneLayers` prop of `GlobeExplorer`, as the model overlay does. Work in the ECEF frame, include the log-depth chunks, and choose a `renderOrder`. A layer that needs the explorer's own state, as the ice and sea level layer needs the timeline's years, keeps its state in `useGlobeExplorer` and is rendered by `GlobeExplorer` beside `sceneLayers`. A coarse class raster can reuse `createModelOverlayMaterial`, which culls back faces instead of testing depth and so needs no depth chunks.
 
 **An external link.** Links in cards go through `components/SafeLink.tsx`, which allows only the https hosts listed in `lib/externalHref.ts`. A new source needs its host added there.
 
@@ -244,6 +263,7 @@ Each has a pytest wrapper, so `pytest` at the repository root runs them all.
 | `check_site_search.mts` | `tests/test_site_search.py` | Search ranking and diacritic folding. Which curated Anatolia sites are best known (`lib/atlas/curatedRenown.ts`), including titles with several names and longer names. Which curated site a catalogue record stands for (`lib/atlas/curatedMatch.ts`). |
 | `check_place_view.mts` | `tests/test_place_view.py` | Close-up geometry: height scaling, camera framing, scale bar, skirt. |
 | `check_model_overlay.mts` | `tests/test_model_overlay.py` | The model raster mapping, the colour ramp, the layer index, which layers beat the baseline. |
+| `check_paleo_layer.mts` | `tests/test_paleo_layer.py` | The ice and sea level layer: the shipped index (steps, no sea level figure, credit, a malformed index refused), which step a timeline range means (all time, the Younger Dryas chip, the date bands, years outside the steps), and its wording, which gives no sea level in metres. The build's pure functions are checked in `tests/test_paleo_context.py`. |
 | `check_walk.mts` | `tests/test_walk.py` | The walk view: keys to intent (the arrows turn), turning by the keys, collision (a walker slides along walls and pillars, the gap in D's wall is passable, both starts are free, a flyer is unaffected, Karahan's steps climb and its rock faces block), ground steps, the walk radius, the site list, the modelled enclosures (pillar counts, pillars on their rings, no overlaps, the gap in D's northern wall beside Pillar 43, no two neighbouring wall stones sharing a face or crossing within their overlap), the sketched relief (arms that narrow to the wrist, five fingers to a hand), the block with worn edges (closed, each vertex moving only across its own face), landmarks (each has a source and a pillar in the layout, which card shows, a showing card holding on at the edge of its range, which marker names show when they would overlap), and the conjectural layers (roofs, plants, the grass tuft, the footer sentence, the Karahan viewpoints on the terrace and outside every building). The wheel gate (a wheel still turning as the walk appears never opens it; a pause does; a stalled frame is not a pause). Ground that is not flat (a walker settles on a sunken floor, a flyer stays above it). The Karahan Tepe rock-cut model: pillar counts against the layout, AB's pillars inside AB, no overlaps and connected structures side by side, the rooms inside the terrace, floor depths, the start inside AD, everything inside the walk radius, each landmark's source and layout element, which card shows, its two layers, and each sunken room's walls standing in its own footing. The photographs' sharp viewpoints: the distance to the nearest camera, the fade (whole near a camera, steady in between, gone far from every one, whole for a site with no cameras listed), stepping round the list, standing under a camera looking its way, each site's list being a few dozen at most, the start being sharp, and every landmark placed in the photographs being readable with the splat still showing. The Giza model: each published height following from its base and slope, the centres standing apart by Petrie's straight distances, each core inside its casing, courses stacked without a gap, no overlaps, the start free and every pyramid inside the walk radius and the shadow map, a walker stopped at a pyramid's foot and a flyer not, each landmark's source and pyramid, which card shows, the casing layer, and the two pillar sites keeping their scale, radius, dome, ceiling and speed. |
 | `check_theories.mts` | `tests/test_theories.py` | Questions and theories (`docs/theories.md`): unique ids, every referenced fact, evidence entry, theory and landmark exists, each theory has a proponent, a claim source, evidence on both sides and a status log ending in its status, every record has a citation and only allowlisted links, level wording, the lookups by id, site and landmark, and the puzzles index. |
 | `check_closeup_cache.mjs` | `tests/test_closeup_cache.py` | The close-up cache: id validation, path safety, eviction, concurrency. The Python side of the same test file checks the 10 km window and the refusal at the poles and the 180° meridian. |
@@ -299,6 +319,7 @@ components/globe/                 GlobeView, GlobeSurface, GlobeAtmosphere, Glob
 components/globe/chrome/          top bar, search, timeline, legend and type filter,
                                   Wonders, Theories, Settings and About panels, site card, tour bar
 components/globe/model/           the recording-pattern overlay and its controls
+components/globe/paleo/           the ice and sea level layer and its controls
 components/place/                 the place view
 components/atlas/                 hooks the Anatolia atlas (AtlasApp) is split into,
                                   the walk offer and entry
@@ -308,7 +329,8 @@ components/walk/                  the walk view
 lib/globe/                        ellipsoid maths, view URL, handoff, basemaps,
                                   site blocks, bucket grid, label layout
 lib/world/                        catalogue types and loaders, filter, search, styles,
-                                  wonders, eras, named periods, model index
+                                  wonders, eras, named periods, model index,
+                                  the ice and sea level index and its step for a year
 lib/place/                        place site lookup, terrain loading, geometry, drapes
 lib/atlas/walkHandoff.ts          when the atlas offers and enters a walk
 lib/globe/walkHandoff.ts          which globe card offers a walk, and where a walk's exit leads
@@ -323,5 +345,6 @@ components/theories/              the theory card, the question list, and the si
 lib/closeupCache.ts, closeupCatalog.ts   server side of the close-up API
 scripts/closeup_window.py         the Python worker that builds a close-up
 scripts/check_*.mts, check_*.mjs  the checks
-public/world/, public/predict/    the static data
+public/world/, public/predict/,   the static data
+public/paleo/
 ```

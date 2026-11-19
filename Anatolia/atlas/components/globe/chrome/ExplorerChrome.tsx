@@ -4,6 +4,7 @@ import { memo, useEffect, useMemo, type ReactNode } from "react";
 import type { WorldSource } from "@/lib/world/catalogueTypes";
 import type { NamedPeriod } from "@/lib/world/namedPeriods";
 import type { PickedSite } from "../GlobeSites";
+import { PaleoChip } from "../paleo/PaleoChip";
 import type { GlobeExplorerViewModel } from "../useGlobeExplorer";
 import { AboutPanel } from "./AboutPanel";
 import { CatalogueNotice } from "./CatalogueNotice";
@@ -61,7 +62,9 @@ export const ExplorerChrome = memo(function ExplorerChrome(props: ExplorerChrome
       data-side={selected || panel ? "open" : "closed"}
       data-osm={explorer.showOsmMegaliths ? "on" : "off"}
       data-theory={theoryLens.theoryId ?? ""}
+      data-paleo={explorer.paleo.enabled ? explorer.paleo.step?.year ?? "loading" : "off"}
     >
+      <PaleoChip paleo={explorer.paleo} />
       <div className={styles.top}>
         <ExplorerTopbar
           catalogue={catalogue}

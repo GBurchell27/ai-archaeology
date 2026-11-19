@@ -75,6 +75,7 @@ scripts/                         download and build scripts (the scripts, not th
 Anatolia/atlas/                  the web app: globe, Anatolia terrain atlas, place view
 Anatolia/atlas/public/world/     the static world catalogue the globe reads
 Anatolia/atlas/public/predict/   the model layers and their metrics
+Anatolia/atlas/public/paleo/     the ice and sea level layer: one coarse raster per 500 years
 Anatolia/                        SE Anatolia notes, registers, and the earlier terrain explorer
 docs/                            data-source register and the documents below
 tests/                           pytest, synthetic inputs
@@ -185,6 +186,13 @@ Then the model layer. The first command downloads about 670 MB (ETOPO 2022 and H
 ```bash
 python scripts/fetch_global_covariates.py
 python -m ai_archaeology.suitability
+```
+
+Then the globe's ice and sea level layer. The first command reads coarse overviews of 90 CHELSA-TraCE21k files over HTTP (38 MB kept under `data/world/paleo/`, about a minute and a half). The second uses no network and rewrites `Anatolia/atlas/public/paleo/`:
+
+```bash
+python scripts/fetch_paleo_context.py
+python scripts/build_paleo_context.py
 ```
 
 One line per script is in [`scripts/README.md`](scripts/README.md).

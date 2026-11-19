@@ -6,6 +6,7 @@ import { GLOBE_PRESETS, type SettingsPresetId } from "@/lib/settings/settingsPre
 import { useWorldCatalogue, type WorldCatalogue } from "@/lib/world/catalogueLoader";
 import type { FeaturedSite, SiteColumns } from "@/lib/world/catalogueTypes";
 import { randomAcceptedWonder, tourStops } from "@/lib/world/wonders";
+import { usePaleoLayer, type PaleoLayerViewModel } from "./paleo/usePaleoLayer";
 import { useSiteFilter, type SiteFilterViewModel } from "./useSiteFilter";
 import { useSiteSelection, type SiteSelectionViewModel } from "./useSiteSelection";
 import { useTheoryLens, type TheoryLensViewModel } from "./useTheoryLens";
@@ -44,6 +45,8 @@ export interface GlobeExplorerViewModel {
   setShowOsmMegaliths(show: boolean): void;
   /** The imagery the visitor picked, or null for the default with its fallback. */
   basemapId: string | null;
+  /** The ice and sea level layer, which follows the timeline's years. */
+  paleo: PaleoLayerViewModel;
   setBasemapId(basemapId: string): void;
   /** Sets the year range, the type filter and the megalith layer to a settings preset. */
   applyPreset(presetId: SettingsPresetId): void;
@@ -97,6 +100,7 @@ export function useGlobeExplorer(options: {
   });
   const [showOsmMegaliths, setShowOsmMegaliths] = useState(false);
   const [basemapId, setBasemapId] = useState<string | null>(null);
+  const paleo = usePaleoLayer(filters.yearSpan);
 
   const { setYearSpan, setShowUndated, setFeaturedOnly, showOnlyTypes } = filters;
   const applyPreset = useCallback((presetId: SettingsPresetId) => {
@@ -142,10 +146,10 @@ export function useGlobeExplorer(options: {
   }, [catalogue, visitById]);
 
   return useMemo(() => ({
-    catalogue, catalogueError, filters, selection, tour, theoryLens, panel, showOsmMegaliths, showLabels, basemapId,
+    catalogue, catalogueError, filters, selection, tour, theoryLens, panel, showOsmMegaliths, showLabels, basemapId, paleo,
     togglePanel, openTheory, closeTop, setShowOsmMegaliths, setShowLabels, setLoadedCells, setBasemapId, applyPreset, visitRandomWonder,
   }), [
-    catalogue, catalogueError, filters, selection, tour, theoryLens, panel, showOsmMegaliths, showLabels, basemapId,
+    catalogue, catalogueError, filters, selection, tour, theoryLens, panel, showOsmMegaliths, showLabels, basemapId, paleo,
     togglePanel, openTheory, closeTop, applyPreset, visitRandomWonder,
   ]);
 }
