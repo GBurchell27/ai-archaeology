@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { NamedPeriodChips } from "@/components/NamedPeriodChips";
+import type { NamedPeriod } from "@/lib/world/namedPeriods";
 import { ALL_TIME, WORLD_ERAS, activeWorldEra, describeSpan, isAllTime, type YearSpan } from "@/lib/world/worldEras";
 import ui from "./chrome.module.css";
 import styles from "./GlobeTimeline.module.css";
@@ -19,12 +21,16 @@ function useSettled<Value>(value: Value, delayMs: number): Value {
   return settled;
 }
 
-/** The globe's time filter: era chips that sit under their own stretch of a two-thumb slider. */
+const namedPeriodChipClass = () => ui.chip;
+
+/** The globe's time filter: date-band chips under their own stretch of a two-thumb slider, then the named periods of the region in view. */
 export function GlobeTimeline(props: {
   span: YearSpan;
   showUndated: boolean;
   shownCount: number | null;
   undatedCount: number | null;
+  /** The named periods that apply to where the globe is looking. */
+  namedPeriods: readonly NamedPeriod[];
   onSpan(span: YearSpan): void;
   onShowUndated(show: boolean): void;
 }) {
@@ -69,6 +75,14 @@ export function GlobeTimeline(props: {
           </button>
         ))}
       </div>
+      <NamedPeriodChips
+        periods={props.namedPeriods}
+        startYear={span[0]}
+        endYear={span[1]}
+        className={styles.periods}
+        chipClassName={namedPeriodChipClass}
+        onSpan={(next) => onSpan(next ?? ALL_TIME)}
+      />
     </section>
   );
 }

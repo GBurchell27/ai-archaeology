@@ -2,7 +2,7 @@
 
 .atlas {
   /* The bar's own height, for whatever has to sit just under it. */
-  --bar-height: 62px;
+  --bar-height: 98px;
   --bar-width: min(640px, calc(100% - 280px));
   --bar-left: calc((100% - var(--bar-width)) / 2);
 }
@@ -53,6 +53,11 @@
 .time-track { position: relative; height: 20px; margin: 0 7px; cursor: pointer; touch-action: none; }
 .time-track::before { content: ""; position: absolute; top: 9px; left: 0; right: 0; height: 2px; border-radius: 2px; background: rgba(236, 228, 212, 0.22); }
 .time-tick { position: absolute; top: 5px; width: 1px; height: 10px; background: var(--globe-rule-strong); pointer-events: none; }
+/* A named interval (the Younger Dryas): a band across the rail, its name under it. */
+.time-interval { position: absolute; top: 5px; height: 10px; box-sizing: border-box; border-inline: 1px solid var(--globe-rule-strong); background: var(--globe-rule); font-style: normal; }
+.time-readout .time-interval-label { position: absolute; top: 11px; left: 50%; transform: translateX(-50%); font-family: inherit; font-size: 9px; font-style: normal; line-height: 1; letter-spacing: 0.02em; white-space: nowrap; color: var(--globe-ink-soft); pointer-events: none; }
+/* The named periods of Anatolia, under the track they set. */
+.time-periods { max-width: 100%; margin-top: 8px; }
 .time-fill { position: absolute; top: 9px; height: 2px; border-radius: 2px; background: var(--globe-ochre); pointer-events: none; }
 
 .time-thumb {
@@ -114,11 +119,11 @@
 }
 
 @media (pointer: coarse) {
-  .atlas { --bar-height: 82px; }
+  .atlas { --bar-height: 130px; }
   .time-play { min-height: 40px; }
   .time-track { height: 40px; }
   .time-track::before, .time-fill { top: 19px; }
-  .time-tick { top: 15px; }
+  .time-tick, .time-interval { top: 15px; }
   .time-thumb { top: 13px; }
   /* The thumb stays small; its hit area does not. */
   .time-thumb::after { content: ""; position: absolute; inset: -13px; }

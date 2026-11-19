@@ -2,6 +2,7 @@
 
 import { memo, useEffect, useMemo, type ReactNode } from "react";
 import type { WorldSource } from "@/lib/world/catalogueTypes";
+import type { NamedPeriod } from "@/lib/world/namedPeriods";
 import type { PickedSite } from "../GlobeSites";
 import type { GlobeExplorerViewModel } from "../useGlobeExplorer";
 import { AboutPanel } from "./AboutPanel";
@@ -17,6 +18,8 @@ import { WondersPanel } from "./WondersPanel";
 
 export interface ExplorerChromeProps {
   explorer: GlobeExplorerViewModel;
+  /** Period chips for the region in view. The array keeps its identity until the set changes, because the chrome is memoised. */
+  namedPeriods: readonly NamedPeriod[];
   modelSlot?: ReactNode;
   onOpenPlace(siteId: string): void;
   onEnterAtlas(site: PickedSite): void;
@@ -108,7 +111,7 @@ export const ExplorerChrome = memo(function ExplorerChrome(props: ExplorerChrome
       {explorer.catalogueError ? (
         <div className={styles.bottom}><div className={styles.dock}><CatalogueNotice reason={explorer.catalogueError} /></div></div>
       ) : (
-        <ExplorerBottom explorer={explorer} />
+        <ExplorerBottom explorer={explorer} namedPeriods={props.namedPeriods} />
       )}
     </div>
   );
@@ -117,7 +120,7 @@ export const ExplorerChrome = memo(function ExplorerChrome(props: ExplorerChrome
 const NO_SOURCES: WorldSource[] = [];
 
 /** Legend and timeline: the controls that only make sense once there are sites to filter. */
-function ExplorerBottom({ explorer }: { explorer: GlobeExplorerViewModel }) {
+function ExplorerBottom({ explorer, namedPeriods }: { explorer: GlobeExplorerViewModel; namedPeriods: readonly NamedPeriod[] }) {
   const { catalogue, filters } = explorer;
   const osmFile = catalogue?.index.osmMegaliths;
   const sources = useMemo(
@@ -141,6 +144,7 @@ function ExplorerBottom({ explorer }: { explorer: GlobeExplorerViewModel }) {
           showUndated={filters.showUndated}
           shownCount={filters.counts?.shown ?? null}
           undatedCount={filters.counts?.undated ?? null}
+          namedPeriods={namedPeriods}
           onSpan={filters.setYearSpan}
           onShowUndated={filters.setShowUndated}
         />

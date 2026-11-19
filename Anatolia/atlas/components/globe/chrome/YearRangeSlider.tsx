@@ -1,7 +1,9 @@
 "use client";
 
 import { useRef, type KeyboardEvent, type PointerEvent } from "react";
+import { TimelineIntervalBand } from "@/components/TimelineIntervalBand";
 import { formatYear } from "@/lib/periods";
+import { YOUNGER_DRYAS } from "@/lib/world/namedPeriods";
 import {
   WORLD_ERAS,
   WORLD_RANGE_END,
@@ -81,6 +83,7 @@ export function YearRangeSlider(props: { span: YearSpan; onSpan(span: YearSpan):
       onPointerCancel={() => { dragging.current = null; }}
     >
       <i className={styles.rail} />
+      <TimelineIntervalBand period={YOUNGER_DRYAS} yearToTrack={worldYearToTrack} className={styles.interval} labelClassName={styles.intervalLabel} />
       <i className={styles.fill} style={{ left: `${edges[0]}%`, width: `${edges[1] - edges[0]}%` }} />
       {WORLD_ERAS.slice(1).map((era) => (
         <i key={era.id} className={styles.tick} style={{ left: `${worldYearToTrack(era.span[0]) * 100}%` }} />

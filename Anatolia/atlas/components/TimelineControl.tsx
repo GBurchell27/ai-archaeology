@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useRef, type KeyboardEvent } from "react";
+import { NamedPeriodChips } from "@/components/NamedPeriodChips";
+import { TimelineIntervalBand } from "@/components/TimelineIntervalBand";
 import { formatYear } from "@/lib/periods";
 import {
   KEY_STEP,
@@ -15,6 +17,12 @@ import {
   trackToYear,
   type YearRange,
 } from "@/lib/timeline";
+import { YOUNGER_DRYAS, namedPeriodsForRegions } from "@/lib/world/namedPeriods";
+
+/** This map is Anatolia at every zoom, so its chips do not follow the camera. */
+const ANATOLIA_PERIODS = namedPeriodsForRegions("anatolia");
+const FULL_RANGE: YearRange = { start: RANGE_START, end: RANGE_END };
+const namedPeriodChipClass = (pressed: boolean) => (pressed ? "chip is-on" : "chip");
 
 export function TimelineControl(props: {
   range: YearRange;
@@ -120,6 +128,7 @@ export function TimelineControl(props: {
           {TIMELINE_STOPS.map((stop) => (
             <i key={stop.year} className="time-tick" style={{ left: `${stop.at * 100}%` }} />
           ))}
+          <TimelineIntervalBand period={YOUNGER_DRYAS} yearToTrack={yearToTrack} className="time-interval" labelClassName="time-interval-label" />
           <i className="time-fill" style={{ left: `${startAt}%`, width: `${Math.max(0, endAt - startAt)}%` }} />
           <button
             type="button"
@@ -160,6 +169,14 @@ export function TimelineControl(props: {
             }}
           />
         </div>
+        <NamedPeriodChips
+          periods={ANATOLIA_PERIODS}
+          startYear={props.range.start}
+          endYear={props.range.end}
+          className="chips time-periods"
+          chipClassName={namedPeriodChipClass}
+          onSpan={(span) => props.onRange(span ? { start: span[0], end: span[1] } : FULL_RANGE)}
+        />
       </div>
       <label className="undated-toggle">
         <input

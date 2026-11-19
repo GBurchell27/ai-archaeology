@@ -1,8 +1,9 @@
 "use client";
 
-import { useCallback, useRef, useState, type ReactNode } from "react";
+import { useCallback, useMemo, useRef, useState, type ReactNode } from "react";
 import type { GlobeLook } from "@/lib/globe/ellipsoid";
 import { ENTER_ATLAS_ALTITUDE, atlasLookFromGlobe, type AtlasLook } from "@/lib/globe/handoff";
+import { namedPeriodsForRegions, periodRegionKeyAt } from "@/lib/world/namedPeriods";
 import { ExplorerChrome } from "./chrome/ExplorerChrome";
 import { GlobeSites, type PickedSite } from "./GlobeSites";
 import { GlobeView } from "./GlobeView";
@@ -43,6 +44,10 @@ export function GlobeExplorer(props: GlobeExplorerProps) {
     onEnterAtlas(atlasLookFromGlobe({ longitude: site.lon, latitude: site.lat, altitude: ENTER_ATLAS_ALTITUDE }), site.id);
   }, [onEnterAtlas]);
 
+  // The look changes about 8 times a second; the chips change only when the view crosses a region's edge.
+  const periodRegions = look ? periodRegionKeyAt(look.longitude, look.latitude, look.altitude) : "";
+  const namedPeriods = useMemo(() => namedPeriodsForRegions(periodRegions), [periodRegions]);
+
   const { catalogue, selection } = explorer;
   return (
     <GlobeView
@@ -50,7 +55,7 @@ export function GlobeExplorer(props: GlobeExplorerProps) {
       onLookChange={trackLook}
       onEnterAtlas={onEnterAtlas}
       flyTo={selection.flyTo}
-      overlay={<ExplorerChrome explorer={explorer} modelSlot={props.modelSlot} onOpenPlace={props.onOpenPlace} onEnterAtlas={enterAtlasAtSite} />}
+      overlay={<ExplorerChrome explorer={explorer} namedPeriods={namedPeriods} modelSlot={props.modelSlot} onOpenPlace={props.onOpenPlace} onEnterAtlas={enterAtlasAtSite} />}
     >
       {catalogue ? (
         <GlobeSites
