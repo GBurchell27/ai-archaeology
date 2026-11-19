@@ -57,6 +57,8 @@ export function GlobeSites(props: {
   filter: SiteFilter;
   look: GlobeLook | null;
   selectedId: string | null;
+  /** The sites the picked theory is about. Each wears the ring: it marks a subject, not a find. */
+  theorySiteIds?: readonly string[];
   showOsmMegaliths: boolean;
   /** Monument names and count badges; on unless switched off. */
   showLabels?: boolean;
@@ -92,6 +94,9 @@ export function GlobeSites(props: {
       <GlobeFeaturedMarkers featured={catalogue.featured} core={layers[0]} siteTypes={catalogue.index.siteTypes} occupied={labelBoxes} showLabels={showLabels} />
       <GlobeClusterBadges layers={layers} onClusterPick={props.onClusterPick} occupied={labelBoxes} shown={showLabels} />
       <GlobeSelectionRing layers={layers} selectedId={props.selectedId} />
+      {props.theorySiteIds?.map((siteId) => (siteId === props.selectedId ? null : (
+        <GlobeSelectionRing key={siteId} layers={layers} selectedId={siteId} dataRole="theory-site-ring" />
+      )))}
       {hovered ? (
         <Html
           position={[

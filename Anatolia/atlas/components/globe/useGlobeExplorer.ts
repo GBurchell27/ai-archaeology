@@ -7,8 +7,9 @@ import type { FeaturedSite, SiteColumns } from "@/lib/world/catalogueTypes";
 import { randomAcceptedWonder, tourStops } from "@/lib/world/wonders";
 import { useSiteFilter, type SiteFilterViewModel } from "./useSiteFilter";
 import { useSiteSelection, type SiteSelectionViewModel } from "./useSiteSelection";
+import { useTheoryLens, type TheoryLensViewModel } from "./useTheoryLens";
 
-export type ExplorerPanel = "wonders" | "layers" | "about";
+export type ExplorerPanel = "wonders" | "theories" | "layers" | "about";
 
 export interface WonderTourViewModel {
   stops: FeaturedSite[];
@@ -25,6 +26,8 @@ export interface GlobeExplorerViewModel {
   filters: SiteFilterViewModel;
   selection: SiteSelectionViewModel;
   tour: WonderTourViewModel;
+  /** The theory lens: the picked theory and the sites it is about. Off unless the Theories panel is open. */
+  theoryLens: TheoryLensViewModel;
   panel: ExplorerPanel | null;
   showOsmMegaliths: boolean;
   /** Monument names and count badges on the globe. */
@@ -33,6 +36,8 @@ export interface GlobeExplorerViewModel {
   /** The globe reports which regional cells it has on show, so the counts can include them. */
   setLoadedCells(cells: readonly SiteColumns[]): void;
   togglePanel(panel: ExplorerPanel): void;
+  /** Opens the Theories panel on one theory, putting away a site card that covers it. */
+  openTheory(theoryId: string): void;
   /** Escape: closes the site card if one is open, otherwise the open panel. Returns false when nothing was open. */
   closeTop(): boolean;
   setShowOsmMegaliths(show: boolean): void;
@@ -66,8 +71,10 @@ function useWonderTour(
  */
 export function useGlobeExplorer(options: {
   initialSiteId?: string;
+  initialTheoryId?: string;
   look: RefObject<GlobeLook | null>;
   onSelectSite?: (siteId: string | null) => void;
+  onSelectTheory?: (theoryId: string | null) => void;
 }): GlobeExplorerViewModel {
   const { catalogue, error: catalogueError } = useWorldCatalogue();
   const [loadedCells, setLoadedCells] = useState<readonly SiteColumns[]>([]);
@@ -77,7 +84,11 @@ export function useGlobeExplorer(options: {
     catalogue, initialSiteId: options.initialSiteId, look: options.look, onSelectSite: options.onSelectSite,
   });
   const tour = useWonderTour(catalogue, selection.selected?.id ?? null, selection.visitById);
-  const [panel, setPanel] = useState<ExplorerPanel | null>(null);
+  const [panel, setPanel] = useState<ExplorerPanel | null>(options.initialTheoryId ? "theories" : null);
+  const theoryLens = useTheoryLens({
+    catalogue, shown: panel === "theories", initialTheoryId: options.initialTheoryId,
+    look: options.look, flyToLook: selection.flyToLook, onSelectTheory: options.onSelectTheory,
+  });
   const [showOsmMegaliths, setShowOsmMegaliths] = useState(false);
 
   const open = useRef({ selected: selection.selected, panel });
@@ -100,6 +111,13 @@ export function useGlobeExplorer(options: {
     setPanel((current) => (current === next && !cardWasOpen ? null : next));
   }, [select]);
 
+  const { setTheoryId } = theoryLens;
+  const openTheory = useCallback((theoryId: string) => {
+    if (open.current.selected) select(null);
+    setTheoryId(theoryId);
+    setPanel("theories");
+  }, [select, setTheoryId]);
+
   const { visitById } = selection;
   const visitRandomWonder = useCallback(() => {
     const wonder = randomAcceptedWonder(catalogue?.featured ?? [], open.current.selected?.id ?? null);
@@ -107,10 +125,10 @@ export function useGlobeExplorer(options: {
   }, [catalogue, visitById]);
 
   return useMemo(() => ({
-    catalogue, catalogueError, filters, selection, tour, panel, showOsmMegaliths, showLabels,
-    togglePanel, closeTop, setShowOsmMegaliths, setShowLabels, setLoadedCells, visitRandomWonder,
+    catalogue, catalogueError, filters, selection, tour, theoryLens, panel, showOsmMegaliths, showLabels,
+    togglePanel, openTheory, closeTop, setShowOsmMegaliths, setShowLabels, setLoadedCells, visitRandomWonder,
   }), [
-    catalogue, catalogueError, filters, selection, tour, panel, showOsmMegaliths, showLabels,
-    togglePanel, closeTop, visitRandomWonder,
+    catalogue, catalogueError, filters, selection, tour, theoryLens, panel, showOsmMegaliths, showLabels,
+    togglePanel, openTheory, closeTop, visitRandomWonder,
   ]);
 }

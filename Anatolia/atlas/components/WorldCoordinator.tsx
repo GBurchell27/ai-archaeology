@@ -22,7 +22,7 @@ const PlaceView = dynamic(() => import("./place/PlaceView"), { ssr: false });
 const WalkView = dynamic(() => import("./walk/WalkView").then((module) => module.WalkView), { ssr: false });
 
 type WorldScene =
-  | { view: "globe"; look?: GlobeLook; siteId?: string }
+  | { view: "globe"; look?: GlobeLook; siteId?: string; theoryId?: string }
   | { view: "atlas"; look?: AtlasLook; siteId?: string }
   | { view: "place"; siteId: string }
   | { view: "walk"; siteId: string; source?: WalkSource };
@@ -50,18 +50,18 @@ function sceneFromUrl(state: WorldViewState): WorldScene {
   if (state.view === "walk" && !findWalkSite(state.siteId)) return { view: "atlas", siteId: state.siteId };
   if (state.view !== "globe") return state;
   const siteId = globeSiteFromAddress();
-  const { longitude, latitude, altitude } = state;
+  const { longitude, latitude, altitude, theoryId } = state;
   const isDefault = longitude === DEFAULT_GLOBE_LOOK.longitude
     && latitude === DEFAULT_GLOBE_LOOK.latitude
     && altitude === DEFAULT_GLOBE_LOOK.altitude;
   // No look at all lets the globe open on its slow idle turn.
-  return isDefault ? { view: "globe", siteId } : { view: "globe", look: { longitude, latitude, altitude }, siteId };
+  return isDefault ? { view: "globe", siteId, theoryId } : { view: "globe", look: { longitude, latitude, altitude }, siteId, theoryId };
 }
 
 function urlForScene(scene: WorldScene): string {
   if (scene.view === "globe") {
     const site = scene.siteId ? `&site=${encodeURIComponent(scene.siteId)}` : "";
-    return serialiseViewUrl({ view: "globe", ...(scene.look ?? DEFAULT_GLOBE_LOOK) }) + site;
+    return serialiseViewUrl({ view: "globe", ...(scene.look ?? DEFAULT_GLOBE_LOOK), theoryId: scene.theoryId }) + site;
   }
   return serialiseViewUrl(scene.view === "atlas" ? { view: "atlas", siteId: scene.siteId } : scene);
 }
@@ -78,6 +78,8 @@ export function WorldCoordinator(props: { regional: RegionalTerrain | null; init
   const globeLook = useRef<GlobeLook | undefined>(mounted.current.scene.view === "globe" ? mounted.current.scene.look : undefined);
   /** The site whose card is open on the globe; it rides along in the address and survives a trip to the place view. */
   const globeSiteId = useRef<string | undefined>(mounted.current.scene.view === "globe" ? mounted.current.scene.siteId : undefined);
+  /** The theory the globe's lens is on; it rides along in the address the same way. */
+  const globeTheoryId = useRef<string | undefined>(mounted.current.scene.view === "globe" ? mounted.current.scene.theoryId : undefined);
   const sceneBeforePlace = useRef<WorldScene>({ view: "globe" });
   const currentScene = useRef(mounted.current.scene);
   const fadeTimer = useRef(0);
@@ -88,7 +90,10 @@ export function WorldCoordinator(props: { regional: RegionalTerrain | null; init
     // A change of view is one history entry, so Back returns to the view before. Back and Forward themselves add none.
     const entry = historyEntryForView(currentScene.current.view, scene.view, traversed);
     currentScene.current = scene;
-    if (scene.view === "globe") globeSiteId.current = scene.siteId;
+    if (scene.view === "globe") {
+      globeSiteId.current = scene.siteId;
+      globeTheoryId.current = scene.theoryId;
+    }
     window.clearTimeout(urlTimer.current);
     urlTimer.current = 0;
     writeUrl(urlForScene(scene), entry);
@@ -113,20 +118,32 @@ export function WorldCoordinator(props: { regional: RegionalTerrain | null; init
     window.clearTimeout(urlTimer.current);
   }, []);
 
+  /** The globe as it stands now: where it looks, the open card and the theory lens. */
+  const globeSceneNow = useCallback((): WorldScene => (
+    { view: "globe", look: globeLook.current, siteId: globeSiteId.current, theoryId: globeTheoryId.current }
+  ), []);
+
   const trackGlobeLook = useCallback((look: GlobeLook) => {
     globeLook.current = look;
     if (urlTimer.current) return;
     urlTimer.current = window.setTimeout(() => {
       urlTimer.current = 0;
       if (currentScene.current.view !== "globe" || !globeLook.current) return;
-      writeUrl(urlForScene({ view: "globe", look: globeLook.current, siteId: globeSiteId.current }));
+      writeUrl(urlForScene(globeSceneNow()));
     }, URL_WRITE_INTERVAL_MS);
-  }, []);
+  }, [globeSceneNow]);
 
   const trackGlobeSite = useCallback((siteId: string | null) => {
     globeSiteId.current = siteId ?? undefined;
-    if (currentScene.current.view === "globe") writeUrl(urlForScene({ view: "globe", look: globeLook.current, siteId: globeSiteId.current }));
-  }, []);
+    if (currentScene.current.view === "globe") writeUrl(urlForScene(globeSceneNow()));
+  }, [globeSceneNow]);
+
+  const trackGlobeTheory = useCallback((theoryId: string | null) => {
+    // The lens reports on mount as well: an address that already says so is left alone.
+    if (globeTheoryId.current === (theoryId ?? undefined)) return;
+    globeTheoryId.current = theoryId ?? undefined;
+    if (currentScene.current.view === "globe") writeUrl(urlForScene(globeSceneNow()));
+  }, [globeSceneNow]);
 
   /** The place selected on the atlas rides along in the address by its id, so a reload opens it again. */
   const trackAtlasSite = useCallback((siteId: string | null) => {
@@ -142,8 +159,8 @@ export function WorldCoordinator(props: { regional: RegionalTerrain | null; init
   const exitPlace = useCallback(() => {
     const back = sceneBeforePlace.current;
     // Back on the globe the card of the site just visited reopens.
-    show(back.view === "globe" ? { view: "globe", look: globeLook.current, siteId: globeSiteId.current } : back);
-  }, [show]);
+    show(back.view === "globe" ? globeSceneNow() : back);
+  }, [show, globeSceneNow]);
   const openPlace = useCallback((siteId: string) => {
     sceneBeforePlace.current = currentScene.current;
     show({ view: "place", siteId });
@@ -190,8 +207,10 @@ export function WorldCoordinator(props: { regional: RegionalTerrain | null; init
       <GlobeExplorer
         initialLook={scene.look}
         initialSiteId={scene.siteId}
+        initialTheoryId={scene.theoryId}
         onLookChange={trackGlobeLook}
         onSelectSite={trackGlobeSite}
+        onSelectTheory={trackGlobeTheory}
         onOpenPlace={openPlace}
         onEnterAtlas={enterAtlas}
         modelSlot={<ModelControls model={model} />}

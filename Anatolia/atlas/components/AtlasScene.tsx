@@ -40,6 +40,8 @@ interface AtlasSceneProps {
   altitude: number;
   labels: boolean;
   selectedId: string | null;
+  /** The sites the theory open in the site panel is about. */
+  theorySiteIds: readonly string[];
   pose: CameraPose;
   detail: TerrainGrid | null;
   detailUrl: string | null;
@@ -240,6 +242,7 @@ export function AtlasScene(props: AtlasSceneProps) {
         origin={origin}
         exaggeration={props.exaggeration}
         selectedId={props.selectedId}
+        theorySiteIds={props.theorySiteIds}
         onSelect={props.onSelect}
       />
       {props.overlay}
@@ -476,6 +479,7 @@ function SitePins(props: {
   origin: [number, number];
   exaggeration: number;
   selectedId: string | null;
+  theorySiteIds: readonly string[];
   onSelect: (siteId: string) => void;
 }) {
   const { sites, metadata, metres, regional, detail, origin, exaggeration } = props;
@@ -498,7 +502,7 @@ function SitePins(props: {
       };
     });
   }, [sites, renown, metadata, metres, regional, detail, origin, exaggeration]);
-  return <SitePinMarkers pins={pins} selectedId={props.selectedId} onSelect={props.onSelect} />;
+  return <SitePinMarkers pins={pins} selectedId={props.selectedId} theorySiteIds={props.theorySiteIds} onSelect={props.onSelect} />;
 }
 
 function elevationAt(

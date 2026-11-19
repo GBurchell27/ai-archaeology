@@ -1,0 +1,6 @@
+/* The theory lens panel. Colours are the shared --globe-* tokens of app/theme.css. */
+
+.intro { margin: 14px 0 0; color: var(--globe-prose); text-wrap: pretty; }
+.site { margin: 18px 0 0; padding-top: 12px; border-top: 1px solid var(--globe-rule); }
+.siteName { margin: 0 0 10px; color: var(--globe-ochre); }
+.lit { margin: 12px 0 14px; font-size: 12px; color: var(--globe-muted); }

@@ -28,6 +28,8 @@ export function PlaceGuide(props: {
   overview: ReactNode;
   maps: ReactNode;
   sources: ReactNode;
+  /** Questions and theories about the place: its own section of the Story tab, outside the catalogue overview. */
+  questions?: ReactNode;
   related?: { id: string; name: string }[];
   onVisit?: (id: string) => void;
   onClose: () => void;
@@ -81,6 +83,7 @@ export function PlaceGuide(props: {
                 <button type="button" className="guide-text-button" onClick={() => setSection("Sources")}>Open the catalogue sources <span aria-hidden="true">→</span></button>
               )}
             </section>
+            {props.questions}
             {props.related && props.related.length > 0 ? (
               <section className="guide-overview">
                 <h3>{lesson ? "Continue exploring" : "Nearby published places"}</h3>

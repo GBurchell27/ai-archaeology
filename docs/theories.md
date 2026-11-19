@@ -13,7 +13,7 @@ The layer holds what people have asked and proposed about a site, each idea with
 | `Anatolia/atlas/lib/theories/theoryRegistry.ts` | Every record, and the lookups: by id, by site, by walk landmark. |
 | `Anatolia/atlas/lib/theories/gobekliTepeEvidence.ts`, `gobekliTepeTheories.ts` | Göbekli Tepe: sources, facts and evidence; then theories and questions. |
 | `Anatolia/atlas/lib/theories/gizaFacts.ts`, `gizaEvidence.ts`, `gizaTheories.ts` | Giza: sources and facts; evidence; theories and questions. |
-| `Anatolia/atlas/components/theories/TheoryCard.tsx`, `QuestionList.tsx` | How a theory and a list of questions are shown. |
+| `Anatolia/atlas/components/theories/TheoryCard.tsx`, `QuestionList.tsx`, `SiteTheories.tsx` | How a theory, a list of questions, and a site card's "Questions and theories" section are shown. |
 | `Anatolia/atlas/lib/theories/puzzlesIndex.ts`, `app/puzzles/` | The puzzles page at `/puzzles`: every question by site, with its facts, its theories, and the experiments those theories list, each marked with the theory it supports or goes against. A new site adds its display name to `SITE_NAMES` there. |
 | `Anatolia/atlas/scripts/check_theories.mts`, `tests/test_theories.py` | The integrity check and its pytest wrapper. |
 
@@ -86,6 +86,16 @@ Write its data files beside the others, export one `TheoryRecords` object, and a
 `<QuestionList questionIds={[…]} onOpenTheory={(id) => …} openTheoryId={…} />` lists questions with the theories under each as buttons.
 
 Both are plain content with no frame of their own, so they can sit inside a panel (`components/globe/chrome/PanelShell.tsx`) or a card.
+
+`<SiteTheories siteId="…" onOpenTheory={(id) => …} />` is the "Questions and theories" section of a site card: the questions asked of that id and the theories under them, or nothing when there are none.
+
+Where they appear in the app:
+
+- **The globe, Theories panel** (`components/globe/chrome/TheoriesPanel.tsx`): every question, site by site, with its theories. Picking a theory shows its card and rings the sites it is about on the globe. This is the theory lens; `?view=globe&theory=<id>` opens it on one theory.
+- **The globe, site card**: the section follows the record and its credit line. Picking a theory opens the Theories panel on it.
+- **The Anatolia map, site panel**: the section is in the Story tab, outside the catalogue overview. Picking a theory opens its card in the panel and rings the curated sites it is about.
+
+In none of these does a theory change what a site record says or how a site is drawn: a ring marks what a theory is about. `docs/world-atlas.md` has the detail and the hooks for browser checks.
 
 In the walk view a question appears on the card of each landmark it names, under the tab "What we don't know" (`components/walk/LandmarkQuestions.tsx`, see `docs/world-atlas.md`).
 

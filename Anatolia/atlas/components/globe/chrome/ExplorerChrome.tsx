@@ -13,6 +13,7 @@ import { ExplorerTopbar } from "./ExplorerTopbar";
 import { GlobeTimeline } from "./GlobeTimeline";
 import { LayersPanel } from "./LayersPanel";
 import { SiteCard } from "./SiteCard";
+import { TheoriesPanel } from "./TheoriesPanel";
 import { TourBar } from "./TourBar";
 import { WondersPanel } from "./WondersPanel";
 
@@ -41,7 +42,7 @@ function useEscapeToClose(closeTop: () => boolean): void {
  */
 export const ExplorerChrome = memo(function ExplorerChrome(props: ExplorerChromeProps) {
   const { explorer } = props;
-  const { catalogue, filters, selection, tour, panel } = explorer;
+  const { catalogue, filters, selection, tour, theoryLens, panel } = explorer;
   const selected = selection.selected;
   useEscapeToClose(explorer.closeTop);
   const wonder = useMemo(
@@ -56,6 +57,7 @@ export const ExplorerChrome = memo(function ExplorerChrome(props: ExplorerChrome
       data-role="globe-explorer"
       data-side={selected || panel ? "open" : "closed"}
       data-osm={explorer.showOsmMegaliths ? "on" : "off"}
+      data-theory={theoryLens.theoryId ?? ""}
     >
       <div className={styles.top}>
         <ExplorerTopbar
@@ -77,6 +79,7 @@ export const ExplorerChrome = memo(function ExplorerChrome(props: ExplorerChrome
             onFlyCloser={selection.flyCloser}
             onOpenPlace={props.onOpenPlace}
             onEnterAtlas={props.onEnterAtlas}
+            onOpenTheory={explorer.openTheory}
           />
         ) : null}
         {/* The panel stays mounted under the card, so its scroll position and filter survive a visit. */}
@@ -88,6 +91,16 @@ export const ExplorerChrome = memo(function ExplorerChrome(props: ExplorerChrome
               onVisit={selection.visitById}
               onRandom={explorer.visitRandomWonder}
               onStartTour={tour.start}
+              onClose={closePanel}
+            />
+          ) : null}
+          {panel === "theories" ? (
+            <TheoriesPanel
+              theoryId={theoryLens.theoryId}
+              ringedSites={theoryLens.siteIds.length}
+              onOpenTheory={explorer.openTheory}
+              onClearTheory={() => theoryLens.setTheoryId(null)}
+              onShowOnGlobe={theoryLens.showOnGlobe}
               onClose={closePanel}
             />
           ) : null}

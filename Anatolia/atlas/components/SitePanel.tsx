@@ -4,6 +4,8 @@ import { PlaceMaps, closeupCreditNote } from "@/components/PlaceMaps";
 import { PlaceResources } from "@/components/PlaceResources";
 import { SafeLink } from "@/components/SafeLink";
 import { SiteFollowLinks, SiteReadingList } from "@/components/SiteReading";
+import { SiteTheories } from "@/components/theories/SiteTheories";
+import { TheoryCard } from "@/components/theories/TheoryCard";
 import { formatYear } from "@/lib/periods";
 import { RASTER_TITLES } from "@/lib/rasterLayers";
 import type { YearRange } from "@/lib/timeline";
@@ -54,6 +56,10 @@ export function SitePanel(props: {
   reliefNote?: string;
   reliefError?: string | null;
   range: YearRange;
+  /** The theory open in this panel; the map rings the curated sites it is about. */
+  openTheoryId: string | null;
+  /** Opens a theory under the questions; the open one closes. */
+  onToggleTheory: (theoryId: string) => void;
 }) {
   const properties = props.site.properties;
   const ids = new Set(props.rasters.map(([id]) => id));
@@ -87,6 +93,11 @@ export function SitePanel(props: {
         <p>{properties.description}</p>
         {properties.notes ? <p>{properties.notes}</p> : null}
       </>}
+      questions={(
+        <SiteTheories siteId={props.site.id} className="guide-overview" openTheoryId={props.openTheoryId} onOpenTheory={props.onToggleTheory}>
+          {props.openTheoryId ? <TheoryCard theoryId={props.openTheoryId} /> : null}
+        </SiteTheories>
+      )}
       sources={<>
         <p className="source-line">
           Catalogue citation · <SafeLink href={properties.sourceUrl}>{properties.source}</SafeLink>

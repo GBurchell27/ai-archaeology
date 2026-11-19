@@ -36,8 +36,11 @@ function useSitePosition(layers: readonly SiteLayer[], siteId: string | null): S
   return siteId && position?.siteId === siteId ? position.point : null;
 }
 
-/** A ring around the selected site. The pulse is CSS, so reduced-motion users get a still ring. */
-export function GlobeSelectionRing(props: { layers: readonly SiteLayer[]; selectedId: string | null }) {
+/**
+ * A ring around the selected site, or around a site the picked theory is about (`dataRole` tells them apart).
+ * The pulse is CSS, so reduced-motion users get a still ring.
+ */
+export function GlobeSelectionRing(props: { layers: readonly SiteLayer[]; selectedId: string | null; dataRole?: string }) {
   const point = useSitePosition(props.layers, props.selectedId);
   const ring = useRef<HTMLSpanElement>(null);
   useFrame(({ camera }) => {
@@ -48,7 +51,7 @@ export function GlobeSelectionRing(props: { layers: readonly SiteLayer[]; select
   if (!point) return null;
   return (
     <Html position={point} center zIndexRange={[2, 1]} style={{ pointerEvents: "none" }}>
-      <span ref={ring} className={styles.ring} data-role="selected-site-ring" />
+      <span ref={ring} className={styles.ring} data-role={props.dataRole ?? "selected-site-ring"} data-site={props.selectedId} />
     </Html>
   );
 }

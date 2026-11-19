@@ -10,7 +10,16 @@ import {
 } from "../lib/globe/ellipsoid.ts";
 import { ENTER_WALK_DISTANCE, OFFER_WALK_DISTANCE, WALK_DIVE_DISTANCE, WALK_SITE_REACH, advanceWalkEntry, walkHandoffStage, walkSiteUnderTarget } from "../lib/atlas/walkHandoff.ts";
 import { atlasLookFromGlobe, globeLookFromAtlas, handoffStage } from "../lib/globe/handoff.ts";
-import { DEFAULT_GLOBE_LOOK, parseViewUrl, serialiseViewUrl } from "../lib/globe/viewUrl.ts";
+import { register } from "node:module";
+
+// The view URL reads the theory registry, whose files import each other without an extension; teach Node to add it.
+register(`data:text/javascript,${encodeURIComponent(`
+  export function resolve(specifier, context, next) {
+    const bare = specifier.startsWith(".") && !specifier.slice(specifier.lastIndexOf("/")).includes(".");
+    return next(bare ? specifier + ".ts" : specifier, context);
+  }
+`)}`);
+const { DEFAULT_GLOBE_LOOK, parseViewUrl, serialiseViewUrl } = await import("../lib/globe/viewUrl.ts");
 
 let failed = 0;
 
@@ -107,6 +116,32 @@ const { historyEntryForView } = await import("../lib/globe/viewHistory.ts");
 check("a change of view adds one history entry", historyEntryForView("atlas", "walk", false) === "push" && historyEntryForView("globe", "atlas", false) === "push");
 check("a write within a view rewrites its entry", historyEntryForView("globe", "globe", false) === "replace");
 check("landing on an entry with Back or Forward adds none", historyEntryForView("walk", "atlas", true) === "replace");
+
+// The theory lens: `&theory=<id>` on a globe address.
+const lensAddress = parseViewUrl("?view=globe&theory=giza-power-plant");
+check("a globe address opens the lens on a recorded theory", lensAddress.view === "globe" && lensAddress.theoryId === "giza-power-plant");
+check("the theory rides along when the globe address is written",
+  serialiseViewUrl({ ...globeState, theoryId: "giza-power-plant" }) === "?view=globe&lon=38.12&lat=-30.46&alt=1235&theory=giza-power-plant"
+  && serialiseViewUrl(parseViewUrl("?view=globe&lon=31&lat=30&alt=900&theory=giza-power-plant")) === "?view=globe&lon=31.00&lat=30.00&alt=900&theory=giza-power-plant");
+check("the theory is read whether or not the address names the globe", (parseViewUrl("?theory=giza-power-plant") as { theoryId?: string }).theoryId === "giza-power-plant");
+check("an unknown or malformed theory is dropped",
+  !("theoryId" in parseViewUrl("?view=globe&theory=no-such-theory")) && !("theoryId" in parseViewUrl("?view=globe&theory=../Giza"))
+  && serialiseViewUrl(parseViewUrl("?view=globe&lon=31&lat=30&alt=900&theory=no-such-theory")) === "?view=globe&lon=31.00&lat=30.00&alt=900");
+check("other views ignore the theory", JSON.stringify(parseViewUrl("?view=atlas&site=gobekli-tepe&theory=giza-power-plant")) === JSON.stringify({ view: "atlas", siteId: "gobekli-tepe" }));
+check("a globe address without a theory has none", !("theoryId" in globeBack) && !("theoryId" in empty));
+
+const { altitudeToSee, spanOfSites } = await import("../lib/globe/siteSpan.ts");
+const oneSite = spanOfSites([{ longitude: 31.1, latitude: 29.9 }]);
+check("one site is its own middle, with no reach", oneSite !== null && near(oneSite.longitude, 31.1, 1e-9) && near(oneSite.latitude, 29.9, 1e-9) && oneSite.reachMetres < 1e-3);
+const acrossEquator = spanOfSites([{ longitude: 0, latitude: 0 }, { longitude: 90, latitude: 0 }]);
+check("two sites are centred between them and reach to each",
+  acrossEquator !== null && near(acrossEquator.longitude, 45, 1e-9) && near(acrossEquator.reachMetres, Math.PI / 4 * WGS84_EQUATORIAL_RADIUS, 1));
+const overDateLine = spanOfSites([{ longitude: 170, latitude: 10 }, { longitude: -170, latitude: 10 }]);
+check("sites either side of the date line are centred on it", overDateLine !== null && near(Math.abs(overDateLine.longitude), 180, 1e-6));
+const opposite = spanOfSites([{ longitude: 20, latitude: 0 }, { longitude: -160, latitude: 0 }]);
+check("sites on opposite sides of the Earth fall back to the first", opposite !== null && near(opposite.longitude, 20, 1e-9));
+check("no sites give no span, and a wider span needs a higher camera",
+  spanOfSites([]) === null && acrossEquator !== null && oneSite !== null && altitudeToSee(acrossEquator) > altitudeToSee(oneSite));
 
 if (failed > 0) {
   console.error(`${failed} failed`);

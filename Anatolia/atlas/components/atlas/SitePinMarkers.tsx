@@ -34,6 +34,8 @@ export function SitePinMarkers(props: {
   /** Most important first: that order decides which names win a crowded view. */
   pins: readonly SitePinMarker[];
   selectedId: string | null;
+  /** The sites the theory open in the site panel is about: each wears the ring. It marks a subject, not a find. */
+  theorySiteIds: readonly string[];
   onSelect: (siteId: string) => void;
 }) {
   const { labelSides, hiddenIds } = useSitePinLabels(props.pins, props.selectedId);
@@ -48,6 +50,7 @@ export function SitePinMarkers(props: {
           labelSide={labelSides.get(pin.id) ?? null}
           hidden={hiddenIds.has(pin.id)}
           selected={pin.id === props.selectedId}
+          inTheory={props.theorySiteIds.includes(pin.id)}
           onSelect={props.onSelect}
         />
       ))}
@@ -109,6 +112,8 @@ function SitePin(props: {
   /** Standing back for a better-known neighbour: faded out, unnamed and not clickable until the camera comes closer. */
   hidden: boolean;
   selected: boolean;
+  /** The open theory is about this site. */
+  inTheory: boolean;
   onSelect: (siteId: string) => void;
 }) {
   const [hovered, setHovered] = useState(false);
@@ -124,9 +129,9 @@ function SitePin(props: {
   const labelSide = props.hidden ? null : props.labelSide ?? (hovered ? "right" : null);
   return (
     <group position={props.pin.position}>
-      {props.selected ? (
+      {props.selected || (props.inTheory && !props.hidden) ? (
         <Html center zIndexRange={[2, 1]} style={{ pointerEvents: "none" }}>
-          <span className={globeStyles.ring} data-role="selected-site-ring" />
+          <span className={globeStyles.ring} data-role={props.selected ? "selected-site-ring" : "theory-site-ring"} data-in-theory={props.inTheory} />
         </Html>
       ) : null}
       {props.hidden ? null : <PinHitArea size={hitSize} onPress={() => props.onSelect(props.pin.id)} onHover={setHovered} />}

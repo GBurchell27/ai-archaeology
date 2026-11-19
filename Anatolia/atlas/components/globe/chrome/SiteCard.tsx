@@ -14,6 +14,7 @@ import { copyText } from "./copyText";
 import { PanelShell } from "./PanelShell";
 import styles from "./SiteCard.module.css";
 import { SiteCardRecord } from "./SiteCardRecord";
+import { SiteTheories } from "@/components/theories/SiteTheories";
 
 /** The close-up service refuses windows this near the poles. */
 const CLOSEUP_LATITUDE_LIMIT = 80;
@@ -55,6 +56,8 @@ export function SiteCard(props: {
   onFlyCloser(): void;
   onOpenPlace(siteId: string): void;
   onEnterAtlas(site: PickedSite): void;
+  /** A theory picked from the card's questions: the Theories panel opens on it. */
+  onOpenTheory(theoryId: string): void;
 }) {
   const { site, wonder } = props;
   const detail = useSiteDetail(site.id);
@@ -101,6 +104,8 @@ export function SiteCard(props: {
         <p className={styles.status}><span className={ui.badge}>{status.badge}</span>{status.note}</p>
       ) : null}
       <SiteCardRecord key={site.id} site={site} detail={detail} />
+      {/* After the record and its credit line: the questions are not part of the published record. */}
+      <SiteTheories siteId={site.id} onOpenTheory={props.onOpenTheory} className={styles.theories} headingClassName={ui.eyebrow} />
     </PanelShell>
   );
 }

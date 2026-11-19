@@ -4,18 +4,19 @@ import type { ReactNode } from "react";
 import type { WorldCatalogue } from "@/lib/world/catalogueLoader";
 import type { PickedSite } from "../GlobeSites";
 import type { ExplorerPanel } from "../useGlobeExplorer";
-import { AboutIcon, LayersIcon, WondersIcon } from "./ExplorerIcons";
+import { AboutIcon, LayersIcon, TheoriesIcon, WondersIcon } from "./ExplorerIcons";
 import ui from "./chrome.module.css";
 import styles from "./ExplorerTopbar.module.css";
 import { SiteSearch } from "./SiteSearch";
 
 const PANEL_BUTTONS: { panel: ExplorerPanel; label: string; icon: ReactNode }[] = [
   { panel: "wonders", label: "Wonders", icon: <WondersIcon /> },
+  { panel: "theories", label: "Theories", icon: <TheoriesIcon /> },
   { panel: "layers", label: "Layers", icon: <LayersIcon /> },
   { panel: "about", label: "About", icon: <AboutIcon /> },
 ];
 
-/** Title, search, and the three panel buttons. */
+/** Title, search, and the panel buttons. */
 export function ExplorerTopbar(props: {
   catalogue: WorldCatalogue | null;
   catalogueFailed: boolean;

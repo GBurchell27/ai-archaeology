@@ -25,6 +25,7 @@ import { useMapDisplay } from "@/components/atlas/useMapDisplay";
 import { usePlaceTerrain } from "@/components/atlas/usePlaceTerrain";
 import { useRegionalTerrain } from "@/components/atlas/useRegionalTerrain";
 import { useSiteAddress } from "@/components/atlas/useSiteAddress";
+import { useSiteTheoryLens } from "@/components/atlas/useSiteTheoryLens";
 import { useTimelineState } from "@/components/atlas/useTimelineState";
 import { useWalkEntry } from "@/components/atlas/useWalkEntry";
 import { WalkOffer } from "@/components/atlas/WalkOffer";
@@ -87,6 +88,7 @@ export function AtlasApp({ regional, initialLook, initialSiteId, onExitToGlobe, 
   const { overlays, selection, placeLayers } = navigation;
   const { selected, wikiSite, nearby, detail, panelOpen } = selection;
   const { settingsOpen, landscapeOpen, help, climateId } = overlays;
+  const theoryLens = useSiteTheoryLens(selection.selectedId);
   const terrain = usePlaceTerrain(selection.activeId, selection.activeRecord, terrainSource, selection.setPanelShown);
   const { busy } = terrain;
   useBodyDataset({
@@ -150,7 +152,7 @@ export function AtlasApp({ regional, initialLook, initialSiteId, onExitToGlobe, 
   const climateRecord = context.climateRecords.find((record) => record.id === climateId) ?? null;
 
   return (
-    <div className="atlas" data-has-panel={panelOpen ? "true" : "false"} data-has-landscape={landscapeOpen}>
+    <div className="atlas" data-has-panel={panelOpen ? "true" : "false"} data-has-landscape={landscapeOpen} data-theory={theoryLens.theoryId ?? ""}>
       <div className={busy ? "progress is-on" : "progress"} data-busy={busy ? "true" : "false"} />
       <AtlasScene
         metadata={metadata}
@@ -162,6 +164,7 @@ export function AtlasApp({ regional, initialLook, initialSiteId, onExitToGlobe, 
         altitude={display.altitude}
         labels={display.labels}
         selectedId={selection.selectedId}
+        theorySiteIds={theoryLens.siteIds}
         pose={camera.pose}
         detail={terrain.activeTerrain?.grid ?? null}
         detailUrl={rasters.detailUrl}
@@ -325,6 +328,8 @@ export function AtlasApp({ regional, initialLook, initialSiteId, onExitToGlobe, 
           reliefNote={terrainSource === "gem15" ? metadata.attribution.gem15 : metadata.attribution.dem}
           reliefError={terrain.reliefError}
           range={range}
+          openTheoryId={theoryLens.theoryId}
+          onToggleTheory={theoryLens.toggleTheory}
         />
       ) : null}
       {wikiSite ? (
