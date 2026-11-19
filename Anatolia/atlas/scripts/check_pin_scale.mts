@@ -17,6 +17,7 @@ import {
   nextTerrainCoarse,
   tileReleaseDue,
 } from "../lib/renderQuality.ts";
+import { meanLuma, windowLiftExponent, WINDOW_LIFT_MIN_EXPONENT, WINDOW_TARGET_LUMA } from "../lib/windowLift.ts";
 
 let failed = 0;
 
@@ -150,6 +151,14 @@ check("tile normals match along a shared edge",
   && tileNormal.getZ(2) === neighbourNormal.getZ(0));
 full.dispose();
 for (const tile of tiles) tile.dispose();
+
+check("mean brightness of grey pixels", Math.abs(meanLuma([51, 51, 51, 255, 153, 153, 153, 255]) - 0.4) < 1e-9);
+check("an empty image has no brightness and no lift",
+  meanLuma([]) === 0 && windowLiftExponent(0) === 1 && windowLiftExponent(Number.NaN) === 1);
+check("a window at the target is left alone", windowLiftExponent(WINDOW_TARGET_LUMA) === 1);
+check("a brighter window is not darkened", windowLiftExponent(0.6) === 1 && windowLiftExponent(1) === 1);
+check("a darker window is brought to the target", Math.abs(0.3 ** windowLiftExponent(0.3) - WINDOW_TARGET_LUMA) < 1e-9);
+check("a very dark window stops at the limit", windowLiftExponent(0.05) === WINDOW_LIFT_MIN_EXPONENT);
 
 if (failed > 0) {
   console.error(`${failed} failed`);

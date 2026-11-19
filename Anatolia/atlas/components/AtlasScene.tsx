@@ -22,6 +22,7 @@ import { HAZE_FAR, HAZE_NEAR, HAZE_STRENGTH, hazeBackground } from "@/lib/sky";
 import { stitchDetailToNational } from "@/lib/stitch";
 import { buildTerrainGeometry, coarseTerrainGeometry, type TerrainGrid } from "@/lib/terrain";
 import type { ColourGain, ImageryGrade } from "@/lib/sceneRasters";
+import { meanLuma, windowLiftExponent } from "@/lib/windowLift";
 import type { AtlasMetadata, BaseMap, RegionalTerrain, SiteFeature } from "@/lib/types";
 
 /** A site window fades into the map over this share of its width on each side. */
@@ -186,6 +187,7 @@ export function AtlasScene(props: AtlasSceneProps) {
               split={props.split}
               opacity={props.opacity * (1 - (props.detailGrade?.wash ?? 0))}
               gain={props.detailGrade?.gain}
+              lift={Boolean(props.detailGrade)}
               night={props.night}
               onCover={onCover}
             />
@@ -311,6 +313,20 @@ function containsWindow(base: TerrainGrid, detail: TerrainGrid): boolean {
   return boundsContain(base.bounds, left, bottom) && boundsContain(base.bounds, right, top);
 }
 
+/** Average brightness of an image, 0 to 1, from a small copy of it; 0 when it cannot be read. */
+function imageLuma(image: CanvasImageSource): number {
+  const canvas = document.createElement("canvas");
+  canvas.width = canvas.height = 32;
+  const context = canvas.getContext("2d", { willReadFrequently: true });
+  if (!context) return 0;
+  try {
+    context.drawImage(image, 0, 0, 32, 32);
+    return meanLuma(context.getImageData(0, 0, 32, 32).data);
+  } catch {
+    return 0;
+  }
+}
+
 class DetailBoundary extends Component<{ children: ReactNode }, { failed: boolean }> {
   state = { failed: false };
 
@@ -341,11 +357,14 @@ function DetailSurface(props: {
   regional?: boolean;
   /** Red, green and blue gains on the draped image. */
   gain?: ColourGain | null;
+  /** Lift a dark image towards the brightness the gains were set for. */
+  lift?: boolean;
   clip?: ClipRect | null;
 }) {
   const { grid, base, origin, datum, textureUrl, onCover } = props;
   const textureA = useTexture(textureUrl);
   const textureB = useTexture(props.compareUrl ?? textureUrl);
+  const lift = useMemo(() => props.lift ? windowLiftExponent(imageLuma(textureA.image)) : 1, [props.lift, textureA]);
   const stitched = useMemo(() => base ? stitchDetailToNational(grid, base) : grid, [grid, base]);
   const geometry = useMemo(
     () => props.regional
@@ -387,6 +406,7 @@ function DetailSurface(props: {
   material.uniforms.opacity.value = props.opacity;
   material.uniforms.edgeFeather.value = props.regional ? REGION_FEATHER : DETAIL_FEATHER;
   material.uniforms.albedoGain.value.set(...(props.gain ?? [1, 1, 1]));
+  material.uniforms.albedoLift.value = lift;
   material.uniforms.surfacePart.value = 1;
   material.uniforms.lightDirection.value.copy(sunDirection(props.azimuth, props.altitude));
   material.uniforms.hazeNear.value = HAZE_NEAR;

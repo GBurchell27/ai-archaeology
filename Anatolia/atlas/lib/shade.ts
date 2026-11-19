@@ -40,6 +40,7 @@ uniform vec4 regionClipRect;
 uniform float regionClipOn;
 uniform float night;
 uniform vec3 albedoGain;
+uniform float albedoLift;
 uniform float fastShade;
 varying vec3 vNormal;
 varying vec2 vUv;
@@ -62,7 +63,7 @@ void main() {
   if (surfacePart == 1.0 && edgeDistance < edgeFeather) discard;
   if (surfacePart == 2.0 && edgeDistance >= edgeFeather) discard;
   vec3 baseColor = vec3(0.72, 0.64, 0.52);
-  vec3 rawA = texture2D(mapA, vUv).rgb * albedoGain;
+  vec3 rawA = pow(texture2D(mapA, vUv).rgb, vec3(albedoLift)) * albedoGain;
   vec3 albedo = mix(baseColor, fastShade > 0.5 ? rawA : toLinear(rawA), opacity);
   float screenX = gl_FragCoord.x / resolution.x;
   if (compare > 0.5 && useB > 0.5) {
@@ -142,6 +143,7 @@ export function createSurfaceMaterial(): THREE.ShaderMaterial {
       regionClipOn: { value: 0 },
       night: { value: 0 },
       albedoGain: { value: new THREE.Vector3(1, 1, 1) },
+      albedoLift: { value: 1 },
       fastShade: { value: 0 },
     },
     vertexShader: SURFACE_VERTEX,

@@ -34,22 +34,29 @@ export function useTheme(): ["light" | "dark", () => void] {
 export function PeriodDock(props: { periodId: string; onPeriod: (id: string) => void }) {
   const [open, setOpen] = useState(false);
   const idle = useRef<number>(0);
+  const dock = useRef<HTMLDivElement>(null);
+  function closeAfter(delayMs: number) {
+    window.clearTimeout(idle.current);
+    idle.current = window.setTimeout(() => {
+      // A resting pointer or keyboard focus sends no events, so ask the dock itself; leaving or blurring starts the next timer.
+      const held = dock.current?.matches(":hover") || dock.current?.querySelector(":focus-visible");
+      if (!held) setOpen(false);
+    }, delayMs);
+  }
   function arm() {
     setOpen(true);
-    window.clearTimeout(idle.current);
-    idle.current = window.setTimeout(() => setOpen(false), 3200);
+    closeAfter(3200);
   }
   useEffect(() => () => window.clearTimeout(idle.current), []);
   return (
     <div
+      ref={dock}
       className={open ? "dock is-open" : "dock"}
       data-dock={open ? "open" : "closed"}
       onMouseEnter={arm}
-      onMouseLeave={() => {
-        window.clearTimeout(idle.current);
-        idle.current = window.setTimeout(() => setOpen(false), 700);
-      }}
+      onMouseLeave={() => closeAfter(700)}
       onFocusCapture={arm}
+      onBlurCapture={() => closeAfter(700)}
     >
       <button
         type="button"
