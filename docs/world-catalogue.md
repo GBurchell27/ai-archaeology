@@ -15,7 +15,7 @@ Licences are registered in [`data-sources.md`](data-sources.md). Read that row b
 | OpenStreetMap megaliths | ODbL 1.0, "© OpenStreetMap contributors" | 15,845 | A separate layer. Never merged with the two above. |
 | p3k14c | CC0, cite Bird et al. 2022 | 35,250 dated sites | Dates for pins that already exist. Its coordinates are fuzzed on purpose. |
 | XRONOS | CC BY 4.0 | 46,521 dated sites | Dates for pins that already exist. |
-| Featured list | curated in this repository | 419 | Dates, a category, a status and one line of text for the best-known early monuments. No coordinates. |
+| Featured list | curated in this repository | 426 | Dates, a category, a status and one line of text for the best-known early monuments. No coordinates. |
 
 What each ingester keeps:
 
@@ -70,11 +70,11 @@ Featured comes before the merge so that a featured monument is still de-duplicat
 
 When a place is absorbed, the Wikidata record wins: its name, point and type are kept. It gains the Pleiades id. If it has no date and the Pleiades place has one, it takes that date, and the Pleiades credit and licence are appended to its own.
 
-99,884 Wikidata records, 23 featured monuments added from their fetched coordinates, and 24,970 Pleiades places became 118,479 sites.
+99,884 Wikidata records, 30 featured monuments added from their fetched coordinates, and 24,970 Pleiades places became 118,486 sites.
 
 ## The featured tier
 
-`featured_monuments.json` is a hand-kept list of 419 monuments, keyed by Wikidata QID. It carries **no coordinates**. Those come from Wikidata when the catalogue is built.
+`featured_monuments.json` is a hand-kept list of 426 monuments, keyed by Wikidata QID. It carries **no coordinates**. Those come from Wikidata when the catalogue is built.
 
 Each entry has exactly these fields: `qid`, `name`, `country`, `category`, `period`, `startYear`, `endYear`, `datingConfidence`, `status`, `why`, `source`. `featured.py: featured_problems` enforces the rules. `tests/test_world_featured.py` runs it on the committed list, checks that the list holds no coordinate keys, and checks that every coordinate fix cites a source.
 
@@ -89,7 +89,7 @@ Each entry has exactly these fields: `qid`, `name`, `country`, `category`, `peri
 1. Find the Wikidata item. It needs a coordinate (P625).
 2. Add the object to `featured_monuments.json` with all eleven fields.
 3. Run `pytest tests/test_world_featured.py`.
-4. Rebuild. The coordinate is fetched by `scripts/fetch_featured_coordinates.py`, and the item is included in the Wikidata harvest by its `--featured` argument. Both are downloads, so the owner has to ask for them. Then run `scripts/build_world_catalogue.py`.
+4. Rebuild. The coordinate is fetched by `scripts/fetch_featured_coordinates.py`, and the item is included in the Wikidata harvest by its `--featured` argument. Both are downloads, so the owner has to ask for them. Then run `scripts/build_world_catalogue.py`. The coordinate fetch caches whole batches of 50, so remove the last `entities_NN.json` under `data/world/raw/featured/` first, or the new item is reported as having no coordinate.
 
 ### Correct an entry
 
@@ -172,7 +172,7 @@ The whole folder is 48 MB and is committed. The sizes above are uncompressed. A 
 
 - **Type "other".** 20,287 sites, about one in six, have no usable type. Wikidata's class labels did not match any rule, or the item is typed only as "archaeological site". The type filter cannot separate them.
 - **Register stubs.** 77,588 sites have a sitelink count of 0. Many are a name, a point and a register number. They are real published records, and they carry little else.
-- **Sparse dating.** 30,731 of 118,479 sites have a date (25.9%). Of those, 21,492 come from Pleiades, 8,084 from Wikidata, 745 from radiocarbon and 410 from the featured list. A Wikidata "inception" is sometimes the year a monument was registered. Inceptions after 1900 on ancient types are dropped for that reason.
+- **Sparse dating.** 30,737 of 118,486 sites have a date (25.9%). Of those, 21,492 come from Pleiades, 8,084 from Wikidata, 745 from radiocarbon and 416 from the featured list. A Wikidata "inception" is sometimes the year a monument was registered. Inceptions after 1900 on ancient types are dropped for that reason.
 - **Uneven coverage.** Using rough longitude and latitude boxes, 89,503 of the 99,885 Wikidata records fall in Europe, 4,525 in Asia, 2,806 in Africa and the nearer Near East, 2,243 in North America, 680 in South America, and 73 in Oceania. Pleiades is 78% in the Europe box and has nothing outside the ancient Mediterranean world and the Near East. The OpenStreetMap megaliths are 98% European.
 - **Rough locations.** 709 sites carry a Pleiades location that is not marked precise. The globe draws them like any other point.
 - **Duplicates that survive.** Two records for one place stay separate when neither names the other's identifier and their folded names differ, however close they are. "Tumulus de Péré" and "Péré tumulus" are two pins. That is the price of never merging two different monuments.

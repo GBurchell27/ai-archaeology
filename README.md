@@ -10,7 +10,7 @@ This is a learning and research project. It is not a product, not a survey, and 
 
 What exists now:
 
-- **A globe of published sites.** 118,479 published site records from Wikidata and Pleiades, 419 hand-picked early monuments with a line on why each matters, and 15,845 megaliths from OpenStreetMap as a separate layer. Search, a timeline, a type filter, and a card for each site.
+- **A globe of published sites.** 118,486 published site records from Wikidata and Pleiades, 426 hand-picked early monuments with a line on why each matters, and 15,845 megaliths from OpenStreetMap as a separate layer. Search, a timeline, a type filter, and a card for each site.
 - **Drill-down terrain.** Any published site between 80°S and 80°N opens as a 10 km terrain block at about 15 m, built on demand from open elevation data. It shows landscape. It does not show buildings.
 - **Anatolia in depth.** Turkey has its own terrain atlas, from the national overview through the Şanlıurfa region to the published Taş Tepeler sites, including Göbekli Tepe and Karahan Tepe. This is the **known-site validation region**: the place to see whether a method notices monuments that archaeologists already published, and how often it is wrong. It is not a blank-map search. The notes are in [`Anatolia/`](Anatolia/README.md).
 - **A model layer of published-record patterns.** Ten world rasters at 0.25° (about 28 km) that show where published sites of a kind tend to be recorded. Only 3 of the 10 beat a baseline that knows nothing but survey effort. 84% of land is marked "no basis". Nothing transfers between continents. See [`docs/suitability-model.md`](docs/suitability-model.md).
@@ -171,7 +171,7 @@ python scripts/fetch_featured_coordinates.py
 | `fetch_world_pleiades.py` | The Pleiades gazetteer dump, one file | `raw/pleiades-places-latest.json.gz` | 130 MB |
 | `fetch_world_osm_megaliths.py` | OpenStreetMap megaliths from Overpass | `raw/osm/` | 5 MB |
 | `fetch_world_radiocarbon.py` | p3k14c and the four XRONOS tables, as CSV | `raw/radiocarbon/` | 72 MB |
-| `fetch_featured_coordinates.py` | Wikidata coordinates of the 419 featured monuments | `raw/featured/` | 6 MB |
+| `fetch_featured_coordinates.py` | Wikidata coordinates of the 426 featured monuments | `raw/featured/` | 6 MB |
 
 Only the Wikidata harvest was timed. The source records land in `data/world/sources/` and `data/world/dating/`.
 
@@ -249,6 +249,6 @@ python scripts/run_cross_region_smoke.py
 - **It does not find sites.** Every point on the globe was published by someone else first. Nothing here detects, predicts, or confirms a site, and nothing ranks candidates or draws a review map.
 - **The model layer is a map of published-record patterns.** It shows where catalogues are dense as much as where people built. A blank or low cell often means little survey, not absence. It is far too coarse to point at a place.
 - **Coverage is heavily European, because the open data is.** Of the 99,885 Wikidata records, about 89,500 fall in a rough box around Europe. The rest: about 4,500 in Asia, 2,800 in Africa and the nearer Near East, 2,200 in North America, 700 in South America, and 70 in Oceania. Pleiades adds the ancient Mediterranean and Near East and nothing beyond. The OpenStreetMap megaliths are 98% European. Whole traditions of monument building are nearly absent from the globe. That is a gap in open inventories, not in the past.
-- **Most sites have no date.** About 26% of the catalogue carries a date range (30,731 of 118,479 in the 19 November 2026 build). The timeline hides or shows the rest as one undated group.
+- **Most sites have no date.** About 26% of the catalogue carries a date range (30,737 of 118,486 in the 21 November 2026 build). The timeline hides or shows the rest as one undated group.
 - **Many records are thin.** About one in six has no usable type and is filed as "other". Many are register stubs: a name, a point, and a link.
 - **It does not see underground.** A smooth field can hide archaeology, and a bump can be a spoil heap, a road, or noise.
