@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useState, type KeyboardEvent } from "react";
+import { useEffect, useId, useRef, useState, type KeyboardEvent } from "react";
+import { atlasYearSheetCovered, usePhoneSheetEscape } from "@/components/usePhoneSheetEscape";
 import { NamedPeriodChips } from "@/components/NamedPeriodChips";
 import { TimelineIntervalBand } from "@/components/TimelineIntervalBand";
 import { formatYear } from "@/lib/periods";
@@ -86,6 +87,8 @@ export function TimelineControl(props: {
   const startAt = yearToTrack(props.range.start) * 100;
   const endAt = yearToTrack(props.range.end) * 100;
   const [sheetOpen, setSheetOpen] = useState(false);
+  const sheetId = useId();
+  usePhoneSheetEscape(sheetOpen, () => setSheetOpen(false), atlasYearSheetCovered);
   return (
     <div
       className="timebar"
@@ -101,10 +104,12 @@ export function TimelineControl(props: {
         className="time-sheet-toggle"
         data-action="toggle-time"
         aria-expanded={sheetOpen}
+        aria-controls={sheetId}
         onClick={() => setSheetOpen((open) => !open)}
       >
         {formatYear(props.range.start)} – {formatYear(props.range.end)}
       </button>
+      <div id={sheetId} className="time-sheet-body">
       <button
         type="button"
         className="time-play"
@@ -218,6 +223,7 @@ export function TimelineControl(props: {
         value={props.range.end}
         onChange={(event) => commitBound(props.range, "end", event.target.value, props.onRange)}
       />
+      </div>
     </div>
   );
 }

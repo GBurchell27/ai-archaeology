@@ -101,6 +101,8 @@
   .attribution::-webkit-scrollbar { display: none; }
   .attributionDesktop { display: none; }
   .attributionPhone { display: inline; }
+  /* The open legend already prints the catalogue credit, so the footer does not say it again. */
+  .chrome:has([data-action="toggle-legend"][aria-expanded="true"]) .recordCredits { display: none; }
   .enter {
     bottom: calc(72px + env(safe-area-inset-bottom, 0px));
     max-width: calc(100% - 24px);

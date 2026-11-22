@@ -4,6 +4,7 @@ import { useEffect, useId, useState } from "react";
 import { NamedPeriodChips } from "@/components/NamedPeriodChips";
 import type { NamedPeriod } from "@/lib/world/namedPeriods";
 import { ALL_TIME, WORLD_ERAS, activeWorldEra, describeSpan, isAllTime, type YearSpan } from "@/lib/world/worldEras";
+import { globeTimeSheetCovered, usePhoneSheetEscape } from "@/components/usePhoneSheetEscape";
 import { ChevronIcon } from "./ExplorerIcons";
 import ui from "./chrome.module.css";
 import styles from "./GlobeTimeline.module.css";
@@ -38,6 +39,7 @@ export function GlobeTimeline(props: {
   const { span } = props;
   const [sheetOpen, setSheetOpen] = useState(false);
   const bodyId = useId();
+  usePhoneSheetEscape(sheetOpen, () => setSheetOpen(false), globeTimeSheetCovered);
   return (
     <section
       className={`${ui.glass} ${styles.timeline}`}

@@ -119,6 +119,8 @@
 }
 
 .time-sheet-toggle { display: none; }
+/* The controlled region of the phone chip. Contents, so the bar's own flex row is unchanged on a wide screen. */
+.time-sheet-body { display: contents; }
 
 @media (pointer: coarse) {
   .atlas { --bar-height: 130px; }

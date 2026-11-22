@@ -114,7 +114,7 @@ function ImageryCredit(props: { basemap: GlobeBasemap; recordCredits: string }) 
           {imageryHostName(basemap)}
         </a>
         {" "}{basemap.licence}
-        {recordCredits ? <> · {recordCredits}</> : null}
+        {recordCredits ? <span className={styles.recordCredits}> · {recordCredits}</span> : null}
         <span className={styles.attributionDetail} aria-hidden="true"> · {basemap.attribution}</span>
       </span>
     </p>
