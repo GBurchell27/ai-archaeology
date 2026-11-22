@@ -125,6 +125,17 @@ check("a new theory starts with one log entry equal to its status", started.stat
 const comet = findTheory("gobekli-tepe-pillar-43-comet-record");
 check("a theory is found by id, and an unknown id is not", comet?.proponents[0] === "Martin Sweatman" && findTheory("no-such-theory") === null && findTheory(undefined) === null);
 check("the walk id and the catalogue id of Göbekli Tepe give the same theories", registry.theoriesForSite("gobekli-tepe").length === 8 && registry.theoriesForSite("Q214944").length === 8);
+const notThisSite = ["961911", "Q134611641"];
+check("Pleiades 961911 and the Sefer Tepe pin on Göbekli get no theories or questions",
+  notThisSite.every((id) => registry.theoriesForSite(id).length === 0 && registry.questionsForSite(id).length === 0));
+check("no fact, theory or question names either of those ids",
+  [...ALL_FACTS, ...ALL_THEORIES, ...ALL_QUESTIONS].every((record) => notThisSite.every((id) => !record.siteIds.includes(id))));
+const theorySourceUrls = [
+  ...ALL_FACTS.map((fact) => fact.source.url),
+  ...ALL_EVIDENCE.map((entry) => entry.source.url),
+  ...ALL_THEORIES.flatMap((theory) => theory.claimSources.map((source) => source.url)),
+];
+check("no theory source cites Pleiades 961911", theorySourceUrls.every((url) => url === undefined || !url.includes("961911")));
 check("Giza is found by the complex and by the Great Pyramid", registry.theoriesForSite("Q12508").length === 6 && registry.theoriesForSite("Q37200").length === 6);
 check("a theory touches each id it lists and no other", comet !== null && registry.theoryTouchesSite(comet, "Q214944") && registry.theoryTouchesSite(comet, "gobekli-tepe") && !registry.theoryTouchesSite(comet, "Q12508"));
 check("a site with no records has none", registry.theoriesForSite("karahan-tepe").length === 0 && registry.questionsForSite("karahan-tepe").length === 0);

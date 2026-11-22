@@ -52,8 +52,9 @@ const gobekli = newsForSite("gobekli-tepe");
 check("Göbekli Tepe's reports are newest first", gobekli.map((item) => item.date).join(",") === "2026-11-19,2026-08-13");
 check("Göbekli Tepe's reports are the same under its catalogue id", newsForSite("Q214944").map((item) => item.id).join(",") === gobekli.map((item) => item.id).join(","));
 check("the Ankara exhibition is on all four sites", ["gobekli-tepe", "karahan-tepe", "sayburc", "Q118133735"].every((id) => newsForSite(id).some((item) => item.id === "tas-tepeler-ankara-exhibition-2026")));
-check("the Sefer Tepe record plotted on Göbekli Tepe is not given that exhibition", newsForSite("Q134611641").every((item) => item.id !== "tas-tepeler-ankara-exhibition-2026"));
 check("Pleiades 961911, a different place, gets no reports", newsForSite("961911").length === 0);
+check("the Sefer Tepe record plotted on Göbekli Tepe gets no reports", newsForSite("Q134611641").length === 0);
+check("no report is filed under either of those ids", NEWS_ITEMS.every((item) => !item.siteIds.includes("961911") && !item.siteIds.includes("Q134611641")));
 check("Çemka Höyük carries the Antiquity report under its catalogue id", newsForSite("Q132182967").some((item) => item.sourceName === "Antiquity" && item.date === "2026-06-15"));
 check("a site with no reports gets none", newsForSite("hattusa").length === 0 && newsForSite("no-such-site").length === 0);
 

@@ -5,10 +5,11 @@
  * No coordinates belong in this file.
  */
 
+import { GOBEKLI_TEPE_IDS } from "../reading/siteIds";
 import type { EvidenceEntry, Fact, TheorySource } from "./theoryTypes";
 
-/** The walk view's id and the world catalogue's id for the same site. */
-export const GOBEKLI_TEPE_SITE_IDS: readonly string[] = ["gobekli-tepe", "Q214944"];
+/** The walk view's id and the world catalogue's id, the same list as `GOBEKLI_TEPE_IDS`. */
+export const GOBEKLI_TEPE_SITE_IDS: readonly string[] = GOBEKLI_TEPE_IDS;
 
 export const SCHMIDT_2010: TheorySource = {
   citation:
