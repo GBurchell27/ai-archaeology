@@ -1,0 +1,26 @@
+.note { margin: 6px 0 0; font-size: 12.5px; line-height: 1.45; color: var(--globe-muted); }
+
+.list { display: grid; margin: 8px 0 0; padding: 0; list-style: none; }
+.list li { padding: 9px 0 10px; border-bottom: 1px solid var(--globe-rule); }
+.list li:last-child { border-bottom: 0; padding-bottom: 0; }
+
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: baseline;
+  margin: 0;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--globe-muted);
+}
+
+.status { letter-spacing: 0.06em; }
+.status[data-status="disputed"],
+.status[data-status="rumour-denied"] { color: #e88aa0; }
+
+.title { margin: 4px 0 0; font: 16px/1.3 var(--globe-serif); color: var(--globe-ink); }
+.summary { margin: 4px 0 0; font-size: 12.5px; line-height: 1.45; }
+.source { margin: 4px 0 0; font-size: 12.5px; }

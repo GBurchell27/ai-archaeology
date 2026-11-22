@@ -30,6 +30,8 @@ export function PlaceGuide(props: {
   sources: ReactNode;
   /** Questions and theories about the place: its own section of the Story tab, outside the catalogue overview. */
   questions?: ReactNode;
+  /** Dated reports about the place. The section draws nothing when the place has none. */
+  news?: ReactNode;
   related?: { id: string; name: string }[];
   onVisit?: (id: string) => void;
   onClose: () => void;
@@ -83,6 +85,7 @@ export function PlaceGuide(props: {
                 <button type="button" className="guide-text-button" onClick={() => setSection("Sources")}>Open the catalogue sources <span aria-hidden="true">→</span></button>
               )}
             </section>
+            {props.news}
             {props.questions}
             {props.related && props.related.length > 0 ? (
               <section className="guide-overview">

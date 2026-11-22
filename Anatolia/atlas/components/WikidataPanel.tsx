@@ -5,6 +5,7 @@ import { PlaceGuide } from "@/components/PlaceGuide";
 import { PlaceMaps, closeupCreditNote } from "@/components/PlaceMaps";
 import { PlaceResources } from "@/components/PlaceResources";
 import { SafeLink } from "@/components/SafeLink";
+import { SiteNews } from "@/components/SiteNews";
 import { PERIODS } from "@/lib/periods";
 import type { YearRange } from "@/lib/timeline";
 import { PERIOD_SPAN, type WikiFeature } from "@/lib/wikidata";
@@ -48,6 +49,7 @@ export function WikidataPanel(props: {
         <p>{occupationLabel(properties)}{properties.startYear != null ? ` · ${format(properties.startYear)}` : ""}{properties.endYear != null ? ` – ${format(properties.endYear)}` : ""}</p>
         {properties.heritage.length > 0 ? <p>{properties.heritage.join(" · ")}</p> : null}
       </>}
+      news={<SiteNews siteId={props.site.id} className="guide-overview" />}
       sources={<>
         <p className="source-line">
           Catalogue citation · <SafeLink href={properties.sourceUrl}>{properties.qid}</SafeLink>

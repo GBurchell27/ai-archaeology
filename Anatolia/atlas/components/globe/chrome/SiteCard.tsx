@@ -15,6 +15,7 @@ import { copyText } from "./copyText";
 import { PanelShell } from "./PanelShell";
 import styles from "./SiteCard.module.css";
 import { SiteCardRecord } from "./SiteCardRecord";
+import { SiteNews } from "@/components/SiteNews";
 import { SiteTheories } from "@/components/theories/SiteTheories";
 import { SiteAccountControls } from "@/components/account/SiteAccountControls";
 import type { AccountViewModel } from "@/components/account/useAccount";
@@ -122,7 +123,8 @@ export function SiteCard(props: {
         <p className={styles.status}><span className={ui.badge}>{status.badge}</span>{status.note}</p>
       ) : null}
       <SiteCardRecord key={site.id} site={site} detail={detail} />
-      {/* After the record and its credit line: the questions are not part of the published record. */}
+      {/* After the record: reports, then questions. Neither is part of the published record. */}
+      <SiteNews siteId={site.id} className={styles.news} headingClassName={ui.eyebrow} />
       <SiteTheories siteId={site.id} onOpenTheory={props.onOpenTheory} className={styles.theories} headingClassName={ui.eyebrow} />
     </PanelShell>
   );

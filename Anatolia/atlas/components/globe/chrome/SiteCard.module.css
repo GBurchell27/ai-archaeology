@@ -25,6 +25,7 @@
 
 .fact { display: grid; gap: 3px; margin: 14px 0 0; }
 .links { display: grid; gap: 5px; margin: 14px 0 0; padding: 0; list-style: none; font-size: 13.5px; }
+.news { margin: 14px 0 0; padding-top: 12px; border-top: 1px solid var(--globe-rule); }
 .theories { display: grid; gap: 8px; margin: 14px 0 0; padding-top: 12px; border-top: 1px solid var(--globe-rule); }
 .theories > * { margin: 0; }
 .credit { margin: 14px 0 0; padding-top: 10px; border-top: 1px solid var(--globe-rule); font-size: 11.5px; line-height: 1.5; color: var(--globe-muted); }
