@@ -111,6 +111,7 @@ Everything overnight was judged in a software-rendered test browser.
 
 ## Known gaps
 
+- [ ] `PlaceTerrainError` (`lib/place/placeTerrain.ts`) and `ReliefFetchError` (`lib/placeTerrainLoad.ts`) still use TypeScript parameter properties. No `scripts/check_*.mts` loads those files, so Node's type stripping does not see them. Give them ordinary fields if a check starts importing them.
 - [ ] Collision is for a walker in the models only. Göbekli Tepe's benches and pedestals are walked through, and there is no touch input.
 - [ ] The repeat-visit fix for the splat (`components/walk/SiteSplat.tsx`) relies on drei 10.7 internals: recheck on an upgrade.
 

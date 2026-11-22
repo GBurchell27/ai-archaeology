@@ -66,7 +66,7 @@ Pins are published places only. Neolithic points are the original six. Crusader-
 
 The April 2026 trip is in `lib/trip/turkeyTrip2026.ts`. Hotels are placed at town level, and times not taken from a ticket are marked as estimated. Flights from off the map start and end at its edge. Drives and walks follow roads from OpenStreetMap, routed once by OSRM and saved in `public/trips/turkey-2026-04.roads.json`. The roads are the router's fastest route, not a GPS trace. A walk the router can only reach by a long detour, such as the paths inside Göbeklitepe and up Nemrut, stays a straight line.
 
-After changing a stop, rebuild the roads file with `../explorer/node_modules/.bin/esbuild scripts/fetch_trip_roads.mts --bundle --platform=node --format=esm --outfile=.next/fetch_trip_roads.mjs` and `node .next/fetch_trip_roads.mjs`. The plane and car are CC0 models from tevy.dev, fetched with `node scripts/fetch_trip_models.mjs`, which also copies the KTX2 texture transcoder into `public/basis/`. Run `../explorer/node_modules/.bin/esbuild scripts/check_trip.mts --bundle --platform=node --format=esm --outfile=.next/check_trip.mjs` and then `node .next/check_trip.mjs` to check that the timeline is unbroken.
+After changing a stop, rebuild the roads file with `../explorer/node_modules/.bin/esbuild scripts/fetch_trip_roads.mts --bundle --platform=node --format=esm --outfile=.next/fetch_trip_roads.mjs` and `node .next/fetch_trip_roads.mjs`. The plane and car are CC0 models from tevy.dev, fetched with `node scripts/fetch_trip_models.mjs`, which also copies the KTX2 texture transcoder into `public/basis/`. Run `node --experimental-strip-types scripts/check_trip.mts` to check that the timeline is unbroken.
 
 ## Checks
 
