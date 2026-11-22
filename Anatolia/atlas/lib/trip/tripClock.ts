@@ -15,12 +15,16 @@ const MAX_FRAME_MS = 100;
  * every frame without re-rendering the whole atlas.
  */
 export class TripClock {
+  readonly span: TripSpan;
+  private readonly rateAt: PlaybackRate;
   private state: TripClockState;
   private readonly listeners = new Set<Listener>();
   private frame: number | null = null;
   private lastFrameMs = 0;
 
-  constructor(readonly span: TripSpan, private readonly rateAt: PlaybackRate) {
+  constructor(span: TripSpan, rateAt: PlaybackRate) {
+    this.span = span;
+    this.rateAt = rateAt;
     this.state = { timeMs: span.startMs, playing: false };
   }
 
