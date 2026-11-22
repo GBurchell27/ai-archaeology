@@ -42,6 +42,8 @@
 }
 
 .attribution { right: 18px; max-width: min(78ch, 60vw); text-align: right; }
+/* The phone line is one scrolling row. Wider screens keep the sentence above. */
+.attributionPhone { display: none; }
 .attribution a { color: inherit; text-decoration-color: var(--globe-rule); text-underline-offset: 2px; }
 .attribution a:hover, .attribution a:focus-visible { color: var(--globe-ink); }
 
@@ -77,9 +79,33 @@
 }
 
 @media (max-width: 640px) {
-  .readout { bottom: 44px; }
-  .attribution { left: 18px; max-width: none; text-align: left; font-size: 10px; }
-  .enter { bottom: 92px; }
+  .readout {
+    top: calc(50px + env(safe-area-inset-top, 0px));
+    bottom: auto;
+    left: max(8px, env(safe-area-inset-left, 0px));
+    max-width: calc(100% - 16px);
+    font-size: 10px;
+    padding: 2px 7px;
+  }
+  .attribution {
+    left: max(8px, env(safe-area-inset-left, 0px));
+    right: max(8px, env(safe-area-inset-right, 0px));
+    bottom: max(6px, env(safe-area-inset-bottom, 0px));
+    max-width: none;
+    text-align: left;
+    font-size: 10px;
+    white-space: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .attribution::-webkit-scrollbar { display: none; }
+  .attributionDesktop { display: none; }
+  .attributionPhone { display: inline; }
+  .enter {
+    bottom: calc(72px + env(safe-area-inset-bottom, 0px));
+    max-width: calc(100% - 24px);
+    padding: 8px 16px 9px;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

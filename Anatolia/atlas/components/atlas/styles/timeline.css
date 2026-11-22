@@ -118,6 +118,8 @@
   .time-play { transition: none; }
 }
 
+.time-sheet-toggle { display: none; }
+
 @media (pointer: coarse) {
   .atlas { --bar-height: 130px; }
   .time-play { min-height: 40px; }
@@ -127,4 +129,53 @@
   .time-thumb { top: 13px; }
   /* The thumb stays small; its hit area does not. */
   .time-thumb::after { content: ""; position: absolute; inset: -13px; }
+}
+
+/* A phone portrait: the year bar is a chip of the current range. The slider and the period chips open under it. */
+@media (max-width: 640px) {
+  .atlas { --bar-height: 44px; }
+  .time-sheet-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 32px;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: inherit;
+    font: italic 17px/1.15 var(--globe-serif);
+    cursor: pointer;
+  }
+  .time-sheet-toggle::after {
+    content: "";
+    width: 7px;
+    height: 7px;
+    border-right: 1.5px solid currentColor;
+    border-bottom: 1.5px solid currentColor;
+    transform: rotate(45deg) translateY(-2px);
+  }
+  .timebar[data-sheet="open"] .time-sheet-toggle::after { transform: rotate(225deg) translate(-1px, -1px); }
+  .timebar[data-sheet="closed"] {
+    width: max-content;
+    max-width: calc(100% - 2 * var(--edge));
+    left: max(var(--edge), env(safe-area-inset-left, 0px));
+    gap: 0;
+    padding: 7px 12px;
+  }
+  .timebar[data-sheet="closed"] > :not(.time-sheet-toggle) { display: none; }
+  .timebar[data-sheet="open"] {
+    left: max(var(--edge), env(safe-area-inset-left, 0px));
+    right: max(var(--edge), env(safe-area-inset-right, 0px));
+    width: auto;
+    max-height: min(48dvh, 440px);
+    overflow: auto;
+    overscroll-behavior: contain;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .timebar[data-sheet="open"] .time-sheet-toggle { flex: 1 0 100%; justify-content: space-between; }
+  .timebar[data-sheet="open"] [data-role="year-label"] { display: none; }
+  .timebar[data-sheet="open"] .time-readout { flex: 1 1 80px; min-width: 0; }
+  .timebar[data-sheet="open"] .time-periods { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
+  .timebar[data-sheet="open"] .time-periods::-webkit-scrollbar { display: none; }
 }

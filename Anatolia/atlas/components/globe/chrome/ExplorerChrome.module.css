@@ -103,6 +103,48 @@
   .explorer[data-side="open"] .bottom { display: none; }
 }
 
+/* A phone portrait: the legend and the time range are chips above a one-line credit. The map keeps the middle. */
+@media (max-width: 640px) {
+  .explorer {
+    --edge: 10px;
+    --foot: calc(30px + env(safe-area-inset-bottom, 0px));
+    --top: calc(52px + env(safe-area-inset-top, 0px));
+  }
+  .explorer[data-osm="on"] { --foot: calc(52px + env(safe-area-inset-bottom, 0px)); }
+  :global([data-handoff="offer"]) .explorer,
+  :global([data-handoff="enter"]) .explorer { --lift: 78px; }
+  .explorer::before { height: 76px; }
+  .top {
+    top: max(8px, env(safe-area-inset-top, 0px));
+    left: max(10px, env(safe-area-inset-left, 0px));
+    right: max(10px, env(safe-area-inset-right, 0px));
+  }
+  .bottom {
+    top: auto;
+    left: max(10px, env(safe-area-inset-left, 0px));
+    right: max(10px, env(safe-area-inset-right, 0px));
+    bottom: calc(var(--foot) + var(--lift));
+    display: flex;
+    flex-direction: row;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 8px;
+    pointer-events: none;
+  }
+  /* A size container cannot shrink-wrap, so the time chip's dock would be 0px wide and slide off the edge. */
+  .legend, .dock { width: auto; max-width: max-content; grid-column: auto; grid-row: auto; pointer-events: auto; }
+  .dock { container-type: normal; width: max-content; max-width: min(56vw, 220px); }
+  .bottom:has([data-action="toggle-legend"][aria-expanded="true"]),
+  .bottom:has([data-sheet="open"]) { flex-wrap: wrap; }
+  .bottom:has([data-action="toggle-legend"][aria-expanded="true"]) .legend,
+  .bottom:has([data-sheet="open"]) .dock { flex: 1 0 100%; width: 100%; max-width: none; order: -1; }
+  .side {
+    left: max(10px, env(safe-area-inset-left, 0px));
+    right: max(10px, env(safe-area-inset-right, 0px));
+    max-height: min(48dvh, calc(100% - var(--top) - var(--foot) - 12px));
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .bottom { transition: none; }
 }

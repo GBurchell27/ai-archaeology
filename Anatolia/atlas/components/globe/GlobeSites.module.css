@@ -103,7 +103,16 @@
 }
 
 @media (max-width: 640px) {
-  .osmCredit { left: 18px; right: auto; bottom: 74px; font-size: 10px; }
+  .osmCredit {
+    left: max(8px, env(safe-area-inset-left, 0px));
+    right: max(8px, env(safe-area-inset-right, 0px));
+    bottom: calc(32px + env(safe-area-inset-bottom, 0px));
+    max-width: none;
+    font-size: 10px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

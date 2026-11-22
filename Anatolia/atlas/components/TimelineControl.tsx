@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, type KeyboardEvent } from "react";
+import { useEffect, useRef, useState, type KeyboardEvent } from "react";
 import { NamedPeriodChips } from "@/components/NamedPeriodChips";
 import { TimelineIntervalBand } from "@/components/TimelineIntervalBand";
 import { formatYear } from "@/lib/periods";
@@ -85,15 +85,26 @@ export function TimelineControl(props: {
 
   const startAt = yearToTrack(props.range.start) * 100;
   const endAt = yearToTrack(props.range.end) * 100;
+  const [sheetOpen, setSheetOpen] = useState(false);
   return (
     <div
       className="timebar"
       data-role="timeline-control"
+      data-sheet={sheetOpen ? "open" : "closed"}
       data-year-start={props.range.start}
       data-year-end={props.range.end}
       data-playing={props.playing ? "true" : "false"}
       data-undated={props.showUndated ? "show" : "hide"}
     >
+      <button
+        type="button"
+        className="time-sheet-toggle"
+        data-action="toggle-time"
+        aria-expanded={sheetOpen}
+        onClick={() => setSheetOpen((open) => !open)}
+      >
+        {formatYear(props.range.start)} – {formatYear(props.range.end)}
+      </button>
       <button
         type="button"
         className="time-play"

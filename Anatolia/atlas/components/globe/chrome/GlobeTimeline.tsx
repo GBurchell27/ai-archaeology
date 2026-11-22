@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useId, useState } from "react";
 import { NamedPeriodChips } from "@/components/NamedPeriodChips";
 import type { NamedPeriod } from "@/lib/world/namedPeriods";
 import { ALL_TIME, WORLD_ERAS, activeWorldEra, describeSpan, isAllTime, type YearSpan } from "@/lib/world/worldEras";
+import { ChevronIcon } from "./ExplorerIcons";
 import ui from "./chrome.module.css";
 import styles from "./GlobeTimeline.module.css";
 import { YearRangeSlider } from "./YearRangeSlider";
@@ -34,11 +35,50 @@ export function GlobeTimeline(props: {
   onSpan(span: YearSpan): void;
   onShowUndated(show: boolean): void;
 }) {
+  const { span } = props;
+  const [sheetOpen, setSheetOpen] = useState(false);
+  const bodyId = useId();
+  return (
+    <section
+      className={`${ui.glass} ${styles.timeline}`}
+      aria-label="Time filter"
+      data-role="globe-timeline"
+      data-sheet={sheetOpen ? "open" : "closed"}
+      data-year-start={span[0]}
+      data-year-end={span[1]}
+    >
+      <button
+        type="button"
+        className={`${ui.chip} ${styles.sheetToggle}`}
+        aria-expanded={sheetOpen}
+        aria-controls={bodyId}
+        data-action="toggle-timeline"
+        onClick={() => setSheetOpen((open) => !open)}
+      >
+        <span className={styles.sheetLabel}>{describeSpan(span)}</span>
+        <ChevronIcon direction={sheetOpen ? "down" : "up"} />
+      </button>
+      <div id={bodyId} className={styles.sheetBody}>
+        <TimelineControls {...props} />
+      </div>
+    </section>
+  );
+}
+
+function TimelineControls(props: {
+  span: YearSpan;
+  showUndated: boolean;
+  shownCount: number | null;
+  undatedCount: number | null;
+  namedPeriods: readonly NamedPeriod[];
+  onSpan(span: YearSpan): void;
+  onShowUndated(show: boolean): void;
+}) {
   const { span, onSpan, shownCount, undatedCount } = props;
   const era = activeWorldEra(span);
   const announcedCount = useSettled(shownCount, ANNOUNCE_AFTER_MS);
   return (
-    <section className={`${ui.glass} ${styles.timeline}`} aria-label="Time filter" data-role="globe-timeline" data-year-start={span[0]} data-year-end={span[1]}>
+    <>
       <div className={styles.head}>
         <p className={`${ui.serif} ${styles.readout}`} data-role="timeline-readout">{describeSpan(span)}</p>
         {isAllTime(span) ? null : (
@@ -83,6 +123,6 @@ export function GlobeTimeline(props: {
         chipClassName={namedPeriodChipClass}
         onSpan={(next) => onSpan(next ?? ALL_TIME)}
       />
-    </section>
+    </>
   );
 }
