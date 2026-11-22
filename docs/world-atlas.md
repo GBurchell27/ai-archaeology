@@ -280,7 +280,7 @@ Each has a pytest wrapper, so `pytest` at the repository root runs them all.
 | `check_settings.mts` | `tests/test_settings.py` | The settings panel: the six sections in their order, each with a line for a view without it; what each preset sets on the globe and the Anatolia map (the deep past ending on a date band and holding the Younger Dryas, megaliths only naming a catalogue site type), and which preset a given state lights. |
 | `check_account.mts` | `tests/test_account.py` | Optional accounts ([`accounts.md`](accounts.md)): config detection, which ids may be saved or voted for, the saved-sites and votes store against an in-memory database (every change, and every change going back when refused), the browser's requests against a stub fetch, the server's routes against a recording query runner (401 without a session, every statement tied to the session's visitor, ids checked), the order of the vote list, its wording, and the id rule and cascade in the schema file. No real service is touched. |
 | `check_pin_scale.mts`, `check_timeline.mts`, `check_relief_load.mts`, `check_place_resources.mts` | same names under `tests/` | The Anatolia atlas: pin sizes, the timeline, relief loading, the Sources shard. |
-| `check_trip.mts` | none | The trip timeline. It needs bundling first. See the atlas README. |
+| `check_trip.mts` | `tests/test_trip.py` | The trip timeline: one unbroken journey, the flights and drives, the roads file, and the replay clock. |
 
 `npx tsc --noEmit` in `Anatolia/atlas` checks the types.
 
