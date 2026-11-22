@@ -8,7 +8,7 @@ Open `siteNews.ts` and append one object to `NEWS_ITEMS`.
 | --- | --- |
 | `id` | A new slug, unique in the list. Do not reuse an id. |
 | `date` | The day the source itself gives, as `YYYY-MM-DD`. |
-| `siteIds` | Every id that site already goes by: its id in `public/sites.geojson`, and its world-catalogue id (`Q…` or a Pleiades number) when the catalogue has one. Copy an existing group such as `GOBEKLI_TEPE_IDS` rather than inventing an id. An unknown id fails the check. |
+| `siteIds` | The ids of that same place: its id in `public/sites.geojson`, and its world-catalogue id when the catalogue has one. Copy the ids this file already lists for the site. Do not copy `GOBEKLI_TEPE_IDS` whole: it also names Pleiades 961911, which is a different place. An unknown id fails the check. |
 | `title` | A short title. |
 | `summary` | One line, no line break. Say what the source reports. Do not turn it into a finding of this atlas. |
 | `sourceName` | The publication's name, as the visitor should see it. |

@@ -1,7 +1,7 @@
 // Dated reports about published sites. A report is not a change to the site's record.
 // How to add one is in README.md beside this file.
 
-import { GOBEKLI_TEPE_IDS, KARAHAN_TEPE_IDS } from "../reading/siteIds";
+import { KARAHAN_TEPE_IDS } from "../reading/siteIds";
 
 export const NEWS_STATUSES = ["reported", "disputed", "rumour-denied"] as const;
 
@@ -30,6 +30,12 @@ export interface NewsItem {
   status: NewsStatus;
 }
 
+/**
+ * Göbekli Tepe in Turkey: the curated pin and the Wikidata item.
+ * Pleiades 961911 is a different place (the Merv Oasis) and is not listed.
+ * `GOBEKLI_TEPE_IDS` still includes it; that alias is left unchanged here.
+ */
+const GOBEKLI_TEPE_NEWS_IDS = ["gobekli-tepe", "Q214944"] as const;
 /** Sayburç in the curated atlas and in the world catalogue. */
 const SAYBURC_IDS = ["sayburc", "Q115679382"] as const;
 /**
@@ -43,7 +49,7 @@ const SEFER_TEPE_IDS = ["Q118133735"] as const;
  */
 const CEMKA_HOYUK_IDS = ["Q132182967"] as const;
 
-const EXHIBITION_SITES = [...GOBEKLI_TEPE_IDS, ...KARAHAN_TEPE_IDS, ...SAYBURC_IDS, ...SEFER_TEPE_IDS] as const;
+const EXHIBITION_SITES = [...GOBEKLI_TEPE_NEWS_IDS, ...KARAHAN_TEPE_IDS, ...SAYBURC_IDS, ...SEFER_TEPE_IDS] as const;
 
 export const NEWS_ITEMS: readonly NewsItem[] = [
   {
@@ -52,7 +58,7 @@ export const NEWS_ITEMS: readonly NewsItem[] = [
     date: "2026-11-19",
     siteIds: EXHIBITION_SITES,
     title: "Taş Tepeler finds on show in Ankara",
-    summary: "GAP Gündemi reports Pre-Pottery Neolithic finds from Göbeklitepe, Karahantepe, Sefertepe and Sayburç on show at the Presidential National Library until 23 Nov 2026: known finds, not new discoveries.",
+    summary: "GAP Gündemi reports Pre-Pottery Neolithic finds from Göbeklitepe, Karahantepe, Sefertepe and Sayburç on show at the Presidential National Library until 23 Nov 2026.",
     sourceName: "GAP Gündemi",
     sourceUrl: "https://www.gapgundemi.com/haber/29188600/tas-tepelerin-tarihi-eserleri-ankarada-sergileniyor",
     status: "reported",
@@ -61,7 +67,7 @@ export const NEWS_ITEMS: readonly NewsItem[] = [
     id: "gobekli-tepe-rectangular-buildings-2026",
     // Anadolu Agency, 13 Aug 2026.
     date: "2026-08-13",
-    siteIds: GOBEKLI_TEPE_IDS,
+    siteIds: GOBEKLI_TEPE_NEWS_IDS,
     title: "Rectangular buildings reported at Göbekli Tepe",
     summary: "Anadolu Agency reports that new excavations at Göbekli Tepe uncovered rectangular-plan buildings of the settlement's second phase.",
     sourceName: "Anadolu Agency",

@@ -12,9 +12,10 @@ interface SectionStyle {
 export function SiteNews(props: SectionStyle & { siteId: string }) {
   const items = newsForSite(props.siteId);
   if (items.length === 0) return null;
+  const headingId = `site-news-${props.siteId}`;
   return (
-    <section className={props.className} data-role="site-news" aria-label="News">
-      <h3 className={props.headingClassName}>News</h3>
+    <section className={props.className} data-role="site-news" aria-labelledby={headingId}>
+      <h3 id={headingId} className={props.headingClassName}>News</h3>
       <p className={styles.note}>Reports about this site. A report does not change its published record.</p>
       <ol className={styles.list}>
         {items.map((item) => (
