@@ -10,7 +10,10 @@ export function AtlasCredits(props: {
   const { attribution, sentinelRegion } = props;
   return (
     <details className="credit">
-      <summary>GEM-15 · Copernicus · EOX · Pleiades</summary>
+      <summary>
+        <span className="credit-wide">GEM-15 · Copernicus · EOX · Pleiades</span>
+        <span className="credit-phone">EOX CC BY-NC-SA 4.0 · GEM-15 CC BY 4.0 · Pleiades CC BY 3.0 · Copernicus</span>
+      </summary>
       <p>
         {attribution.gem15 ? <><CreditLine text={attribution.gem15} /> </> : null}
         {attribution.dem} <CreditLine text={attribution.satellite} />

@@ -154,3 +154,11 @@
 @media (pointer: coarse) {
   .guide-tabs button, .guide-header .guide-text-button { min-height: 40px; }
 }
+
+/* The 720px rule above is more specific than `.panel`, so a phone still needs its own cap. */
+@media (max-width: 640px) {
+  .panel.place-guide {
+    max-height: min(46dvh, 420px);
+    padding-bottom: max(16px, env(safe-area-inset-bottom, 0px));
+  }
+}

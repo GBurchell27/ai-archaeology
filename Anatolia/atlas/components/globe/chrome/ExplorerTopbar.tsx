@@ -40,7 +40,10 @@ export function ExplorerTopbar(props: {
 }) {
   return (
     <header className={styles.topbar}>
-      <h1 className={`${ui.serif} ${styles.brand}`}>Atlas of early monuments</h1>
+      <h1 className={`${ui.serif} ${styles.brand}`} aria-label="Atlas of early monuments">
+        <span className={styles.brandMark}>Atlas</span>
+        <span className={styles.brandRest}> of early monuments</span>
+      </h1>
       <SiteSearch catalogue={props.catalogue} unavailable={props.catalogueFailed} onVisit={props.onVisit} />
       <nav className={styles.panels} aria-label="Panels">
         {panelButtons(props.accountLabel).map(({ panel, label, icon }) => (

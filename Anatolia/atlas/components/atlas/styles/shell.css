@@ -190,3 +190,7 @@ body[data-settings="open"] .icon-button[data-action="settings"],
   .icon-button { min-width: 40px; }
   .chip, .dock-handle, .close { min-height: 40px; }
 }
+
+@media (max-width: 640px) {
+  .atlas { --top: calc(56px + env(safe-area-inset-top, 0px)); }
+}

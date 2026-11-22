@@ -99,3 +99,10 @@
 @media (pointer: coarse) {
   .input { height: 40px; }
 }
+
+@media (max-width: 640px) {
+  .key { display: none; }
+  .search:not(:focus-within) .glyph { left: 50%; transform: translate(-50%, -50%); }
+  .search:not(:focus-within) .input { padding: 0; color: transparent; caret-color: transparent; }
+  .search:not(:focus-within) .input::placeholder { color: transparent; }
+}

@@ -3,6 +3,7 @@
 import { useCallback, useMemo, useRef, useState, type ReactNode } from "react";
 import type { GlobeLook } from "@/lib/globe/ellipsoid";
 import { GLOBE_BASEMAPS } from "@/lib/globe/basemaps";
+import { compactRecordCredits } from "@/lib/globe/compactCredits";
 import { ENTER_ATLAS_ALTITUDE, atlasLookFromGlobe, type AtlasLook } from "@/lib/globe/handoff";
 import { namedPeriodsForRegions, periodRegionKeyAt } from "@/lib/world/namedPeriods";
 import { ExplorerChrome } from "./chrome/ExplorerChrome";
@@ -62,6 +63,7 @@ export function GlobeExplorer(props: GlobeExplorerProps) {
 
   const automaticBasemap = useGlobeBasemap();
   const basemap = GLOBE_BASEMAPS.find((candidate) => candidate.id === explorer.basemapId) ?? automaticBasemap;
+  const recordCredits = useMemo(() => compactRecordCredits(explorer.catalogue?.index ?? null), [explorer.catalogue]);
 
   const { catalogue, selection } = explorer;
   return (
@@ -71,6 +73,7 @@ export function GlobeExplorer(props: GlobeExplorerProps) {
       onEnterAtlas={onEnterAtlas}
       flyTo={selection.flyTo}
       basemap={basemap}
+      recordCredits={recordCredits}
       overlay={<ExplorerChrome explorer={explorer} namedPeriods={namedPeriods} basemapId={basemap.id} modelSlot={props.modelSlot} onOpenPlace={props.onOpenPlace} onEnterAtlas={enterAtlasAtSite} onEnterWalk={props.onEnterWalk} />}
     >
       {catalogue ? (

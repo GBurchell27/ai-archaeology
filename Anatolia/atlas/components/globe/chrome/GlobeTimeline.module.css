@@ -42,6 +42,19 @@
 .allTime { align-self: center; min-height: 24px; margin-right: auto; }
 .head:not(:has(.allTime)) .readout { margin-right: auto; }
 
+/* On a phone the toggle is the chip and the body is the sheet. Wider screens ignore the toggle. */
+.sheetBody { display: contents; }
+.timeline > .sheetToggle { display: none; }
+.sheetLabel {
+  min-width: 0;
+  overflow: hidden;
+  font-family: Palatino, "Palatino Linotype", "Book Antiqua", Georgia, serif;
+  font-style: italic;
+  font-size: 15px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 /* The dock is a size container (ExplorerChrome): this follows the room the timeline really has. */
 @container (max-width: 560px) {
   .timeline { gap: 7px; padding: 9px 12px 10px; }
@@ -61,4 +74,68 @@
   .thumb { top: 13px; }
   /* The thumb stays small; its hit area does not. */
   .thumb::after { content: ""; position: absolute; inset: -13px; }
+}
+
+/* The sheet. Closed, only the range chip shows. Open, the controls rise above it and the chips scroll sideways. */
+@media (max-width: 640px) {
+  .timeline {
+    gap: 0;
+    width: max-content;
+    max-width: 100%;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    box-shadow: none;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+  .timeline > .sheetToggle {
+    display: inline-flex;
+    gap: 8px;
+    max-width: 100%;
+    min-height: 40px;
+    padding: 4px 12px;
+    border-radius: 999px;
+    background: rgba(10, 13, 18, 0.84);
+    -webkit-backdrop-filter: blur(18px) saturate(1.25);
+    backdrop-filter: blur(18px) saturate(1.25);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.28);
+  }
+  .sheetBody { display: none; }
+  .readout { display: none; }
+  .timeline[data-sheet="open"] {
+    width: 100%;
+    border: 1px solid var(--globe-rule);
+    border-radius: 4px;
+    background: rgba(10, 13, 18, 0.92);
+    -webkit-backdrop-filter: blur(18px) saturate(1.25);
+    backdrop-filter: blur(18px) saturate(1.25);
+    box-shadow: 0 14px 38px rgba(0, 0, 0, 0.34);
+  }
+  .timeline[data-sheet="open"] > .sheetToggle {
+    width: 100%;
+    border: 0;
+    border-radius: 4px 4px 0 0;
+    background: transparent;
+    box-shadow: none;
+    justify-content: space-between;
+  }
+  .timeline[data-sheet="open"] .sheetBody {
+    display: grid;
+    gap: 7px;
+    max-height: min(46dvh, 400px);
+    padding: 0 12px 10px;
+    overflow: auto;
+    overscroll-behavior: contain;
+  }
+  .eras, .periods {
+    display: flex;
+    flex-wrap: nowrap;
+    margin: 0 -12px;
+    padding: 2px 12px;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .eras::-webkit-scrollbar, .periods::-webkit-scrollbar { display: none; }
+  .era, .periods > * { flex: none; padding-inline: 9px; }
 }

@@ -40,14 +40,18 @@ export function ExplorerLegend(props: {
         <span className={styles.status} data-role="site-status">
           {counts === null ? "Loading sites…" : (
             <>
-              <span className={ui.numeric}><b>{count(counts.shown)}</b> sites shown</span>
+              <span className={ui.numeric}>
+                <b>{count(counts.shown)}</b>
+                <span className={styles.shownFull}> sites shown</span>
+                <span className={styles.shownShort}> sites</span>
+              </span>
               <span className={`${ui.numeric} ${styles.loaded}`} title="Regional sites load as you zoom in">
                 {count(counts.loaded)} loaded of {count(totalSites)}
               </span>
             </>
           )}
         </span>
-        <span className={styles.caret}><span className={ui.eyebrow}>Legend</span><ChevronIcon direction={open ? "down" : "up"} /></span>
+        <span className={styles.caret}><span className={`${ui.eyebrow} ${styles.caretLabel}`}>Legend</span><ChevronIcon direction={open ? "down" : "up"} /></span>
       </button>
       <div id={bodyId} className={styles.body} hidden={!open}>
         <SiteTypeFilter

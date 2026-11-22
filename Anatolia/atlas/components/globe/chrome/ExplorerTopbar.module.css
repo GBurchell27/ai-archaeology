@@ -39,3 +39,28 @@
 @media (pointer: coarse) {
   .panelButton { height: 40px; min-width: 40px; }
 }
+
+/* A phone portrait: one row. The search is an icon until it is focused, then it covers this row. */
+@media (max-width: 640px) {
+  .topbar { position: relative; flex-wrap: nowrap; gap: 6px; }
+  .brand { font-size: 17px; }
+  .brandRest { display: none; }
+  .panels { margin-left: 0; gap: 4px; }
+  .panelButton { width: 40px; height: 40px; min-width: 40px; padding: 0; }
+  .topbar > [role="search"] {
+    order: 0;
+    flex: 0 0 40px;
+    width: 40px;
+    max-width: 40px;
+    margin-left: auto;
+  }
+  .topbar:has([role="search"]:focus-within) > [role="search"] {
+    position: absolute;
+    z-index: 2;
+    inset: 0 0 auto;
+    flex: none;
+    width: auto;
+    max-width: none;
+  }
+  .topbar:has([role="search"]:focus-within) > :not([role="search"]) { visibility: hidden; }
+}
