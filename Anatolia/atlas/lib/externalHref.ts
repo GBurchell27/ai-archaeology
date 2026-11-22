@@ -46,6 +46,10 @@ const EXACT_HOSTS = new Set([
   "cayonutepesi.org.tr",
   "antiquity.ac.uk",
   "www.cambridge.org",
+  "www.aa.com.tr", // Anadolu Agency news reports
+  "aa.com.tr",
+  "www.gapgundemi.com", // GAP Gündemi news reports
+  "gapgundemi.com",
   "www.uniroma1.it",
   "disci.unibo.it",
   "www.orientlab.net",

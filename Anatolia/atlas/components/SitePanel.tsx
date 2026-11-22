@@ -3,6 +3,7 @@ import { PlaceGuide } from "@/components/PlaceGuide";
 import { PlaceMaps, closeupCreditNote } from "@/components/PlaceMaps";
 import { PlaceResources } from "@/components/PlaceResources";
 import { SafeLink } from "@/components/SafeLink";
+import { SiteNews } from "@/components/SiteNews";
 import { SiteFollowLinks, SiteReadingList } from "@/components/SiteReading";
 import { SiteTheories } from "@/components/theories/SiteTheories";
 import { TheoryCard } from "@/components/theories/TheoryCard";
@@ -93,6 +94,7 @@ export function SitePanel(props: {
         <p>{properties.description}</p>
         {properties.notes ? <p>{properties.notes}</p> : null}
       </>}
+      news={<SiteNews siteId={props.site.id} className="guide-overview" />}
       questions={(
         <SiteTheories siteId={props.site.id} className="guide-overview" openTheoryId={props.openTheoryId} onOpenTheory={props.onToggleTheory}>
           {props.openTheoryId ? <TheoryCard theoryId={props.openTheoryId} /> : null}
