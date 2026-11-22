@@ -12,6 +12,7 @@ register(`data:text/javascript,${encodeURIComponent(`
 `)}`);
 const { READING_KIND_LABEL, SITE_READING_LISTS, readingListForSite, readingRowsForSite } = await import("../lib/reading/readingLists.ts");
 const { FOLLOW_KIND_LABEL, FOLLOW_LINKS, WHOLE_ATLAS, followLinksForSite, followRowsForAtlas, followRowsForSite } = await import("../lib/reading/followLinks.ts");
+const { GOBEKLI_TEPE_IDS, TAS_TEPELER_IDS } = await import("../lib/reading/siteIds.ts");
 
 let failed = 0;
 function check(label: string, condition: boolean): void {
@@ -30,6 +31,12 @@ const knownSite = (id: string) => resourceUrl(id) !== null && (curatedIds.has(id
 /** An address SafeLink would render unchanged. */
 const linkable = (url: string) => url.startsWith("https://") && safeExternalHref(url) === url;
 const filled = (...values: string[]) => values.every((value) => value.trim().length > 0);
+const namesId = (ids: readonly string[], id: string) => ids.includes(id);
+
+function catalogueDetail(id: string): { name?: string; ids?: Record<string, string> } | undefined {
+  const shard = readJson(`../public/world/detail/${id.slice(-2)}.json`) as Record<string, { name?: string; ids?: Record<string, string> }>;
+  return shard[id];
+}
 
 const listedIds = SITE_READING_LISTS.flatMap((list) => list.siteIds);
 check("no site id sits in two reading lists", new Set(listedIds).size === listedIds.length);
@@ -46,6 +53,30 @@ for (const list of SITE_READING_LISTS) {
 
 check("Göbekli Tepe is found under its curated id and its catalogue id",
   readingListForSite("gobekli-tepe").length > 0 && readingListForSite("gobekli-tepe") === readingListForSite("Q214944"));
+check("Göbekli Tepe's ids are the curated pin and the Wikidata item", [...GOBEKLI_TEPE_IDS].join(",") === "gobekli-tepe,Q214944");
+check("Pleiades 961911 stays its own catalogue place and is not an id of Göbekli Tepe",
+  catalogueIds.has("961911") && !namesId(GOBEKLI_TEPE_IDS, "961911") && !namesId(TAS_TEPELER_IDS, "961911"));
+check("Pleiades 961911 gets none of Göbekli Tepe's reading or follow links",
+  readingListForSite("961911").length === 0 && followLinksForSite("961911").length === 0);
+check("Q134611641 stays its own catalogue place and gets none of Göbekli Tepe's reading or follow links",
+  catalogueIds.has("Q134611641") && !namesId(GOBEKLI_TEPE_IDS, "Q134611641") && readingListForSite("Q134611641").length === 0 && followLinksForSite("Q134611641").length === 0);
+const turkishRecord = catalogueDetail("Q214944");
+const mervRecord = catalogueDetail("961911");
+const misplottedSefer = catalogueDetail("Q134611641");
+check("the Turkish catalogue record's Pleiades id is 245438984",
+  turkishRecord?.ids?.pleiades === "245438984");
+check("Pleiades 961911's record does not name the Turkish site",
+  mervRecord !== undefined && !Object.values(mervRecord.ids ?? {}).includes("Q214944") && !Object.values(mervRecord.ids ?? {}).includes("gobekli-tepe"));
+check("the Sefer Tepe record on Göbekli Tepe does not name the Turkish site",
+  misplottedSefer !== undefined && !Object.values(misplottedSefer.ids ?? {}).includes("Q214944"));
+const gobekliHrefs = [
+  ...readingRowsForSite("gobekli-tepe"),
+  ...readingRowsForSite("Q214944"),
+  ...followRowsForSite("gobekli-tepe"),
+  ...followRowsForSite("Q214944"),
+].map((row) => row.href ?? "");
+check("Göbekli Tepe's reading and follow links cite no Pleiades 961911 page",
+  gobekliHrefs.length > 0 && gobekliHrefs.every((href) => !href.includes("961911")));
 const gobekliKinds = new Set(readingListForSite("gobekli-tepe").map((work) => work.kind));
 check("Göbekli Tepe lists all three kinds", gobekliKinds.size === 3);
 check("Giza has a list under its catalogue id", readingListForSite("Q12508").some((work) => work.authors.includes("Petrie")));
@@ -59,6 +90,8 @@ for (const link of FOLLOW_LINKS) {
   check(`follow "${link.name}" names sites the atlas holds, or the whole atlas`, link.sites === WHOLE_ATLAS || (link.sites.length > 0 && link.sites.every(knownSite)));
 }
 check("no follow address is listed twice", new Set(FOLLOW_LINKS.map((link) => link.url)).size === FOLLOW_LINKS.length);
+check("no follow link is filed under Pleiades 961911 or the Sefer Tepe pin on Göbekli",
+  FOLLOW_LINKS.every((link) => link.sites === WHOLE_ATLAS || (!namesId(link.sites, "961911") && !namesId(link.sites, "Q134611641"))));
 check("Göbekli Tepe's follow links are found under either id",
   followLinksForSite("gobekli-tepe").length > 0 && followLinksForSite("gobekli-tepe").length === followLinksForSite("Q214944").length);
 check("a whole-atlas link is not repeated on a site", FOLLOW_LINKS.some((link) => link.sites === WHOLE_ATLAS) && followLinksForSite(WHOLE_ATLAS).length === 0);

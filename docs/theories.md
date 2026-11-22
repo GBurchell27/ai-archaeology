@@ -42,7 +42,7 @@ A **source** is a citation (author, year, title, where published), a kind (`exca
 
 ## Site ids
 
-A record lists every id the app uses for its site, because the same place has more than one. Göbekli Tepe is `gobekli-tepe` in the walk view and the Anatolia atlas and `Q214944` in the world catalogue. Giza is `Q12508` (the pyramid complex) and `Q37200` (the Great Pyramid). `theoryTouchesSite(theory, id)` answers for any of them, and `theoriesForSite` and `questionsForSite` take any of them.
+A record lists every id the app uses for its site, because the same place has more than one. Göbekli Tepe is `gobekli-tepe` in the walk view and the Anatolia atlas and `Q214944` in the world catalogue. Pleiades 961911 is a different place and is not listed on its records. Q134611641 is a Sefer Tepe record plotted on Göbekli Tepe, and it is not listed either. Giza is `Q12508` (the pyramid complex) and `Q37200` (the Great Pyramid). `theoryTouchesSite(theory, id)` answers for any of them, and `theoriesForSite` and `questionsForSite` take any of them.
 
 Landmark ids are those of the walk view (`lib/walk/gobekliTepeLandmarks.ts`). They are unique only within a site, so `questionsForLandmark` takes the site id as well.
 
