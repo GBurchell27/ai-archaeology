@@ -1,6 +1,9 @@
 "use client";
 
 import { useEffect, useRef, useState, type ReactNode } from "react";
+import { CloseButton } from "@/components/chrome/CloseButton";
+import { useDismissLayer } from "@/components/chrome/useDismissLayer";
+import { DISMISS_PRIORITY } from "@/lib/chrome/dismissStack";
 import { SafeLink } from "@/components/SafeLink";
 import { mapsForPlace, placeLesson, readingsForPlace, type Reading } from "@/lib/placeLearning";
 
@@ -43,6 +46,8 @@ export function PlaceGuide(props: {
   const content = useRef<HTMLDivElement>(null);
   const lesson = placeLesson(props.id);
   const shown = props.shown ?? true;
+  // Mounted means the place is chosen, including while its card is still on the way in.
+  useDismissLayer(true, props.onClose, DISMISS_PRIORITY.panel);
 
   useEffect(() => {
     if (content.current) content.current.scrollTop = 0;
@@ -57,7 +62,7 @@ export function PlaceGuide(props: {
       data-place-guide={props.id}
     >
       <header className="guide-header">
-        <button type="button" className="close guide-close" data-action={props.closeAction} onClick={props.onClose}>Close</button>
+        <CloseButton name={props.name} action={props.closeAction} placement="corner" onClick={props.onClose} />
         <h2>{props.name}</h2>
         {props.meta}
         <nav className="guide-tabs" aria-label="Place guide">

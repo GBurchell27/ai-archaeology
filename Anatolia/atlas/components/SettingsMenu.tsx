@@ -1,4 +1,9 @@
+"use client";
+
 import { AtlasBaseMapSettings, AtlasLabelSetting, AtlasLayerSettings, AtlasTimelineSettings } from "@/components/atlas/AtlasSettingsSections";
+import { CloseButton } from "@/components/chrome/CloseButton";
+import { useDismissLayer } from "@/components/chrome/useDismissLayer";
+import { DISMISS_PRIORITY } from "@/lib/chrome/dismissStack";
 import type { AtlasPreferences } from "@/components/atlas/useAtlasPreferences";
 import type { ContextLayersState } from "@/components/atlas/useContextLayers";
 import type { MapDisplay } from "@/components/atlas/useMapDisplay";
@@ -28,6 +33,7 @@ function atlasPresetControls(timeline: TimelineState, display: MapDisplay): Sett
 
 /** The Anatolia map's settings: the shared panel, filled with this map's own controls and state. */
 export function SettingsMenu(props: {
+  onClose(): void;
   display: MapDisplay;
   preferences: AtlasPreferences;
   timeline: TimelineState;
@@ -37,8 +43,10 @@ export function SettingsMenu(props: {
   onClimate: (recordId: string) => void;
 }) {
   const { display, preferences, timeline } = props;
+  useDismissLayer(true, props.onClose, DISMISS_PRIORITY.panel);
   return (
     <aside className="menu" aria-label="Settings">
+      <div className="menu-dismiss"><CloseButton name="settings" onClick={props.onClose} /></div>
       <SettingsPanel
         presets={atlasPresetControls(timeline, display)}
         sections={{

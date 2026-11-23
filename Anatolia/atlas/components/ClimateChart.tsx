@@ -1,3 +1,8 @@
+"use client";
+
+import { CloseButton } from "@/components/chrome/CloseButton";
+import { useDismissLayer } from "@/components/chrome/useDismissLayer";
+import { DISMISS_PRIORITY } from "@/lib/chrome/dismissStack";
 import { SafeLink } from "@/components/SafeLink";
 
 export interface ClimateRecord {
@@ -29,9 +34,10 @@ export function ClimateChart(props: { record: ClimateRecord; onClose: () => void
     { year: -6200, label: "8.2 ka" },
     { year: -2200, label: "4.2 ka" },
   ].filter((mark) => mark.year >= minYear && mark.year <= maxYear);
+  useDismissLayer(true, props.onClose, DISMISS_PRIORITY.panel);
   return (
     <aside className="panel is-in chart" aria-label="Palaeoclimate record" data-chart={props.record.id}>
-      <button type="button" className="close" data-action="close-chart" onClick={props.onClose}>Close</button>
+      <CloseButton name="palaeoclimate record" action="close-chart" placement="corner" onClick={props.onClose} />
       <h2>{props.record.name}</h2>
       <p className="muted">{props.record.units}</p>
       <svg viewBox={`0 0 ${width} ${height}`} role="img" aria-label={`${props.record.name} time series`}>

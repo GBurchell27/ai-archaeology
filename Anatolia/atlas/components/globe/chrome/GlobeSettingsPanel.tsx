@@ -90,7 +90,7 @@ export function GlobeSettingsPanel(props: {
   const siteTypes = explorer.catalogue?.index.siteTypes ?? NO_SITE_TYPES;
   const presets = globePresetControls(explorer, siteTypes);
   return (
-    <PanelShell dataRole="globe-settings" title="Settings" closeLabel="Close the settings panel" onClose={props.onClose}>
+    <PanelShell dataRole="globe-settings" title="Settings" closeName="settings" onClose={props.onClose}>
       <SettingsPanel
         presets={presets}
         sections={{

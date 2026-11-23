@@ -1,6 +1,9 @@
 "use client";
 
 import { useMemo } from "react";
+import { CloseButton } from "@/components/chrome/CloseButton";
+import { useDismissLayer } from "@/components/chrome/useDismissLayer";
+import { DISMISS_PRIORITY } from "@/lib/chrome/dismissStack";
 import styles from "@/components/trip/TripControl.module.css";
 import { TripTrack } from "@/components/trip/TripTrack";
 import { useTripClockState } from "@/components/trip/useTripReplay";
@@ -29,6 +32,7 @@ export function TripControl(props: {
   const timeZone = localTimeZone(location);
   const clockText = clockLabel(timeMs, timeZone);
   const road = segment.kind === "travel" ? roadFor(props.roads, segment) : undefined;
+  useDismissLayer(true, props.onClose, DISMISS_PRIORITY.panel);
   const step = (direction: 1 | -1) => {
     clock.pause();
     clock.seek(adjacentBoundary(timed, clock.getSnapshot().timeMs, direction));
@@ -54,7 +58,7 @@ export function TripControl(props: {
           <input type="checkbox" checked={props.follow} onChange={(event) => props.onFollow(event.target.checked)} />
           Follow
         </label>
-        <button type="button" className={styles.close} aria-label="Close trip replay" onClick={props.onClose}>×</button>
+        <CloseButton name="trip replay" onClick={props.onClose} />
       </div>
       <TripTrack
         span={span}

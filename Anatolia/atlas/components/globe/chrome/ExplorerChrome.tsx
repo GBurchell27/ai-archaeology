@@ -1,6 +1,8 @@
 "use client";
 
-import { memo, useCallback, useEffect, useMemo, type ReactNode } from "react";
+import { memo, useCallback, useMemo, type ReactNode } from "react";
+import { useDismissLayer } from "@/components/chrome/useDismissLayer";
+import { DISMISS_PRIORITY } from "@/lib/chrome/dismissStack";
 import type { WorldSource } from "@/lib/world/catalogueTypes";
 import type { NamedPeriod } from "@/lib/world/namedPeriods";
 import { AccountPanel } from "../../account/AccountPanel";
@@ -34,16 +36,6 @@ export interface ExplorerChromeProps {
   onEnterWalk(siteId: string): void;
 }
 
-function useEscapeToClose(closeTop: () => boolean): void {
-  useEffect(() => {
-    function onKeyDown(event: KeyboardEvent) {
-      if (event.key === "Escape" && !event.defaultPrevented && closeTop()) event.preventDefault();
-    }
-    window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
-  }, [closeTop]);
-}
-
 /**
  * All the DOM laid over the globe: top bar, the side column (site card over the open panel),
  * legend and timeline. Memoised so camera movement, which re-renders GlobeExplorer, does not touch it.
@@ -52,7 +44,9 @@ export const ExplorerChrome = memo(function ExplorerChrome(props: ExplorerChrome
   const { explorer } = props;
   const { catalogue, selection, tour, theoryLens, panel } = explorer;
   const selected = selection.selected;
-  useEscapeToClose(explorer.closeTop);
+  // The card sits on the panel, so only the one the visitor can see takes Escape.
+  useDismissLayer(selected !== null, explorer.closeTop, DISMISS_PRIORITY.panel);
+  useDismissLayer(panel !== null && selected === null, explorer.closeTop, DISMISS_PRIORITY.panel);
   const wonder = useMemo(
     () => (selected?.featured ? catalogue?.featured.find((site) => site.id === selected.id) ?? null : null),
     [catalogue, selected],

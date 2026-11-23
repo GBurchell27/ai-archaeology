@@ -1,7 +1,10 @@
 "use client";
 
 import { useEffect, useId, useState } from "react";
+import { CloseButton } from "@/components/chrome/CloseButton";
+import { useDismissLayer } from "@/components/chrome/useDismissLayer";
 import type { PickedSite } from "@/lib/globe/siteBlock";
+import { DISMISS_PRIORITY } from "@/lib/chrome/dismissStack";
 import type { WorldSource } from "@/lib/world/catalogueTypes";
 import { OSM_MEGALITH_STYLE } from "@/lib/world/siteTypeStyle";
 import type { NewsPin } from "../useNewsPins";
@@ -35,6 +38,7 @@ export function ExplorerLegend(props: {
   const bodyId = useId();
   // Open by default only where it does not crowd the globe.
   useEffect(() => setOpen(window.matchMedia(ROOMY_SCREEN).matches), []);
+  useDismissLayer(open, () => setOpen(false), DISMISS_PRIORITY.chrome);
   const counts = filters.counts;
 
   return (
@@ -85,6 +89,11 @@ export function ExplorerLegend(props: {
           ) : null}
         </ul>
       </div>
+      {open ? (
+        <div className={styles.dismissRow}>
+          <CloseButton name="legend" onClick={() => setOpen(false)} />
+        </div>
+      ) : null}
     </section>
   );
 }

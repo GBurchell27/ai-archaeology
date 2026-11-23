@@ -21,7 +21,7 @@ export function SignInDialog(props: { account: AccountViewModel; onClose(): void
   }
 
   return (
-    <PanelShell dataRole="sign-in-dialog" eyebrow="Optional" title="Sign in" closeLabel="Close the sign-in" onClose={props.onClose}>
+    <PanelShell dataRole="sign-in-dialog" eyebrow="Optional" title="Sign in" closeName="sign-in" onClose={props.onClose}>
       <p className={styles.intro}>
         The atlas stays open without an account. Signing in lets you keep a list of sites you want to visit and sites you
         have visited, and vote for the places you find most remarkable.

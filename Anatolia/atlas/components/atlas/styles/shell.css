@@ -105,23 +105,6 @@ body[data-settings="open"] .icon-button[data-action="settings"],
   color: var(--globe-ochre-ink);
 }
 
-/* Quiet text button for closing a panel. */
-.close {
-  float: right;
-  min-height: 28px;
-  padding: 3px 9px;
-  border: 1px solid var(--globe-rule);
-  border-radius: 3px;
-  background: none;
-  color: var(--globe-ink-soft);
-  font-size: 11.5px;
-  letter-spacing: 0.04em;
-  cursor: pointer;
-  transition: background 140ms ease, color 140ms ease;
-}
-
-.close:hover { background: var(--globe-hover); color: var(--globe-ink); }
-
 .check { display: flex; gap: 8px; align-items: center; margin-top: 8px; }
 .atlas input[type="checkbox"], .atlas input[type="radio"] { flex: none; margin: 0; accent-color: var(--globe-ochre); }
 .atlas input[type="range"] { width: 130px; accent-color: var(--globe-ochre); cursor: pointer; }
@@ -180,7 +163,7 @@ body[data-settings="open"] .icon-button[data-action="settings"],
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .brand, .icon-button, .chip, .dock-handle, .close { transition: none; }
+  .brand, .icon-button, .chip, .dock-handle { transition: none; }
   .progress { animation: none; }
 }
 
@@ -188,7 +171,7 @@ body[data-settings="open"] .icon-button[data-action="settings"],
 @media (pointer: coarse) {
   .brand, .icon-button { height: 40px; }
   .icon-button { min-width: 40px; }
-  .chip, .dock-handle, .close { min-height: 40px; }
+  .chip, .dock-handle { min-height: 40px; }
 }
 
 @media (max-width: 640px) {

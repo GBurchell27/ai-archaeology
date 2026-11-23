@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useId, useRef, type ReactNode } from "react";
-import { CloseIcon } from "./ExplorerIcons";
+import { CloseButton } from "@/components/chrome/CloseButton";
 import ui from "./chrome.module.css";
 import styles from "./PanelShell.module.css";
 
@@ -13,7 +13,8 @@ export function PanelShell(props: {
   title: ReactNode;
   /** Small line above the title. */
   eyebrow?: ReactNode;
-  closeLabel: string;
+  /** Spoken as "Close {closeName}". */
+  closeName: string;
   onClose(): void;
   /** Fixed content between the title and the scrolling body (filters, tour controls). */
   toolbar?: ReactNode;
@@ -42,9 +43,7 @@ export function PanelShell(props: {
           {props.eyebrow ? <div className={`${ui.eyebrow} ${styles.eyebrow}`}>{props.eyebrow}</div> : null}
           <h2 id={titleId} className={`${ui.serif} ${styles.title}`}>{props.title}</h2>
         </div>
-        <button type="button" className={ui.iconButton} data-action="close-panel" aria-label={props.closeLabel} onClick={props.onClose}>
-          <CloseIcon />
-        </button>
+        <CloseButton name={props.closeName} action="close-panel" onClick={props.onClose} />
       </header>
       {props.toolbar ? <div className={styles.toolbar}>{props.toolbar}</div> : null}
       <div className={`${ui.scroll} ${styles.body}`}>{props.children}</div>

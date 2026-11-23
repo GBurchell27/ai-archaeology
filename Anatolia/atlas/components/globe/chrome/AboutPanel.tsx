@@ -13,7 +13,7 @@ const DATA_SOURCES_DOC = "https://github.com/GBurchell27/ai-archaeology/blob/mai
 export function AboutPanel(props: { index: WorldIndex | null; onClose(): void }) {
   const { index } = props;
   return (
-    <PanelShell dataRole="about-panel" title="About this atlas" closeLabel="Close the about panel" onClose={props.onClose}>
+    <PanelShell dataRole="about-panel" title="About this atlas" closeName="about" onClose={props.onClose}>
       <div className={`${ui.prose} ${styles.about}`}>
         <p className={`${ui.serif} ${styles.lead}`}>
           A globe of archaeological sites that have already been published, for reading and for looking at the land they sit in.

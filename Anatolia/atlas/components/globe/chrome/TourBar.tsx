@@ -1,5 +1,6 @@
 "use client";
 
+import { CloseButton } from "@/components/chrome/CloseButton";
 import type { WonderTourViewModel } from "../useGlobeExplorer";
 import { ChevronIcon } from "./ExplorerIcons";
 import ui from "./chrome.module.css";
@@ -24,7 +25,7 @@ export function TourBar(props: { tour: WonderTourViewModel }) {
       <button type="button" className={`${ui.button} ${ui.buttonPrimary}`} data-action="tour-next" disabled={tour.at === tour.stops.length - 1} onClick={() => tour.step(1)}>
         Next<ChevronIcon direction="right" />
       </button>
-      <button type="button" className={`${ui.button} ${styles.end}`} data-action="tour-end" onClick={tour.end}>End</button>
+      <CloseButton name="guided tour" action="tour-end" onClick={tour.end} />
     </nav>
   );
 }
