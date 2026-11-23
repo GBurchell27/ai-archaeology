@@ -39,7 +39,7 @@ export function MostVotedPanel(props: {
   const pending = loaded === null || (counts.length > 0 && sites === null);
 
   return (
-    <PanelShell dataRole="most-voted-panel" eyebrow="Visitors’ favourites" title="Most voted" closeLabel="Close the most voted list" onClose={props.onClose}>
+    <PanelShell dataRole="most-voted-panel" eyebrow="Visitors’ favourites" title="Most voted" closeName="most voted" onClose={props.onClose}>
       <p className={styles.intro} data-role="vote-meaning">{WHAT_A_VOTE_MEANS}</p>
       {loaded === "failed" ? <p className={styles.error} role="alert">The votes could not be loaded. Close this list and open it again to retry.</p> : null}
       {pending ? <p className={styles.note}>Loading…</p> : null}

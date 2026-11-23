@@ -25,10 +25,14 @@
 }
 
 .header {
+  position: sticky;
+  top: 0;
+  z-index: 2;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 8px;
+  background: var(--globe-panel);
 }
 
 .header h1 {
@@ -53,19 +57,6 @@
   border-color: var(--globe-rule-strong);
   background: var(--globe-hover);
 }
-
-.panel .close {
-  width: 34px;
-  height: 34px;
-  padding: 0 0 2px;
-  border-color: transparent;
-  background: none;
-  color: var(--globe-muted);
-  font-size: 20px;
-  line-height: 1;
-}
-
-.panel .close:hover { color: var(--globe-ink); }
 
 .views {
   display: flex;
@@ -298,6 +289,5 @@
 }
 
 @media (pointer: coarse) {
-  .panel .close, .views button, .filters select { min-height: 40px; }
-  .panel .close { width: 40px; }
+  .views button, .filters select { min-height: 40px; }
 }

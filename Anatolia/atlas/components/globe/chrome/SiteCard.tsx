@@ -106,7 +106,7 @@ export function SiteCard(props: {
       dataRole="site-card"
       eyebrow={<><i className={ui.swatch} style={{ ["--swatch" as string]: style.color }} />{style.title}{wonder ? <span className={styles.wonderMark}>Wonder</span> : null}</>}
       title={site.name}
-      closeLabel={`Close ${site.name}`}
+      closeName={site.name}
       onClose={props.onClose}
       footer={footer}
     >

@@ -1,6 +1,9 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { CloseButton } from "@/components/chrome/CloseButton";
+import { useDismissLayer } from "@/components/chrome/useDismissLayer";
+import { DISMISS_PRIORITY } from "@/lib/chrome/dismissStack";
 import { SafeLink } from "@/components/SafeLink";
 import {
   BENCHMARK_DISTANCES,
@@ -35,11 +38,12 @@ interface LandscapePanelProps {
 
 export function LandscapePanel({ onClose, ...props }: LandscapePanelProps) {
   const [view, setView] = useState<"elevation" | "benchmark">("elevation");
+  useDismissLayer(true, onClose, DISMISS_PRIORITY.panel);
   return (
     <aside className={styles.panel} aria-labelledby="landscape-title" data-role="landscape">
       <header className={styles.header}>
         <h1 id="landscape-title">Landscape research</h1>
-        <button className={styles.close} type="button" aria-label="Close landscape research" onClick={onClose}>×</button>
+        <CloseButton name="landscape research" onClick={onClose} />
       </header>
       <div className={styles.views} role="group" aria-label="Landscape research views">
         <button type="button" aria-pressed={view === "elevation"} onClick={() => setView("elevation")}>Elevation</button>
