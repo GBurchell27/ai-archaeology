@@ -1,10 +1,12 @@
 // The address-bar contract for the four views:
 //   ?view=globe&lon=38.00&lat=30.00&alt=13000  (alt is camera altitude in whole km)
 //   …&theory=<id> on a globe address            (the theory lens; an id the registry does not hold is dropped)
+//   …&tour=<id>&stop=<site id> on a globe address (a guided tour and the stop it is on; unknown ids are dropped)
 //   ?view=atlas&site=<id>                       (site optional)
 //   ?view=place&site=<id>
 //   ?view=walk&site=<id>&source=photographs     (the coordinator checks the id has a walk; source is left out for the model)
 
+import { readTourAddress, tourQuery } from "../world/guidedTours";
 import { findTheory } from "../theories/theoryRegistry";
 import { THEORY_ID_PATTERN } from "../theories/theoryStatus";
 import type { GlobeLook } from "./ellipsoid";
@@ -13,7 +15,7 @@ import type { GlobeLook } from "./ellipsoid";
 export type WalkSource = "model" | "photographs";
 
 export type WorldViewState =
-  | ({ view: "globe"; theoryId?: string } & GlobeLook)
+  | ({ view: "globe"; theoryId?: string; tourId?: string; stopId?: string } & GlobeLook)
   | { view: "atlas"; siteId?: string }
   | { view: "place"; siteId: string }
   | { view: "walk"; siteId: string; source?: WalkSource };
@@ -53,8 +55,10 @@ export function parseViewUrl(search: SearchInput): WorldViewState {
   if (view === "walk" && siteId) return readParameter(search, "source") === "photographs" ? { view, siteId, source: "photographs" } : { view, siteId };
   if (view === "atlas") return siteId ? { view: "atlas", siteId } : { view: "atlas" };
   const theoryId = readTheoryId(search);
+  const tour = readTourAddress(readParameter(search, "tour"), readParameter(search, "stop"));
   return {
     ...(theoryId ? { theoryId } : {}),
+    ...tour,
     view: "globe",
     longitude: readNumber(search, "lon", -180, 180, DEFAULT_GLOBE_LOOK.longitude),
     latitude: readNumber(search, "lat", -90, 90, DEFAULT_GLOBE_LOOK.latitude),
@@ -65,7 +69,7 @@ export function parseViewUrl(search: SearchInput): WorldViewState {
 export function serialiseViewUrl(state: WorldViewState): string {
   if (state.view === "globe") {
     const theory = state.theoryId ? `&theory=${state.theoryId}` : "";
-    return `?view=globe&lon=${state.longitude.toFixed(2)}&lat=${state.latitude.toFixed(2)}&alt=${Math.round(state.altitude / 1000)}${theory}`;
+    return `?view=globe&lon=${state.longitude.toFixed(2)}&lat=${state.latitude.toFixed(2)}&alt=${Math.round(state.altitude / 1000)}${theory}${tourQuery(state.tourId, state.stopId)}`;
   }
   const site = state.siteId ? `&site=${encodeURIComponent(state.siteId)}` : "";
   const source = state.view === "walk" && state.source === "photographs" ? "&source=photographs" : "";

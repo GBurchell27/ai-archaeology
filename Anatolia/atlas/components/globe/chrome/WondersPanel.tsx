@@ -2,6 +2,7 @@
 
 import { memo, useMemo, useState } from "react";
 import type { FeaturedSite } from "@/lib/world/catalogueTypes";
+import { TAS_TEPELER_TOUR, WONDERS_TOUR } from "@/lib/world/guidedTours";
 import { WONDER_STATUS, categoryTitle, groupWonders, type WonderGrouping } from "@/lib/world/wonders";
 import { formatSiteDates } from "@/lib/world/worldEras";
 import { CompassIcon } from "./ExplorerIcons";
@@ -21,7 +22,7 @@ export function WondersPanel(props: {
   tourLength: number;
   onVisit(siteId: string): void;
   onRandom(): void;
-  onStartTour(): void;
+  onStartTour(tourId: string): void;
   onClose(): void;
 }) {
   const [grouping, setGrouping] = useState<WonderGrouping>("era");
@@ -35,10 +36,13 @@ export function WondersPanel(props: {
           <CompassIcon />Take me somewhere
         </button>
         {props.tourLength ? (
-          <button type="button" className={ui.button} data-action="start-tour" onClick={props.onStartTour}>
+          <button type="button" className={ui.button} data-action="start-tour" data-tour={WONDERS_TOUR.id} onClick={() => props.onStartTour(WONDERS_TOUR.id)}>
             Tour {props.tourLength} places
           </button>
         ) : null}
+        <button type="button" className={ui.button} data-action="start-tas-tepeler-tour" data-tour={TAS_TEPELER_TOUR.id} onClick={() => props.onStartTour(TAS_TEPELER_TOUR.id)}>
+          {TAS_TEPELER_TOUR.title}
+        </button>
       </div>
       <div className={styles.filters}>
         <input

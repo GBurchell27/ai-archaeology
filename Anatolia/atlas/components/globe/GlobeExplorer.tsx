@@ -20,11 +20,16 @@ export interface GlobeExplorerProps {
   initialSiteId?: string;
   /** A theory to open the lens on (a shared `&theory=` link). */
   initialTheoryId?: string;
+  /** A guided tour to start once the catalogue has loaded, and the stop it opens on. */
+  initialTourId?: string;
+  initialStopId?: string;
   onLookChange?(look: GlobeLook): void;
   /** The site whose card is open changed; null when the card closed. */
   onSelectSite?(siteId: string | null): void;
   /** The theory the lens is on changed; null when the lens is off. */
   onSelectTheory?(theoryId: string | null): void;
+  /** The guided tour changed. Null when it is not running. */
+  onTourChange?(tourId: string | null, stopId: string | null): void;
   /** "View terrain" on a site card. */
   onOpenPlace(siteId: string): void;
   /** Zooming in over Turkey, or "Open in Anatolia atlas" on a site card (then `siteId` is set). */
@@ -44,7 +49,8 @@ export function GlobeExplorer(props: GlobeExplorerProps) {
   const latestLook = useRef(look);
   const explorer = useGlobeExplorer({
     initialSiteId: props.initialSiteId, initialTheoryId: props.initialTheoryId, look: latestLook,
-    onSelectSite: props.onSelectSite, onSelectTheory: props.onSelectTheory,
+    initialTourId: props.initialTourId, initialStopId: props.initialStopId,
+    onSelectSite: props.onSelectSite, onSelectTheory: props.onSelectTheory, onTourChange: props.onTourChange,
   });
 
   const trackLook = useCallback((next: GlobeLook) => {

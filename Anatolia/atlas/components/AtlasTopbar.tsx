@@ -17,6 +17,8 @@ export function AtlasTopbar(props: {
   onSettings: () => void;
   /** Shown only when the atlas sits under the world globe. */
   onGlobe?: () => void;
+  /** Opens the Taş Tepeler tour on the globe. */
+  onStartTasTepelerTour?: () => void;
 }) {
   return (
     <header className="topbar">
@@ -27,6 +29,11 @@ export function AtlasTopbar(props: {
         <button type="button" className="brand" data-action="overview" aria-label="Turkey overview" onClick={props.onOverview}>Turkey</button>
         {props.regionName ? (
           <button type="button" className="brand region-button" data-action="regional-overview" onClick={props.onRegion}>{props.regionName}</button>
+        ) : null}
+        {props.onStartTasTepelerTour ? (
+          <button type="button" className="brand region-button" data-action="tas-tepeler-tour" aria-label="Start the Taş Tepeler tour" onClick={props.onStartTasTepelerTour}>
+            Taş Tepeler
+          </button>
         ) : null}
       </nav>
       {props.search}
