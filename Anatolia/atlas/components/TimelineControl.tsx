@@ -1,94 +1,57 @@
 "use client";
 
-import { useEffect, useId, useRef, useState, type KeyboardEvent } from "react";
-import { atlasYearSheetCovered, usePhoneSheetEscape } from "@/components/usePhoneSheetEscape";
+import { useId, useMemo, useState } from "react";
+import { AnatoliaYearTrack } from "@/components/atlas/AnatoliaYearTrack";
+import { PlayHistoryTransport } from "@/components/history/PlayHistoryTransport";
+import { useHistoryPlayback } from "@/components/history/useHistoryPlayback";
 import { NamedPeriodChips } from "@/components/NamedPeriodChips";
-import { TimelineIntervalBand } from "@/components/TimelineIntervalBand";
-import { formatYear } from "@/lib/periods";
+import { atlasYearSheetCovered, usePhoneSheetEscape } from "@/components/usePhoneSheetEscape";
+import { PERIODS, formatYear } from "@/lib/periods";
+import { RANGE_END, RANGE_START, clampYear, normalizeRange, trackToYear, yearToTrack, type YearRange } from "@/lib/timeline";
 import {
-  KEY_STEP,
-  PAGE_STEP,
-  RANGE_END,
-  RANGE_START,
-  TIMELINE_STOPS,
-  clampYear,
-  normalizeRange,
-  stepYear,
-  yearToTrack,
-  trackToYear,
-  type YearRange,
-} from "@/lib/timeline";
-import { YOUNGER_DRYAS, namedPeriodsForRegions } from "@/lib/world/namedPeriods";
+  PLAYHEAD_YEAR_STEP,
+  describePlayhead,
+  displayedYear,
+  quantizePlayYear,
+  type TrackScale,
+} from "@/lib/world/historyPlayhead";
+import { namedPeriodsForRegions } from "@/lib/world/namedPeriods";
 
 /** This map is Anatolia at every zoom, so its chips do not follow the camera. */
 const ANATOLIA_PERIODS = namedPeriodsForRegions("anatolia");
 const FULL_RANGE: YearRange = { start: RANGE_START, end: RANGE_END };
+const ATLAS_TRACK: TrackScale = { yearToTrack, trackToYear };
 const namedPeriodChipClass = (pressed: boolean) => (pressed ? "chip is-on" : "chip");
+
+function quantizeAtlasPlayYear(year: number): number {
+  return clampYear(quantizePlayYear(year, PLAYHEAD_YEAR_STEP));
+}
+
+function atlasEra(year: number): string | null {
+  const match = PERIODS.find((period) => period.id !== "all" && year >= period.start && year <= period.end);
+  return match?.label ?? null;
+}
 
 export function TimelineControl(props: {
   range: YearRange;
-  playing: boolean;
   showUndated: boolean;
   onRange: (range: YearRange) => void;
-  onTogglePlay: () => void;
+  onPlayYear: (year: number | null) => void;
   onUndated: (show: boolean) => void;
 }) {
-  const trackRef = useRef<HTMLDivElement>(null);
-  const drag = useRef<"start" | "end" | null>(null);
-  const rangeRef = useRef(props.range);
-  rangeRef.current = props.range;
-  const onRangeRef = useRef(props.onRange);
-  onRangeRef.current = props.onRange;
-
-  useEffect(() => {
-    function move(event: PointerEvent) {
-      const which = drag.current;
-      const track = trackRef.current;
-      if (!which || !track) return;
-      const year = yearFromClient(track, event.clientX);
-      const current = rangeRef.current;
-      if (which === "start") {
-        onRangeRef.current(normalizeRange({ start: Math.min(year, current.end), end: current.end }));
-      } else {
-        onRangeRef.current(normalizeRange({ start: current.start, end: Math.max(year, current.start) }));
-      }
-    }
-    function stop() {
-      drag.current = null;
-    }
-    window.addEventListener("pointermove", move);
-    window.addEventListener("pointerup", stop);
-    return () => {
-      window.removeEventListener("pointermove", move);
-      window.removeEventListener("pointerup", stop);
-    };
-  }, []);
-
-  function moveThumb(bound: "start" | "end", event: KeyboardEvent<HTMLButtonElement>): void {
-    const current = rangeRef.current;
-    const year = bound === "start" ? current.start : current.end;
-    let next: number | null = null;
-    if (event.key === "ArrowRight" || event.key === "ArrowUp") next = stepYear(year, KEY_STEP);
-    else if (event.key === "ArrowLeft" || event.key === "ArrowDown") next = stepYear(year, -KEY_STEP);
-    else if (event.key === "PageUp") next = stepYear(year, PAGE_STEP);
-    else if (event.key === "PageDown") next = stepYear(year, -PAGE_STEP);
-    else if (event.key === "Home") next = bound === "start" ? RANGE_START : current.start;
-    else if (event.key === "End") next = bound === "end" ? RANGE_END : current.end;
-    else return;
-    event.preventDefault();
-    event.stopPropagation();
-    if (bound === "start") {
-      onRangeRef.current(normalizeRange({ start: Math.min(next, current.end), end: current.end }));
-    } else {
-      onRangeRef.current(normalizeRange({ start: current.start, end: Math.max(next, current.start) }));
-    }
-  }
-
-  const startAt = yearToTrack(props.range.start) * 100;
-  const endAt = yearToTrack(props.range.end) * 100;
+  const bounds = useMemo(() => ({ start: props.range.start, end: props.range.end }), [props.range.start, props.range.end]);
+  const playback = useHistoryPlayback({ bounds, quantize: quantizeAtlasPlayYear, scale: ATLAS_TRACK, onCommit: props.onPlayYear });
   const [sheetOpen, setSheetOpen] = useState(false);
   const sheetId = useId();
   usePhoneSheetEscape(sheetOpen, () => setSheetOpen(false), atlasYearSheetCovered);
+  const sweep = playback.sweep;
+  const readout = sweep === null
+    ? `${formatYear(props.range.start)} – ${formatYear(props.range.end)}`
+    : describePlayhead(sweep.year, atlasEra(displayedYear(sweep.year)));
+  const chooseRange = (next: YearRange) => {
+    playback.dismiss();
+    props.onRange(next);
+  };
   return (
     <div
       className="timebar"
@@ -96,7 +59,9 @@ export function TimelineControl(props: {
       data-sheet={sheetOpen ? "open" : "closed"}
       data-year-start={props.range.start}
       data-year-end={props.range.end}
-      data-playing={props.playing ? "true" : "false"}
+      data-playing={playback.playing ? "true" : "false"}
+      data-play-speed={playback.speed}
+      data-play-year={sweep === null ? "" : String(displayedYear(sweep.year))}
       data-undated={props.showUndated ? "show" : "hide"}
     >
       <button
@@ -107,139 +72,77 @@ export function TimelineControl(props: {
         aria-controls={sheetId}
         onClick={() => setSheetOpen((open) => !open)}
       >
-        {formatYear(props.range.start)} – {formatYear(props.range.end)}
+        {sweep === null ? `${formatYear(props.range.start)} – ${formatYear(props.range.end)}` : formatYear(displayedYear(sweep.year))}
       </button>
       <div id={sheetId} className="time-sheet-body">
-      <button
-        type="button"
-        className="time-play"
-        data-action="play-time"
-        aria-pressed={props.playing}
-        aria-label={props.playing ? "Pause the timeline" : "Play the timeline"}
-        onClick={props.onTogglePlay}
-      >
-        {props.playing ? "Pause" : "Play"}
-      </button>
-      <div className="time-readout">
-        <span data-role="year-label">{formatYear(props.range.start)} – {formatYear(props.range.end)}</span>
-        <div
-          className="time-track"
-          ref={trackRef}
-          onPointerDown={(event) => {
-            const track = trackRef.current;
-            if (!track) return;
-            const year = yearFromClient(track, event.clientX);
-            const current = rangeRef.current;
-            const nearerStart = Math.abs(yearToTrack(current.start) - yearToTrack(year))
-              <= Math.abs(yearToTrack(current.end) - yearToTrack(year));
-            drag.current = nearerStart ? "start" : "end";
-            if (drag.current === "start") {
-              props.onRange(normalizeRange({ start: Math.min(year, current.end), end: current.end }));
-            } else {
-              props.onRange(normalizeRange({ start: current.start, end: Math.max(year, current.start) }));
-            }
-            event.currentTarget.setPointerCapture(event.pointerId);
-          }}
-        >
-          {TIMELINE_STOPS.map((stop) => (
-            <i key={stop.year} className="time-tick" style={{ left: `${stop.at * 100}%` }} />
-          ))}
-          <TimelineIntervalBand period={YOUNGER_DRYAS} yearToTrack={yearToTrack} className="time-interval" labelClassName="time-interval-label" />
-          <i className="time-fill" style={{ left: `${startAt}%`, width: `${Math.max(0, endAt - startAt)}%` }} />
-          <button
-            type="button"
-            role="slider"
-            className="time-thumb"
-            data-thumb="start"
-            style={{ left: `${startAt}%` }}
-            aria-label="Range start"
-            aria-orientation="horizontal"
-            aria-valuemin={RANGE_START}
-            aria-valuemax={RANGE_END}
-            aria-valuenow={props.range.start}
-            aria-valuetext={formatYear(props.range.start)}
-            onKeyDown={(event) => moveThumb("start", event)}
-            onPointerDown={(event) => {
-              drag.current = "start";
-              event.stopPropagation();
-              event.currentTarget.setPointerCapture(event.pointerId);
-            }}
+        <PlayHistoryTransport
+          playing={playback.playing}
+          speed={playback.speed}
+          onToggle={playback.toggle}
+          onSpeed={playback.setSpeed}
+          className="time-transport"
+          playClassName="time-play"
+          speedsClassName="time-speeds"
+          speedClassName="time-speed"
+        />
+        <div className="time-readout">
+          <span data-role="year-label">{readout}</span>
+          <AnatoliaYearTrack
+            range={props.range}
+            playTrack={sweep?.track ?? null}
+            playYear={sweep === null ? null : displayedYear(sweep.year)}
+            scrubbing={playback.scrubbing}
+            onRange={chooseRange}
+            onScrub={playback.scrub}
+            onScrubEnd={playback.endScrub}
           />
-          <button
-            type="button"
-            role="slider"
-            className="time-thumb is-end"
-            data-thumb="end"
-            style={{ left: `${endAt}%` }}
-            aria-label="Range end"
-            aria-orientation="horizontal"
-            aria-valuemin={RANGE_START}
-            aria-valuemax={RANGE_END}
-            aria-valuenow={props.range.end}
-            aria-valuetext={formatYear(props.range.end)}
-            onKeyDown={(event) => moveThumb("end", event)}
-            onPointerDown={(event) => {
-              drag.current = "end";
-              event.stopPropagation();
-              event.currentTarget.setPointerCapture(event.pointerId);
-            }}
+          <NamedPeriodChips
+            periods={ANATOLIA_PERIODS}
+            startYear={props.range.start}
+            endYear={props.range.end}
+            className="chips time-periods"
+            chipClassName={namedPeriodChipClass}
+            onSpan={(span) => chooseRange(span ? { start: span[0], end: span[1] } : FULL_RANGE)}
           />
         </div>
-        <NamedPeriodChips
-          periods={ANATOLIA_PERIODS}
-          startYear={props.range.start}
-          endYear={props.range.end}
-          className="chips time-periods"
-          chipClassName={namedPeriodChipClass}
-          onSpan={(span) => props.onRange(span ? { start: span[0], end: span[1] } : FULL_RANGE)}
-        />
-      </div>
-      <label className="undated-toggle">
-        <input
-          type="checkbox"
-          data-role="undated"
-          checked={props.showUndated}
-          onChange={(event) => props.onUndated(event.target.checked)}
-        />
-        Undated
-      </label>
-      <input
-        className="time-input"
-        data-role="year-start"
-        aria-label="Range start year"
-        inputMode="numeric"
-        min={RANGE_START}
-        max={RANGE_END}
-        value={props.range.start}
-        onChange={(event) => commitBound(props.range, "start", event.target.value, props.onRange)}
-      />
-      <input
-        className="time-input"
-        data-role="year-end"
-        aria-label="Range end year"
-        inputMode="numeric"
-        min={RANGE_START}
-        max={RANGE_END}
-        value={props.range.end}
-        onChange={(event) => commitBound(props.range, "end", event.target.value, props.onRange)}
-      />
+        <label className="undated-toggle">
+          <input
+            type="checkbox"
+            data-role="undated"
+            checked={props.showUndated}
+            onChange={(event) => props.onUndated(event.target.checked)}
+          />
+          Undated
+        </label>
+        <YearField role="year-start" label="Range start year" range={props.range} bound="start" onRange={chooseRange} />
+        <YearField role="year-end" label="Range end year" range={props.range} bound="end" onRange={chooseRange} />
       </div>
     </div>
   );
 }
 
-function yearFromClient(track: HTMLDivElement, clientX: number): number {
-  const rect = track.getBoundingClientRect();
-  const portion = rect.width <= 0 ? 0 : (clientX - rect.left) / rect.width;
-  return clampYear(trackToYear(portion));
+function YearField(props: {
+  role: string;
+  label: string;
+  range: YearRange;
+  bound: "start" | "end";
+  onRange: (range: YearRange) => void;
+}) {
+  return (
+    <input
+      className="time-input"
+      data-role={props.role}
+      aria-label={props.label}
+      inputMode="numeric"
+      min={RANGE_START}
+      max={RANGE_END}
+      value={props.bound === "start" ? props.range.start : props.range.end}
+      onChange={(event) => commitBound(props.range, props.bound, event.target.value, props.onRange)}
+    />
+  );
 }
 
-function commitBound(
-  range: YearRange,
-  bound: "start" | "end",
-  raw: string,
-  onRange: (range: YearRange) => void,
-): void {
+function commitBound(range: YearRange, bound: "start" | "end", raw: string, onRange: (range: YearRange) => void): void {
   if (raw.trim() === "" || raw.trim() === "-") return;
   const parsed = Number(raw);
   if (!Number.isFinite(parsed)) return;

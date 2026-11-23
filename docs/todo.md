@@ -135,6 +135,7 @@ Everything overnight was judged in a software-rendered test browser.
 - [ ] Mouse look, the dive transition, and the pixel ratio settling without visible resizing.
 - [ ] Zooming into a site from the map must arrive walking, not flying (R recovers it).
 - [ ] Thin dotted vertical lines on Karahan Tepe's built east wall: real, or a test-renderer artefact?
+- [ ] Play history on the globe timeline and the Anatolia year bar was looked at in a software-rendered browser only.
 
 ## Known gaps
 

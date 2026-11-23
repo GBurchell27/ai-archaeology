@@ -6,6 +6,7 @@ import { GLOBE_PRESETS, type SettingsPresetId } from "@/lib/settings/settingsPre
 import { useWorldCatalogue, type WorldCatalogue } from "@/lib/world/catalogueLoader";
 import type { FeaturedSite, SiteColumns } from "@/lib/world/catalogueTypes";
 import { randomAcceptedWonder, tourStops } from "@/lib/world/wonders";
+import type { YearSpan } from "@/lib/world/worldEras";
 import { usePaleoLayer, type PaleoLayerViewModel } from "./paleo/usePaleoLayer";
 import { useSiteFilter, type SiteFilterViewModel } from "./useSiteFilter";
 import { useSiteSelection, type SiteSelectionViewModel } from "./useSiteSelection";
@@ -101,7 +102,11 @@ export function useGlobeExplorer(options: {
   });
   const [showOsmMegaliths, setShowOsmMegaliths] = useState(false);
   const [basemapId, setBasemapId] = useState<string | null>(null);
-  const paleo = usePaleoLayer(filters.yearSpan);
+  const paleoSpan = useMemo<YearSpan>(
+    () => (filters.playYear === null ? filters.yearSpan : [filters.playYear, filters.playYear]),
+    [filters.playYear, filters.yearSpan],
+  );
+  const paleo = usePaleoLayer(paleoSpan);
 
   const { setYearSpan, setShowUndated, setFeaturedOnly, showOnlyTypes } = filters;
   const applyPreset = useCallback((presetId: SettingsPresetId) => {

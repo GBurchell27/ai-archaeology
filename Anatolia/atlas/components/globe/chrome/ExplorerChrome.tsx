@@ -171,6 +171,7 @@ function ExplorerBottom({ explorer, namedPeriods }: { explorer: GlobeExplorerVie
           undatedCount={filters.counts?.undated ?? null}
           namedPeriods={namedPeriods}
           onSpan={filters.setYearSpan}
+          onPlayYear={filters.setPlayYear}
           onShowUndated={filters.setShowUndated}
         />
       </div>
