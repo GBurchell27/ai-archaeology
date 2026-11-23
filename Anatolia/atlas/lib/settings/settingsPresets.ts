@@ -21,6 +21,12 @@ export const SETTINGS_PRESETS: readonly SettingsPreset[] = [
 /** Shown in a view that can apply none of them. */
 export const PRESETS_ELSEWHERE = "Presets apply on the globe and on the Anatolia map.";
 
+/**
+ * A new visit leaves undated sites out, on the globe and on the Anatolia map.
+ * The address does not carry this switch, and the browser does not store it.
+ */
+export const DEFAULT_SHOW_UNDATED = false;
+
 /** The globe state a preset sets, and the state it is recognised by. */
 export interface GlobePresetState {
   summary: string;
@@ -37,7 +43,7 @@ export const GLOBE_DEEP_PAST_END = WORLD_ERAS[1].span[1];
 
 export const GLOBE_PRESETS: Record<SettingsPresetId, GlobePresetState> = {
   everything: {
-    summary: "All time, every site type, undated sites included. The starting state.",
+    summary: "All time, every site type, undated sites included.",
     yearSpan: ALL_TIME, showUndated: true, featuredOnly: false, onlyTypes: null, osmMegaliths: false,
   },
   "deep-past": {
@@ -90,7 +96,7 @@ export const ATLAS_DEEP_PAST_END = -6000;
 
 export const ATLAS_PRESETS: Partial<Record<SettingsPresetId, AtlasPresetState>> = {
   everything: {
-    summary: "The whole year range, every place layer, undated places included. The starting state.",
+    summary: "The whole year range, every place layer, undated places included.",
     range: { start: RANGE_START, end: RANGE_END }, showUndated: true, everyLayer: true,
   },
   "deep-past": {
