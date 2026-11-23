@@ -1,12 +1,15 @@
 "use client";
 
 import { useEffect, useId, useState } from "react";
+import type { PickedSite } from "@/lib/globe/siteBlock";
 import type { WorldSource } from "@/lib/world/catalogueTypes";
 import { OSM_MEGALITH_STYLE } from "@/lib/world/siteTypeStyle";
+import type { NewsPin } from "../useNewsPins";
 import type { SiteFilterViewModel } from "../useSiteFilter";
 import { ChevronIcon } from "./ExplorerIcons";
 import ui from "./chrome.module.css";
 import styles from "./ExplorerLegend.module.css";
+import { NewsPinList } from "./NewsPinList";
 import { SiteTypeFilter } from "./SiteTypeFilter";
 
 const ROOMY_SCREEN = "(min-width: 1100px) and (min-height: 760px)";
@@ -21,6 +24,11 @@ export function ExplorerLegend(props: {
   sources: WorldSource[];
   filters: SiteFilterViewModel;
   showOsmMegaliths: boolean;
+  newsPins: readonly NewsPin[];
+  newsReady: boolean;
+  showNewsPins: boolean;
+  onShowNewsPins(shown: boolean): void;
+  onShowNewsSite(site: PickedSite): void;
 }) {
   const { filters, totalSites } = props;
   const [open, setOpen] = useState(false);
@@ -54,6 +62,13 @@ export function ExplorerLegend(props: {
         <span className={styles.caret}><span className={`${ui.eyebrow} ${styles.caretLabel}`}>Legend</span><ChevronIcon direction={open ? "down" : "up"} /></span>
       </button>
       <div id={bodyId} className={styles.body} hidden={!open}>
+        <NewsPinList
+          pins={props.newsPins}
+          ready={props.newsReady}
+          shown={props.showNewsPins}
+          onShown={props.onShowNewsPins}
+          onShowSite={props.onShowNewsSite}
+        />
         <SiteTypeFilter
           siteTypes={props.siteTypes}
           counts={filters.counts?.byType ?? null}

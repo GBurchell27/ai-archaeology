@@ -1,0 +1,39 @@
+.overlay {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  pointer-events: none;
+}
+
+/* Quieter than the selection ring: a report, not the site the visitor picked. */
+.newsRing {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 22px;
+  height: 22px;
+  border: 1px solid rgba(240, 196, 110, 0.9);
+  border-radius: 50%;
+  box-shadow: 0 0 0 1px rgba(4, 6, 10, 0.55);
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.newsRing::after {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  border: 1px solid rgba(255, 196, 92, 0.75);
+  border-radius: 50%;
+  opacity: 0;
+  animation: news-ring-pulse 3.2s ease-out infinite;
+}
+
+@keyframes news-ring-pulse {
+  0% { transform: scale(1); opacity: 0.45; }
+  100% { transform: scale(1.55); opacity: 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .newsRing::after { animation: none; opacity: 0; }
+}

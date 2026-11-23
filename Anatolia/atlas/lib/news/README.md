@@ -17,6 +17,10 @@ Open `siteNews.ts` and append one object to `NEWS_ITEMS`.
 
 A site with no items shows no News section. Order in the file does not matter: the panel sorts newest first.
 
+## Rings on the globe
+
+A report dated within `NEWS_RECENCY_DAYS` (90) of the visitor's own calendar day marks each site it names, when that id is in the world catalogue. Wikidata ids (`Q…`) and Pleiades numbers qualify. A curated id such as `gobekli-tepe` is the same place's other name in this file: it is not a second pin. An OpenStreetMap id is not marked. A candidate is not in the catalogue, so it cannot be marked. The legend switch starts on, and the same switch is in the globe's settings. The ring follows the globe's filters. The list in the legend flies to each marked site and quotes the headline with the source named beside it. Write the atlas's own sentences as reports. Quote a headline only with the source named beside it.
+
 Then, from `Anatolia/atlas`:
 
 ```bash

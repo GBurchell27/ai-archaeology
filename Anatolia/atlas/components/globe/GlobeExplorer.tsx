@@ -7,6 +7,7 @@ import { compactRecordCredits } from "@/lib/globe/compactCredits";
 import { ENTER_ATLAS_ALTITUDE, atlasLookFromGlobe, type AtlasLook } from "@/lib/globe/handoff";
 import { namedPeriodsForRegions, periodRegionKeyAt } from "@/lib/world/namedPeriods";
 import { ExplorerChrome } from "./chrome/ExplorerChrome";
+import { GlobeNewsRings } from "./GlobeNewsRings";
 import { GlobeSites, type PickedSite } from "./GlobeSites";
 import { useGlobeBasemap } from "./GlobeSurface";
 import { GlobePaleoOverlay } from "./paleo/GlobePaleoOverlay";
@@ -90,6 +91,7 @@ export function GlobeExplorer(props: GlobeExplorerProps) {
           onClusterPick={selection.flyToLook}
         />
       ) : null}
+      <GlobeNewsRings pins={explorer.newsRings} shown={explorer.showNewsPins} omitId={selection.selected?.id ?? null} />
       {/* Here and not in sceneLayers: its step follows the timeline, which this component's view model holds. */}
       <GlobePaleoOverlay paleo={explorer.paleo} />
       {props.sceneLayers}
