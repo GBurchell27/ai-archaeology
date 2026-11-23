@@ -1,7 +1,9 @@
 "use client";
 
 import { useEffect, useId, useRef, useState, type KeyboardEvent } from "react";
-import { atlasYearSheetCovered, usePhoneSheetEscape } from "@/components/usePhoneSheetEscape";
+import { CloseButton } from "@/components/chrome/CloseButton";
+import { usePhoneSheetDismiss } from "@/components/chrome/useDismissLayer";
+import { DISMISS_PRIORITY } from "@/lib/chrome/dismissStack";
 import { NamedPeriodChips } from "@/components/NamedPeriodChips";
 import { TimelineIntervalBand } from "@/components/TimelineIntervalBand";
 import { formatYear } from "@/lib/periods";
@@ -88,7 +90,7 @@ export function TimelineControl(props: {
   const endAt = yearToTrack(props.range.end) * 100;
   const [sheetOpen, setSheetOpen] = useState(false);
   const sheetId = useId();
-  usePhoneSheetEscape(sheetOpen, () => setSheetOpen(false), atlasYearSheetCovered);
+  usePhoneSheetDismiss(sheetOpen, () => setSheetOpen(false), DISMISS_PRIORITY.chrome);
   return (
     <div
       className="timebar"
@@ -109,6 +111,7 @@ export function TimelineControl(props: {
       >
         {formatYear(props.range.start)} – {formatYear(props.range.end)}
       </button>
+      {sheetOpen ? <CloseButton name="year range" className="time-sheet-close" onClick={() => setSheetOpen(false)} /> : null}
       <div id={sheetId} className="time-sheet-body">
       <button
         type="button"

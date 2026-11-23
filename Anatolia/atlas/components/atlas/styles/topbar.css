@@ -40,24 +40,31 @@
 .search input::placeholder { color: #a9afb8; }
 .search input:focus-visible { outline-offset: 1px; background: var(--globe-panel); }
 
-.search ul {
+.search-results {
   position: absolute;
   top: calc(100% + 6px);
   right: 0;
+  display: flex;
+  flex-direction: column;
   width: min(300px, calc(100vw - 2 * var(--edge)));
   max-height: min(420px, 60vh);
-  margin: 0;
-  padding: 4px;
-  overflow-y: auto;
-  scrollbar-width: thin;
-  list-style: none;
   border: 1px solid var(--globe-rule);
   border-radius: 4px;
   background: var(--globe-popover);
   box-shadow: var(--globe-shadow);
 }
 
-.search button {
+.search-results-bar { display: flex; flex: none; justify-content: flex-end; }
+
+.search-results ul {
+  margin: 0;
+  padding: 4px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  list-style: none;
+}
+
+.search li button {
   width: 100%;
   padding: 7px 9px 8px;
   border: 0;
@@ -69,8 +76,8 @@
   cursor: pointer;
 }
 
-.search button:hover, .search button:focus-visible { background: var(--globe-ochre-wash); }
-.search button:focus-visible { outline-offset: -2px; }
+.search li button:hover, .search li button:focus-visible { background: var(--globe-ochre-wash); }
+.search li button:focus-visible { outline-offset: -2px; }
 
 /* Narrow: the trail of views takes the first row, search and tools the second. */
 @media (max-width: 720px) {
@@ -84,7 +91,7 @@
 
 @media (pointer: coarse) {
   .search input { height: 40px; }
-  .search button { min-height: 40px; }
+  .search li button { min-height: 40px; }
 }
 
 /* One row. A long region name scrolls sideways instead of dropping the tools onto a second line. */
@@ -100,7 +107,7 @@
   }
   .topbar:focus-within { overflow: visible; }
   .topbar::-webkit-scrollbar { display: none; }
-  .search ul { left: 0; right: auto; width: min(280px, calc(100vw - 24px)); }
+  .search-results { left: 0; right: auto; width: min(280px, calc(100vw - 24px)); }
   .map-places { flex: 0 0 auto; gap: 3px; margin-right: 0; }
   .map-places .brand { padding: 0 8px; font-size: 14px; }
   .topbar { gap: 3px; }

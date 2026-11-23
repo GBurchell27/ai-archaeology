@@ -92,6 +92,8 @@
   gap: 5px;
 }
 
+.dock-head { display: flex; align-items: center; justify-content: flex-end; gap: 4px; width: 100%; }
+
 .chips { display: flex; gap: 5px; overflow: auto; max-width: 52vw; scrollbar-width: none; }
 .dock .chips { display: none; }
 .dock.is-open .chips { display: flex; }
@@ -119,6 +121,7 @@
 }
 
 .time-sheet-toggle { display: none; }
+.timebar .time-sheet-close { display: none; }
 /* The controlled region of the phone chip. Contents, so the bar's own flex row is unchanged on a wide screen. */
 .time-sheet-body { display: contents; }
 
@@ -175,7 +178,14 @@
     flex-wrap: wrap;
     align-items: center;
   }
-  .timebar[data-sheet="open"] .time-sheet-toggle { flex: 1 0 100%; justify-content: space-between; }
+  .timebar[data-sheet="open"] .time-sheet-toggle { flex: 1 0 100%; justify-content: space-between; padding-right: 40px; }
+  .timebar[data-sheet="open"] .time-sheet-close {
+    display: inline-grid;
+    position: absolute;
+    top: 0;
+    right: 0;
+    z-index: 2;
+  }
   .timebar[data-sheet="open"] [data-role="year-label"] { display: none; }
   .timebar[data-sheet="open"] .time-readout { flex: 1 1 80px; min-width: 0; }
   .timebar[data-sheet="open"] .time-periods { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }

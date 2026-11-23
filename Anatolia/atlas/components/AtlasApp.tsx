@@ -267,6 +267,7 @@ export function AtlasApp({ regional, initialLook, initialSiteId, onExitToGlobe, 
       </div>
       {settingsOpen ? (
         <SettingsMenu
+          onClose={() => overlays.setSettingsOpen(false)}
           display={display}
           preferences={preferences}
           timeline={timeline}
