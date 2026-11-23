@@ -54,12 +54,14 @@
   top: calc(100% + 6px);
   left: 0;
   right: 0;
+  display: flex;
+  flex-direction: column;
   max-height: min(420px, 60vh);
-  margin: 0;
-  padding: 4px;
-  list-style: none;
   background: rgba(10, 13, 18, 0.92);
 }
+
+.resultsHead { display: flex; flex: none; justify-content: flex-end; }
+.resultList { flex: 1 1 auto; min-height: 0; margin: 0; padding: 4px; list-style: none; }
 
 .hit {
   display: grid;

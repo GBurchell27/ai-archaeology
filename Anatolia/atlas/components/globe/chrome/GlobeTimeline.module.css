@@ -76,6 +76,9 @@
   .thumb::after { content: ""; position: absolute; inset: -13px; }
 }
 
+/* Hidden until the phone sheet is open: on a wide screen the timeline is not a layer you close. */
+.timeline .sheetClose { display: none; }
+
 /* The sheet. Closed, only the range chip shows. Open, the controls rise above it and the chips scroll sideways. */
 @media (max-width: 640px) {
   .timeline {
@@ -112,6 +115,7 @@
     backdrop-filter: blur(18px) saturate(1.25);
     box-shadow: 0 14px 38px rgba(0, 0, 0, 0.34);
   }
+  .timeline[data-sheet="open"] { position: relative; }
   .timeline[data-sheet="open"] > .sheetToggle {
     width: 100%;
     border: 0;
@@ -119,6 +123,14 @@
     background: transparent;
     box-shadow: none;
     justify-content: space-between;
+    padding-right: 44px;
+  }
+  .timeline[data-sheet="open"] .sheetClose {
+    display: inline-grid;
+    position: absolute;
+    top: 0;
+    right: 0;
+    z-index: 2;
   }
   .timeline[data-sheet="open"] .sheetBody {
     display: grid;
