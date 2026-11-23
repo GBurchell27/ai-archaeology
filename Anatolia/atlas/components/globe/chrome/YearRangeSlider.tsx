@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef, type KeyboardEvent, type PointerEvent } from "react";
+import { HistoryPlayheadMarker } from "@/components/history/HistoryPlayheadMarker";
 import { TimelineIntervalBand } from "@/components/TimelineIntervalBand";
 import { formatYear } from "@/lib/periods";
 import { YOUNGER_DRYAS } from "@/lib/world/namedPeriods";
@@ -41,7 +42,15 @@ function openEndedYear(year: number): string {
 }
 
 /** Two thumbs on one track, 12,000 BCE to 1500 CE, each era taking an equal share of the width. */
-export function YearRangeSlider(props: { span: YearSpan; onSpan(span: YearSpan): void }) {
+export function YearRangeSlider(props: {
+  span: YearSpan;
+  onSpan(span: YearSpan): void;
+  playTrack?: number | null;
+  playYear?: number | null;
+  scrubbing?: boolean;
+  onScrub?(year: number): void;
+  onScrubEnd?(): void;
+}) {
   const { span, onSpan } = props;
   const track = useRef<HTMLDivElement>(null);
   const dragging = useRef<Bound | null>(null);
@@ -73,10 +82,13 @@ export function YearRangeSlider(props: { span: YearSpan; onSpan(span: YearSpan):
   }
 
   const edges = [worldYearToTrack(span[0]) * 100, worldYearToTrack(span[1]) * 100];
+  const playAt = props.playTrack == null ? null : props.playTrack * 100;
+  const onScrub = props.onScrub;
   return (
     <div
       ref={track}
       className={styles.track}
+      data-scrubbing={props.scrubbing ? "true" : "false"}
       onPointerDown={startDrag}
       onPointerMove={drag}
       onPointerUp={() => { dragging.current = null; }}
@@ -85,6 +97,7 @@ export function YearRangeSlider(props: { span: YearSpan; onSpan(span: YearSpan):
       <i className={styles.rail} />
       <TimelineIntervalBand period={YOUNGER_DRYAS} yearToTrack={worldYearToTrack} className={styles.interval} labelClassName={styles.intervalLabel} />
       <i className={styles.fill} style={{ left: `${edges[0]}%`, width: `${edges[1] - edges[0]}%` }} />
+      {playAt === null ? null : <i className={styles.progress} style={{ left: `${edges[0]}%`, width: `${Math.max(0, playAt - edges[0])}%` }} />}
       {WORLD_ERAS.slice(1).map((era) => (
         <i key={era.id} className={styles.tick} style={{ left: `${worldYearToTrack(era.span[0]) * 100}%` }} />
       ))}
@@ -105,6 +118,53 @@ export function YearRangeSlider(props: { span: YearSpan; onSpan(span: YearSpan):
           onKeyDown={(event) => onThumbKey(bound, event)}
         />
       ))}
+      {props.playTrack == null || props.playYear == null || !onScrub ? null : (
+        <HistoryPlayheadMarker
+          track={props.playTrack}
+          year={props.playYear}
+          min={span[0]}
+          max={span[1]}
+          valueText={formatYear(props.playYear)}
+          className={styles.playhead}
+          onPointerDown={(event) => grabPlayhead(yearAt, onScrub, event)}
+          onPointerMove={(event) => movePlayhead(yearAt, onScrub, event)}
+          onPointerUp={() => props.onScrubEnd?.()}
+          onKeyDown={(event) => playheadKey(props.playYear ?? span[0], onScrub, () => props.onScrubEnd?.(), event)}
+        />
+      )}
     </div>
   );
+}
+
+function grabPlayhead(
+  yearAt: (clientX: number) => number,
+  onScrub: (year: number) => void,
+  event: PointerEvent<HTMLButtonElement>,
+): void {
+  event.stopPropagation();
+  event.currentTarget.setPointerCapture(event.pointerId);
+  onScrub(yearAt(event.clientX));
+}
+
+function movePlayhead(
+  yearAt: (clientX: number) => number,
+  onScrub: ((year: number) => void) | undefined,
+  event: PointerEvent<HTMLButtonElement>,
+): void {
+  if (!onScrub || !event.currentTarget.hasPointerCapture(event.pointerId)) return;
+  onScrub(yearAt(event.clientX));
+}
+
+function playheadKey(
+  year: number,
+  onScrub: (year: number) => void,
+  onScrubEnd: () => void,
+  event: KeyboardEvent<HTMLButtonElement>,
+): void {
+  const target = keyTarget(event.key, year);
+  if (target === null) return;
+  event.preventDefault();
+  event.stopPropagation();
+  onScrub(clampWorldYear(target));
+  onScrubEnd();
 }

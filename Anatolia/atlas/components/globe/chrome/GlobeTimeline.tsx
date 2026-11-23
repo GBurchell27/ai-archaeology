@@ -1,12 +1,16 @@
 "use client";
 
-import { useEffect, useId, useState } from "react";
+import { useEffect, useId, useMemo, useState } from "react";
+import { PlayHistoryTransport } from "@/components/history/PlayHistoryTransport";
+import { useHistoryPlayback } from "@/components/history/useHistoryPlayback";
 import { NamedPeriodChips } from "@/components/NamedPeriodChips";
+import { formatYear } from "@/lib/periods";
 import type { NamedPeriod } from "@/lib/world/namedPeriods";
-import { ALL_TIME, WORLD_ERAS, activeWorldEra, describeSpan, isAllTime, type YearSpan } from "@/lib/world/worldEras";
 import { CloseButton } from "@/components/chrome/CloseButton";
 import { usePhoneSheetDismiss } from "@/components/chrome/useDismissLayer";
 import { DISMISS_PRIORITY } from "@/lib/chrome/dismissStack";
+import { describePlayhead, displayedYear, type TrackScale } from "@/lib/world/historyPlayhead";
+import { ALL_TIME, WORLD_ERAS, activeWorldEra, clampWorldYear, describeSpan, eraOfYear, isAllTime, trackToWorldYear, worldYearToTrack, type YearSpan } from "@/lib/world/worldEras";
 import { ChevronIcon } from "./ExplorerIcons";
 import ui from "./chrome.module.css";
 import styles from "./GlobeTimeline.module.css";
@@ -14,6 +18,8 @@ import { YearRangeSlider } from "./YearRangeSlider";
 
 const count = (value: number) => value.toLocaleString("en-GB");
 const ANNOUNCE_AFTER_MS = 900;
+const GLOBE_TRACK: TrackScale = { yearToTrack: worldYearToTrack, trackToYear: trackToWorldYear };
+const namedPeriodChipClass = () => ui.chip;
 
 /** The value once it has stopped changing: regional cells arriving mid-flight change the count many times a second. */
 function useSettled<Value>(value: Value, delayMs: number): Value {
@@ -25,9 +31,7 @@ function useSettled<Value>(value: Value, delayMs: number): Value {
   return settled;
 }
 
-const namedPeriodChipClass = () => ui.chip;
-
-/** The globe's time filter: date-band chips under their own stretch of a two-thumb slider, then the named periods of the region in view. */
+/** The globe's time filter: date-band chips, named periods, and a playhead that reveals sites as it sweeps. */
 export function GlobeTimeline(props: {
   span: YearSpan;
   showUndated: boolean;
@@ -36,12 +40,21 @@ export function GlobeTimeline(props: {
   /** The named periods that apply to where the globe is looking. */
   namedPeriods: readonly NamedPeriod[];
   onSpan(span: YearSpan): void;
+  onPlayYear(year: number | null): void;
   onShowUndated(show: boolean): void;
 }) {
   const { span } = props;
+  const bounds = useMemo(() => ({ start: span[0], end: span[1] }), [span]);
+  const playback = useHistoryPlayback({ bounds, quantize: clampWorldYear, scale: GLOBE_TRACK, onCommit: props.onPlayYear });
   const [sheetOpen, setSheetOpen] = useState(false);
   const bodyId = useId();
   usePhoneSheetDismiss(sheetOpen, () => setSheetOpen(false), DISMISS_PRIORITY.chrome);
+  const sweep = playback.sweep;
+  const chip = sweep === null ? describeSpan(span) : formatYear(displayedYear(sweep.year));
+  const chooseSpan = (next: YearSpan) => {
+    playback.dismiss();
+    props.onSpan(next);
+  };
   return (
     <section
       className={`${ui.glass} ${styles.timeline}`}
@@ -50,6 +63,9 @@ export function GlobeTimeline(props: {
       data-sheet={sheetOpen ? "open" : "closed"}
       data-year-start={span[0]}
       data-year-end={span[1]}
+      data-playing={playback.playing ? "true" : "false"}
+      data-play-speed={playback.speed}
+      data-play-year={sweep === null ? "" : String(displayedYear(sweep.year))}
     >
       <button
         type="button"
@@ -59,12 +75,31 @@ export function GlobeTimeline(props: {
         data-action="toggle-timeline"
         onClick={() => setSheetOpen((open) => !open)}
       >
-        <span className={styles.sheetLabel}>{describeSpan(span)}</span>
+        <span className={styles.sheetLabel}>{chip}</span>
         <ChevronIcon direction={sheetOpen ? "down" : "up"} />
       </button>
       {sheetOpen ? <CloseButton name="time range" className={styles.sheetClose} onClick={() => setSheetOpen(false)} /> : null}
       <div id={bodyId} className={styles.sheetBody}>
-        <TimelineControls {...props} />
+        <PlayHistoryTransport
+          playing={playback.playing}
+          speed={playback.speed}
+          onToggle={playback.toggle}
+          onSpeed={playback.setSpeed}
+          className={styles.transport}
+          playClassName={`${ui.button} ${styles.play}`}
+          speedsClassName={styles.speeds}
+          speedClassName={`${ui.chip} ${styles.speed}`}
+        />
+        <TimelineControls
+          {...props}
+          onSpan={chooseSpan}
+          readout={sweep === null ? describeSpan(span) : describePlayhead(sweep.year, eraOfYear(sweep.year).label)}
+          playTrack={sweep?.track ?? null}
+          playYear={sweep === null ? null : displayedYear(sweep.year)}
+          scrubbing={playback.scrubbing}
+          onScrub={playback.scrub}
+          onScrubEnd={playback.endScrub}
+        />
       </div>
     </section>
   );
@@ -76,8 +111,14 @@ function TimelineControls(props: {
   shownCount: number | null;
   undatedCount: number | null;
   namedPeriods: readonly NamedPeriod[];
+  readout: string;
+  playTrack: number | null;
+  playYear: number | null;
+  scrubbing: boolean;
   onSpan(span: YearSpan): void;
   onShowUndated(show: boolean): void;
+  onScrub(year: number): void;
+  onScrubEnd(): void;
 }) {
   const { span, onSpan, shownCount, undatedCount } = props;
   const era = activeWorldEra(span);
@@ -85,7 +126,7 @@ function TimelineControls(props: {
   return (
     <>
       <div className={styles.head}>
-        <p className={`${ui.serif} ${styles.readout}`} data-role="timeline-readout">{describeSpan(span)}</p>
+        <p className={`${ui.serif} ${styles.readout}`} data-role="timeline-readout">{props.readout}</p>
         {isAllTime(span) ? null : (
           <button type="button" className={`${ui.chip} ${styles.allTime}`} data-era="all" onClick={() => onSpan(ALL_TIME)}>All time</button>
         )}
@@ -104,7 +145,15 @@ function TimelineControls(props: {
           </span>
         </label>
       </div>
-      <YearRangeSlider span={span} onSpan={onSpan} />
+      <YearRangeSlider
+        span={span}
+        onSpan={onSpan}
+        playTrack={props.playTrack}
+        playYear={props.playYear}
+        scrubbing={props.scrubbing}
+        onScrub={props.onScrub}
+        onScrubEnd={props.onScrubEnd}
+      />
       <div className={styles.eras} role="group" aria-label="Eras">
         {WORLD_ERAS.map((worldEra) => (
           <button

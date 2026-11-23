@@ -7,6 +7,7 @@ import { useWorldCatalogue, type WorldCatalogue } from "@/lib/world/catalogueLoa
 import type { SiteColumns } from "@/lib/world/catalogueTypes";
 import { NEWS_PINS_START_ON } from "@/lib/news/recentNews";
 import { randomAcceptedWonder } from "@/lib/world/wonders";
+import type { YearSpan } from "@/lib/world/worldEras";
 import { usePaleoLayer, type PaleoLayerViewModel } from "./paleo/usePaleoLayer";
 import { useNewsPins, type NewsPin } from "./useNewsPins";
 import { useSiteFilter, type SiteFilterViewModel } from "./useSiteFilter";
@@ -87,7 +88,12 @@ export function useGlobeExplorer(options: {
   });
   const [showOsmMegaliths, setShowOsmMegaliths] = useState(false);
   const [basemapId, setBasemapId] = useState<string | null>(null);
-  const paleo = usePaleoLayer(filters.yearSpan);
+  const paleoSpan = useMemo<YearSpan>(
+    () => (filters.playYear === null ? filters.yearSpan : [filters.playYear, filters.playYear]),
+    [filters.playYear, filters.yearSpan],
+  );
+  const paleo = usePaleoLayer(paleoSpan);
+  // The filter's range is the revealed window, so a ring ahead of the playhead drops out and undated rings follow Include undated.
   const news = useNewsPins(catalogue, filters.filter);
 
   const { setYearSpan, setShowUndated, setFeaturedOnly, showOnlyTypes } = filters;
