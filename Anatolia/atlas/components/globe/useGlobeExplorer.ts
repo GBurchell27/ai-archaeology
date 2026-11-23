@@ -5,8 +5,10 @@ import type { GlobeLook } from "@/lib/globe/ellipsoid";
 import { GLOBE_PRESETS, type SettingsPresetId } from "@/lib/settings/settingsPresets";
 import { useWorldCatalogue, type WorldCatalogue } from "@/lib/world/catalogueLoader";
 import type { SiteColumns } from "@/lib/world/catalogueTypes";
+import { NEWS_PINS_START_ON } from "@/lib/news/recentNews";
 import { randomAcceptedWonder } from "@/lib/world/wonders";
 import { usePaleoLayer, type PaleoLayerViewModel } from "./paleo/usePaleoLayer";
+import { useNewsPins, type NewsPin } from "./useNewsPins";
 import { useSiteFilter, type SiteFilterViewModel } from "./useSiteFilter";
 import { useSiteSelection, type SiteSelectionViewModel } from "./useSiteSelection";
 import { useTheoryLens, type TheoryLensViewModel } from "./useTheoryLens";
@@ -28,6 +30,12 @@ export interface GlobeExplorerViewModel {
   /** Monument names and count badges on the globe. */
   showLabels: boolean;
   setShowLabels(show: boolean): void;
+  /** Recent reports the catalogue holds, and the ones the filters leave visible as rings. */
+  newsPins: readonly NewsPin[];
+  newsRings: readonly NewsPin[];
+  /** The rings. On at the start. The list in the legend stays either way. */
+  showNewsPins: boolean;
+  setShowNewsPins(show: boolean): void;
   /** The globe reports which regional cells it has on show, so the counts can include them. */
   setLoadedCells(cells: readonly SiteColumns[]): void;
   togglePanel(panel: ExplorerPanel): void;
@@ -64,6 +72,7 @@ export function useGlobeExplorer(options: {
   const [loadedCells, setLoadedCells] = useState<readonly SiteColumns[]>([]);
   const filters = useSiteFilter(catalogue, loadedCells);
   const [showLabels, setShowLabels] = useState(true);
+  const [showNewsPins, setShowNewsPins] = useState(NEWS_PINS_START_ON);
   const selection = useSiteSelection({
     catalogue, initialSiteId: options.initialSiteId, look: options.look, onSelectSite: options.onSelectSite,
   });
@@ -79,6 +88,7 @@ export function useGlobeExplorer(options: {
   const [showOsmMegaliths, setShowOsmMegaliths] = useState(false);
   const [basemapId, setBasemapId] = useState<string | null>(null);
   const paleo = usePaleoLayer(filters.yearSpan);
+  const news = useNewsPins(catalogue, filters.filter);
 
   const { setYearSpan, setShowUndated, setFeaturedOnly, showOnlyTypes } = filters;
   const applyPreset = useCallback((presetId: SettingsPresetId) => {
@@ -125,9 +135,11 @@ export function useGlobeExplorer(options: {
 
   return useMemo(() => ({
     catalogue, catalogueError, filters, selection, tour, theoryLens, panel, showOsmMegaliths, showLabels, basemapId, paleo,
-    togglePanel, openTheory, closeTop, setShowOsmMegaliths, setShowLabels, setLoadedCells, setBasemapId, applyPreset, visitRandomWonder,
+    newsPins: news.pins, newsRings: news.rings, showNewsPins,
+    togglePanel, openTheory, closeTop, setShowOsmMegaliths, setShowLabels, setShowNewsPins, setLoadedCells, setBasemapId, applyPreset, visitRandomWonder,
   }), [
     catalogue, catalogueError, filters, selection, tour, theoryLens, panel, showOsmMegaliths, showLabels, basemapId, paleo,
+    news.pins, news.rings, showNewsPins,
     togglePanel, openTheory, closeTop, applyPreset, visitRandomWonder,
   ]);
 }

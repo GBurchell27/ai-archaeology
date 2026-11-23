@@ -69,7 +69,7 @@ export function WondersPanel(props: {
       dataRole="wonders-panel"
       eyebrow={`${props.featured.length} hand-picked early monuments`}
       title="Wonders"
-      closeLabel="Close the wonders list"
+      closeName="wonders"
       onClose={props.onClose}
       toolbar={toolbar}
     >

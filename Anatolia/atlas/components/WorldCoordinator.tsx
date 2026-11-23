@@ -13,6 +13,7 @@ import { GlobeModelOverlay } from "./globe/model/GlobeModelOverlay";
 import { ModelControls } from "./globe/model/ModelControls";
 import { withModelParam } from "./globe/model/modelUrl";
 import { useModelLayer } from "./globe/model/useModelLayer";
+import { catalogueIdFromPath, keepsPrettyShareAddress } from "@/lib/share/shareAddress";
 import { historyEntryForView, type HistoryEntry } from "@/lib/globe/viewHistory";
 import { SceneGuard } from "./scene/SceneGuard";
 import { useHistoryTraversal, writeHistoryEntry } from "./useViewHistory";
@@ -53,7 +54,7 @@ function globeSiteFromAddress(): string | undefined {
   return site && SITE_ID.test(site) ? site : undefined;
 }
 
-function sceneFromUrl(state: WorldViewState): WorldScene {
+function sceneFromUrl(state: WorldViewState, sharedSiteId?: string): WorldScene {
   if (state.view === "walk") {
     const site = walkSiteForCard(state.siteId);
     // A site with no walk opens the atlas, which ignores an id it does not know.
@@ -62,7 +63,7 @@ function sceneFromUrl(state: WorldViewState): WorldScene {
     return { view: "walk", siteId: site.id, source: site.modelOnly ? undefined : state.source };
   }
   if (state.view !== "globe") return state;
-  const siteId = globeSiteFromAddress();
+  const siteId = globeSiteFromAddress() ?? sharedSiteId;
   const { longitude, latitude, altitude, theoryId, tourId, stopId } = state;
   const isDefault = longitude === DEFAULT_GLOBE_LOOK.longitude
     && latitude === DEFAULT_GLOBE_LOOK.latitude
@@ -83,13 +84,17 @@ function urlForScene(scene: WorldScene): string {
 }
 
 function writeUrl(search: string, entry: HistoryEntry = "replace"): void {
-  writeHistoryEntry(`${window.location.pathname}${withModelParam(search)}`, entry);
+  const path = window.location.pathname;
+  const pretty = keepsPrettyShareAddress(path, search, catalogueIdFromPath(path));
+  const target = pretty ? path : `/${withModelParam(search)}`;
+  if (target === `${path}${window.location.search}`) return;
+  writeHistoryEntry(target, entry);
 }
 
 /** Owns which of the four views is showing, the crossfade between them, and the address bar. */
-export function WorldCoordinator(props: { regional: RegionalTerrain | null; initialView: WorldViewState }) {
+export function WorldCoordinator(props: { regional: RegionalTerrain | null; initialView: WorldViewState; sharedSiteId?: string }) {
   const [mounted, setMounted] = useState<{ current: MountedScene; leaving: MountedScene | null }>(
-    () => ({ current: { scene: sceneFromUrl(props.initialView), key: 0 }, leaving: null }),
+    () => ({ current: { scene: sceneFromUrl(props.initialView, props.sharedSiteId), key: 0 }, leaving: null }),
   );
   const globeLook = useRef<GlobeLook | undefined>(mounted.current.scene.view === "globe" ? mounted.current.scene.look : undefined);
   /** The site whose card is open on the globe; it rides along in the address and survives a trip to the place view. */
@@ -134,7 +139,10 @@ export function WorldCoordinator(props: { regional: RegionalTerrain | null; init
     // Only the address the page opened on can be wrong.
   }, []);
 
-  useHistoryTraversal((search) => show(sceneFromUrl(parseViewUrl(search)), true));
+  useHistoryTraversal((search) => {
+    const shared = search ? undefined : catalogueIdFromPath(window.location.pathname) ?? undefined;
+    show(sceneFromUrl(parseViewUrl(search), shared), true);
+  });
 
   useEffect(() => () => {
     window.clearTimeout(fadeTimer.current);

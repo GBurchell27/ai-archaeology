@@ -1,6 +1,9 @@
 "use client";
 
 import { useEffect, useId, useRef, useState, type KeyboardEvent } from "react";
+import { CloseButton } from "@/components/chrome/CloseButton";
+import { useDismissLayer } from "@/components/chrome/useDismissLayer";
+import { DISMISS_PRIORITY } from "@/lib/chrome/dismissStack";
 import type { WorldCatalogue } from "@/lib/world/catalogueLoader";
 import { MIN_QUERY_LENGTH } from "@/lib/world/siteSearch";
 import { siteTypeStyle } from "@/lib/world/siteTypeStyle";
@@ -26,6 +29,7 @@ export function SiteSearch(props: { catalogue: WorldCatalogue | null; unavailabl
   const listId = useId();
 
   const listOpen = open && query.trim().length >= MIN_QUERY_LENGTH;
+  useDismissLayer(listOpen, () => setOpen(false), DISMISS_PRIORITY.search);
 
   useEffect(() => {
     function focusOnSlash(event: globalThis.KeyboardEvent) {
@@ -91,7 +95,9 @@ export function SiteSearch(props: { catalogue: WorldCatalogue | null; unavailabl
       />
       <kbd className={styles.key} aria-hidden="true">/</kbd>
       {listOpen ? (
-        <ul id={listId} className={`${ui.glass} ${ui.scroll} ${styles.results}`} role="listbox" aria-label="Matching sites">
+        <div className={`${ui.glass} ${styles.results}`}>
+        <div className={styles.resultsHead}><CloseButton name="search results" onClick={() => setOpen(false)} /></div>
+        <ul id={listId} className={`${ui.scroll} ${styles.resultList}`} role="listbox" aria-label="Matching sites">
           {hits.map((site, position) => (
             <SearchHit
               key={site.id}
@@ -108,6 +114,7 @@ export function SiteSearch(props: { catalogue: WorldCatalogue | null; unavailabl
             </li>
           ) : null}
         </ul>
+        </div>
       ) : null}
     </div>
   );

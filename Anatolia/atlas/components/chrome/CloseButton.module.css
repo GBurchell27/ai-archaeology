@@ -1,0 +1,64 @@
+/* The shared close control. 44px is the touch target on a phone and on a desktop. */
+
+.close {
+  display: inline-grid;
+  place-items: center;
+  flex: none;
+  width: 44px;
+  height: 44px;
+  margin: 0;
+  padding: 0;
+  border: 1px solid transparent;
+  border-radius: 3px;
+  background: none;
+  color: var(--globe-muted);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.close:hover { background: rgba(236, 228, 212, 0.1); color: var(--globe-ink); }
+
+.close:focus-visible {
+  outline: 2px solid var(--globe-ochre);
+  outline-offset: 2px;
+}
+
+.corner {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  z-index: 3;
+}
+
+/* A few panels style every button. The close control keeps its own size and colour. */
+:global(.panel) .close,
+:global(.search) .close,
+:global(.menu) .close,
+:global(.help) .close,
+:global(.timebar) .close,
+:global(.legend) .close,
+:global([data-role="tour-bar"]) .close {
+  width: 44px;
+  height: 44px;
+  min-height: 44px;
+  padding: 0;
+  border-color: transparent;
+  background: none;
+  font-size: 0;
+  line-height: 0;
+  letter-spacing: 0;
+  text-align: center;
+  text-transform: none;
+}
+
+:global(.panel) .close:hover,
+:global(.search) .close:hover,
+:global(.menu) .close:hover {
+  border-color: transparent;
+  background: rgba(236, 228, 212, 0.1);
+  color: var(--globe-ink);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .close { transition: none; }
+}

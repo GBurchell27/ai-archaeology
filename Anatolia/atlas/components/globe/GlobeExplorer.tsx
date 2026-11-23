@@ -6,7 +6,9 @@ import { GLOBE_BASEMAPS } from "@/lib/globe/basemaps";
 import { compactRecordCredits } from "@/lib/globe/compactCredits";
 import { ENTER_ATLAS_ALTITUDE, atlasLookFromGlobe, type AtlasLook } from "@/lib/globe/handoff";
 import { namedPeriodsForRegions, periodRegionKeyAt } from "@/lib/world/namedPeriods";
+import { withTourUndated } from "@/lib/world/siteFilter";
 import { ExplorerChrome } from "./chrome/ExplorerChrome";
+import { GlobeNewsRings } from "./GlobeNewsRings";
 import { GlobeSites, type PickedSite } from "./GlobeSites";
 import { useGlobeBasemap } from "./GlobeSurface";
 import { GlobePaleoOverlay } from "./paleo/GlobePaleoOverlay";
@@ -71,7 +73,11 @@ export function GlobeExplorer(props: GlobeExplorerProps) {
   const basemap = GLOBE_BASEMAPS.find((candidate) => candidate.id === explorer.basemapId) ?? automaticBasemap;
   const recordCredits = useMemo(() => compactRecordCredits(explorer.catalogue?.index ?? null), [explorer.catalogue]);
 
-  const { catalogue, selection } = explorer;
+  const { catalogue, selection, tour } = explorer;
+  const drawnFilter = useMemo(
+    () => withTourUndated(explorer.filters.filter, tour.at === null ? [] : tour.stops.map((stop) => stop.siteId)),
+    [explorer.filters.filter, tour.at, tour.stops],
+  );
   return (
     <GlobeView
       initialLook={props.initialLook}
@@ -85,7 +91,7 @@ export function GlobeExplorer(props: GlobeExplorerProps) {
       {catalogue ? (
         <GlobeSites
           catalogue={catalogue}
-          filter={explorer.filters.filter}
+          filter={drawnFilter}
           look={look}
           selectedId={selection.selected?.id ?? null}
           theorySiteIds={explorer.theoryLens.siteIds}
@@ -96,6 +102,7 @@ export function GlobeExplorer(props: GlobeExplorerProps) {
           onClusterPick={selection.flyToLook}
         />
       ) : null}
+      <GlobeNewsRings pins={explorer.newsRings} shown={explorer.showNewsPins} omitId={selection.selected?.id ?? null} />
       {/* Here and not in sceneLayers: its step follows the timeline, which this component's view model holds. */}
       <GlobePaleoOverlay paleo={explorer.paleo} />
       {props.sceneLayers}

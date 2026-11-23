@@ -1,16 +1,21 @@
 "use client";
 
+import { CloseButton } from "@/components/chrome/CloseButton";
+import { useDismissLayer } from "@/components/chrome/useDismissLayer";
+import { DISMISS_PRIORITY } from "@/lib/chrome/dismissStack";
 import type { WonderTourViewModel } from "../useWonderTour";
-import { ChevronIcon, CloseIcon } from "./ExplorerIcons";
+import { ChevronIcon } from "./ExplorerIcons";
 import ui from "./chrome.module.css";
 import styles from "./TourBar.module.css";
 
 /**
  * Next and previous through the guided tour. Nothing advances on its own, and the flights
  * between stops become instant cuts under prefers-reduced-motion (GlobeFlight sees to that).
+ * Escape ends the tour and leaves the site card: the tour sits in front of that card.
  */
 export function TourBar(props: { tour: WonderTourViewModel }) {
   const { tour } = props;
+  useDismissLayer(tour.at !== null, tour.end, DISMISS_PRIORITY.panel + 1);
   if (tour.at === null) return null;
   const caption = tour.caption;
   return (
@@ -25,9 +30,7 @@ export function TourBar(props: { tour: WonderTourViewModel }) {
         <span className={ui.eyebrow}>{tour.title || "Tour"}</span>
         <span className={ui.numeric}>{tour.at + 1} of {tour.stops.length}</span>
       </p>
-      <button type="button" className={`${ui.iconButton} ${styles.end}`} data-action="tour-end" aria-label="End the tour" onClick={tour.end}>
-        <CloseIcon />
-      </button>
+      <CloseButton name="guided tour" action="tour-end" className={styles.end} onClick={tour.end} />
       {caption ? <p className={styles.caption} aria-live="polite">{caption}</p> : null}
       {tour.source ? <p className={styles.source}>{tour.source}</p> : null}
       <div className={styles.moves}>

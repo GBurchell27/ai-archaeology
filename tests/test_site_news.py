@@ -1,4 +1,4 @@
-"""News items: required fields, catalogue site ids, https sources, and ISO dates."""
+"""News items: required fields, catalogue site ids, https sources, ISO dates, and the recency filter."""
 
 import subprocess
 from pathlib import Path

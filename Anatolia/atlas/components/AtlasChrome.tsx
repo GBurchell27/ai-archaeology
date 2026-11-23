@@ -1,6 +1,9 @@
 "use client";
 
 import { useEffect, useRef, useState, type MutableRefObject } from "react";
+import { CloseButton } from "@/components/chrome/CloseButton";
+import { useDismissLayer } from "@/components/chrome/useDismissLayer";
+import { DISMISS_PRIORITY } from "@/lib/chrome/dismissStack";
 import { LAYER_STYLE, NO_PERIOD_STYLE } from "@/lib/periodStyle";
 import { PERIODS } from "@/lib/periods";
 import type { BaseMap, LayerId } from "@/lib/types";
@@ -48,6 +51,7 @@ export function PeriodDock(props: { periodId: string; onPeriod: (id: string) => 
     closeAfter(3200);
   }
   useEffect(() => () => window.clearTimeout(idle.current), []);
+  useDismissLayer(open, () => setOpen(false), DISMISS_PRIORITY.chrome);
   return (
     <div
       ref={dock}
@@ -58,16 +62,19 @@ export function PeriodDock(props: { periodId: string; onPeriod: (id: string) => 
       onFocusCapture={arm}
       onBlurCapture={() => closeAfter(700)}
     >
-      <button
-        type="button"
-        className="dock-handle"
-        aria-expanded={open}
-        aria-controls="period-dock"
-        // Hover and focus have already opened the dock by the time a pointer click lands, so only the keyboard (detail 0) toggles.
-        onClick={(event) => (event.detail === 0 ? setOpen((value) => !value) : arm())}
-      >
-        Periods
-      </button>
+      <div className="dock-head">
+        <button
+          type="button"
+          className="dock-handle"
+          aria-expanded={open}
+          aria-controls="period-dock"
+          // Hover and focus have already opened the dock by the time a pointer click lands, so only the keyboard (detail 0) toggles.
+          onClick={(event) => (event.detail === 0 ? setOpen((value) => !value) : arm())}
+        >
+          Periods
+        </button>
+        {open ? <CloseButton name="periods" onClick={() => setOpen(false)} /> : null}
+      </div>
       <div className="chips" id="period-dock">
         {PERIODS.map((item, index) => (
           <button
@@ -90,6 +97,7 @@ export function PeriodDock(props: { periodId: string; onPeriod: (id: string) => 
 }
 
 export function Legend(props: { open: boolean; onToggle: () => void }) {
+  useDismissLayer(props.open, props.onToggle, DISMISS_PRIORITY.chrome);
   return (
     <div className={props.open ? "legend is-open" : "legend"} data-legend={props.open ? "open" : "closed"}>
       <button type="button" className="legend-toggle" aria-expanded={props.open} aria-label="Pin legend" onClick={props.onToggle}>
@@ -104,6 +112,7 @@ export function Legend(props: { open: boolean; onToggle: () => void }) {
           <span><span className="open-ring" /> approximate</span>
         </div>
       ) : null}
+      {props.open ? <CloseButton name="key" className="legend-dismiss" onClick={props.onToggle} /> : null}
     </div>
   );
 }
@@ -118,9 +127,10 @@ export function storeLegend(open: boolean) {
 }
 
 export function ShortcutOverlay(props: { onClose: () => void }) {
+  useDismissLayer(true, props.onClose, DISMISS_PRIORITY.help);
   return (
     <div className="help" role="dialog" aria-label="Keyboard shortcuts" data-help="open">
-      <button type="button" className="close" onClick={props.onClose}>Close</button>
+      <CloseButton name="keyboard shortcuts" placement="corner" onClick={props.onClose} />
       <h2>Shortcuts</h2>
       <ul>
         <li><kbd>1</kbd>–<kbd>5</kbd> Period chips</li>
@@ -155,7 +165,7 @@ export function useAtlasKeys(handlers: MutableRefObject<AtlasKeyHandlers>) {
       const typing = Boolean(target && (target.tagName === "INPUT" || target.tagName === "TEXTAREA" || target.tagName === "SELECT" || target.isContentEditable));
       const api = handlers.current;
       if (event.key === "Escape") {
-        api.onEscape();
+        if (!event.defaultPrevented) api.onEscape();
         return;
       }
       if (typing || event.metaKey || event.ctrlKey || event.altKey) return;

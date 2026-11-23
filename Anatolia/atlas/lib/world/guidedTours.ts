@@ -41,8 +41,9 @@ export const WONDERS_TOUR: GuidedTour = {
  * Published Taş Tepeler places the world catalogue already holds.
  * Hamzan is the catalogue's "Hamzan Hill" (Q134960980). Q134611641 is a different
  * Sefer Tepe record plotted on Göbekli Tepe, and it is not a stop.
- * Kurt Tepe, Taşlı Tepe, Yoğunburç and Yenimahalle are left out: the first two are
- * not in the catalogue, and the repository has no account of the other two beyond a name on the project list.
+ * Kurt Tepe (Kurttepesi, Q119167492) and Taşlı Tepe (Taşlıtepe, Q119167992) are in the
+ * catalogue, and so are Yoğunburç and Yenimahalle. All four stay off this route: the repository
+ * has no account of them beyond a name.
  */
 export const TAS_TEPELER_TOUR: GuidedTour = {
   id: "tas-tepeler",

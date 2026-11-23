@@ -22,7 +22,6 @@ export const AboutIcon = () => <Icon><circle cx="8" cy="8" r="6" /><path d="M8 7
 export const AccountIcon = () => <Icon><circle cx="8" cy="5.4" r="2.6" /><path d="M2.8 13.6c.6-2.6 2.6-4 5.2-4s4.6 1.4 5.2 4" /></Icon>;
 /** A heart: visitors' favourites. */
 export const MostVotedIcon = () => <Icon><path d="M8 13.2C4.6 10.9 2.4 8.9 2.4 6.3a2.9 2.9 0 0 1 5.6-1 2.9 2.9 0 0 1 5.6 1c0 2.6-2.2 4.6-5.6 6.9z" /></Icon>;
-export const CloseIcon = () => <Icon><path d="m3.5 3.5 9 9M12.5 3.5l-9 9" /></Icon>;
 export const CompassIcon = () => <Icon><circle cx="8" cy="8" r="6" /><path d="m10.6 5.4-1.5 3.7-3.7 1.5 1.5-3.7z" /></Icon>;
 export const LinkIcon = () => <Icon><path d="M6.8 9.2a2.6 2.6 0 0 0 3.7 0l2-2a2.6 2.6 0 0 0-3.7-3.7l-.7.7M9.2 6.8a2.6 2.6 0 0 0-3.7 0l-2 2a2.6 2.6 0 0 0 3.7 3.7l.7-.7" /></Icon>;
 

@@ -4,7 +4,9 @@ import { useEffect, useId, useState } from "react";
 import { NamedPeriodChips } from "@/components/NamedPeriodChips";
 import type { NamedPeriod } from "@/lib/world/namedPeriods";
 import { ALL_TIME, WORLD_ERAS, activeWorldEra, describeSpan, isAllTime, type YearSpan } from "@/lib/world/worldEras";
-import { globeTimeSheetCovered, usePhoneSheetEscape } from "@/components/usePhoneSheetEscape";
+import { CloseButton } from "@/components/chrome/CloseButton";
+import { usePhoneSheetDismiss } from "@/components/chrome/useDismissLayer";
+import { DISMISS_PRIORITY } from "@/lib/chrome/dismissStack";
 import { ChevronIcon } from "./ExplorerIcons";
 import ui from "./chrome.module.css";
 import styles from "./GlobeTimeline.module.css";
@@ -39,7 +41,7 @@ export function GlobeTimeline(props: {
   const { span } = props;
   const [sheetOpen, setSheetOpen] = useState(false);
   const bodyId = useId();
-  usePhoneSheetEscape(sheetOpen, () => setSheetOpen(false), globeTimeSheetCovered);
+  usePhoneSheetDismiss(sheetOpen, () => setSheetOpen(false), DISMISS_PRIORITY.chrome);
   return (
     <section
       className={`${ui.glass} ${styles.timeline}`}
@@ -60,6 +62,7 @@ export function GlobeTimeline(props: {
         <span className={styles.sheetLabel}>{describeSpan(span)}</span>
         <ChevronIcon direction={sheetOpen ? "down" : "up"} />
       </button>
+      {sheetOpen ? <CloseButton name="time range" className={styles.sheetClose} onClick={() => setSheetOpen(false)} /> : null}
       <div id={bodyId} className={styles.sheetBody}>
         <TimelineControls {...props} />
       </div>
