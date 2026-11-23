@@ -1,0 +1,87 @@
+/* A failure of a 3D view. The screen form covers that view; the inline form sits in the walk header. */
+.screen {
+  position: absolute;
+  inset: 0;
+  z-index: 8;
+  display: grid;
+  place-items: center;
+  padding: max(24px, env(safe-area-inset-top)) 22px max(24px, env(safe-area-inset-bottom));
+  pointer-events: none;
+}
+
+.inline {
+  max-width: 440px;
+  max-height: min(70dvh, calc(100dvh - 48px));
+  margin-top: 12px;
+  overflow: auto;
+  pointer-events: auto;
+}
+
+.card {
+  pointer-events: auto;
+  max-width: 440px;
+  padding: 16px 18px 14px;
+  border: 1px solid var(--globe-rule);
+  border-radius: 3px;
+  background: var(--globe-panel);
+  color: var(--globe-ink);
+  box-shadow: var(--globe-shadow);
+}
+
+.card :focus-visible {
+  outline: 2px solid var(--globe-ochre);
+  outline-offset: 3px;
+}
+
+.title {
+  margin: 0;
+  font: 500 22px/1.15 var(--globe-serif);
+  color: var(--globe-ochre-ink);
+}
+
+.card p {
+  margin: 8px 0 0;
+  color: var(--globe-prose);
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.actions button,
+.actions a {
+  padding: 6px 13px 7px;
+  border: 1px solid var(--globe-rule);
+  border-radius: 3px;
+  background: var(--globe-button);
+  color: var(--globe-ink);
+  font: inherit;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.actions button:hover,
+.actions a:hover {
+  border-color: var(--globe-ochre);
+}
+
+.report {
+  margin-top: 10px;
+}
+
+.report summary {
+  cursor: pointer;
+  color: var(--globe-ink-soft);
+  font-size: 12px;
+}
+
+.report p {
+  font-family: ui-monospace, Consolas, monospace;
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}

@@ -40,14 +40,20 @@ function useLiveSplatRenderer(splatUrl: string) {
  * The splat of one site, levelled and scaled to walk metres, however many times its canvas has been rebuilt.
  * It fades out away from the places its photographs were taken from (`useSplatFade`).
  */
-export function SiteSplat({ site }: { site: WalkSite }) {
-  useLiveSplatRenderer(site.splatUrl);
+type SiteSplatProps = {
+  site: WalkSite;
+  /** An object URL of the decompressed splat. The file's own address has no Content-Length once a host compresses it. */
+  src: string;
+};
+
+export function SiteSplat({ site, src }: SiteSplatProps) {
+  useLiveSplatRenderer(src);
   const { position, rotation, scale } = site.alignment;
   const holder = useSplatFade(photoViewpoints(site.id));
   return (
     // drei's `<Splat>` keeps its own ref, so the fade finds the mesh through this group.
     <group ref={holder}>
-      <Splat src={site.splatUrl} position={position} rotation={rotation} scale={scale} />
+      <Splat src={src} position={position} rotation={rotation} scale={scale} />
     </group>
   );
 }

@@ -113,6 +113,8 @@ Measured on 2026-11-19 from the files tracked in git. `public/world/` was being 
 
 A visit to the globe fetches a few megabytes before compression (`core.json` is 2.6 MB). A visit to the Göbekli Tepe photographs fetches the 27 MB splat, so the free plan's 100 GB covers about 3,700 of those a month.
 
+Checked on the live site on 2026-11-23. `GET /splats/gobekli-tepe.splat` answers 200, `content-type: application/octet-stream`, `content-length: 27231680` when the request does not accept compression. A browser does accept it, and then the same URL answers 200 with `content-encoding: br` and no `Content-Length` (Karahan Tepe's splat, 1,684,352 bytes, does the same). The body the browser reads is still the full file. Vercel's published limit that mentions 100 MB is the CLI source upload, not a cap this response meets: the file is served. drei's splat loader refuses a response with no length, which was the full-page error on the photographs. The walk reads the bytes itself and passes the loader a local object URL that has a length (`photographObjectUrl.ts`). No `vercel.json` change is involved.
+
 ## A production build beside the dev server
 
 `next build` writes into `.next`, which a running dev server is using. For a check build, send the output elsewhere:
