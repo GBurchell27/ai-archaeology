@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { PERIODS } from "@/lib/periods";
+import { DEFAULT_SHOW_UNDATED } from "@/lib/settings/settingsPresets";
 import { RANGE_END, RANGE_START, activeChip, nextPlayRange, rangeForChip, type YearRange } from "@/lib/timeline";
 
 export interface TimelineState {
@@ -16,7 +17,7 @@ export interface TimelineState {
 
 export function useTimelineState(): TimelineState {
   const [range, setRange] = useState<YearRange>({ start: RANGE_START, end: RANGE_END });
-  const [showUndated, setShowUndated] = useState(true);
+  const [showUndated, setShowUndated] = useState(DEFAULT_SHOW_UNDATED);
   const [playing, setPlaying] = useState(false);
 
   useEffect(() => {

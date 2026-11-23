@@ -5,7 +5,7 @@ import type { WorldCatalogue } from "@/lib/world/catalogueLoader";
 import type { SiteColumns } from "@/lib/world/catalogueTypes";
 import { countSites, type SiteCounts } from "@/lib/world/siteCounts";
 import type { SiteFilter } from "@/lib/world/siteFilter";
-import { hiddenTypesFor } from "@/lib/settings/settingsPresets";
+import { DEFAULT_SHOW_UNDATED, hiddenTypesFor } from "@/lib/settings/settingsPresets";
 import { ALL_TIME, filterRangeFor, type YearSpan } from "@/lib/world/worldEras";
 
 export interface SiteFilterViewModel {
@@ -32,7 +32,7 @@ const NO_TYPES: ReadonlySet<string> = new Set();
 /** The time, type and featured filters for the globe, with the live counts they produce. */
 export function useSiteFilter(catalogue: WorldCatalogue | null, loadedCells: readonly SiteColumns[]): SiteFilterViewModel {
   const [yearSpan, setYearSpan] = useState<YearSpan>(ALL_TIME);
-  const [showUndated, setShowUndated] = useState(true);
+  const [showUndated, setShowUndated] = useState(DEFAULT_SHOW_UNDATED);
   const [featuredOnly, setFeaturedOnly] = useState(false);
   const [hiddenTypes, setHiddenTypes] = useState(NO_TYPES);
   const siteTypes = catalogue?.index.siteTypes;

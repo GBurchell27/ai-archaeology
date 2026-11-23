@@ -125,7 +125,7 @@ check("a Pleiades span is not dropped as a Wikidata inception", pinsInRange([ple
 
 const undated = features.find((feature) => feature.properties.startYear == null && feature.properties.endYear == null);
 check("the catalogue has an undated pin", undated != null);
-check("an undated pin stays visible by default", undated != null && pinsInRange([undated], { start: 1100, end: 1100 }, true).length === 1);
+check("an undated pin shows when undated pins are included", undated != null && pinsInRange([undated], { start: 1100, end: 1100 }, true).length === 1);
 check("an undated pin hides when the toggle is off", undated != null && pinsInRange([undated], { start: 1100, end: 1100 }, false).length === 0);
 if (miletus && undated) {
   const mixed = pinsInRange([miletus, undated], { start: -3000, end: -3000 }, true);
