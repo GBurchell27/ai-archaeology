@@ -41,6 +41,7 @@ function placeRings(pins: readonly NewsRingPin[], shown: boolean, omitId: string
 }
 
 function moveRings(placed: readonly PlacedRing[], camera: Camera, size: { width: number; height: number }): void {
+  if (placed.length === 0) return;
   const nodes = ringNodes();
   const eye = camera.position;
   for (const pin of placed) {
