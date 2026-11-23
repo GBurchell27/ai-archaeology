@@ -6,6 +6,7 @@ import { GLOBE_BASEMAPS } from "@/lib/globe/basemaps";
 import { compactRecordCredits } from "@/lib/globe/compactCredits";
 import { ENTER_ATLAS_ALTITUDE, atlasLookFromGlobe, type AtlasLook } from "@/lib/globe/handoff";
 import { namedPeriodsForRegions, periodRegionKeyAt } from "@/lib/world/namedPeriods";
+import { withTourUndated } from "@/lib/world/siteFilter";
 import { ExplorerChrome } from "./chrome/ExplorerChrome";
 import { GlobeNewsRings } from "./GlobeNewsRings";
 import { GlobeSites, type PickedSite } from "./GlobeSites";
@@ -21,11 +22,16 @@ export interface GlobeExplorerProps {
   initialSiteId?: string;
   /** A theory to open the lens on (a shared `&theory=` link). */
   initialTheoryId?: string;
+  /** A guided tour to start once the catalogue has loaded, and the stop it opens on. */
+  initialTourId?: string;
+  initialStopId?: string;
   onLookChange?(look: GlobeLook): void;
   /** The site whose card is open changed; null when the card closed. */
   onSelectSite?(siteId: string | null): void;
   /** The theory the lens is on changed; null when the lens is off. */
   onSelectTheory?(theoryId: string | null): void;
+  /** The guided tour changed. Null when it is not running. */
+  onTourChange?(tourId: string | null, stopId: string | null): void;
   /** "View terrain" on a site card. */
   onOpenPlace(siteId: string): void;
   /** Zooming in over Turkey, or "Open in Anatolia atlas" on a site card (then `siteId` is set). */
@@ -45,7 +51,8 @@ export function GlobeExplorer(props: GlobeExplorerProps) {
   const latestLook = useRef(look);
   const explorer = useGlobeExplorer({
     initialSiteId: props.initialSiteId, initialTheoryId: props.initialTheoryId, look: latestLook,
-    onSelectSite: props.onSelectSite, onSelectTheory: props.onSelectTheory,
+    initialTourId: props.initialTourId, initialStopId: props.initialStopId,
+    onSelectSite: props.onSelectSite, onSelectTheory: props.onSelectTheory, onTourChange: props.onTourChange,
   });
 
   const trackLook = useCallback((next: GlobeLook) => {
@@ -66,7 +73,11 @@ export function GlobeExplorer(props: GlobeExplorerProps) {
   const basemap = GLOBE_BASEMAPS.find((candidate) => candidate.id === explorer.basemapId) ?? automaticBasemap;
   const recordCredits = useMemo(() => compactRecordCredits(explorer.catalogue?.index ?? null), [explorer.catalogue]);
 
-  const { catalogue, selection } = explorer;
+  const { catalogue, selection, tour } = explorer;
+  const drawnFilter = useMemo(
+    () => withTourUndated(explorer.filters.filter, tour.at === null ? [] : tour.stops.map((stop) => stop.siteId)),
+    [explorer.filters.filter, tour.at, tour.stops],
+  );
   return (
     <GlobeView
       initialLook={props.initialLook}
@@ -80,7 +91,7 @@ export function GlobeExplorer(props: GlobeExplorerProps) {
       {catalogue ? (
         <GlobeSites
           catalogue={catalogue}
-          filter={explorer.filters.filter}
+          filter={drawnFilter}
           look={look}
           selectedId={selection.selected?.id ?? null}
           theorySiteIds={explorer.theoryLens.siteIds}

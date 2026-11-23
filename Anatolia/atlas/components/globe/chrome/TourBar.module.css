@@ -1,7 +1,36 @@
-.tour { display: flex; align-items: center; gap: 6px; flex: none; padding: 6px 6px 6px 14px; }
-.place { display: flex; align-items: baseline; gap: 9px; margin: 0 auto 0 0; font-size: 12.5px; white-space: nowrap; }
-.tour button { min-height: 30px; padding-inline: 9px; }
+.tour {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas: "place end" "caption caption" "source source" "moves moves";
+  align-items: center;
+  gap: 4px 8px;
+  flex: none;
+  padding: 8px 8px 8px 14px;
+}
+.place { grid-area: place; display: flex; align-items: baseline; gap: 9px; margin: 0; min-width: 0; font-size: 12.5px; }
+.place span:last-child { white-space: nowrap; }
+.end { grid-area: end; justify-self: end; }
+.caption { grid-area: caption; margin: 2px 0 0; font-size: 13px; line-height: 1.4; }
+.source { grid-area: source; margin: 0; font-size: 11.5px; line-height: 1.35; color: var(--globe-muted); }
+.moves { grid-area: moves; display: flex; gap: 6px; }
+.moves button { min-height: 30px; padding-inline: 9px; }
+
+/* The wonders route has no caption, so previous and next stay on the title's row. */
+.tour:not(:has(.caption)) {
+  grid-template-columns: minmax(0, 1fr) auto auto auto;
+  grid-template-areas: "place prev next end";
+}
+.tour:not(:has(.caption)) .moves { display: contents; }
+.tour:not(:has(.caption)) .prev { grid-area: prev; }
+.tour:not(:has(.caption)) .next { grid-area: next; }
+
+@media (max-width: 640px) {
+  .tour { padding: 8px 8px 8px 12px; }
+  .caption { font-size: 13.5px; }
+  .moves { flex-wrap: wrap; }
+  .moves button { flex: 1 1 0; }
+}
 
 @media (pointer: coarse) {
-  .tour button { min-height: 40px; }
+  .moves button { min-height: 40px; }
 }

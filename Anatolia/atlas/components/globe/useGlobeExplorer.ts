@@ -4,27 +4,19 @@ import { useCallback, useMemo, useRef, useState, type RefObject } from "react";
 import type { GlobeLook } from "@/lib/globe/ellipsoid";
 import { GLOBE_PRESETS, type SettingsPresetId } from "@/lib/settings/settingsPresets";
 import { useWorldCatalogue, type WorldCatalogue } from "@/lib/world/catalogueLoader";
-import type { FeaturedSite, SiteColumns } from "@/lib/world/catalogueTypes";
-import { randomAcceptedWonder, tourStops } from "@/lib/world/wonders";
+import type { SiteColumns } from "@/lib/world/catalogueTypes";
 import { NEWS_PINS_START_ON } from "@/lib/news/recentNews";
+import { randomAcceptedWonder } from "@/lib/world/wonders";
 import type { YearSpan } from "@/lib/world/worldEras";
 import { usePaleoLayer, type PaleoLayerViewModel } from "./paleo/usePaleoLayer";
 import { useNewsPins, type NewsPin } from "./useNewsPins";
 import { useSiteFilter, type SiteFilterViewModel } from "./useSiteFilter";
 import { useSiteSelection, type SiteSelectionViewModel } from "./useSiteSelection";
 import { useTheoryLens, type TheoryLensViewModel } from "./useTheoryLens";
+import { useWonderTour, type WonderTourViewModel } from "./useWonderTour";
 
 /** "most-voted" and "account" are offered only when accounts are configured (docs/accounts.md). */
 export type ExplorerPanel = "wonders" | "theories" | "settings" | "about" | "most-voted" | "account";
-
-export interface WonderTourViewModel {
-  stops: FeaturedSite[];
-  /** Index of the stop on show, or null when no tour is running. */
-  at: number | null;
-  start(): void;
-  step(delta: 1 | -1): void;
-  end(): void;
-}
 
 export interface GlobeExplorerViewModel {
   catalogue: WorldCatalogue | null;
@@ -63,27 +55,6 @@ export interface GlobeExplorerViewModel {
   visitRandomWonder(): void;
 }
 
-/** The tour is over as soon as the open site is no longer its current stop: a pick, a search, or closing the card ends it. */
-function useWonderTour(
-  catalogue: WorldCatalogue | null,
-  selectedId: string | null,
-  visitById: (siteId: string) => boolean,
-): WonderTourViewModel {
-  const [index, setIndex] = useState<number | null>(null);
-  const stops = useMemo(() => tourStops(catalogue?.featured ?? []), [catalogue]);
-  const at = index !== null && stops[index]?.id === selectedId ? index : null;
-  const show = useCallback((next: number) => {
-    const stop = stops[next];
-    if (!stop) return;
-    setIndex(next);
-    visitById(stop.id);
-  }, [stops, visitById]);
-  const start = useCallback(() => show(0), [show]);
-  const step = useCallback((delta: 1 | -1) => show((at ?? 0) + delta), [at, show]);
-  const end = useCallback(() => setIndex(null), []);
-  return useMemo(() => ({ stops, at, start, step, end }), [stops, at, start, step, end]);
-}
-
 /**
  * The globe explorer's view model. `look` is a ref on purpose: the camera reports ~8 times a second
  * and nothing in the chrome should re-render for it.
@@ -91,9 +62,12 @@ function useWonderTour(
 export function useGlobeExplorer(options: {
   initialSiteId?: string;
   initialTheoryId?: string;
+  initialTourId?: string;
+  initialStopId?: string;
   look: RefObject<GlobeLook | null>;
   onSelectSite?: (siteId: string | null) => void;
   onSelectTheory?: (theoryId: string | null) => void;
+  onTourChange?: (tourId: string | null, stopId: string | null) => void;
 }): GlobeExplorerViewModel {
   const { catalogue, error: catalogueError } = useWorldCatalogue();
   const [loadedCells, setLoadedCells] = useState<readonly SiteColumns[]>([]);
@@ -103,7 +77,10 @@ export function useGlobeExplorer(options: {
   const selection = useSiteSelection({
     catalogue, initialSiteId: options.initialSiteId, look: options.look, onSelectSite: options.onSelectSite,
   });
-  const tour = useWonderTour(catalogue, selection.selected?.id ?? null, selection.visitById);
+  const tour = useWonderTour({
+    catalogue, selectedId: selection.selected?.id ?? null, visit: selection.visit, visitById: selection.visitById,
+    initialTourId: options.initialTourId, initialStopId: options.initialStopId, onChange: options.onTourChange,
+  });
   const [panel, setPanel] = useState<ExplorerPanel | null>(options.initialTheoryId ? "theories" : null);
   const theoryLens = useTheoryLens({
     catalogue, shown: panel === "theories", initialTheoryId: options.initialTheoryId,

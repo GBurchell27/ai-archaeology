@@ -23,10 +23,27 @@ function searchWithoutPredictModel(search: string): string {
   return rest ? `${lead}${rest}` : "";
 }
 
-/** A pretty site path is shared on its own. Any other view shares the address, without the recording-pattern layer. */
+/** `tour` and `stop` from an address, kept when a view of a tour is shared. */
+function tourShareQuery(search: string): string {
+  const params = new URLSearchParams(search.startsWith("?") ? search.slice(1) : search);
+  const tour = params.get("tour");
+  if (!tour) return "";
+  const kept = new URLSearchParams();
+  kept.set("tour", tour);
+  const stop = params.get("stop");
+  if (stop) kept.set("stop", stop);
+  return `?${kept.toString()}`;
+}
+
+/**
+ * A pretty site path is shared on its own, plus a tour and its stop when one is running.
+ * Any other view shares the address, without the recording-pattern layer, and keeps the tour.
+ */
 export function viewSharePath(pathname: string, search: string): string {
-  if (pathname.startsWith("/site/")) return pathname;
-  return `${pathname}${searchWithoutPredictModel(search)}`;
+  const cleaned = searchWithoutPredictModel(search);
+  if (!pathname.startsWith("/site/")) return `${pathname}${cleaned}`;
+  const tour = tourShareQuery(cleaned);
+  return tour ? `${pathname}${tour}` : pathname;
 }
 
 /** The catalogue id in `/site/<slug>`, or null when this address is not a share page. */
@@ -43,6 +60,8 @@ export function keepsPrettyShareAddress(pathname: string, search: string, shared
   if (!sharedSiteId || !pathname.startsWith("/site/")) return false;
   const query = search.startsWith("?") ? search.slice(1) : search;
   const params = new URLSearchParams(query);
+  // A tour names its stop in the query, so the pretty path, which drops the query, cannot hold it.
+  if (params.get("tour")) return false;
   const view = params.get("view") ?? "globe";
   return view === "globe" && params.get("site") === sharedSiteId;
 }

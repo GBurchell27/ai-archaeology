@@ -54,9 +54,11 @@ export interface AtlasAppProps {
   onSelectSite?: (siteId: string | null) => void;
   /** Present when the atlas sits under the coordinator: called with a walkable site's id to open its walk. */
   onEnterWalk?: (siteId: string) => void;
+  /** Opens the globe on the Taş Tepeler tour. Present when the atlas sits under the coordinator. */
+  onStartTasTepelerTour?: () => void;
 }
 
-export function AtlasApp({ regional, initialLook, initialSiteId, onExitToGlobe, onSelectSite, onEnterWalk }: AtlasAppProps) {
+export function AtlasApp({ regional, initialLook, initialSiteId, onExitToGlobe, onSelectSite, onEnterWalk, onStartTasTepelerTour }: AtlasAppProps) {
   const preferences = useAtlasPreferences();
   const display = useMapDisplay();
   const camera = useCameraCommands();
@@ -234,6 +236,7 @@ export function AtlasApp({ regional, initialLook, initialSiteId, onExitToGlobe, 
         onHelp={toggleHelp}
         onSettings={navigation.toggleSettings}
         onGlobe={exitToGlobe}
+        onStartTasTepelerTour={onStartTasTepelerTour}
       />
       <PeriodDock periodId={periodId} onPeriod={timeline.selectPeriod} />
       <TimelineControl

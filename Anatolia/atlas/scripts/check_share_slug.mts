@@ -61,6 +61,11 @@ check("closing the card or leaving the globe drops the pretty path",
   !keepsPrettyShareAddress(sharePath, "?view=globe&lon=38.92&lat=37.22&alt=120", "Q214944")
   && !keepsPrettyShareAddress(sharePath, "?view=atlas&site=gobekli-tepe", "Q214944"));
 check("a view share of a site path drops the query", viewSharePath(sharePath, "?lon=38.92&lat=37.22") === sharePath);
+check("a view share of a tour keeps the tour and its stop",
+  viewSharePath("/", "?view=globe&lon=38.92&lat=37.22&alt=1400&tour=tas-tepeler&stop=Q5996986&model=any_all") === "/?view=globe&lon=38.92&lat=37.22&alt=1400&tour=tas-tepeler&stop=Q5996986"
+  && viewSharePath(sharePath, "?tour=tas-tepeler&stop=Q214944&lon=38.92") === `${sharePath}?tour=tas-tepeler&stop=Q214944`);
+check("a running tour leaves the pretty path, which cannot carry the stop",
+  !keepsPrettyShareAddress(sharePath, "?view=globe&site=Q214944&tour=tas-tepeler&stop=Q214944", "Q214944"));
 check("a view share of the globe keeps the existing address", viewSharePath("/", "?view=globe&site=Q214944") === "/?view=globe&site=Q214944");
 check("a view share drops the recording-pattern layer",
   viewSharePath("/", "?view=globe&lon=38.00&lat=30.00&alt=13000&site=Q214944&model=any_all") === "/?view=globe&lon=38.00&lat=30.00&alt=13000&site=Q214944"

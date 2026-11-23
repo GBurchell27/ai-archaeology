@@ -1,5 +1,6 @@
 // The curated "wonders" tier: grouping, filtering, the guided tour, and the lucky dip.
 
+import { WONDERS_TOUR } from "./guidedTours";
 import { searchKey } from "@/lib/search";
 import type { FeaturedSite } from "./catalogueTypes";
 import { WORLD_ERAS, eraOfYear } from "./worldEras";
@@ -12,20 +13,7 @@ export interface WonderGroup {
 }
 
 /** Hand-ordered: the earliest monumental building first, then outward in time and space. */
-export const TOUR_SITE_IDS: readonly string[] = [
-  "Q214944", // Göbekli Tepe
-  "Q5996986", // Karahan Tepe
-  "Q2402267", // Jericho
-  "Q192522", // Çatalhöyük
-  "Q1535226", // Nabta Playa
-  "Q833850", // Carnac stones
-  "Q216862", // Ġgantija
-  "Q339503", // Newgrange
-  "Q39671", // Stonehenge
-  "Q12508", // Giza pyramid complex
-  "Q219279", // Caral
-  "Q5725", // Mohenjo-daro
-];
+export const TOUR_SITE_IDS: readonly string[] = WONDERS_TOUR.stops.map((stop) => stop.siteId);
 
 export const WONDER_STATUS: Record<FeaturedSite["status"], { badge: string; note: string } | null> = {
   accepted: null,
