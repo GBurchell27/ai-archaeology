@@ -91,6 +91,7 @@ Documents:
 - [`docs/inspiration.md`](docs/inspiration.md): the open projects and papers this learned from.
 - [`docs/data-sources.md`](docs/data-sources.md): the licence register.
 - [`docs/cross-region-pipeline.md`](docs/cross-region-pipeline.md): the cross-region training check.
+- [SAR Doppler feasibility protocol](docs/sar/protocol.md) and the metadata-only Sentinel-1 search.
 
 ## Requirements
 
