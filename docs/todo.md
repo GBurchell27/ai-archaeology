@@ -136,6 +136,7 @@ Everything overnight was judged in a software-rendered test browser.
 - [ ] Zooming into a site from the map must arrive walking, not flying (R recovers it).
 - [ ] Thin dotted vertical lines on Karahan Tepe's built east wall: real, or a test-renderer artefact?
 - [ ] Play history on the globe timeline and the Anatolia year bar was looked at in a software-rendered browser only.
+- [ ] News rings on the globe. Seen in a software-rendered browser only. The pulse is CSS; under reduced motion the ring stays still.
 
 ## Known gaps
 

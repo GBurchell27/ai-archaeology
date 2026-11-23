@@ -6,9 +6,11 @@ import { useHistoryPlayback } from "@/components/history/useHistoryPlayback";
 import { NamedPeriodChips } from "@/components/NamedPeriodChips";
 import { formatYear } from "@/lib/periods";
 import type { NamedPeriod } from "@/lib/world/namedPeriods";
+import { CloseButton } from "@/components/chrome/CloseButton";
+import { usePhoneSheetDismiss } from "@/components/chrome/useDismissLayer";
+import { DISMISS_PRIORITY } from "@/lib/chrome/dismissStack";
 import { describePlayhead, displayedYear, type TrackScale } from "@/lib/world/historyPlayhead";
 import { ALL_TIME, WORLD_ERAS, activeWorldEra, clampWorldYear, describeSpan, eraOfYear, isAllTime, trackToWorldYear, worldYearToTrack, type YearSpan } from "@/lib/world/worldEras";
-import { globeTimeSheetCovered, usePhoneSheetEscape } from "@/components/usePhoneSheetEscape";
 import { ChevronIcon } from "./ExplorerIcons";
 import ui from "./chrome.module.css";
 import styles from "./GlobeTimeline.module.css";
@@ -46,7 +48,7 @@ export function GlobeTimeline(props: {
   const playback = useHistoryPlayback({ bounds, quantize: clampWorldYear, scale: GLOBE_TRACK, onCommit: props.onPlayYear });
   const [sheetOpen, setSheetOpen] = useState(false);
   const bodyId = useId();
-  usePhoneSheetEscape(sheetOpen, () => setSheetOpen(false), globeTimeSheetCovered);
+  usePhoneSheetDismiss(sheetOpen, () => setSheetOpen(false), DISMISS_PRIORITY.chrome);
   const sweep = playback.sweep;
   const chip = sweep === null ? describeSpan(span) : formatYear(displayedYear(sweep.year));
   const chooseSpan = (next: YearSpan) => {
@@ -76,6 +78,7 @@ export function GlobeTimeline(props: {
         <span className={styles.sheetLabel}>{chip}</span>
         <ChevronIcon direction={sheetOpen ? "down" : "up"} />
       </button>
+      {sheetOpen ? <CloseButton name="time range" className={styles.sheetClose} onClick={() => setSheetOpen(false)} /> : null}
       <div id={bodyId} className={styles.sheetBody}>
         <PlayHistoryTransport
           playing={playback.playing}

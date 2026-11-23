@@ -117,18 +117,7 @@ export function toggleLandscape(context: FlightContext): void {
   overlays.setLandscapeOpen(!overlays.landscapeOpen);
 }
 
-/** Escape closes the shortcut sheet first; a second press clears everything else. */
+/** Escape with nothing left open stops a flight. Open layers close themselves, one at a time. */
 export function escapeAtlas(context: FlightContext): void {
-  const { overlays, selection, camera } = context;
-  if (overlays.help) {
-    overlays.setHelp(false);
-    return;
-  }
-  overlays.setLandscapeOpen(false);
-  overlays.setSettingsOpen(false);
-  selection.setSelectedId(null);
-  selection.setWikiId(null);
-  selection.setPanelShown(false);
-  overlays.setClimateId(null);
-  camera.stopFlight();
+  context.camera.stopFlight();
 }

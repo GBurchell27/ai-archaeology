@@ -114,6 +114,8 @@
 
 /* The key to the pin colours */
 .legend { left: var(--edge); bottom: 14px; display: flex; gap: 4px; align-items: center; padding: 3px; font-size: 12px; line-height: 1.4; }
+.legend.is-open { min-height: 44px; padding-right: 44px; }
+.legend-dismiss { position: absolute; top: 0; right: 0; }
 
 .legend-toggle {
   min-height: 30px;

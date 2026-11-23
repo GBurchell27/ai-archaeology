@@ -68,7 +68,7 @@ export function AnatoliaYearTrack(props: {
           onPointerDown={(event) => grabPlayhead(trackRef.current, props.onScrub, event)}
           onPointerMove={(event) => movePlayhead(trackRef.current, props.onScrub, event)}
           onPointerUp={props.onScrubEnd}
-          onKeyDown={(event) => keyPlayhead(props.playYear ?? props.range.start, props.range, props.onScrub, event)}
+          onKeyDown={(event) => keyPlayhead(props.playYear ?? props.range.start, props.range, props.onScrub, props.onScrubEnd, event)}
         />
       )}
     </div>
@@ -191,12 +191,19 @@ function movePlayhead(track: HTMLDivElement | null, onScrub: (year: number) => v
   onScrub(yearFromClient(track, event.clientX));
 }
 
-function keyPlayhead(year: number, range: YearRange, onScrub: (year: number) => void, event: KeyboardEvent<HTMLButtonElement>): void {
+function keyPlayhead(
+  year: number,
+  range: YearRange,
+  onScrub: (year: number) => void,
+  onScrubEnd: () => void,
+  event: KeyboardEvent<HTMLButtonElement>,
+): void {
   const next = keyYear(event.key, year, "end", range);
   if (next === null) return;
   event.preventDefault();
   event.stopPropagation();
   onScrub(event.key === "Home" ? range.start : event.key === "End" ? range.end : next);
+  onScrubEnd();
 }
 
 function yearFromClient(track: HTMLDivElement, clientX: number): number {

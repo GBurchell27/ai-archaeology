@@ -52,7 +52,7 @@ export function TheoriesPanel(props: {
       dataRole="theories-panel"
       eyebrow={`${ALL_THEORIES.length} theories on ${ALL_QUESTIONS.length} questions`}
       title="Questions and theories"
-      closeLabel="Close the theories"
+      closeName="questions and theories"
       onClose={props.onClose}
       toolbar={theory ? (
         <button type="button" className={ui.button} data-action="clear-theory" onClick={props.onClearTheory}>

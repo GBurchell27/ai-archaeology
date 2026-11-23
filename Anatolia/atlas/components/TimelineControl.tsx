@@ -2,10 +2,12 @@
 
 import { useId, useMemo, useState } from "react";
 import { AnatoliaYearTrack } from "@/components/atlas/AnatoliaYearTrack";
+import { CloseButton } from "@/components/chrome/CloseButton";
+import { usePhoneSheetDismiss } from "@/components/chrome/useDismissLayer";
 import { PlayHistoryTransport } from "@/components/history/PlayHistoryTransport";
 import { useHistoryPlayback } from "@/components/history/useHistoryPlayback";
 import { NamedPeriodChips } from "@/components/NamedPeriodChips";
-import { atlasYearSheetCovered, usePhoneSheetEscape } from "@/components/usePhoneSheetEscape";
+import { DISMISS_PRIORITY } from "@/lib/chrome/dismissStack";
 import { PERIODS, formatYear } from "@/lib/periods";
 import { RANGE_END, RANGE_START, clampYear, normalizeRange, trackToYear, yearToTrack, type YearRange } from "@/lib/timeline";
 import {
@@ -43,7 +45,7 @@ export function TimelineControl(props: {
   const playback = useHistoryPlayback({ bounds, quantize: quantizeAtlasPlayYear, scale: ATLAS_TRACK, onCommit: props.onPlayYear });
   const [sheetOpen, setSheetOpen] = useState(false);
   const sheetId = useId();
-  usePhoneSheetEscape(sheetOpen, () => setSheetOpen(false), atlasYearSheetCovered);
+  usePhoneSheetDismiss(sheetOpen, () => setSheetOpen(false), DISMISS_PRIORITY.chrome);
   const sweep = playback.sweep;
   const readout = sweep === null
     ? `${formatYear(props.range.start)} – ${formatYear(props.range.end)}`
@@ -74,6 +76,7 @@ export function TimelineControl(props: {
       >
         {sweep === null ? `${formatYear(props.range.start)} – ${formatYear(props.range.end)}` : formatYear(displayedYear(sweep.year))}
       </button>
+      {sheetOpen ? <CloseButton name="year range" className="time-sheet-close" onClick={() => setSheetOpen(false)} /> : null}
       <div id={sheetId} className="time-sheet-body">
         <PlayHistoryTransport
           playing={playback.playing}

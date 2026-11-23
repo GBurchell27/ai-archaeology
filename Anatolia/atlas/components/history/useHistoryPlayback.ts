@@ -187,6 +187,12 @@ function startClock(
   let last = performance.now();
   const onChange = () => { reduced = query.matches; };
   query.addEventListener("change", onChange);
+  const onHide = () => {
+    if (document.visibilityState !== "hidden") return;
+    haltClock(current);
+    setPlaying(false);
+  };
+  document.addEventListener("visibilitychange", onHide);
   current.armed = true;
   const tick = () => {
     const time = performance.now();
@@ -201,6 +207,7 @@ function startClock(
   return () => {
     haltClock(current);
     query.removeEventListener("change", onChange);
+    document.removeEventListener("visibilitychange", onHide);
   };
 }
 
@@ -223,15 +230,18 @@ function stepClock(
   });
   current.track = stepped.track;
   const year = current.scale.trackToYear(stepped.track);
-  setSweep({ track: stepped.track, year });
-  publish(current, current.quantize(year));
-  if (!stepped.done) {
-    arm();
+  if (stepped.done) {
+    current.playing = false;
+    current.armed = false;
+    setSweep(null);
+    // Drop the pinned year so the filter, the readout and the ice layer return to the chosen range.
+    publish(current, null);
+    setPlaying(false);
     return;
   }
-  current.playing = false;
-  current.armed = false;
-  setPlaying(false);
+  setSweep({ track: stepped.track, year });
+  publish(current, current.quantize(year));
+  arm();
 }
 
 function placeAt(live: SweepLive, year: number): PlayheadSweep {

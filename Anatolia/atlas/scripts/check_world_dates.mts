@@ -43,9 +43,11 @@ check("all time without undated still filters", datedOnly?.[0] === -Infinity && 
 check("all time with undated is no filter", filterRangeFor([WORLD_RANGE_START, WORLD_RANGE_END], true), null);
 
 check("years clamp to the slider", [clampWorldYear(-99999), clampWorldYear(99999)], [WORLD_RANGE_START, WORLD_RANGE_END]);
-for (const year of [WORLD_RANGE_START, -9000, -4200, -1000, 0, 500, WORLD_RANGE_END]) {
+check("the century step skips year 0", [clampWorldYear(0), clampWorldYear(40), clampWorldYear(-40)], [1, 1, -1]);
+for (const year of [WORLD_RANGE_START, -9000, -4200, -1000, 500, WORLD_RANGE_END]) {
   check(`track position round-trips ${year}`, trackToWorldYear(worldYearToTrack(year)), year);
 }
+check("a raw year 0 on the track is not year 0", trackToWorldYear(worldYearToTrack(0)) === 0, false);
 check("track positions outside 0–1 clamp", [trackToWorldYear(-3), trackToWorldYear(7)], [WORLD_RANGE_START, WORLD_RANGE_END]);
 check("a year older than the slider still has an era", eraOfYear(-40000).id, "before-9000");
 check("a year younger than the slider still has an era", eraOfYear(1900).id, "after-500");

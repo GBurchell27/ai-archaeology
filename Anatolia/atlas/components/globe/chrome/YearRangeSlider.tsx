@@ -129,7 +129,7 @@ export function YearRangeSlider(props: {
           onPointerDown={(event) => grabPlayhead(yearAt, onScrub, event)}
           onPointerMove={(event) => movePlayhead(yearAt, onScrub, event)}
           onPointerUp={() => props.onScrubEnd?.()}
-          onKeyDown={(event) => playheadKey(props.playYear ?? span[0], onScrub, event)}
+          onKeyDown={(event) => playheadKey(props.playYear ?? span[0], onScrub, () => props.onScrubEnd?.(), event)}
         />
       )}
     </div>
@@ -155,10 +155,16 @@ function movePlayhead(
   onScrub(yearAt(event.clientX));
 }
 
-function playheadKey(year: number, onScrub: (year: number) => void, event: KeyboardEvent<HTMLButtonElement>): void {
+function playheadKey(
+  year: number,
+  onScrub: (year: number) => void,
+  onScrubEnd: () => void,
+  event: KeyboardEvent<HTMLButtonElement>,
+): void {
   const target = keyTarget(event.key, year);
   if (target === null) return;
   event.preventDefault();
   event.stopPropagation();
   onScrub(clampWorldYear(target));
+  onScrubEnd();
 }
