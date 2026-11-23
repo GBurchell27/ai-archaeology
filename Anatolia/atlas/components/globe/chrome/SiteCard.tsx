@@ -9,9 +9,10 @@ import { siteTypeStyle } from "@/lib/world/siteTypeStyle";
 import { WONDER_STATUS } from "@/lib/world/wonders";
 import { formatSiteDates } from "@/lib/world/worldEras";
 import type { PickedSite } from "../GlobeSites";
-import { LinkIcon } from "./ExplorerIcons";
+import { ShareButton } from "@/components/share/ShareButton";
+import { shareDescription, shareTitle } from "@/lib/share/shareCopy";
+import { siteSharePath } from "@/lib/share/shareAddress";
 import ui from "./chrome.module.css";
-import { copyText } from "./copyText";
 import { PanelShell } from "./PanelShell";
 import styles from "./SiteCard.module.css";
 import { SiteCardRecord } from "./SiteCardRecord";
@@ -23,7 +24,6 @@ import { isAccountSiteId } from "@/lib/account/accountSiteId";
 
 /** The close-up service refuses windows this near the poles. */
 const CLOSEUP_LATITUDE_LIMIT = 80;
-const COPIED_NOTICE_MS = 2200;
 
 /** `undefined` while the record is on its way, `null` when the catalogue has none. */
 function useSiteDetail(siteId: string): SiteDetail | null | undefined {
@@ -34,22 +34,6 @@ function useSiteDetail(siteId: string): SiteDetail | null | undefined {
     return () => { live = false; };
   }, [siteId]);
   return loaded?.siteId === siteId ? loaded.detail : undefined;
-}
-
-/** The button's label: it says for a moment whether the copy worked, then goes back to the action. */
-function useCopyLink(siteId: string): { label: string; copy(): void } {
-  const [outcome, setOutcome] = useState<{ siteId: string; copied: boolean } | null>(null);
-  useEffect(() => {
-    if (!outcome) return;
-    const timer = window.setTimeout(() => setOutcome(null), COPIED_NOTICE_MS);
-    return () => window.clearTimeout(timer);
-  }, [outcome]);
-  function copy(): void {
-    const link = `${window.location.origin}${window.location.pathname}?view=globe&site=${encodeURIComponent(siteId)}`;
-    void copyText(link).then((copied) => setOutcome({ siteId, copied }));
-  }
-  const shown = outcome?.siteId === siteId ? outcome : null;
-  return { label: shown ? (shown.copied ? "Link copied" : "Copy failed: use the address bar") : "Copy link", copy };
 }
 
 /** Everything the catalogue says about the picked site, and the ways onward from it. */
@@ -71,7 +55,6 @@ export function SiteCard(props: {
 }) {
   const { site, wonder } = props;
   const detail = useSiteDetail(site.id);
-  const link = useCopyLink(site.id);
   const style = siteTypeStyle(site.siteType);
   const dates = formatSiteDates(site.startYear, site.endYear);
   const status = wonder ? WONDER_STATUS[wonder.status] : null;
@@ -95,9 +78,18 @@ export function SiteCard(props: {
           Walk the site
         </button>
       ) : null}
-      <button type="button" className={ui.button} data-action="copy-link" onClick={link.copy}>
-        <LinkIcon /><span aria-live="polite">{link.label}</span>
-      </button>
+      <ShareButton
+        className={ui.button}
+        dataAction="share-site"
+        label="Share"
+        ariaLabel={`Share ${site.name}`}
+        title={shareTitle(site.name)}
+        text={shareDescription({ why: wonder?.why, kind: style.title.toLowerCase() })}
+        url={() => {
+          const path = siteSharePath(site.id, site.name);
+          return path ? `${window.location.origin}${path}` : window.location.href;
+        }}
+      />
     </>
   );
 

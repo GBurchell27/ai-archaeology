@@ -1,6 +1,7 @@
 "use client";
 
 import { SafeLink } from "@/components/SafeLink";
+import { ViewShareButton } from "@/components/share/ViewShareButton";
 import type { ScaleBar } from "@/lib/place/placeGeometry";
 import type { PlaceSite } from "@/lib/place/placeSite";
 import type { CloseupMeta } from "@/lib/place/placeTerrain";
@@ -13,9 +14,12 @@ export function PlaceHeader(props: { site: PlaceSite | null | undefined; siteId:
   const facts = site ? [site.kind, site.dates, site.country].filter(Boolean) : [];
   return (
     <header className={styles.header}>
-      <button type="button" className={styles.back} onClick={props.onExit} aria-keyshortcuts="Escape">
-        <span aria-hidden="true">←</span> Globe
-      </button>
+      <div className={styles.tools}>
+        <button type="button" className={styles.back} onClick={props.onExit} aria-keyshortcuts="Escape">
+          <span aria-hidden="true">←</span> Globe
+        </button>
+        <ViewShareButton className={styles.back} />
+      </div>
       <h1 className={styles.name}>{site ? site.name : site === null ? props.siteId : " "}</h1>
       {facts.length ? <p className={styles.facts}>{facts.join(" · ")}</p> : null}
       {site?.why ? <p className={styles.why}>{site.why}</p> : null}

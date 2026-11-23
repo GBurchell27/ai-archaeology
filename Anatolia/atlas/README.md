@@ -34,7 +34,7 @@ The globe and the Anatolia atlas run on Node alone. The place view also needs th
 - **Timeline.** Drag the range to filter by calendar year. Most sites have no date. A switch shows or hides them.
 - **Layers.** Labels, wonders only, the OpenStreetMap megaliths (a separate layer under ODbL), and the recording-pattern layer. That last one shows where published sites of a kind tend to be recorded, at about 28 km cells. It is not a map of undiscovered sites. Its caveats are shown with it. See [`docs/suitability-model.md`](../../docs/suitability-model.md).
 - **About** lists the sources and their licences.
-- **Site card.** Type, dates where the catalogue has them, the source record and its licence, **Fly closer**, **Copy link**, and **View terrain**. For a site inside the bounds of the Anatolia atlas (25.5–45°E, 35.8–42.2°N) the card offers **Open in Anatolia atlas** instead.
+- **Site card.** Type, dates where the catalogue has them, the source record and its licence, **Fly closer**, **Share**, and **View terrain**. Share copies `/site/<slug>` (the name and the catalogue id, no coordinates): a phone offers the system share sheet, a desktop copies the link. The same **Share** sits on the current view. For a site inside the bounds of the Anatolia atlas (25.5–45°E, 35.8–42.2°N) the card offers **Open in Anatolia atlas** instead.
 
 Zoom in over Turkey and the globe offers **Enter Anatolia terrain** below 900 km. Keep zooming and it enters by itself below 450 km. In the atlas, the **Globe** button or zooming well out goes back.
 

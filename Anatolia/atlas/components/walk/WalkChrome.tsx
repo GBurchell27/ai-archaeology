@@ -7,6 +7,7 @@ import type { HypothesisLayer, HypothesisLayerId } from "@/lib/walk/hypothesisLa
 import type { PlacedLandmark } from "@/lib/walk/landmarks";
 import type { MoveMode } from "@/lib/walk/walkMovement";
 import type { WalkSite } from "@/lib/walk/walkSites";
+import { ViewShareButton } from "@/components/share/ViewShareButton";
 import { HypothesisPanel } from "./HypothesisPanel";
 import { LandmarkCard } from "./LandmarkCard";
 import { ViewpointStepper } from "./ViewpointStepper";
@@ -120,7 +121,10 @@ export function WalkChrome({ site, hasModel, model, source, state, shown, locked
   return (
     <div className={styles.chrome} ref={chrome}>
       <header className={styles.header}>
-        <ExitControl site={site} onExit={actions.onExit} />
+        <div className={styles.tools}>
+          <ExitControl site={site} onExit={actions.onExit} />
+          <ViewShareButton className={styles.exit} />
+        </div>
         <h1 className={styles.name}>{site.name}</h1>
         <StatusNote state={state} shown={shown} />
         {failure ? <SceneFailureNotice placement="inline" kind={failure.kind} detail={failure.detail} reported={failure.reported} actions={failure.actions} /> : null}

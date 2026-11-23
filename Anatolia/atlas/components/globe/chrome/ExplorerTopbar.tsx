@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 import type { WorldCatalogue } from "@/lib/world/catalogueLoader";
 import type { PickedSite } from "../GlobeSites";
 import type { ExplorerPanel } from "../useGlobeExplorer";
+import { ViewShareButton } from "@/components/share/ViewShareButton";
 import { AboutIcon, AccountIcon, MostVotedIcon, SettingsIcon, TheoriesIcon, WondersIcon } from "./ExplorerIcons";
 import ui from "./chrome.module.css";
 import styles from "./ExplorerTopbar.module.css";
@@ -45,6 +46,7 @@ export function ExplorerTopbar(props: {
         <span className={styles.brandRest}> of early monuments</span>
       </h1>
       <SiteSearch catalogue={props.catalogue} unavailable={props.catalogueFailed} onVisit={props.onVisit} />
+      <ViewShareButton className={`${ui.button} ${styles.panelButton} ${styles.share}`} labelClassName={styles.label} />
       <nav className={styles.panels} aria-label="Panels">
         {panelButtons(props.accountLabel).map(({ panel, label, icon }) => (
           <button

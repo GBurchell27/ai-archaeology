@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { SlidersIcon, ThemeIcon } from "@/components/AtlasIcons";
+import { ViewShareButton } from "@/components/share/ViewShareButton";
 
 export function AtlasTopbar(props: {
   regionName: string | null;
@@ -46,6 +47,7 @@ export function AtlasTopbar(props: {
       <button type="button" className="icon-button" aria-label="Settings" data-action="settings" onClick={props.onSettings}>
         <SlidersIcon />
       </button>
+      <ViewShareButton className="icon-button" />
     </header>
   );
 }

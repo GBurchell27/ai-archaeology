@@ -13,7 +13,8 @@
   text-shadow: 0 0 3px rgba(4, 6, 10, 0.9), 0 1px 14px rgba(4, 6, 10, 0.75);
 }
 
-.panels { display: flex; gap: 6px; margin-left: auto; }
+.share { margin-left: auto; }
+.panels { display: flex; gap: 6px; }
 
 .panelButton {
   height: 38px;
@@ -45,6 +46,7 @@
   .topbar { position: relative; flex-wrap: nowrap; gap: 6px; }
   .brand { font-size: 17px; }
   .brandRest { display: none; }
+  .share { margin-left: 0; }
   .panels { margin-left: 0; gap: 4px; }
   .panelButton { width: 40px; height: 40px; min-width: 40px; padding: 0; }
   .topbar > [role="search"] {

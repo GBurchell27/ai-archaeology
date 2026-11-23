@@ -37,8 +37,11 @@ Handoffs:
 | `?view=place&site=<id>` | The close-up of one site. |
 | `?view=walk&site=<id>` | The walk through one site, opening on its model when it has one. An id with no walk opens the atlas instead, and the address is corrected to `?view=atlas&site=<id>`. The id of a globe card that offers a walk (`Q37200`) opens that walk, and the address is corrected to the walk's own id (`Q12508`). |
 | `?view=walk&site=<id>&source=photographs` | The same walk opening on the splat from photographs. The model is the default and is never written; any other value is read as the default, and the coordinator rewrites a walk's address as it opens, so `&source=bogus` does not stay in it. A site with a model and no photographs (Giza) opens on its model whatever `source` says, and the parameter is dropped. |
+| `/site/<slug>` | One published catalogue site, opened on the globe with its card. The slug is the site's name plus its catalogue id, for example `/site/gobekli-tepe--q214944`. A bare id (`/site/q214944`) redirects to that slug. An id the catalogue does not hold is not a page, so a candidate or an unpublished place has none. While that card stays open the address stays on this path and does not gain camera coordinates. Choosing another site, closing the card, or changing view returns to the `?view=` form. `?site=` links are unchanged. |
 
-No parameters means the globe at its default look (38°E, 30°N, 13,000 km) with a slow idle turn. A site id must match `^(?:Q\d+|[a-z0-9]+(?:-[a-z0-9]+)*)$`. Anything else is dropped. No address ever carries a site's coordinates: a link names a published id.
+No parameters means the globe at its default look (38°E, 30°N, 13,000 km) with a slow idle turn. A site id must match `^(?:Q\d+|[a-z0-9]+(?:-[a-z0-9]+)*)$`. Anything else is dropped. No address ever carries a site's coordinates: a link names a published id. A share page's title, description and preview image name the site and do not draw or print a location.
+
+The globe's top bar, the Anatolia map, the place view and the walk each have **Share**. On a site card it copies `/site/<slug>`. On a view it copies the address of that view, or the pretty path when that is what is open. A phone with a share sheet uses it; a desktop copies the link and says so.
 
 ## The globe scene
 
@@ -267,6 +270,7 @@ Each has a pytest wrapper, so `pytest` at the repository root runs them all.
 | Check | Wrapper | What it covers |
 | --- | --- | --- |
 | `check_globe_math.mts` | `tests/test_globe_math.py` | Ellipsoid round-trips, the view URL (including the walk's `source`, and an unknown one being dropped; the globe's `theory`, and an unknown or malformed one being dropped), the handoff thresholds of the globe and of the walk, which address writes add a history entry, where to look to see several sites at once, which globe cards offer a walk, which walk an address names, and where a walk's exit leads (`lib/globe/walkHandoff.ts`). The phone credit line: EOX and NASA by basemap, Wikidata CC0, Pleiades CC BY 3.0, and OpenStreetMap left to its own credit when that layer has its file. |
+| `check_share_slug.mts` | `tests/test_share_slug.py` | Share slugs: pinned sites keep their slug, the same name with two ids does not collide, a slug round-trips to its catalogue id, and no slug carries a coordinate. Featured and core records are unique and stable whichever end of the list is read first. The preview sentence and the rule for keeping `/site/<slug>` free of camera coordinates. |
 | `check_world_catalogue.mts` | `tests/test_world_catalogue_web.py` | Cell and detail keys against the files on disk, filter semantics, cell choice, the picking grid, label layout (including names above and below a marker), which crowded curated pins stand back on the terrain map. |
 | `check_site_search.mts` | `tests/test_site_search.py` | Search ranking and diacritic folding. Which curated Anatolia sites are best known (`lib/atlas/curatedRenown.ts`), including titles with several names and longer names. Which curated site a catalogue record stands for (`lib/atlas/curatedMatch.ts`). |
 | `check_place_view.mts` | `tests/test_place_view.py` | Close-up geometry: height scaling, camera framing, scale bar, skirt. Which failure the place view shows for which status of the close-up API. |
@@ -320,6 +324,7 @@ Save it inside `Anatolia/atlas` so Node finds puppeteer-core, and run it with `n
 
 ```
 app/page.tsx                      server entry: reads the URL, renders the coordinator
+app/site/[slug]/                  a published site's share page: the globe on that card, and its preview image
 app/puzzles/                      the puzzles page: standing questions with their facts, theories and experiments
 app/api/closeup/route.ts          the close-up API
 app/theme.css                     the shared --globe-* colour and type tokens every view reads
@@ -339,6 +344,7 @@ components/atlas/styles/          the Anatolia atlas chrome styles, one file per
 components/walk/                  the walk view
 components/scene/                 the guard around each 3D view: WebGL probe, error boundary, failure notice
 lib/scene/sceneFailure.ts         which sentence a thrown WebGL, memory or file error gets
+lib/share/                         share slugs, the words on a preview card, and which address a Share button copies
 lib/globe/                        ellipsoid maths, view URL, handoff, basemaps,
                                   site blocks, bucket grid, label layout
 lib/world/                        catalogue types and loaders, filter, search, styles,

@@ -82,7 +82,8 @@ The splat is sharp only near where photographers stood. 41 of 294 downloaded pho
 
 [`deploy.md`](deploy.md) has the settings and the steps. The production build passes and was run locally as a hosted copy would run; nothing has been deployed.
 
-- [ ] **Not verified on Vercel.** On the first deploy, read the build log for the size of the close-up function (a few megabytes expected; the exclusion in `next.config.ts` cannot be seen working on Windows) and go through the checks in `deploy.md`.
+- [ ] **Not verified on Vercel.** On the first deploy, read the build log for the size of the close-up function (a few megabytes expected; the exclusion in `next.config.ts` cannot be seen working on Windows) and go through the checks in `deploy.md`. The share page traces the detail shards into its function; check that size on the first deploy too.
+- [ ] **Share previews were not opened in WhatsApp, X or LinkedIn.** The page, the copy toast and one generated card were checked locally. A live crawler can still cache an old card or refuse the image.
 - [ ] **The globe's EOX credit uses the earlier wording.** EOX's licence page now gives `EOxCloudless https://cloudless.eox.at by EOX IT Services GmbH (Contains modified Copernicus Sentinel data "year")`. Update `lib/globe/basemaps.ts` and the row in `data-sources.md`.
 - [ ] **Two controls still lead to the close-up API on a hosted copy:** "View terrain" on a globe site card (it opens the place view's "not available here" message) and "Relief close-up" in the Anatolia site panel's Resources (it opens the plain 503 text). Hide both where close-ups are off.
 - [ ] Vercel's terms on who may use the free plan were not read.
