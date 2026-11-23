@@ -62,6 +62,10 @@ check("closing the card or leaving the globe drops the pretty path",
   && !keepsPrettyShareAddress(sharePath, "?view=atlas&site=gobekli-tepe", "Q214944"));
 check("a view share of a site path drops the query", viewSharePath(sharePath, "?lon=38.92&lat=37.22") === sharePath);
 check("a view share of the globe keeps the existing address", viewSharePath("/", "?view=globe&site=Q214944") === "/?view=globe&site=Q214944");
+check("a view share drops the recording-pattern layer",
+  viewSharePath("/", "?view=globe&lon=38.00&lat=30.00&alt=13000&site=Q214944&model=any_all") === "/?view=globe&lon=38.00&lat=30.00&alt=13000&site=Q214944"
+  && viewSharePath("/", "?model=funerary_mid-holocene") === "/");
+check("a view share keeps a model value that is not a layer", viewSharePath("/", "?view=globe&model=nope") === "/?view=globe&model=nope");
 check("the path parser reads the share id", catalogueIdFromPath(sharePath) === "Q214944" && catalogueIdFromPath("/") === null);
 
 check("a desktop copies even when a share sheet exists", shareChannel({ nativeShare: true, coarsePointer: false, narrow: false }) === "copy");

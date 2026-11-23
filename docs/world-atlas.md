@@ -41,7 +41,7 @@ Handoffs:
 
 No parameters means the globe at its default look (38°E, 30°N, 13,000 km) with a slow idle turn. A site id must match `^(?:Q\d+|[a-z0-9]+(?:-[a-z0-9]+)*)$`. Anything else is dropped. No address ever carries a site's coordinates: a link names a published id. A share page's title, description and preview image name the site and do not draw or print a location.
 
-The globe's top bar, the Anatolia map, the place view and the walk each have **Share**. On a site card it copies `/site/<slug>`. On a view it copies the address of that view, or the pretty path when that is what is open. A phone with a share sheet uses it; a desktop copies the link and says so.
+The globe's top bar, the Anatolia map, the place view and the walk each have **Share**. On a site card it copies `/site/<slug>`. On a view it copies the address of that view, or the pretty path when that is what is open, and leaves out `&model=` when that value is a recording-pattern layer. A phone with a share sheet uses it; a desktop copies the link and says so.
 
 ## The globe scene
 
@@ -272,7 +272,7 @@ Each has a pytest wrapper, so `pytest` at the repository root runs them all.
 | Check | Wrapper | What it covers |
 | --- | --- | --- |
 | `check_globe_math.mts` | `tests/test_globe_math.py` | Ellipsoid round-trips, the view URL (including the walk's `source`, and an unknown one being dropped; the globe's `theory`, and an unknown or malformed one being dropped), the handoff thresholds of the globe and of the walk, which address writes add a history entry, where to look to see several sites at once, which globe cards offer a walk, which walk an address names, and where a walk's exit leads (`lib/globe/walkHandoff.ts`). The phone credit line: EOX and NASA by basemap, Wikidata CC0, Pleiades CC BY 3.0, and OpenStreetMap left to its own credit when that layer has its file. |
-| `check_share_slug.mts` | `tests/test_share_slug.py` | Share slugs: pinned sites keep their slug, the same name with two ids does not collide, a slug round-trips to its catalogue id, and no slug carries a coordinate. Featured and core records are unique and stable whichever end of the list is read first. The preview sentence and the rule for keeping `/site/<slug>` free of camera coordinates. |
+| `check_share_slug.mts` | `tests/test_share_slug.py` | Share slugs: pinned sites keep their slug, the same name with two ids does not collide, a slug round-trips to its catalogue id, and no slug carries a coordinate. Featured and core records are unique and stable whichever end of the list is read first. The preview sentence, the rule for keeping `/site/<slug>` free of camera coordinates, and a view share dropping a recording-pattern `&model=` while keeping any other model value. |
 | `check_world_catalogue.mts` | `tests/test_world_catalogue_web.py` | Cell and detail keys against the files on disk, filter semantics, cell choice, the picking grid, label layout (including names above and below a marker), which crowded curated pins stand back on the terrain map. |
 | `check_site_search.mts` | `tests/test_site_search.py` | Search ranking and diacritic folding. Which curated Anatolia sites are best known (`lib/atlas/curatedRenown.ts`), including titles with several names and longer names. Which curated site a catalogue record stands for (`lib/atlas/curatedMatch.ts`). |
 | `check_place_view.mts` | `tests/test_place_view.py` | Close-up geometry: height scaling, camera framing, scale bar, skirt. Which failure the place view shows for which status of the close-up API. |

@@ -1,5 +1,6 @@
 // Which address a share button copies, and when the globe may keep a pretty path.
 
+import { isPredictLayerId } from "../world/predictIndex";
 import { catalogueIdFromSlug, shareSlug } from "./siteSlug";
 
 export function siteSharePath(id: string, name: string): string | null {
@@ -11,9 +12,21 @@ export function absoluteShareUrl(origin: string, path: string): string {
   return `${origin}${path}`;
 }
 
-/** A pretty site path is shared on its own. Any other view shares the address the atlas already writes. */
+/** Drops `&model=<predictLayerId>`. Any other parameter, including a model value that is not a layer, stays. */
+function searchWithoutPredictModel(search: string): string {
+  const lead = search.startsWith("?") ? "?" : "";
+  const params = new URLSearchParams(lead ? search.slice(1) : search);
+  const model = params.get("model");
+  if (!model || !isPredictLayerId(model)) return search;
+  params.delete("model");
+  const rest = params.toString();
+  return rest ? `${lead}${rest}` : "";
+}
+
+/** A pretty site path is shared on its own. Any other view shares the address, without the recording-pattern layer. */
 export function viewSharePath(pathname: string, search: string): string {
-  return pathname.startsWith("/site/") ? pathname : `${pathname}${search}`;
+  if (pathname.startsWith("/site/")) return pathname;
+  return `${pathname}${searchWithoutPredictModel(search)}`;
 }
 
 /** The catalogue id in `/site/<slug>`, or null when this address is not a share page. */
