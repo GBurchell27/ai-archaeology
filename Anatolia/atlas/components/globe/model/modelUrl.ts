@@ -21,6 +21,8 @@ export function withModelParam(search: string): string {
 /** Records which layer is on (null = off) and patches the address in place when the globe is showing. */
 export function writeModelParam(layerId: string | null): void {
   activeLayerId = layerId;
+  // A share path stays free of query parameters. The layer is still remembered for the next globe address.
+  if (window.location.pathname.startsWith("/site/")) return;
   const parameters = new URLSearchParams(window.location.search);
   if ((parameters.get("view") ?? "globe") !== "globe") return;
   if (layerId) parameters.set(PARAMETER, layerId);
