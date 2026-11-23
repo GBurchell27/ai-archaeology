@@ -70,19 +70,19 @@ export function AtlasApp({ regional, initialLook, initialSiteId, onExitToGlobe, 
       : overviewPose(atlas.bounds, 0));
   });
   const { metadata, metres, sites, wikiSites } = data;
-  const { range, showUndated, periodId } = timeline;
+  const { range, visibleRange, showUndated, periodId } = timeline;
   const { terrainSource } = preferences;
   const { baseMap, layers, wikiOn, exaggeration } = display;
   const night = preferences.theme === "dark";
-  const context = useContextLayers(range, night, metadata?.bounds ?? null);
+  const context = useContextLayers(visibleRange, night, metadata?.bounds ?? null);
   const tripSession = useTripSession(TURKEY_TRIP_2026);
   const visible = useMemo(
-    () => sites.filter((site) => layers[site.properties.layer] && pinsInRange([site], range, false).length === 1),
-    [sites, layers, range],
+    () => sites.filter((site) => layers[site.properties.layer] && pinsInRange([site], visibleRange, false).length === 1),
+    [sites, layers, visibleRange],
   );
   const wikiVisible = useMemo(
-    () => (wikiOn ? pinsInRange(wikiSites, range, showUndated) : []),
-    [wikiOn, wikiSites, range, showUndated],
+    () => (wikiOn ? pinsInRange(wikiSites, visibleRange, showUndated) : []),
+    [wikiOn, wikiSites, visibleRange, showUndated],
   );
   const navigation = useAtlasNavigation({ data, regional, region, terrainSource, display, camera, visible, wikiVisible });
   const { overlays, selection, placeLayers } = navigation;
@@ -92,7 +92,7 @@ export function AtlasApp({ regional, initialLook, initialSiteId, onExitToGlobe, 
   const terrain = usePlaceTerrain(selection.activeId, selection.activeRecord, terrainSource, selection.setPanelShown);
   const { busy } = terrain;
   useBodyDataset({
-    selectedId: selection.selectedId, settingsOpen, panelOpen, busy, baseMap, layers, range, periodId, showUndated, terrainSource,
+    selectedId: selection.selectedId, settingsOpen, panelOpen, busy, baseMap, layers, range: visibleRange, periodId, showUndated, terrainSource,
   });
   const readoutRef = useRef<HTMLDivElement>(null);
   const searchRef = useRef<HTMLInputElement>(null);
@@ -133,7 +133,7 @@ export function AtlasApp({ regional, initialLook, initialSiteId, onExitToGlobe, 
     onHelp: toggleHelp,
   };
 
-  const searchResult = searchPlaces(overlays.query, sites, wikiSites, range, showUndated, regional?.name ?? null);
+  const searchResult = searchPlaces(overlays.query, sites, wikiSites, visibleRange, showUndated, regional?.name ?? null);
   const rasters = sceneRasters({
     activeId: selection.activeId,
     activeRecord: selection.activeRecord,
@@ -238,10 +238,9 @@ export function AtlasApp({ regional, initialLook, initialSiteId, onExitToGlobe, 
       <PeriodDock periodId={periodId} onPeriod={timeline.selectPeriod} />
       <TimelineControl
         range={range}
-        playing={timeline.playing}
         showUndated={showUndated}
         onRange={timeline.changeRange}
-        onTogglePlay={timeline.togglePlay}
+        onPlayYear={timeline.setPlayYear}
         onUndated={timeline.setShowUndated}
       />
       {tripSession.open ? (
@@ -309,7 +308,7 @@ export function AtlasApp({ regional, initialLook, initialSiteId, onExitToGlobe, 
           credit={closeupCredit}
           reliefNote={terrainSource === "gem15" ? metadata.attribution.gem15 : metadata.attribution.dem}
           reliefError={terrain.reliefError}
-          range={range}
+          range={visibleRange}
           openTheoryId={theoryLens.theoryId}
           onToggleTheory={theoryLens.toggleTheory}
         />
@@ -325,7 +324,7 @@ export function AtlasApp({ regional, initialLook, initialSiteId, onExitToGlobe, 
           contextOn={context.contextOn}
           onContext={context.setContext}
           credit={closeupCredit}
-          range={range}
+          range={visibleRange}
           onClose={navigation.closeWiki}
         />
       ) : null}
@@ -334,7 +333,7 @@ export function AtlasApp({ regional, initialLook, initialSiteId, onExitToGlobe, 
         <LandscapePanel
           sites={sites}
           catalogue={wikiSites}
-          range={range}
+          range={visibleRange}
           metadata={metadata}
           metres={metres}
           onClose={() => overlays.setLandscapeOpen(false)}

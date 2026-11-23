@@ -7,6 +7,7 @@ import { countSites, type SiteCounts } from "@/lib/world/siteCounts";
 import type { SiteFilter } from "@/lib/world/siteFilter";
 import { DEFAULT_SHOW_UNDATED, hiddenTypesFor } from "@/lib/settings/settingsPresets";
 import { ALL_TIME, filterRangeFor, type YearSpan } from "@/lib/world/worldEras";
+import { useRevealedSpan } from "./useRevealedSpan";
 
 export interface SiteFilterViewModel {
   filter: SiteFilter;
@@ -17,6 +18,9 @@ export interface SiteFilterViewModel {
   /** Site types switched off in the legend. Empty means every type shows. */
   hiddenTypes: ReadonlySet<string>;
   setYearSpan(span: YearSpan): void;
+  /** The year Play history has reached, or null when the whole range shows. */
+  playYear: number | null;
+  setPlayYear(year: number | null): void;
   setShowUndated(show: boolean): void;
   setFeaturedOnly(only: boolean): void;
   toggleType(siteType: string): void;
@@ -31,18 +35,20 @@ const NO_TYPES: ReadonlySet<string> = new Set();
 
 /** The time, type and featured filters for the globe, with the live counts they produce. */
 export function useSiteFilter(catalogue: WorldCatalogue | null, loadedCells: readonly SiteColumns[]): SiteFilterViewModel {
-  const [yearSpan, setYearSpan] = useState<YearSpan>(ALL_TIME);
+  const revealed = useRevealedSpan(ALL_TIME);
+  const yearSpan = revealed.bounds;
+  const setYearSpan = revealed.setBounds;
   const [showUndated, setShowUndated] = useState(DEFAULT_SHOW_UNDATED);
   const [featuredOnly, setFeaturedOnly] = useState(false);
   const [hiddenTypes, setHiddenTypes] = useState(NO_TYPES);
   const siteTypes = catalogue?.index.siteTypes;
 
   const filter = useMemo<SiteFilter>(() => ({
-    range: filterRangeFor(yearSpan, showUndated),
+    range: filterRangeFor(revealed.shownSpan, showUndated),
     showUndated,
     types: hiddenTypes.size && siteTypes ? new Set(siteTypes.filter((siteType) => !hiddenTypes.has(siteType))) : null,
     featuredOnly,
-  }), [yearSpan, showUndated, hiddenTypes, featuredOnly, siteTypes]);
+  }), [revealed.shownSpan, showUndated, hiddenTypes, featuredOnly, siteTypes]);
 
   const counts = useMemo(
     () => (catalogue ? countSites([catalogue.core, ...loadedCells], filter, catalogue.index.siteTypes) : null),
@@ -66,7 +72,7 @@ export function useSiteFilter(catalogue: WorldCatalogue | null, loadedCells: rea
   }, [siteTypes]);
 
   return useMemo(() => ({
-    filter, counts, yearSpan, showUndated, featuredOnly, hiddenTypes,
-    setYearSpan, setShowUndated, setFeaturedOnly, toggleType, soloType, showAllTypes, showOnlyTypes,
-  }), [filter, counts, yearSpan, showUndated, featuredOnly, hiddenTypes, toggleType, soloType, showAllTypes, showOnlyTypes]);
+    filter, counts, yearSpan, showUndated, featuredOnly, hiddenTypes, playYear: revealed.playYear,
+    setYearSpan, setPlayYear: revealed.setPlayYear, setShowUndated, setFeaturedOnly, toggleType, soloType, showAllTypes, showOnlyTypes,
+  }), [filter, counts, yearSpan, showUndated, featuredOnly, hiddenTypes, revealed.playYear, revealed.setPlayYear, toggleType, soloType, showAllTypes, showOnlyTypes]);
 }

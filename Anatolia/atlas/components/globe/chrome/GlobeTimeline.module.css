@@ -2,6 +2,11 @@
 
 .head { display: flex; align-items: baseline; gap: 6px 16px; flex-wrap: wrap; }
 
+.transport { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.speeds { display: inline-flex; gap: 4px; }
+.speed { min-width: 36px; padding-inline: 8px; }
+.play { min-width: 0; }
+
 .readout { margin: 0; font-size: 20px; font-style: italic; line-height: 1.15; font-variant-numeric: lining-nums; }
 .count { margin: 0; font-size: 12.5px; color: var(--globe-muted); }
 .count b { font-weight: 600; color: var(--globe-ink); }
@@ -12,6 +17,15 @@
 .rail, .fill { position: absolute; top: 10px; height: 2px; border-radius: 2px; }
 .rail { left: 0; right: 0; background: rgba(236, 228, 212, 0.22); }
 .fill { background: var(--globe-ochre); }
+.progress {
+  position: absolute;
+  top: 10px;
+  height: 2px;
+  border-radius: 2px;
+  background: #f6dfae;
+  pointer-events: none;
+  transition: left 160ms linear, width 160ms linear;
+}
 .tick { position: absolute; top: 6px; width: 1px; height: 10px; background: rgba(236, 228, 212, 0.3); }
 /* A named interval (the Younger Dryas): a band across the rail, its name under it. */
 .interval { position: absolute; top: 6px; height: 10px; box-sizing: border-box; border-inline: 1px solid rgba(236, 228, 212, 0.3); background: rgba(236, 228, 212, 0.14); font-style: normal; }
@@ -33,6 +47,35 @@
 }
 
 .thumb:focus-visible { outline: 2px solid var(--globe-ochre); outline-offset: 3px; }
+
+.playhead {
+  position: absolute;
+  z-index: 1;
+  top: 0;
+  width: 18px;
+  height: 22px;
+  margin-left: -9px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: ew-resize;
+  touch-action: none;
+  transition: left 160ms linear;
+}
+.playhead::before {
+  content: "";
+  position: absolute;
+  left: 8px;
+  top: 2px;
+  width: 2px;
+  height: 18px;
+  border-radius: 1px;
+  background: #f6dfae;
+  box-shadow: 0 0 0 1px rgba(11, 14, 19, 0.85);
+}
+.playhead:focus-visible { outline: 2px solid var(--globe-ochre); outline-offset: 2px; }
+.track[data-scrubbing="true"] .playhead,
+.track[data-scrubbing="true"] .progress { transition: none; }
 
 /* Six equal columns: each era chip sits under the stretch of track it selects. */
 .eras { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 5px; }
@@ -69,9 +112,12 @@
 @media (pointer: coarse) {
   .allTime { min-height: 40px; }
   .track { height: 40px; }
-  .rail, .fill { top: 19px; }
+  .rail, .fill, .progress { top: 19px; }
   .tick, .interval { top: 15px; }
   .thumb { top: 13px; }
+  .playhead { top: 8px; height: 28px; width: 28px; margin-left: -14px; }
+  .playhead::before { left: 13px; top: 4px; height: 22px; }
+  .playhead::after { content: ""; position: absolute; inset: -8px; }
   /* The thumb stays small; its hit area does not. */
   .thumb::after { content: ""; position: absolute; inset: -13px; }
 }
@@ -106,6 +152,7 @@
   }
   .sheetBody { display: none; }
   .readout { display: none; }
+  .timeline[data-sheet="open"]:not([data-play-year=""]) .readout { display: block; }
   .timeline[data-sheet="open"] {
     width: 100%;
     border: 1px solid var(--globe-rule);
@@ -150,4 +197,8 @@
   }
   .eras::-webkit-scrollbar, .periods::-webkit-scrollbar { display: none; }
   .era, .periods > * { flex: none; padding-inline: 9px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .playhead, .progress, .play, .speed { transition: none; }
 }
