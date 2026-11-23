@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 import { SafeLink } from "@/components/SafeLink";
 import { SettingsPanel, type SettingsPresetControls } from "@/components/settings/SettingsPanel";
 import { SavedThemeSetting } from "@/components/settings/ThemeSetting";
+import { NEWS_RECENCY_DAYS } from "@/lib/news/recentNews";
 import { GLOBE_PRESETS, SETTINGS_PRESETS, activeGlobePreset } from "@/lib/settings/settingsPresets";
 import type { NamedPeriod } from "@/lib/world/namedPeriods";
 import { OSM_MEGALITH_STYLE } from "@/lib/world/siteTypeStyle";
@@ -47,6 +48,9 @@ function GlobeLayerSettings({ explorer, siteTypes, modelSlot }: { explorer: Glob
     <>
       <LayerSwitch dataRole="featured-only" title="Wonders only" checked={filters.featuredOnly} onChange={filters.setFeaturedOnly}>
         Hide everything except the hand-picked monuments.
+      </LayerSwitch>
+      <LayerSwitch dataRole="news-pins" title="In the news" checked={explorer.showNewsPins} onChange={explorer.setShowNewsPins}>
+        A quiet ring on each catalogue site with a report from the last {NEWS_RECENCY_DAYS} days, while that site is showing. The list is in the legend.
       </LayerSwitch>
       {osmMegaliths ? (
         <LayerSwitch dataRole="osm-megaliths" title="OpenStreetMap megaliths" checked={explorer.showOsmMegaliths} onChange={explorer.setShowOsmMegaliths}>

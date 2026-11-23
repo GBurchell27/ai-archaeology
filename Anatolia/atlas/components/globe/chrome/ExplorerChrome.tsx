@@ -12,6 +12,7 @@ import type { PickedSite } from "../GlobeSites";
 import { PaleoChip } from "../paleo/PaleoChip";
 import type { GlobeExplorerViewModel } from "../useGlobeExplorer";
 import { AboutPanel } from "./AboutPanel";
+import { NewsRingOverlay } from "./NewsRingOverlay";
 import { CatalogueNotice } from "./CatalogueNotice";
 import styles from "./ExplorerChrome.module.css";
 import { ExplorerLegend } from "./ExplorerLegend";
@@ -63,7 +64,9 @@ export const ExplorerChrome = memo(function ExplorerChrome(props: ExplorerChrome
       data-osm={explorer.showOsmMegaliths ? "on" : "off"}
       data-theory={theoryLens.theoryId ?? ""}
       data-paleo={explorer.paleo.enabled ? explorer.paleo.step?.year ?? "loading" : "off"}
+      data-news-pins={explorer.showNewsPins ? "on" : "off"}
     >
+      <NewsRingOverlay pins={explorer.newsRings} shown={explorer.showNewsPins} omitId={selected?.id ?? null} />
       <PaleoChip paleo={explorer.paleo} />
       <div className={styles.top}>
         <ExplorerTopbar
@@ -155,6 +158,11 @@ function ExplorerBottom({ explorer, namedPeriods }: { explorer: GlobeExplorerVie
           sources={sources}
           filters={filters}
           showOsmMegaliths={explorer.showOsmMegaliths}
+          newsPins={explorer.newsPins}
+          newsReady={catalogue !== null}
+          showNewsPins={explorer.showNewsPins}
+          onShowNewsPins={explorer.setShowNewsPins}
+          onShowNewsSite={explorer.selection.visit}
         />
       </div>
       <div className={styles.dock}>
