@@ -21,6 +21,18 @@ Features 1 to 9 and 11 of the list agreed on 2026-11-19 are built; [`world-atlas
 - [ ] **10. Giza model.** The present heights of Khafre and Menkaure, and that they lie south-west of Khufu, rest on Wikipedia; replace with a survey. Lehner, the AERA survey notes and Nell & Ruggles's full text were not read. The Sphinx, temples, causeways, boat pits and queens' pyramids are not drawn for want of a source giving both size and position.
 - [ ] **5. Settings panel.** The place view has none. "Megaliths only" does nothing on the Anatolia map, which has no site type filter.
 
+## Launch: search and analytics for ancient-archaeology.com
+
+The site went live on 2026-11-22 at https://ancient-archaeology.com. It is the Next.js app in `Anatolia/atlas`, on Vercel Pro, with the domain at GoDaddy. None of the items below is done.
+
+- [ ] **Google Search Console.** Verify the domain property with a DNS TXT record at GoDaddy, then submit a sitemap. Needs the owner to add the TXT record and to submit the sitemap in Search Console.
+- [ ] **Sitemap and robots.** `Anatolia/atlas/app/sitemap.ts` and `Anatolia/atlas/app/robots.ts` are absent, and the repo has no `sitemap.xml` or `robots.txt`. Add both through those Next.js files. The sitemap must never list candidate or undiscovered-site pages, or precise candidate coordinates. Needs the owner to confirm which published pages may be listed.
+- [ ] **Google Analytics 4.** Create a property and add the tag (for example `@next/third-parties` `GoogleAnalytics`), with the measurement ID as an environment variable. A cookie consent banner is needed for EU visitors (GDPR and ePrivacy) unless GA is configured cookieless. Needs the owner to create the property, set the measurement ID on Vercel, and decide whether consent is required.
+- [ ] **Vercel Web Analytics and Speed Insights,** as an alternative or an addition. Both are cookieless and included in Pro up to the plan limits. Worth comparing with Google Analytics before adding it. Needs the owner to enable them on the Vercel project, or to leave them off.
+- [ ] **Bing Webmaster Tools.** It can import a site from Search Console. Needs the owner to sign in and import, after Search Console is verified.
+- [ ] **Page metadata.** The root layout sets a title and a description only (`Anatolia/atlas/app/layout.tsx`). Add an Open Graph and Twitter image, a canonical URL, and structured data where it fits. Needs the owner to choose the public wording and the share image.
+- [ ] **A privacy page,** describing the analytics if any is added. Needs the owner to name the tools and what each stores. Accounts already need a privacy notice (Decisions waiting); one page can cover both.
+
 ## Sharper Göbekli Tepe photographs (the splat)
 
 The splat is sharp only near where photographers stood. 41 of 294 downloaded photographs trained it; the rest never linked. Views from anywhere else dissolve into streaks. In rough order of value for effort:
