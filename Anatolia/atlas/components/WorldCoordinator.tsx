@@ -1,7 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import type { GlobeLook, LonLat } from "@/lib/globe/ellipsoid";
 import { globeLookFromAtlas, type AtlasLook } from "@/lib/globe/handoff";
 import { walkReturn, walkSiteForCard } from "@/lib/globe/walkHandoff";
@@ -13,6 +13,7 @@ import { ModelControls } from "./globe/model/ModelControls";
 import { withModelParam } from "./globe/model/modelUrl";
 import { useModelLayer } from "./globe/model/useModelLayer";
 import { historyEntryForView, type HistoryEntry } from "@/lib/globe/viewHistory";
+import { SceneGuard } from "./scene/SceneGuard";
 import { useHistoryTraversal, writeHistoryEntry } from "./useViewHistory";
 import styles from "./WorldCoordinator.module.css";
 
@@ -36,6 +37,11 @@ interface MountedScene {
 
 const FADE_MS = 620;
 const URL_WRITE_INTERVAL_MS = 400;
+
+function guardKey(scene: WorldScene, attempt: number): string {
+  const siteId = "siteId" in scene ? scene.siteId ?? "" : "";
+  return `${scene.view}:${siteId}:${attempt}`;
+}
 
 const SITE_ID = /^(?:Q\d+|[a-z0-9]+(?:-[a-z0-9]+)*)$/;
 
@@ -88,6 +94,8 @@ export function WorldCoordinator(props: { regional: RegionalTerrain | null; init
   const globeTheoryId = useRef<string | undefined>(mounted.current.scene.view === "globe" ? mounted.current.scene.theoryId : undefined);
   const sceneBeforePlace = useRef<WorldScene>({ view: "globe" });
   const currentScene = useRef(mounted.current.scene);
+  const [guardAttempt, setGuardAttempt] = useState(0);
+  const retryGuard = useCallback(() => setGuardAttempt((attempt) => attempt + 1), []);
   const fadeTimer = useRef(0);
   const urlTimer = useRef(0);
   const model = useModelLayer();
@@ -162,6 +170,7 @@ export function WorldCoordinator(props: { regional: RegionalTerrain | null; init
   // An id the Anatolia catalogue does not know is ignored by the atlas, so it is always safe to pass along.
   const enterAtlas = useCallback((look: AtlasLook, siteId?: string) => show({ view: "atlas", look, siteId }), [show]);
   const exitToGlobe = useCallback((look: LonLat) => show({ view: "globe", look: globeLookFromAtlas(look) }), [show]);
+  const leaveAtlas = useCallback(() => show({ view: "globe" }), [show]);
   const exitPlace = useCallback(() => {
     const back = sceneBeforePlace.current;
     // Back on the globe the card of the site just visited reopens.
@@ -198,24 +207,18 @@ export function WorldCoordinator(props: { regional: RegionalTerrain | null; init
   }, []);
 
   function renderScene(scene: WorldScene) {
+    const guard = (exitLabel: string, onExit: () => void, child: ReactNode, onRetry?: () => void) => (
+      <SceneGuard resetKey={guardKey(scene, guardAttempt)} exitLabel={exitLabel} onExit={onExit} onRetry={onRetry}>{child}</SceneGuard>
+    );
     if (scene.view === "walk") {
       const site = findWalkSite(scene.siteId);
-      return site ? <WalkView site={site} initialSource={scene.source} onSourceChange={trackWalkSource} onExit={exitWalk} /> : null;
+      if (!site) return null;
+      const back = walkReturn(site).view === "globe" ? "Back to the globe" : "Back to the map";
+      return guard(back, exitWalk, <WalkView site={site} initialSource={scene.source} onSourceChange={trackWalkSource} onExit={exitWalk} />, retryGuard);
     }
-    if (scene.view === "place") return <PlaceView siteId={scene.siteId} onExit={exitPlace} />;
-    if (scene.view === "atlas") {
-      return (
-        <AtlasApp
-          regional={props.regional}
-          initialLook={scene.look}
-          initialSiteId={scene.siteId}
-          onExitToGlobe={exitToGlobe}
-          onSelectSite={trackAtlasSite}
-          onEnterWalk={openWalk}
-        />
-      );
-    }
-    return (
+    if (scene.view === "place") return guard("Back", exitPlace, <PlaceView siteId={scene.siteId} onExit={exitPlace} />, retryGuard);
+    if (scene.view === "atlas") return guard("Back to the globe", leaveAtlas, <AtlasView regional={props.regional} scene={scene} onExitToGlobe={exitToGlobe} onSelectSite={trackAtlasSite} onEnterWalk={openWalk} />, retryGuard);
+    return guard("Try again", retryGuard, (
       <GlobeExplorer
         initialLook={scene.look}
         initialSiteId={scene.siteId}
@@ -229,7 +232,7 @@ export function WorldCoordinator(props: { regional: RegionalTerrain | null; init
         modelSlot={<ModelControls model={model} />}
         sceneLayers={<GlobeModelOverlay model={model} />}
       />
-    );
+    ));
   }
 
   const { current, leaving } = mounted;
@@ -244,5 +247,24 @@ export function WorldCoordinator(props: { regional: RegionalTerrain | null; init
       ) : null}
       <div key={current.key} className={leaving ? `${styles.layer} ${styles.entering}` : styles.layer}>{renderScene(current.scene)}</div>
     </main>
+  );
+}
+
+function AtlasView(props: {
+  regional: RegionalTerrain | null;
+  scene: Extract<WorldScene, { view: "atlas" }>;
+  onExitToGlobe: (look: LonLat) => void;
+  onSelectSite: (siteId: string | null) => void;
+  onEnterWalk: (siteId: string) => void;
+}) {
+  return (
+    <AtlasApp
+      regional={props.regional}
+      initialLook={props.scene.look}
+      initialSiteId={props.scene.siteId}
+      onExitToGlobe={props.onExitToGlobe}
+      onSelectSite={props.onSelectSite}
+      onEnterWalk={props.onEnterWalk}
+    />
   );
 }

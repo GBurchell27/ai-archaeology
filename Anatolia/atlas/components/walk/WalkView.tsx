@@ -2,6 +2,10 @@
 
 import dynamic from "next/dynamic";
 import { useCallback, useEffect, useMemo, useRef, useState, type RefObject } from "react";
+import { SceneErrorBoundary } from "@/components/scene/SceneErrorBoundary";
+import type { SceneFailureAction } from "@/components/scene/SceneFailureNotice";
+import { sceneFailureKind, sceneFailureText, type SceneLoadFailure } from "@/lib/scene/sceneFailure";
+import { walkReturn } from "@/lib/globe/walkHandoff";
 import type { WalkModel } from "@/lib/walk/enclosureModel";
 import { toggledLayers, type HypothesisLayer, type HypothesisLayerId } from "@/lib/walk/hypothesisLayers";
 import type { PlacedLandmark } from "@/lib/walk/landmarks";
@@ -13,9 +17,11 @@ import type { MoveMode } from "@/lib/walk/walkMovement";
 import type { WalkSite } from "@/lib/walk/walkSites";
 import { photoViewpoints } from "@/lib/walk/walkViewpoints";
 import { pointerLockTrigger } from "./pointerLockTrigger";
-import { WalkChrome, type WalkState } from "./WalkChrome";
+import { WalkChrome, type WalkFailure, type WalkState } from "./WalkChrome";
 import type { WalkerHandle } from "./WalkControls";
 import type { WalkSource } from "./WalkSourceToggle";
+import { usePhotographSource } from "./usePhotographSource";
+import { useSceneFailure } from "./useSceneFailure";
 import { useViewpointSteps } from "./useViewpointSteps";
 import { useKeyCommand, useMoveKeyPress } from "./useWalkKeys";
 import styles from "./WalkView.module.css";
@@ -31,23 +37,6 @@ function useWalkSource(hasModel: boolean, initialSource: WalkSource | undefined,
     onSourceChange?.(next);
   }, [onSourceChange]);
   return [source, choose];
-}
-
-/** `splatUrl` is null for a site with a model and no photographs: nothing is looked for. */
-function useSplatState(splatUrl: string | null): WalkState {
-  const [state, setState] = useState<WalkState>("checking");
-  useEffect(() => {
-    if (!splatUrl) return setState("missing");
-    let current = true;
-    setState("checking");
-    fetch(splatUrl, { method: "HEAD" })
-      .then((response) => current && setState(response.ok ? "ready" : "missing"))
-      .catch(() => current && setState("missing"));
-    return () => {
-      current = false;
-    };
-  }, [splatUrl]);
-  return state;
 }
 
 /** Walking or flying. F switches, scrolling down takes off, and R, which returns to the start, lands there. */
@@ -106,6 +95,8 @@ type WalkStageProps = {
   hypotheses: readonly HypothesisLayerId[];
   /** The sharp viewpoints of the photographs. A model has none. */
   viewpoints: readonly PhotoViewpoint[];
+  /** Object URL of the splat, or null while the model is on screen. */
+  splatSrc: string | null;
   walker: RefObject<WalkerHandle | null>;
   onNearestLandmark: (landmarkId: string | null) => void;
   onLockChange: (locked: boolean) => void;
@@ -113,14 +104,14 @@ type WalkStageProps = {
   onShown: () => void;
 };
 
-function WalkStage({ site, model, hypotheses, viewpoints, walker, onShown, ...scene }: WalkStageProps) {
+function WalkStage({ site, model, hypotheses, viewpoints, splatSrc, walker, onShown, ...scene }: WalkStageProps) {
   return (
     <div className={styles.stage} {...pointerLockTrigger}>
       {model ? (
         <ModelScene model={model} eyeHeightM={site.eyeHeightM} hypotheses={hypotheses} walker={walker} onShown={onShown} {...scene} />
-      ) : (
-        <WalkScene site={site} viewpoints={viewpoints} walker={walker} onSplatShown={onShown} {...scene} />
-      )}
+      ) : splatSrc ? (
+        <WalkScene site={site} viewpoints={viewpoints} splatSrc={splatSrc} walker={walker} onSplatShown={onShown} {...scene} />
+      ) : null}
     </div>
   );
 }
@@ -133,16 +124,22 @@ type WalkViewProps = {
   onExit?: () => void;
 };
 
+/** Said when the photographs fail and the site also has a model, which asks for less memory. */
+const PHOTOGRAPH_NOTE = "The photographs are one large file. The model draws the site from published dimensions.";
+
 /**
  * A walk or flight through one site: its modelled reconstruction when it has one, or the splat from photographs,
- * or a plain note when that splat has not been built. This owns the state; the scene and `WalkChrome` show it.
+ * or a plain note when that splat has not been built or could not be opened. This owns the state; the scene and `WalkChrome` show it.
  */
 export function WalkView({ site, initialSource, onSourceChange, onExit }: WalkViewProps) {
   const siteModel = findWalkModel(site);
+  const hasModel = Boolean(siteModel) && !site.modelOnly;
   const [source, chooseSource] = useWalkSource(Boolean(siteModel), site.modelOnly ? "model" : initialSource, onSourceChange);
   const model = source === "model" ? siteModel : null;
-  const splatState = useSplatState(site.modelOnly ? null : site.splatUrl);
-  const state = model ? "ready" : splatState;
+  const [sceneError, reportSceneError, retryScene, attempt] = useSceneFailure(source);
+  const photographs = usePhotographSource(model || site.modelOnly ? null : site.splatUrl, attempt);
+  const state: WalkState = model ? "ready" : photographs.state;
+  const failure = walkFailure({ site, hasModel, showingModel: Boolean(model), loadFailure: photographs.failure, sceneError, onExit, onRetry: retryScene, onShowModel: () => chooseSource("model") });
   const [mode, toggleMode, liftOff] = useMoveMode();
   const hasSetOff = useHasSetOff(mode);
   const [locked, setLocked] = useState(false);
@@ -155,11 +152,43 @@ export function WalkView({ site, initialSource, onSourceChange, onExit }: WalkVi
   const [shownSource, setShownSource] = useState<WalkSource | null>(null);
   const markShown = useCallback(() => setShownSource(source), [source]);
   const shown = shownSource === source;
-  const hooks = {
+  return (
+    <div className={styles.walk} {...walkHooks({ site, source, state, failure, mode, locked, shown, nearLandmark, hypotheses, viewpoint, model })}>
+      {state === "ready" && !failure ? (
+        <SceneErrorBoundary key={`${source}:${attempt}`} onCaught={reportSceneError}>
+          <WalkStage site={site} model={model} mode={mode} landmarks={landmarks} hypotheses={hypotheses} viewpoints={viewpoints} splatSrc={photographs.src} walker={walker} onNearestLandmark={setNearLandmarkId} onLockChange={setLocked} onLiftOff={liftOff} onShown={markShown} />
+        </SceneErrorBoundary>
+      ) : null}
+      <WalkChrome
+        site={site} hasModel={hasModel} model={model} source={source} state={failure ? "unavailable" : state} shown={shown} locked={locked} mode={mode} hasSetOff={hasSetOff}
+        landmarkCount={landmarks.length} nearLandmark={nearLandmark} hypotheses={hypotheses} viewpointCount={viewpoints.length} viewpoint={viewpoint} failure={failure}
+        onExit={onExit} onChooseSource={chooseSource} onToggleMode={toggleMode} onToggleHypothesis={toggleHypothesis} onShowLayer={showLayer} onStepViewpoint={stepViewpoint}
+      />
+    </div>
+  );
+}
+
+type WalkHookInput = {
+  site: WalkSite;
+  source: WalkSource;
+  state: WalkState;
+  failure: WalkFailure | null;
+  mode: MoveMode;
+  locked: boolean;
+  shown: boolean;
+  nearLandmark: PlacedLandmark | null;
+  hypotheses: readonly HypothesisLayerId[];
+  viewpoint: number | null;
+  model: WalkModel | null;
+};
+
+function walkHooks({ site, source, state, failure, mode, locked, shown, nearLandmark, hypotheses, viewpoint, model }: WalkHookInput) {
+  return {
     "data-view": "walk",
     "data-site": site.id,
     "data-walk-source": source,
-    "data-walk-state": state,
+    "data-walk-state": failure ? "unavailable" : state,
+    "data-walk-failure": failure?.kind ?? "",
     "data-walk-mode": mode,
     "data-walk-locked": locked,
     "data-walk-shown": shown,
@@ -167,16 +196,32 @@ export function WalkView({ site, initialSource, onSourceChange, onExit }: WalkVi
     "data-walk-hypotheses": hypotheses.join(" "),
     "data-walk-viewpoint": viewpoint === null || model ? "" : viewpoint + 1,
   };
-  return (
-    <div className={styles.walk} {...hooks}>
-      {state === "ready" ? (
-        <WalkStage site={site} model={model} mode={mode} landmarks={landmarks} hypotheses={hypotheses} viewpoints={viewpoints} walker={walker} onNearestLandmark={setNearLandmarkId} onLockChange={setLocked} onLiftOff={liftOff} onShown={markShown} />
-      ) : null}
-      <WalkChrome
-        site={site} hasModel={Boolean(siteModel) && !site.modelOnly} model={model} source={source} state={state} shown={shown} locked={locked} mode={mode} hasSetOff={hasSetOff}
-        landmarkCount={landmarks.length} nearLandmark={nearLandmark} hypotheses={hypotheses} viewpointCount={viewpoints.length} viewpoint={viewpoint}
-        onExit={onExit} onChooseSource={chooseSource} onToggleMode={toggleMode} onToggleHypothesis={toggleHypothesis} onShowLayer={showLayer} onStepViewpoint={stepViewpoint}
-      />
-    </div>
-  );
+}
+
+type WalkFailureInput = {
+  site: WalkSite;
+  hasModel: boolean;
+  showingModel: boolean;
+  loadFailure: SceneLoadFailure | null;
+  sceneError: unknown;
+  onExit?: () => void;
+  onRetry: () => void;
+  onShowModel: () => void;
+};
+
+function walkFailure({ site, hasModel, showingModel, loadFailure, sceneError, onExit, onRetry, onShowModel }: WalkFailureInput): WalkFailure | null {
+  const failure = sceneError ? { kind: sceneFailureKind(sceneError), reported: sceneFailureText(sceneError) } : loadFailure;
+  if (!failure) return null;
+  const showModel = hasModel && !showingModel && failure.kind !== "webgl";
+  const detail = showModel ? PHOTOGRAPH_NOTE : undefined;
+  return { kind: failure.kind, reported: failure.reported, detail, actions: failureActions(site, showModel, onExit, onRetry, onShowModel) };
+}
+
+function failureActions(site: WalkSite, showModel: boolean, onExit: (() => void) | undefined, onRetry: () => void, onShowModel: () => void): SceneFailureAction[] {
+  const exitLabel = walkReturn(site).view === "globe" ? "Back to the globe" : "Back to the map";
+  const actions: SceneFailureAction[] = [];
+  if (showModel) actions.push({ label: "Show the model", onClick: onShowModel });
+  actions.push({ label: "Try again", onClick: onRetry });
+  actions.push(onExit ? { label: exitLabel, onClick: onExit } : { label: exitLabel, href: "/" });
+  return actions;
 }

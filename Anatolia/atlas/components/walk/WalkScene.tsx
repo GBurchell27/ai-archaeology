@@ -24,6 +24,8 @@ type WalkSceneProps = {
   onLockChange: (locked: boolean) => void;
   onLiftOff: () => void;
   onSplatShown: () => void;
+  /** Object URL of the splat bytes. See `photographObjectUrl`. */
+  splatSrc: string;
   /** Where the photographs were taken from, each marked on the ground. */
   viewpoints: readonly PhotoViewpoint[];
   /** Lets the chrome stand the walker at one of them. */
@@ -45,7 +47,7 @@ function useAdaptivePixelRatio(): [number, (monitor: PerformanceMonitorApi) => v
 }
 
 /** The splat of one site with a walker inside it. Default export so the view can load it lazily. */
-export default function WalkScene({ site, mode, landmarks, onNearestLandmark, onLockChange, onLiftOff, onSplatShown, viewpoints, walker }: WalkSceneProps) {
+export default function WalkScene({ site, mode, landmarks, onNearestLandmark, onLockChange, onLiftOff, onSplatShown, splatSrc, viewpoints, walker }: WalkSceneProps) {
   const limits = useMemo(() => moveLimits(site.eyeHeightM, site.walkRadiusM), [site.eyeHeightM, site.walkRadiusM]);
   const [pixelRatio, followFrameRate] = useAdaptivePixelRatio();
   return (
@@ -54,7 +56,7 @@ export default function WalkScene({ site, mode, landmarks, onNearestLandmark, on
       <PerformanceMonitor onChange={followFrameRate} flipflops={MOST_PIXEL_RATIO_STEPS} />
       <SplatBackdrop />
       <Suspense fallback={null}>
-        <SiteSplat site={site} />
+        <SiteSplat site={site} src={splatSrc} />
         {/* Inside the boundary, so it starts counting frames only once the splat has loaded. */}
         <ShownSignal onShown={onSplatShown} />
       </Suspense>
