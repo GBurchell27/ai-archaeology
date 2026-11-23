@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { viewLoadFailure, type SceneLoadFailure } from "@/lib/scene/sceneFailure";
 import type { WalkState } from "./WalkChrome";
-import { photographObjectUrl } from "./photographObjectUrl";
+import { holdPhotograph, isPhotographAbort } from "./photographObjectUrl";
 
 export type PhotographSource = {
   state: WalkState;
@@ -24,11 +24,16 @@ export function usePhotographSource(splatUrl: string | null, attempt: number): P
     if (!splatUrl) return;
     let current = true;
     const url = splatUrl;
-    photographObjectUrl(url)
+    const hold = holdPhotograph(url);
+    hold.promise
       .then((src) => current && setLoaded({ url, attempt, source: { state: "ready", src, failure: null } }))
-      .catch((error: unknown) => current && setLoaded({ url, attempt, source: sourceFromError(error) }));
+      .catch((error: unknown) => {
+        if (!current || isPhotographAbort(error)) return;
+        setLoaded({ url, attempt, source: sourceFromError(error) });
+      });
     return () => {
       current = false;
+      hold.release();
     };
   }, [splatUrl, attempt]);
   if (!splatUrl) return IDLE;
