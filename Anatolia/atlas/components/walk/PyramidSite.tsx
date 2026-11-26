@@ -2,7 +2,8 @@
 
 import type { ReactNode } from "react";
 import type { HypothesisLayerId } from "@/lib/walk/hypothesisLayers";
-import type { PyramidField, SquareFrustum } from "@/lib/walk/pyramidModel";
+import type { Pyramid, PyramidField, SquareFrustum } from "@/lib/walk/pyramidModel";
+import type { StoneBox } from "@/lib/walk/enclosureModel";
 import { STONE_COLOUR } from "./EnclosureStones";
 import { InstancedBlocks } from "./InstancedBlocks";
 
@@ -12,6 +13,15 @@ const AS_BUILT_COLOUR: Record<SquareFrustum["tone"], string> = { limestone: "#f1
 const AS_BUILT_OPACITY = 0.55;
 
 /** A four-sided cylinder is a diamond in plan: its corners lie half a diagonal out, an eighth of a turn from the sides. */
+function coursesOf(site: PyramidField, pyramid: Pyramid): StoneBox[] {
+  return site.courses.filter((course) => course.centre[0] === pyramid.centre[0] && course.centre[2] === pyramid.centre[1]);
+}
+
+/** The foot of the lowest course, which is y = 0 until a ground window lifts the pyramid. */
+function floorOf(courses: readonly StoneBox[]): number {
+  return courses.reduce((lowest, course) => Math.min(lowest, course.centre[1] - course.size[1] / 2), Number.POSITIVE_INFINITY);
+}
+
 function Frustum({ frustum, castShadow = false, children }: { frustum: SquareFrustum; castShadow?: boolean; children: ReactNode }) {
   const { centre, bottomM, topM, bottomSideM, topSideM, yawRad } = frustum;
   return (
@@ -31,9 +41,14 @@ export function PyramidSite({ site, hypotheses }: { site: PyramidField; hypothes
   const asBuilt = hypotheses.flatMap((layerId) => site.layerDrawings[layerId] ?? []);
   return (
     <>
-      <InstancedBlocks blocks={site.courses} colour={STONE_COLOUR.stone} castShadow={false} grained floorM={0}>
-        <boxGeometry />
-      </InstancedBlocks>
+      {site.pyramids.map((pyramid) => {
+        const courses = coursesOf(site, pyramid);
+        return (
+          <InstancedBlocks key={pyramid.id} blocks={courses} colour={STONE_COLOUR.stone} castShadow={false} grained floorM={floorOf(courses)}>
+            <boxGeometry />
+          </InstancedBlocks>
+        );
+      })}
       {site.standingCasing.map((frustum, index) => (
         <Frustum key={`standing-${index}`} frustum={frustum}>
           <meshStandardMaterial color={STANDING_CASING_COLOUR} roughness={1} metalness={0} flatShading />

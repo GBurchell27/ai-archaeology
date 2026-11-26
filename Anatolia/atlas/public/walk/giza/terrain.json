@@ -1,0 +1,20 @@
+{
+  "width": 400,
+  "height": 400,
+  "cellM": 15.0,
+  "westM": -3105.737,
+  "northM": -3207.999,
+  "minM": -2.025,
+  "maxM": 119.908,
+  "datumM": 65.231,
+  "baseOffsetM": {
+    "khufu": -6.683,
+    "khafre": 3.253,
+    "menkaure": 3.431
+  },
+  "reliefCredit": "GEM-15 surface model (DSM), 15 m. This dataset is produced by Google. CC BY 4.0. Batchu et al. 2026, EarthArXiv https://doi.org/10.31223/X55N75.",
+  "imageryCredit": "Contains modified Copernicus Sentinel data 2026",
+  "imageryDay": "2026-11-18",
+  "sceneId": "S2B_36RUU_20261118_1_L2A",
+  "note": "Pyramid footprints in the surface model are flattened to the ground beside them, so the drawn pyramids are not a second copy of the mounds."
+}

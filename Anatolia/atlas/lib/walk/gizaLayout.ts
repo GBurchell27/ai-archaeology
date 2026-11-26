@@ -15,8 +15,9 @@
  * The same figures appear in lib/theories/gizaFacts.ts (the base of 9068.8 inches and the turn of 3′43″): change both
  * or neither.
  *
- * Simplifications: the ground is one flat level (the plateau slopes, and the pyramids stand at different heights on
- * it), each core is a stack of level courses of one thickness, and each pyramid is a true square. Left out, because no
+ * Simplifications: each core is built from a local ground of y = 0 (the walk lifts it onto the prebuilt plateau, which
+ * slopes, and the pyramids stand at different heights on it), each core is a stack of level courses of one thickness,
+ * and each pyramid is a true square. Left out, because no
  * source that was read gives both a size and a position: the Sphinx, the temples and causeways, the boat pits, the
  * queens' pyramids ([P] §90 says their bases were not uncovered), the tombs, and everything inside the pyramids.
  */
@@ -129,18 +130,30 @@ export const GIZA_WALK_SCALE: Partial<WalkScale> = { speedFactor: 5, highestCeil
 const PETRIE = "Petrie 1883, The Pyramids and Temples of Gizeh";
 const PETRIE_ONLINE = "https://www.ronaldbirdsall.com/gizeh/petrie";
 
+/** The year of the committed Sentinel-2 scene. The build writes the same year into the terrain record. */
+export const GIZA_SENTINEL_YEAR = 2026;
+
 export const GIZA_SOURCES = {
   khufu: { label: `${PETRIE}, chapter 6`, url: `${PETRIE_ONLINE}/c6.html` },
   khafre: { label: `${PETRIE}, chapter 8`, url: `${PETRIE_ONLINE}/c8.html` },
   menkaure: { label: `${PETRIE}, chapter 10`, url: `${PETRIE_ONLINE}/c10.html` },
   positions: { label: `${PETRIE}, chapter 13`, url: `${PETRIE_ONLINE}/c13.html` },
+  relief: {
+    label: "GEM-15 surface model (DSM), 15 m. This dataset is produced by Google. CC BY 4.0. Batchu et al. 2026, EarthArXiv.",
+    url: "https://doi.org/10.31223/X55N75",
+  },
+  imagery: {
+    label: `Contains modified Copernicus Sentinel data ${GIZA_SENTINEL_YEAR}`,
+    url: "https://dataspace.copernicus.eu/data-collections/copernicus-sentinel-missions/sentinel-2",
+  },
 } as const satisfies Record<string, ModelSource>;
 
 export const GIZA_MODEL_NOTE =
   "A schematic model of the three main pyramids, drawn from Petrie's survey of 1880 to 1882, not a survey itself. Bases, " +
   "slopes, the first heights, the distances between the pyramids and the Great Pyramid's present top are his figures. " +
   "The present heights of the other two, the level where Khafre's casing begins, how far their cores stand inside the " +
-  "casing line and the even thickness of every course are approximate. The ground is drawn flat. The Sphinx, the temples, " +
-  "causeways, boat pits, queens' pyramids and tombs, and everything inside the pyramids, are left out for want of a source " +
-  "that gives their size and place. The horizon is the plain backdrop of the other models, not Giza's. You move five " +
-  "times faster here than a walker does.";
+  "casing line and the even thickness of every course are approximate. The ground is a 6 km GEM-15 window with a Sentinel-2 " +
+  "drape; the pyramid mounds in that surface are flattened to the ground beside them, and each drawn pyramid stands on its " +
+  "own base. 15 m cannot show casing stones. The Sphinx, the temples, causeways, boat pits, queens' pyramids and tombs, and " +
+  "everything inside the pyramids, are left out for want of a source that gives their size and place. The sky is the evening " +
+  "sky of the other models. You move five times faster here than a walker does.";

@@ -74,6 +74,8 @@ export type WalkModel = {
   rockCut?: RockCutModel;
   /** Pyramids standing on open ground, for a site that is neither. */
   pyramidField?: PyramidField;
+  /** A prebuilt ground window the walker stands on. Absent on the flat floor of the pillar sites. */
+  terrainId?: "giza";
   /** For a site far larger than a building: how fast it is crossed and how far its light and horizon reach. */
   scale?: Partial<WalkScale>;
 };
