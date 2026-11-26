@@ -59,7 +59,7 @@ export type Enclosure = {
   centralPair: CentralPair;
 };
 
-export type ModelSource = { label: string; url: string };
+export type ModelSource = { label: string; url: string; /** A second link, such as a licence, shown beside `url`. */ licenceUrl?: string };
 
 export type WalkModel = {
   enclosures: readonly Enclosure[];

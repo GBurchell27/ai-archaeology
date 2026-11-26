@@ -4,6 +4,7 @@
  */
 
 import { execFileSync } from "node:child_process";
+import { createHash } from "node:crypto";
 import { readFileSync, statSync } from "node:fs";
 import { register } from "node:module";
 import { fileURLToPath } from "node:url";
@@ -18,7 +19,7 @@ register(`data:text/javascript,${encodeURIComponent(`
 const { decodeGizaHeight, heightAt, readGizaTerrainRecord } = await import("../lib/walk/gizaTerrain.ts");
 const { liftPyramidField } = await import("../lib/walk/pyramidLift.ts");
 const { GIZA_MODEL } = await import("../lib/walk/gizaModel.ts");
-const { GIZA_CC_BY_URL, GIZA_RELIEF_CREDIT, GIZA_SENTINEL_YEAR, GIZA_SOURCES } = await import("../lib/walk/gizaLayout.ts");
+const { GIZA_CC_BY_URL, GIZA_RELIEF_PAPER_URL, GIZA_SENTINEL_YEAR, GIZA_SOURCES } = await import("../lib/walk/gizaLayout.ts");
 const { findWalkSite } = await import("../lib/walk/walkSites.ts");
 const { gizaPyramids } = await import("../lib/walk/gizaModel.ts");
 const { modelObstacles } = await import("../lib/walk/modelObstacles.ts");
@@ -94,9 +95,9 @@ const heightBuffer = heightBytes.buffer.slice(heightBytes.byteOffset, heightByte
 const committed: GizaTerrain = { ...record, metres: decodeGizaHeight(heightBuffer, record) };
 const site = findWalkSite("Q12508");
 check("Giza stays a model with no photographs", site?.modelOnly === true && site.modelId === "giza-pyramids" && GIZA_MODEL.terrainId === "giza");
-check("the height file matches the record", heightBytes.byteLength === record.width * record.height * 2 && record.cellM === 15 && record.width * record.cellM === 6000);
+check("the height file matches the record", heightBytes.byteLength === record.width * record.height * 2 && record.cellM === 15 && record.width * record.cellM === 6000 && createHash("sha256").update(heightBytes).digest("hex") === record.heightSha256);
 const sharedReliefCredit = reliefCreditFromPython();
-check("one relief credit names Google, the preprint, the GLO-30 fill and CC BY", sameReliefCredit(record.reliefCredit, GIZA_SOURCES.relief.label, sharedReliefCredit) && GIZA_SOURCES.relief.url === GIZA_CC_BY_URL);
+check("one relief credit names Google, the preprint, the GLO-30 fill and CC BY", sameReliefCredit(record.reliefCredit, GIZA_SOURCES.relief.label, sharedReliefCredit) && GIZA_SOURCES.relief.url === GIZA_RELIEF_PAPER_URL && GIZA_SOURCES.relief.licenceUrl === GIZA_CC_BY_URL);
 check("the imagery credit names the Sentinel year", record.imageryCredit === `Contains modified Copernicus Sentinel data ${GIZA_SENTINEL_YEAR}` && record.imageryDay.startsWith(String(GIZA_SENTINEL_YEAR)) && GIZA_SOURCES.imagery.label === record.imageryCredit);
 check("the footprint note is in the record and the footer", record.note.includes("flattened") && GIZA_MODEL.note.includes("flattened") && GIZA_MODEL.note.includes("31 to 36 m") && record.note.includes("31 to 36 m"));
 
@@ -117,7 +118,7 @@ const assetBytes = [recordPath, heightPath, drapePath].reduce((sum, path) => sum
 check("the committed ground is within 1.5 MB", assetBytes <= 1.5 * 1024 * 1024 && statSync(drapePath).size > 1000);
 
 function sameReliefCredit(recordCredit: string, label: string, shared: string): boolean {
-  return recordCredit === label && recordCredit === shared && recordCredit === GIZA_RELIEF_CREDIT
+  return recordCredit === label && recordCredit === shared
     && recordCredit.includes("This dataset is produced by Google")
     && recordCredit.includes("(experimental preprint)")
     && recordCredit.includes("Voids filled from Copernicus DEM GLO-30")

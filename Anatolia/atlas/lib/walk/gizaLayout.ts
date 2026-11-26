@@ -23,6 +23,7 @@
  */
 
 import type { ModelSource } from "./enclosureModel";
+import gizaTerrainRecord from "../../public/walk/giza/terrain.json" with { type: "json" };
 import type { PyramidFigures } from "./pyramidModel";
 import type { WalkScale } from "./walkScale";
 
@@ -133,18 +134,8 @@ const PETRIE_ONLINE = "https://www.ronaldbirdsall.com/gizeh/petrie";
 /** The year of the committed Sentinel-2 scene. The build writes the same year into the terrain record. */
 export const GIZA_SENTINEL_YEAR = 2026;
 
-/**
- * The relief credit. The same words are `GIZA_RELIEF_CREDIT` in `scripts/terrain_credits.py`
- * and `reliefCredit` in the committed terrain record. Change them together.
- */
-export const GIZA_RELIEF_CREDIT =
-  "GEM-15 surface model (DSM), 15 m. This dataset is produced by Google. " +
-  "CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/). " +
-  "Batchu et al. 2026, EarthArXiv https://doi.org/10.31223/X55N75 " +
-  "(experimental preprint). Voids filled from Copernicus DEM GLO-30. " +
-  "Contains modified Copernicus DEM data © DLR e.V. 2010-2014 and " +
-  "© Airbus Defence and Space GmbH 2014-2018 provided under COPERNICUS by the European Union and ESA.";
-
+/** The paper. The words of the credit are `GIZA_RELIEF_CREDIT` in `scripts/terrain_credits.py`, written into the terrain record. */
+export const GIZA_RELIEF_PAPER_URL = "https://doi.org/10.31223/X55N75";
 export const GIZA_CC_BY_URL = "https://creativecommons.org/licenses/by/4.0/";
 
 export const GIZA_SOURCES = {
@@ -152,7 +143,7 @@ export const GIZA_SOURCES = {
   khafre: { label: `${PETRIE}, chapter 8`, url: `${PETRIE_ONLINE}/c8.html` },
   menkaure: { label: `${PETRIE}, chapter 10`, url: `${PETRIE_ONLINE}/c10.html` },
   positions: { label: `${PETRIE}, chapter 13`, url: `${PETRIE_ONLINE}/c13.html` },
-  relief: { label: GIZA_RELIEF_CREDIT, url: GIZA_CC_BY_URL },
+  relief: { label: gizaTerrainRecord.reliefCredit, url: GIZA_RELIEF_PAPER_URL, licenceUrl: GIZA_CC_BY_URL },
   imagery: {
     label: `Contains modified Copernicus Sentinel data ${GIZA_SENTINEL_YEAR}`,
     url: "https://dataspace.copernicus.eu/data-collections/copernicus-sentinel-missions/sentinel-2",

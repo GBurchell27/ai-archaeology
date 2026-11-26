@@ -12,9 +12,10 @@
     "khafre": 3.253,
     "menkaure": 3.431
   },
-  "reliefCredit": "GEM-15 surface model (DSM), 15 m. This dataset is produced by Google. CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/). Batchu et al. 2026, EarthArXiv https://doi.org/10.31223/X55N75 (experimental preprint). Voids filled from Copernicus DEM GLO-30. Contains modified Copernicus DEM data © DLR e.V. 2010-2014 and © Airbus Defence and Space GmbH 2014-2018 provided under COPERNICUS by the European Union and ESA.",
+  "reliefCredit": "GEM-15 surface model (DSM), 15 m. This dataset is produced by Google. CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/). Batchu et al. 2026, EarthArXiv https://doi.org/10.31223/X55N75 (experimental preprint). Voids filled from Copernicus DEM GLO-30. Contains modified Copernicus DEM data \u00a9 DLR e.V. 2010-2014 and \u00a9 Airbus Defence and Space GmbH 2014-2018 provided under COPERNICUS by the European Union and ESA.",
   "imageryCredit": "Contains modified Copernicus Sentinel data 2026",
   "imageryDay": "2026-11-18",
   "sceneId": "S2B_36RUU_20261118_1_L2A",
-  "note": "Pyramid footprints in the surface model are flattened to the ground beside them, so the drawn pyramids are not a second copy of the mounds. The peaks of those mounds sit 31 to 36 m from Petrie's centres."
+  "note": "Pyramid footprints in the surface model are flattened to the ground beside them, so the drawn pyramids are not a second copy of the mounds. The peaks of those mounds sit 31 to 36 m from Petrie's centres.",
+  "heightSha256": "1d56907ce8e97f6670bd7c464dc91b6e9bf21159a1f5bff94ffbd20ec9769f9c"
 }

@@ -23,6 +23,8 @@ export type GizaTerrainRecord = {
   imageryDay: string;
   sceneId: string;
   note: string;
+  /** SHA-256 of `height.u16`, written by the build so a stale grid fails the check. */
+  heightSha256: string;
 };
 
 export type GizaTerrain = GizaTerrainRecord & { metres: Float32Array };
@@ -36,7 +38,7 @@ export type WalkHeightGrid = {
 };
 
 const RECORD_NUMBERS = ["width", "height", "cellM", "westM", "northM", "minM", "maxM", "datumM"] as const;
-const RECORD_TEXT = ["reliefCredit", "imageryCredit", "imageryDay", "sceneId", "note"] as const;
+const RECORD_TEXT = ["reliefCredit", "imageryCredit", "imageryDay", "sceneId", "note", "heightSha256"] as const;
 
 export function readGizaTerrainRecord(value: unknown): GizaTerrainRecord {
   if (!isObject(value)) throw new Error("Giza terrain record is not an object");

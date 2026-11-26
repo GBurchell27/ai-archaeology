@@ -1,6 +1,6 @@
 """Build the Giza walk's static ground: a GEM-15 window and a Sentinel-2 drape.
 
-The owner approved this download on 26 Nov 2026. It fetches only that window.
+Fetches only that window. The script was added on 26 Nov 2026.
 Raw tiles stay in memory. Nothing here fetches photographs or trains a splat.
 
 Run from the repository root:
@@ -22,6 +22,7 @@ Outputs, all small enough to commit:
 
 from __future__ import annotations
 
+import hashlib
 import json
 import math
 import os
@@ -206,8 +207,9 @@ def write_assets(cleared: np.ndarray, footprints: list[PlacedFootprint], origin:
     record = _record(cleared, footprints, origin, scene)
     height_path = OUT_DIR / "height.u16"
     drape_path = OUT_DIR / "drape.jpg"
-    (OUT_DIR / "terrain.json").write_text(json.dumps(record, indent=2) + "\n")
     _write_height(height_path, cleared, record["minM"], record["maxM"])
+    record["heightSha256"] = hashlib.sha256(height_path.read_bytes()).hexdigest()
+    (OUT_DIR / "terrain.json").write_text(json.dumps(record, indent=2) + "\n")
     _write_jpeg(drape_path, drape)
     total = sum(path.stat().st_size for path in OUT_DIR.iterdir() if path.is_file())
     if total > ASSET_BUDGET_BYTES:
