@@ -23,3 +23,14 @@ GEM15_FOOTER = (
     "CC BY 4.0. Batchu et al. 2026, EarthArXiv https://doi.org/10.31223/X55N75 "
     "(experimental preprint). Voids filled from Copernicus GLO-30."
 )
+
+# The Giza walk's on-screen relief credit. The build, the terrain record and the
+# footer all use this string and no other wording.
+GIZA_RELIEF_CREDIT = (
+    "GEM-15 surface model (DSM), 15 m. This dataset is produced by Google. "
+    "CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/). "
+    "Batchu et al. 2026, EarthArXiv https://doi.org/10.31223/X55N75 "
+    "(experimental preprint). Voids filled from Copernicus DEM GLO-30. "
+    "Contains modified Copernicus DEM data © DLR e.V. 2010-2014 and "
+    "© Airbus Defence and Space GmbH 2014-2018 provided under COPERNICUS by the European Union and ESA."
+)

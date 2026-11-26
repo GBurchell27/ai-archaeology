@@ -3,8 +3,10 @@
  * Run from Anatolia/atlas: node --experimental-strip-types scripts/check_giza_terrain.mts
  */
 
+import { execFileSync } from "node:child_process";
 import { readFileSync, statSync } from "node:fs";
 import { register } from "node:module";
+import { fileURLToPath } from "node:url";
 
 register(`data:text/javascript,${encodeURIComponent(`
   export function resolve(specifier, context, next) {
@@ -16,7 +18,7 @@ register(`data:text/javascript,${encodeURIComponent(`
 const { decodeGizaHeight, heightAt, readGizaTerrainRecord } = await import("../lib/walk/gizaTerrain.ts");
 const { liftPyramidField } = await import("../lib/walk/pyramidLift.ts");
 const { GIZA_MODEL } = await import("../lib/walk/gizaModel.ts");
-const { GIZA_SENTINEL_YEAR, GIZA_SOURCES } = await import("../lib/walk/gizaLayout.ts");
+const { GIZA_CC_BY_URL, GIZA_RELIEF_CREDIT, GIZA_SENTINEL_YEAR, GIZA_SOURCES } = await import("../lib/walk/gizaLayout.ts");
 const { findWalkSite } = await import("../lib/walk/walkSites.ts");
 const { gizaPyramids } = await import("../lib/walk/gizaModel.ts");
 const { modelObstacles } = await import("../lib/walk/modelObstacles.ts");
@@ -93,8 +95,10 @@ const committed: GizaTerrain = { ...record, metres: decodeGizaHeight(heightBuffe
 const site = findWalkSite("Q12508");
 check("Giza stays a model with no photographs", site?.modelOnly === true && site.modelId === "giza-pyramids" && GIZA_MODEL.terrainId === "giza");
 check("the height file matches the record", heightBytes.byteLength === record.width * record.height * 2 && record.cellM === 15 && record.width * record.cellM === 6000);
-check("the credits name Google, CC BY 4.0, and the Sentinel year", record.reliefCredit.includes("This dataset is produced by Google") && record.reliefCredit.includes("CC BY 4.0") && record.imageryCredit === `Contains modified Copernicus Sentinel data ${GIZA_SENTINEL_YEAR}` && record.imageryDay.startsWith(String(GIZA_SENTINEL_YEAR)) && GIZA_SOURCES.imagery.label === record.imageryCredit && GIZA_SOURCES.relief.label.includes("produced by Google"));
-check("the footprint note is in the record and the footer", record.note.includes("flattened") && GIZA_MODEL.note.includes("flattened"));
+const sharedReliefCredit = reliefCreditFromPython();
+check("one relief credit names Google, the preprint, the GLO-30 fill and CC BY", sameReliefCredit(record.reliefCredit, GIZA_SOURCES.relief.label, sharedReliefCredit) && GIZA_SOURCES.relief.url === GIZA_CC_BY_URL);
+check("the imagery credit names the Sentinel year", record.imageryCredit === `Contains modified Copernicus Sentinel data ${GIZA_SENTINEL_YEAR}` && record.imageryDay.startsWith(String(GIZA_SENTINEL_YEAR)) && GIZA_SOURCES.imagery.label === record.imageryCredit);
+check("the footprint note is in the record and the footer", record.note.includes("flattened") && GIZA_MODEL.note.includes("flattened") && GIZA_MODEL.note.includes("31 to 36 m") && record.note.includes("31 to 36 m"));
 
 for (const pyramid of gizaPyramids()) {
   const offset = record.baseOffsetM[pyramid.id];
@@ -111,6 +115,23 @@ check("a step north stays on the ground", walked.position[2] < start[2] && near(
 
 const assetBytes = [recordPath, heightPath, drapePath].reduce((sum, path) => sum + statSync(path).size, 0);
 check("the committed ground is within 1.5 MB", assetBytes <= 1.5 * 1024 * 1024 && statSync(drapePath).size > 1000);
+
+function sameReliefCredit(recordCredit: string, label: string, shared: string): boolean {
+  return recordCredit === label && recordCredit === shared && recordCredit === GIZA_RELIEF_CREDIT
+    && recordCredit.includes("This dataset is produced by Google")
+    && recordCredit.includes("(experimental preprint)")
+    && recordCredit.includes("Voids filled from Copernicus DEM GLO-30")
+    && recordCredit.includes("Contains modified Copernicus DEM data")
+    && recordCredit.includes(GIZA_CC_BY_URL);
+}
+
+function reliefCreditFromPython(): string {
+  const scriptsDir = fileURLToPath(new URL(".", import.meta.url));
+  return execFileSync("python3", ["-c", "import terrain_credits; print(terrain_credits.GIZA_RELIEF_CREDIT, end='')"], {
+    cwd: scriptsDir,
+    encoding: "utf8",
+  });
+}
 
 console.log(JSON.stringify({ ok: failed === 0, failed, assetBytes }));
 process.exit(failed === 0 ? 0 : 1);

@@ -57,6 +57,7 @@ import gem15_tiles  # noqa: E402
 import glo30_tiles  # noqa: E402
 import relief_fill  # noqa: E402
 from ai_archaeology.dem_window import clean_elevation_window  # noqa: E402
+from terrain_credits import GIZA_RELIEF_CREDIT as RELIEF_CREDIT  # noqa: E402
 from giza_terrain_mask import (  # noqa: E402
     PlacedFootprint,
     PyramidPlan,
@@ -73,10 +74,6 @@ DRAPE_M = 10.0
 ASSET_BUDGET_BYTES = int(1.5 * 1024 * 1024)
 STAC_URL = "https://earth-search.aws.element84.com/v1/search"
 OUT_DIR = ATLAS / "public" / "walk" / "giza"
-RELIEF_CREDIT = (
-    "GEM-15 surface model (DSM), 15 m. This dataset is produced by Google. "
-    "CC BY 4.0. Batchu et al. 2026, EarthArXiv https://doi.org/10.31223/X55N75."
-)
 USER_AGENT = "ai-archaeology-atlas/0.1"
 # Sum of the three peak-to-centre misses after one shared translation.
 WORST_RESIDUAL_M = 45.0
@@ -369,7 +366,8 @@ def _record(cleared: np.ndarray, footprints: list[PlacedFootprint], origin: tupl
         "sceneId": str(scene["id"]),
         "note": (
             "Pyramid footprints in the surface model are flattened to the ground beside them, "
-            "so the drawn pyramids are not a second copy of the mounds."
+            "so the drawn pyramids are not a second copy of the mounds. "
+            "The peaks of those mounds sit 31 to 36 m from Petrie's centres."
         ),
     }
 

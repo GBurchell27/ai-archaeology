@@ -133,15 +133,26 @@ const PETRIE_ONLINE = "https://www.ronaldbirdsall.com/gizeh/petrie";
 /** The year of the committed Sentinel-2 scene. The build writes the same year into the terrain record. */
 export const GIZA_SENTINEL_YEAR = 2026;
 
+/**
+ * The relief credit. The same words are `GIZA_RELIEF_CREDIT` in `scripts/terrain_credits.py`
+ * and `reliefCredit` in the committed terrain record. Change them together.
+ */
+export const GIZA_RELIEF_CREDIT =
+  "GEM-15 surface model (DSM), 15 m. This dataset is produced by Google. " +
+  "CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/). " +
+  "Batchu et al. 2026, EarthArXiv https://doi.org/10.31223/X55N75 " +
+  "(experimental preprint). Voids filled from Copernicus DEM GLO-30. " +
+  "Contains modified Copernicus DEM data © DLR e.V. 2010-2014 and " +
+  "© Airbus Defence and Space GmbH 2014-2018 provided under COPERNICUS by the European Union and ESA.";
+
+export const GIZA_CC_BY_URL = "https://creativecommons.org/licenses/by/4.0/";
+
 export const GIZA_SOURCES = {
   khufu: { label: `${PETRIE}, chapter 6`, url: `${PETRIE_ONLINE}/c6.html` },
   khafre: { label: `${PETRIE}, chapter 8`, url: `${PETRIE_ONLINE}/c8.html` },
   menkaure: { label: `${PETRIE}, chapter 10`, url: `${PETRIE_ONLINE}/c10.html` },
   positions: { label: `${PETRIE}, chapter 13`, url: `${PETRIE_ONLINE}/c13.html` },
-  relief: {
-    label: "GEM-15 surface model (DSM), 15 m. This dataset is produced by Google. CC BY 4.0. Batchu et al. 2026, EarthArXiv.",
-    url: "https://doi.org/10.31223/X55N75",
-  },
+  relief: { label: GIZA_RELIEF_CREDIT, url: GIZA_CC_BY_URL },
   imagery: {
     label: `Contains modified Copernicus Sentinel data ${GIZA_SENTINEL_YEAR}`,
     url: "https://dataspace.copernicus.eu/data-collections/copernicus-sentinel-missions/sentinel-2",
@@ -154,6 +165,7 @@ export const GIZA_MODEL_NOTE =
   "The present heights of the other two, the level where Khafre's casing begins, how far their cores stand inside the " +
   "casing line and the even thickness of every course are approximate. The ground is a 6 km GEM-15 window with a Sentinel-2 " +
   "drape; the pyramid mounds in that surface are flattened to the ground beside them, and each drawn pyramid stands on its " +
-  "own base. 15 m cannot show casing stones. The Sphinx, the temples, causeways, boat pits, queens' pyramids and tombs, and " +
+  "own base. The peaks of those mounds sit 31 to 36 m from Petrie's centres. 15 m cannot show casing stones. The Sphinx, the temples, " +
+  "causeways, boat pits, queens' pyramids and tombs, and " +
   "everything inside the pyramids, are left out for want of a source that gives their size and place. The sky is the evening " +
   "sky of the other models. You move five times faster here than a walker does.";

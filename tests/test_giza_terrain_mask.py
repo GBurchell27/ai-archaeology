@@ -57,6 +57,25 @@ def test_a_mound_is_replaced_by_the_ground_beside_it():
     assert float(cleared[2, 2]) == far
 
 
+def test_an_overlap_keeps_the_lower_base_whichever_pyramid_is_first():
+    mask = _load()
+    cell_m = 10.0
+    grid = np.full((80, 80), 30.0, dtype=np.float32)
+    grid[:, 48:] = 80.0
+    khufu = mask.PlacedFootprint(mask.PyramidPlan("khufu", 0.0, 0.0, 40.0), 40.0, 34.0, 100.0, 0.0)
+    khafre = mask.PlacedFootprint(mask.PyramidPlan("khafre", 0.0, 0.0, 40.0), 40.0, 44.0, 100.0, 0.0)
+    forward = mask.flatten_footprints(grid, [khufu, khafre], cell_m)
+    reverse = mask.flatten_footprints(grid, [khafre, khufu], cell_m)
+    assert np.array_equal(forward, reverse)
+    lower = min(
+        mask.footprint_base_m(grid, khufu, [khufu, khafre], cell_m),
+        mask.footprint_base_m(grid, khafre, [khufu, khafre], cell_m),
+    )
+    # The midpoint is inside both disks. It takes the lower base, not whichever was written last.
+    assert abs(float(forward[40, 39]) - lower) < 1e-3
+    assert lower < 50.0
+
+
 def _cell(pyramid, west_m: float, north_m: float, cell_m: float) -> tuple[float, float]:
     column = (pyramid.east_m - west_m) / cell_m - 0.5
     row = (pyramid.south_m - north_m) / cell_m - 0.5

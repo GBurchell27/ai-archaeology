@@ -91,13 +91,16 @@ def flatten_footprints(
     footprints: list[PlacedFootprint],
     cell_m: float,
 ) -> np.ndarray:
-    """A copy with each mound replaced by the ground in a ring beside it."""
+    """A copy with each mound replaced by the ground in a ring beside it.
+
+    Where two footprints meet, the lower of the two bases is kept, so the
+    result does not depend on which pyramid is listed first.
+    """
     original = np.asarray(elevation, dtype=np.float32)
     cleared = original.copy()
+    claimed = np.zeros(original.shape, dtype=bool)
     for foot in footprints:
-        distance_m = _distance_m(original.shape, foot.row, foot.col, cell_m)
-        base = _ring_base(original, distance_m, footprints, foot, cell_m)
-        _write_footprint(cleared, original, distance_m, foot.radius_m, base)
+        cleared, claimed = _lay_lower(cleared, claimed, original, foot, footprints, cell_m)
     return cleared
 
 
@@ -179,6 +182,34 @@ def _outside_others(shape: tuple[int, int], footprints: list[PlacedFootprint], f
             continue
         clear &= _distance_m(shape, other.row, other.col, cell_m) > other.radius_m
     return clear
+
+
+def _lay_lower(
+    cleared: np.ndarray,
+    claimed: np.ndarray,
+    original: np.ndarray,
+    foot: PlacedFootprint,
+    footprints: list[PlacedFootprint],
+    cell_m: float,
+) -> tuple[np.ndarray, np.ndarray]:
+    distance_m = _distance_m(original.shape, foot.row, foot.col, cell_m)
+    base = _ring_base(original, distance_m, footprints, foot, cell_m)
+    proposal = original.copy()
+    _write_footprint(proposal, original, distance_m, foot.radius_m, base)
+    mask = _footprint_mask(distance_m, foot.radius_m, original, base)
+    overlap = claimed & mask
+    cleared[overlap] = np.minimum(cleared[overlap], proposal[overlap])
+    fresh = mask & ~claimed
+    cleared[fresh] = proposal[fresh]
+    claimed[mask] = True
+    return cleared, claimed
+
+
+def _footprint_mask(distance_m: np.ndarray, radius_m: float, original: np.ndarray, base: float) -> np.ndarray:
+    hard = distance_m <= radius_m
+    shoulder = (distance_m <= radius_m + SHOULDER_REACH_M) & (original > base + SHOULDER_ABOVE_M)
+    feather = (distance_m > radius_m) & (distance_m <= radius_m + FEATHER_M)
+    return hard | shoulder | feather
 
 
 def _write_footprint(cleared: np.ndarray, original: np.ndarray, distance_m: np.ndarray, radius_m: float, base: float) -> None:

@@ -56,8 +56,14 @@ export default function ModelScene(props: ModelSceneProps) {
 
 function ModelCanvas({ model, eyeHeightM, mode, landmarks, hypotheses, onNearestLandmark, onLockChange, onLiftOff, onShown, walker, terrain }: ModelSceneProps & { terrain: GizaTerrain | null }) {
   const { enclosures, rockCut, pyramidField } = model;
-  const field = pyramidField && terrain ? liftPyramidField(pyramidField, terrain.baseOffsetM) : pyramidField;
-  const placed = terrain ? liftPlacedLandmarks(landmarks, terrain.baseOffsetM) : landmarks;
+  const field = useMemo(
+    () => (pyramidField && terrain ? liftPyramidField(pyramidField, terrain.baseOffsetM) : pyramidField),
+    [pyramidField, terrain],
+  );
+  const placed = useMemo(
+    () => (terrain ? liftPlacedLandmarks(landmarks, terrain.baseOffsetM) : landmarks),
+    [landmarks, terrain],
+  );
   const scale = useMemo(() => walkScaleOf(model), [model]);
   const boxes = useMemo(() => [...modelBoxes(enclosures), ...reliefBoxes(enclosures)], [enclosures]);
   const ground = useMemo(() => groundUnder(model, terrain), [model, terrain]);
