@@ -34,7 +34,7 @@ The globe and the Anatolia atlas run on Node alone. The place view also needs th
 - **Timeline.** Drag the range to filter by calendar year. Most sites have no date. A switch shows or hides them.
 - **Layers.** Labels, wonders only, the OpenStreetMap megaliths (a separate layer under ODbL), and the recording-pattern layer. That last one shows where published sites of a kind tend to be recorded, at about 28 km cells. It is not a map of undiscovered sites. Its caveats are shown with it. See [`docs/suitability-model.md`](../../docs/suitability-model.md).
 - **About** lists the sources and their licences.
-- **Site card.** Type, dates where the catalogue has them, the source record and its licence, **Fly closer**, **Copy link**, and **View terrain**. For a site inside the bounds of the Anatolia atlas (25.5–45°E, 35.8–42.2°N) the card offers **Open in Anatolia atlas** instead.
+- **Site card.** Type, dates where the catalogue has them, the source record and its licence, **Fly closer**, **Share**, and **View terrain**. Share copies `/site/<slug>` (the name and the catalogue id, no coordinates): a phone offers the system share sheet, a desktop copies the link. The same **Share** sits on the current view. For a site inside the bounds of the Anatolia atlas (25.5–45°E, 35.8–42.2°N) the card offers **Open in Anatolia atlas** instead.
 
 Zoom in over Turkey and the globe offers **Enter Anatolia terrain** below 900 km. Keep zooming and it enters by itself below 450 km. In the atlas, the **Globe** button or zooming well out goes back.
 
@@ -66,7 +66,7 @@ Pins are published places only. Neolithic points are the original six. Crusader-
 
 The April 2026 trip is in `lib/trip/turkeyTrip2026.ts`. Hotels are placed at town level, and times not taken from a ticket are marked as estimated. Flights from off the map start and end at its edge. Drives and walks follow roads from OpenStreetMap, routed once by OSRM and saved in `public/trips/turkey-2026-04.roads.json`. The roads are the router's fastest route, not a GPS trace. A walk the router can only reach by a long detour, such as the paths inside Göbeklitepe and up Nemrut, stays a straight line.
 
-After changing a stop, rebuild the roads file with `../explorer/node_modules/.bin/esbuild scripts/fetch_trip_roads.mts --bundle --platform=node --format=esm --outfile=.next/fetch_trip_roads.mjs` and `node .next/fetch_trip_roads.mjs`. The plane and car are CC0 models from tevy.dev, fetched with `node scripts/fetch_trip_models.mjs`, which also copies the KTX2 texture transcoder into `public/basis/`. Run `../explorer/node_modules/.bin/esbuild scripts/check_trip.mts --bundle --platform=node --format=esm --outfile=.next/check_trip.mjs` and then `node .next/check_trip.mjs` to check that the timeline is unbroken.
+After changing a stop, rebuild the roads file with `../explorer/node_modules/.bin/esbuild scripts/fetch_trip_roads.mts --bundle --platform=node --format=esm --outfile=.next/fetch_trip_roads.mjs` and `node .next/fetch_trip_roads.mjs`. The plane and car are CC0 models from tevy.dev, fetched with `node scripts/fetch_trip_models.mjs`, which also copies the KTX2 texture transcoder into `public/basis/`. Run `node --experimental-strip-types scripts/check_trip.mts` to check that the timeline is unbroken.
 
 ## Checks
 

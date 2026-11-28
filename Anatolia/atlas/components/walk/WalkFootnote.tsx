@@ -21,6 +21,16 @@ function ModelLimits({ model }: { model: WalkModel }) {
             <a href={source.url} target="_blank" rel="noreferrer">
               {source.label}
             </a>
+            {source.licenceUrl ? (
+              <>
+                {" "}
+                (
+                <a href={source.licenceUrl} target="_blank" rel="noreferrer">
+                  CC BY 4.0
+                </a>
+                )
+              </>
+            ) : null}
           </span>
         ))}
       </p>

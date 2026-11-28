@@ -36,7 +36,9 @@ export function isAllTime(span: YearSpan): boolean {
 
 export function clampWorldYear(year: number): number {
   const stepped = Math.round(year / WORLD_YEAR_STEP) * WORLD_YEAR_STEP;
-  return Math.min(WORLD_RANGE_END, Math.max(WORLD_RANGE_START, stepped));
+  // There is no year 0. A century step that lands on it is 1 BCE or 1 CE, the same year the readout shows.
+  const historical = stepped === 0 ? (year < 0 ? -1 : 1) : stepped;
+  return Math.min(WORLD_RANGE_END, Math.max(WORLD_RANGE_START, historical));
 }
 
 /** 0–1 position of a year along the slider. */

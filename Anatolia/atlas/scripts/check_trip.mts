@@ -1,15 +1,29 @@
-// Run: ../explorer/node_modules/.bin/esbuild scripts/check_trip.mts --bundle --platform=node --format=esm --outfile=.next/check_trip.mjs && node .next/check_trip.mjs
+// Run: node --experimental-strip-types scripts/check_trip.mts
 import { readFileSync } from "node:fs";
-import { boundsContain, lonLatToMercator } from "../lib/geo.ts";
-import { TripClock } from "../lib/trip/tripClock.ts";
-import { clockLabel, localTimeZone } from "../lib/trip/tripFormat.ts";
-import { storyPlaybackRate } from "../lib/trip/tripPlayback.ts";
-import { buildTravelRoute, poseAlong, travelledPoints, type RouteSurface } from "../lib/trip/tripRoute.ts";
-import { adjacentBoundary, dayMarks, locateSegment, startPlace, timelineProblems, timeSegments, tripSpan } from "../lib/trip/tripTimeline.ts";
-import { roadFor, roadsFromFile, routedSegments, type TripRoadsFile } from "../lib/trip/tripRoads.ts";
-import { PLACES } from "../lib/trip/turkeyTripPlaces.ts";
-import { TURKEY_TRIP_2026 } from "../lib/trip/turkeyTrip2026.ts";
+import { register } from "node:module";
+import type { RouteSurface } from "../lib/trip/tripRoute.ts";
+import type { TripRoadsFile } from "../lib/trip/tripRoads.ts";
 import type { TravelSegment } from "../lib/trip/tripTypes.ts";
+
+// The trip library imports itself through the "@/" alias, with no extension. Teach Node both.
+register(`data:text/javascript,${encodeURIComponent(`
+  const root = ${JSON.stringify(new URL("../", import.meta.url).href)};
+  export function resolve(specifier, context, next) {
+    if (specifier.startsWith("@/")) return next(root + specifier.slice(2) + ".ts", context);
+    const bare = specifier.startsWith(".") && !specifier.slice(specifier.lastIndexOf("/")).includes(".");
+    return next(bare ? specifier + ".ts" : specifier, context);
+  }
+`)}`);
+
+const { boundsContain, lonLatToMercator } = await import("../lib/geo.ts");
+const { TripClock } = await import("../lib/trip/tripClock.ts");
+const { clockLabel, localTimeZone } = await import("../lib/trip/tripFormat.ts");
+const { storyPlaybackRate } = await import("../lib/trip/tripPlayback.ts");
+const { buildTravelRoute, poseAlong, travelledPoints } = await import("../lib/trip/tripRoute.ts");
+const { adjacentBoundary, dayMarks, locateSegment, startPlace, timelineProblems, timeSegments, tripSpan } = await import("../lib/trip/tripTimeline.ts");
+const { roadFor, roadsFromFile, routedSegments } = await import("../lib/trip/tripRoads.ts");
+const { PLACES } = await import("../lib/trip/turkeyTripPlaces.ts");
+const { TURKEY_TRIP_2026 } = await import("../lib/trip/turkeyTrip2026.ts");
 
 let failed = 0;
 
@@ -40,6 +54,7 @@ check("the end is the last segment, finished", locateSegment(timed, span.endMs).
   && locateSegment(timed, span.endMs).progress === 1);
 check("Göbeklitepe on Wednesday afternoon", locateSegment(timed, Date.parse("2026-04-15T14:00:00+03:00")).timed.segment.title === "Göbeklitepe");
 check("on the road to Karadut on Thursday", locateSegment(timed, Date.parse("2026-04-16T13:30:00+03:00")).timed.segment.kind === "travel");
+check("Harran on Saturday afternoon", locateSegment(timed, Date.parse("2026-04-18T14:00:00+03:00")).timed.segment.title === "Harran");
 
 check("next stop from inside a segment", adjacentBoundary(timed, timed[0].startMs + 1, 1) === timed[1].startMs);
 check("previous stop from inside a segment is its start", adjacentBoundary(timed, timed[2].startMs + 1, -1) === timed[2].startMs);
@@ -106,3 +121,4 @@ if (failed) {
   process.exit(1);
 }
 console.log(`trip checks passed: ${timed.length} segments, ${(span.endMs - span.startMs) / 3_600_000} hours`);
+console.log(JSON.stringify({ ok: true }));

@@ -51,20 +51,23 @@ function EveningLights({ castersKey, shadowReachM }: { castersKey: string; shado
 
 /**
  * Everything around a model that is not the model: evening sky, far hills, the ground, the light and haze.
+ * `ground` is `terrain` when a site brings its own ground mesh: the flat floor and the far hills are left out.
  * `groundLevelM` lowers the ground and the hills for a site whose model stands above the plain. `shadowCastersKey`
  * names what is drawn: the shadows are drawn again when it changes. `scale` moves the haze, the hills, the sky and
  * the edge of the ground further off, and stretches the shadow map, for a site far larger than a building.
  */
-export function ModelBackdrop({ grassed, groundLevelM = 0, shadowCastersKey, scale = BUILDING_SCALE }: { grassed: boolean; groundLevelM?: number; shadowCastersKey: string; scale?: WalkScale }) {
+export function ModelBackdrop({ grassed, groundLevelM = 0, shadowCastersKey, scale = BUILDING_SCALE, ground = "flat" }: { grassed: boolean; groundLevelM?: number; shadowCastersKey: string; scale?: WalkScale; ground?: "flat" | "terrain" }) {
   const { haze } = EVENING_LIGHT;
   const further = scale.backdropFactor;
   return (
     <>
       <fog attach="fog" args={[haze.colour, haze.nearM * further, haze.farM * further]} />
-      <ModelSky groundLevelM={groundLevelM} scale={further} />
-      <group position={[0, groundLevelM, 0]}>
-        <ModelFloor radiusM={FLOOR_RADIUS_M * further} grassed={grassed} />
-      </group>
+      <ModelSky groundLevelM={groundLevelM} scale={further} hills={ground === "flat"} />
+      {ground === "flat" ? (
+        <group position={[0, groundLevelM, 0]}>
+          <ModelFloor radiusM={FLOOR_RADIUS_M * further} grassed={grassed} />
+        </group>
+      ) : null}
       <EveningLights castersKey={shadowCastersKey} shadowReachM={scale.shadowReachM} />
     </>
   );

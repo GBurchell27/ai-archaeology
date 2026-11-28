@@ -1,12 +1,18 @@
 "use client";
 
 import { useEffect, useId, useState } from "react";
+import { CloseButton } from "@/components/chrome/CloseButton";
+import { useDismissLayer } from "@/components/chrome/useDismissLayer";
+import type { PickedSite } from "@/lib/globe/siteBlock";
+import { DISMISS_PRIORITY } from "@/lib/chrome/dismissStack";
 import type { WorldSource } from "@/lib/world/catalogueTypes";
 import { OSM_MEGALITH_STYLE } from "@/lib/world/siteTypeStyle";
+import type { NewsPin } from "../useNewsPins";
 import type { SiteFilterViewModel } from "../useSiteFilter";
 import { ChevronIcon } from "./ExplorerIcons";
 import ui from "./chrome.module.css";
 import styles from "./ExplorerLegend.module.css";
+import { NewsPinList } from "./NewsPinList";
 import { SiteTypeFilter } from "./SiteTypeFilter";
 
 const ROOMY_SCREEN = "(min-width: 1100px) and (min-height: 760px)";
@@ -21,12 +27,18 @@ export function ExplorerLegend(props: {
   sources: WorldSource[];
   filters: SiteFilterViewModel;
   showOsmMegaliths: boolean;
+  newsPins: readonly NewsPin[];
+  newsReady: boolean;
+  showNewsPins: boolean;
+  onShowNewsPins(shown: boolean): void;
+  onShowNewsSite(site: PickedSite): void;
 }) {
   const { filters, totalSites } = props;
   const [open, setOpen] = useState(false);
   const bodyId = useId();
   // Open by default only where it does not crowd the globe.
   useEffect(() => setOpen(window.matchMedia(ROOMY_SCREEN).matches), []);
+  useDismissLayer(open, () => setOpen(false), DISMISS_PRIORITY.chrome);
   const counts = filters.counts;
 
   return (
@@ -40,16 +52,27 @@ export function ExplorerLegend(props: {
         <span className={styles.status} data-role="site-status">
           {counts === null ? "Loading sites…" : (
             <>
-              <span className={ui.numeric}><b>{count(counts.shown)}</b> sites shown</span>
+              <span className={ui.numeric}>
+                <b>{count(counts.shown)}</b>
+                <span className={styles.shownFull}> sites shown</span>
+                <span className={styles.shownShort}> sites</span>
+              </span>
               <span className={`${ui.numeric} ${styles.loaded}`} title="Regional sites load as you zoom in">
                 {count(counts.loaded)} loaded of {count(totalSites)}
               </span>
             </>
           )}
         </span>
-        <span className={styles.caret}><span className={ui.eyebrow}>Legend</span><ChevronIcon direction={open ? "down" : "up"} /></span>
+        <span className={styles.caret}><span className={`${ui.eyebrow} ${styles.caretLabel}`}>Legend</span><ChevronIcon direction={open ? "down" : "up"} /></span>
       </button>
       <div id={bodyId} className={styles.body} hidden={!open}>
+        <NewsPinList
+          pins={props.newsPins}
+          ready={props.newsReady}
+          shown={props.showNewsPins}
+          onShown={props.onShowNewsPins}
+          onShowSite={props.onShowNewsSite}
+        />
         <SiteTypeFilter
           siteTypes={props.siteTypes}
           counts={filters.counts?.byType ?? null}
@@ -66,6 +89,11 @@ export function ExplorerLegend(props: {
           ) : null}
         </ul>
       </div>
+      {open ? (
+        <div className={styles.dismissRow}>
+          <CloseButton name="legend" onClick={() => setOpen(false)} />
+        </div>
+      ) : null}
     </section>
   );
 }

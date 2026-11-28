@@ -114,6 +114,8 @@
 
 /* The key to the pin colours */
 .legend { left: var(--edge); bottom: 14px; display: flex; gap: 4px; align-items: center; padding: 3px; font-size: 12px; line-height: 1.4; }
+.legend.is-open { min-height: 44px; padding-right: 44px; }
+.legend-dismiss { position: absolute; top: 0; right: 0; }
 
 .legend-toggle {
   min-height: 30px;
@@ -191,6 +193,7 @@
 }
 
 .credit summary { width: max-content; margin-left: auto; padding: 4px 9px; cursor: pointer; }
+.credit-phone { display: none; }
 .credit summary:hover { color: var(--globe-ink); }
 
 .credit p {
@@ -259,4 +262,24 @@
   .map-speed { min-height: 40px; }
   .nearby-place button, .legend-toggle { min-height: 40px; }
   .credit summary { padding-block: 8px; }
+}
+
+@media (max-width: 640px) {
+  .legend {
+    bottom: calc(28px + env(safe-area-inset-bottom, 0px));
+    max-width: calc(100% - 16px - env(safe-area-inset-left, 0px) - env(safe-area-inset-right, 0px));
+  }
+  .legend-body { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
+  .legend-body::-webkit-scrollbar { display: none; }
+  .map-nav, .readout { bottom: calc(78px + env(safe-area-inset-bottom, 0px)); }
+  .credit {
+    left: max(8px, env(safe-area-inset-left, 0px));
+    right: max(8px, env(safe-area-inset-right, 0px));
+    bottom: max(6px, env(safe-area-inset-bottom, 0px));
+    max-width: none;
+  }
+  .credit summary { max-width: 100%; overflow-x: auto; white-space: nowrap; scrollbar-width: none; }
+  .credit-wide { display: none; }
+  .credit-phone { display: inline; }
+  .nearby-place { top: calc(var(--top) + 8px); }
 }

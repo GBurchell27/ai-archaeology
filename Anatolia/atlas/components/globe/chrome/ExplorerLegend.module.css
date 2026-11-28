@@ -26,8 +26,11 @@
 .credit { margin: 0; padding: 0 12px 7px; font-size: 10.5px; line-height: 1.4; color: var(--globe-muted); }
 .status b { font-weight: 600; color: var(--globe-ink); }
 .caret { display: inline-flex; align-items: center; gap: 5px; color: var(--globe-muted); }
+.shownShort { display: none; }
 
 .body { min-height: 0; padding: 8px 4px 6px; border-bottom: 1px solid var(--globe-rule); overflow-y: auto; scrollbar-width: thin; }
+/* Last in the document, so first on screen: the legend is a reversed column. The X stays put while the key scrolls. */
+.dismissRow { display: flex; flex: none; justify-content: flex-end; }
 
 .marks { display: grid; gap: 5px; margin: 8px 0 2px; padding: 8px 8px 0; border-top: 1px solid var(--globe-rule); list-style: none; font-size: 11.5px; color: #b9bcc2; }
 .marks li { display: grid; grid-template-columns: 22px 1fr; align-items: center; }
@@ -46,4 +49,23 @@
 
 @media (pointer: coarse) {
   .toggle { min-height: 40px; }
+}
+
+/* A count chip. The full key, and the site-records sentence, open upward from it. */
+@media (max-width: 640px) {
+  .legend { width: max-content; max-width: min(100%, 240px); border-radius: 999px; }
+  .legend:has(.body[hidden]) .credit,
+  .legend:has(.body[hidden]) .loaded,
+  .legend:has(.body[hidden]) .shownFull,
+  .legend:has(.body[hidden]) .caretLabel { display: none; }
+  .legend:has(.body[hidden]) .shownShort { display: inline; }
+  .legend:has(.body[hidden]) .toggle { gap: 8px; padding: 4px 10px 4px 12px; }
+  .legend:not(:has(.body[hidden])) {
+    width: 100%;
+    max-width: none;
+    max-height: min(52dvh, 440px);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .legend:not(:has(.body[hidden])) .body { flex: 1 1 auto; }
 }

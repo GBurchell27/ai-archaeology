@@ -10,6 +10,8 @@ import {
 } from "../lib/globe/ellipsoid.ts";
 import { ENTER_WALK_DISTANCE, OFFER_WALK_DISTANCE, WALK_DIVE_DISTANCE, WALK_SITE_REACH, advanceWalkEntry, walkHandoffStage, walkSiteUnderTarget } from "../lib/atlas/walkHandoff.ts";
 import { atlasLookFromGlobe, globeLookFromAtlas, handoffStage } from "../lib/globe/handoff.ts";
+import { compactRecordCredits, compactSourceCredit, imageryHostName } from "../lib/globe/compactCredits.ts";
+import { DEFAULT_GLOBE_BASEMAP, FALLBACK_GLOBE_BASEMAP } from "../lib/globe/basemaps.ts";
 import { register } from "node:module";
 
 // The view URL reads the theory registry, whose files import each other without an extension; teach Node to add it.
@@ -159,6 +161,24 @@ check("opened by its address, or after another site's card, it returns to the ca
 check("an Anatolian walk returns to the Anatolia map whatever card the globe last showed",
   gobekliWalk !== null && JSON.stringify(walkReturn(gobekliWalk, "Q12508")) === JSON.stringify({ view: "atlas", siteId: "gobekli-tepe" }) && walkReturn(findWalkSite("karahan-tepe")!).view === "atlas");
 check("leaving a walk for the globe is a change of view like any other", historyEntryForView("walk", "globe", false) === "push" && historyEntryForView("globe", "walk", true) === "replace");
+
+check("the phone credit names EOX and NASA by the basemap", imageryHostName(DEFAULT_GLOBE_BASEMAP) === "EOX" && imageryHostName(FALLBACK_GLOBE_BASEMAP) === "NASA");
+check("a catalogue credit keeps the licence and shortens CC0",
+  compactSourceCredit({ attribution: "Wikidata", licence: "CC0 1.0" }) === "Wikidata CC0"
+  && compactSourceCredit({ attribution: "Pleiades contributors", licence: "CC BY 3.0" }) === "Pleiades CC BY 3.0");
+check("the phone line names Wikidata and Pleiades and leaves OpenStreetMap to its own credit",
+  compactRecordCredits({
+    sources: [
+      { id: "wikidata", attribution: "Wikidata", licence: "CC0 1.0" },
+      { id: "pleiades", attribution: "Pleiades contributors", licence: "CC BY 3.0" },
+      { id: "osm", attribution: "© OpenStreetMap contributors", licence: "ODbL 1.0" },
+    ],
+    osmMegaliths: { count: 1, file: "osm.json" },
+  }) === "Wikidata CC0 · Pleiades CC BY 3.0");
+check("with no separate OpenStreetMap file, that source stays on the line",
+  compactRecordCredits({
+    sources: [{ id: "osm", attribution: "© OpenStreetMap contributors", licence: "ODbL 1.0" }],
+  }) === "OpenStreetMap ODbL 1.0");
 
 if (failed > 0) {
   console.error(`${failed} failed`);

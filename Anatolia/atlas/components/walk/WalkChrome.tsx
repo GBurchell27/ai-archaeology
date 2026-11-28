@@ -7,6 +7,7 @@ import type { HypothesisLayer, HypothesisLayerId } from "@/lib/walk/hypothesisLa
 import type { PlacedLandmark } from "@/lib/walk/landmarks";
 import type { MoveMode } from "@/lib/walk/walkMovement";
 import type { WalkSite } from "@/lib/walk/walkSites";
+import { ViewShareButton } from "@/components/share/ViewShareButton";
 import { HypothesisPanel } from "./HypothesisPanel";
 import { LandmarkCard } from "./LandmarkCard";
 import { ViewpointStepper } from "./ViewpointStepper";
@@ -14,12 +15,22 @@ import { SourceFootnote } from "./WalkFootnote";
 import { LookPrompt, ModeButton } from "./WalkHud";
 import { WalkKeyLegend } from "./WalkKeyLegend";
 import { WalkSettings } from "./WalkSettings";
+import { SceneFailureNotice, type SceneFailureAction } from "@/components/scene/SceneFailureNotice";
+import type { SceneFailureKind } from "@/lib/scene/sceneFailure";
 import { WalkSourceToggle, type WalkSource } from "./WalkSourceToggle";
 import { useKeyCommand } from "./useWalkKeys";
 import styles from "./WalkView.module.css";
 
-/** Whether there is a reconstruction to draw: a model always is, a splat may still be looked for or not be built. */
-export type WalkState = "checking" | "ready" | "missing";
+/** Whether there is a reconstruction to draw: a model always is, a splat may still be looked for, missing, or failed. */
+export type WalkState = "checking" | "ready" | "missing" | "unavailable";
+
+/** A photograph or a scene that failed. The header shows it, and the column steps aside so the card can be used. */
+export type WalkFailure = {
+  kind: SceneFailureKind;
+  detail?: string;
+  reported?: string;
+  actions: readonly SceneFailureAction[];
+};
 
 /** Shown under the key legend in the photographs: a splat is only sharp from where its photographs were taken. */
 const PHOTOGRAPHS_HINT = "Sharpest from where the photographers stood: you start at one such place, and a pale ring on the ground marks each. Away from them the photographs fade out, because nothing there was seen. The arrows beside Sharp viewpoints step between them, and R brings you back to the start.";
@@ -54,7 +65,7 @@ function ExitControl({ site, onExit }: { site: WalkSite; onExit?: () => void }) 
 }
 
 function StatusNote({ state, shown }: { state: WalkState; shown: boolean }) {
-  if (state === "ready" && shown) return null;
+  if (state === "unavailable" || (state === "ready" && shown)) return null;
   return (
     <p className={styles.note} role="status">
       {state === "missing" ? (
@@ -99,40 +110,72 @@ export type WalkChromeProps = {
   onToggleHypothesis: (layerId: HypothesisLayerId) => void;
   onShowLayer: (layer: HypothesisLayer) => void;
   onStepViewpoint: (step: 1 | -1) => void;
+  /** Set when the photographs or the scene failed. The column is hidden so this card stays usable. */
+  failure?: WalkFailure | null;
 };
 
 /** Everything of the walk view that is not the scene: the header, the entry prompt, the right-hand column and the footer. */
-export function WalkChrome({ site, hasModel, model, source, state, shown, locked, mode, hasSetOff, landmarkCount, nearLandmark, hypotheses, viewpointCount, viewpoint, ...actions }: WalkChromeProps) {
+export function WalkChrome({ site, hasModel, model, source, state, shown, locked, mode, hasSetOff, landmarkCount, nearLandmark, hypotheses, viewpointCount, viewpoint, failure, ...actions }: WalkChromeProps) {
   const chrome = useCloseOpenPanels();
-  const ready = state === "ready";
+  const open = state === "ready" && !failure;
   return (
     <div className={styles.chrome} ref={chrome}>
       <header className={styles.header}>
-        <ExitControl site={site} onExit={actions.onExit} />
+        <div className={styles.tools}>
+          <ExitControl site={site} onExit={actions.onExit} />
+          <ViewShareButton className={styles.exit} />
+        </div>
         <h1 className={styles.name}>{site.name}</h1>
         <StatusNote state={state} shown={shown} />
+        {failure ? <SceneFailureNotice placement="inline" kind={failure.kind} detail={failure.detail} reported={failure.reported} actions={failure.actions} /> : null}
       </header>
-      {ready ? <LookPrompt shown={shown && !locked} compact={hasSetOff} tip={entryTip(model, landmarkCount)} /> : null}
-      {/* Top to bottom in one column, so the controls, an open panel and the card can never cover one another. */}
-      <div className={styles.side}>
-        <div className={styles.controls}>
-          {hasModel ? <WalkSourceToggle source={source} locked={locked} onChoose={actions.onChooseSource} /> : null}
-          {ready ? <ModeButton mode={mode} locked={locked} onToggleMode={actions.onToggleMode} /> : null}
-          {ready && viewpointCount > 0 ? <ViewpointStepper count={viewpointCount} current={viewpoint} locked={locked} onStep={actions.onStepViewpoint} /> : null}
-        </div>
-        <div className={styles.panels}>
-          {ready ? <WalkKeyLegend locked={locked} hint={model ? undefined : PHOTOGRAPHS_HINT} /> : null}
-          {model && model.hypotheses.length > 0 ? (
-            <HypothesisPanel layers={model.hypotheses} active={hypotheses} locked={locked} onToggle={actions.onToggleHypothesis} onShow={actions.onShowLayer} />
-          ) : null}
-          <WalkSettings
-            locked={locked} hasModel={hasModel} hasLayers={Boolean(model && model.hypotheses.length > 0)} ready={ready}
-            source={source} mode={mode} onChooseSource={actions.onChooseSource} onToggleMode={actions.onToggleMode}
-          />
-        </div>
-        <LandmarkCard siteId={site.id} placed={ready ? nearLandmark : null} />
+      {open ? <LookPrompt shown={shown && !locked} compact={hasSetOff} tip={entryTip(model, landmarkCount)} /> : null}
+      {failure ? null : (
+        <WalkColumn
+          siteId={site.id} hasModel={hasModel} model={model} source={source} open={open} locked={locked} mode={mode}
+          nearLandmark={nearLandmark} hypotheses={hypotheses} viewpointCount={viewpointCount} viewpoint={viewpoint} actions={actions}
+        />
+      )}
+      {open ? <SourceFootnote site={site} model={model} hypotheses={hypotheses} /> : null}
+    </div>
+  );
+}
+
+type WalkColumnProps = {
+  siteId: string;
+  hasModel: boolean;
+  model: WalkModel | null;
+  source: WalkSource;
+  open: boolean;
+  locked: boolean;
+  mode: MoveMode;
+  nearLandmark: PlacedLandmark | null;
+  hypotheses: readonly HypothesisLayerId[];
+  viewpointCount: number;
+  viewpoint: number | null;
+  actions: Pick<WalkChromeProps, "onChooseSource" | "onToggleMode" | "onToggleHypothesis" | "onShowLayer" | "onStepViewpoint">;
+};
+
+/** The right-hand column. Hidden while a failure card is up, so the card is not covered on a narrow screen. */
+function WalkColumn({ siteId, hasModel, model, source, open, locked, mode, nearLandmark, hypotheses, viewpointCount, viewpoint, actions }: WalkColumnProps) {
+  return (
+    <div className={styles.side}>
+      <div className={styles.controls}>
+        {hasModel ? <WalkSourceToggle source={source} locked={locked} onChoose={actions.onChooseSource} /> : null}
+        {open ? <ModeButton mode={mode} locked={locked} onToggleMode={actions.onToggleMode} /> : null}
+        {open && viewpointCount > 0 ? <ViewpointStepper count={viewpointCount} current={viewpoint} locked={locked} onStep={actions.onStepViewpoint} /> : null}
       </div>
-      {ready ? <SourceFootnote site={site} model={model} hypotheses={hypotheses} /> : null}
+      <div className={styles.panels}>
+        {open ? <WalkKeyLegend locked={locked} hint={model ? undefined : PHOTOGRAPHS_HINT} /> : null}
+        {model && model.hypotheses.length > 0 ? (
+          <HypothesisPanel layers={model.hypotheses} active={hypotheses} locked={locked} onToggle={actions.onToggleHypothesis} onShow={actions.onShowLayer} />
+        ) : null}
+        <WalkSettings
+          locked={locked} hasModel={hasModel} hasLayers={Boolean(model && model.hypotheses.length > 0)} ready={open}
+          source={source} mode={mode} onChooseSource={actions.onChooseSource} onToggleMode={actions.onToggleMode}
+        />
+      </div>
+      <LandmarkCard siteId={siteId} placed={open ? nearLandmark : null} />
     </div>
   );
 }

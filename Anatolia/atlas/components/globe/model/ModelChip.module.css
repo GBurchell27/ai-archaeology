@@ -46,3 +46,7 @@
   .chip { top: 108px; left: 10px; max-width: calc(100vw - 20px); padding: 6px 10px 7px; }
   .title { font-size: 13px; }
 }
+
+@media (max-width: 640px) {
+  .chip { top: calc(78px + env(safe-area-inset-top, 0px)); left: max(8px, env(safe-area-inset-left, 0px)); }
+}

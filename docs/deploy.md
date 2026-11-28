@@ -8,7 +8,7 @@ The app is described in [`world-atlas.md`](world-atlas.md). Paths below are rela
 
 - **Static files.** Everything the atlas shows is a file under `public/`: the world catalogue (`public/world/`), the Anatolia site files, the terrain rasters, the recording-pattern and ice layers, and the walk view's splats. The browser fetches them as it needs them. A host serves them as they are.
 - **No database for the atlas itself.** The atlas reads no database and writes nothing. A visitor's choices (theme, relief source) are kept in that visitor's browser. The optional accounts (saved sites and votes) are the exception: they use a Neon database and Neon Auth through two server functions, `/api/auth/*` and `/api/account/*`, and need three environment variables. Without those variables the atlas is complete and the two functions answer 503. [`accounts.md`](accounts.md) has the setup, including what to set in Vercel and the trusted domain for the deployed address.
-- **One page rendered on request.** `/` reads the address (`?view=…&site=…`) on the server and sends the page for that view. With no parameters it is the globe, so a visitor lands straight in it. On Vercel that is one small function call per page load.
+- **Pages rendered on request.** `/` reads the address (`?view=…&site=…`) on the server and sends the page for that view. With no parameters it is the globe, so a visitor lands straight in it. `/site/<slug>` is the same globe opened on one published site, with a title, a description and a preview image for the link. An id that is not in the catalogue is a "not found" page. On Vercel each of these is one function call per page load. The preview image reads one detail shard and `featured.json`, which the build traces into that function.
 - **Two prerendered pages.** `/puzzles` and `/api/landscape-benchmark` are built once at build time. The second reads `Anatolia/eval/metrics.json`, which lies outside the app folder: see the build setting below.
 - **One API that needs a program Vercel does not run.** `/api/closeup`: see "What does not work".
 
@@ -110,6 +110,8 @@ Measured on 2026-11-19 from the files tracked in git. `public/world/` was being 
 | Each server function, without the excluded files | about 1.5 MB |
 
 A visit to the globe fetches a few megabytes before compression (`core.json` is 2.6 MB). A visit to the Göbekli Tepe photographs fetches the 27 MB splat, so the free plan's 100 GB covers about 3,700 of those a month.
+
+Checked on the live site on 2026-11-23. `GET /splats/gobekli-tepe.splat` answers 200, `content-type: application/octet-stream`, `content-length: 27231680` when the request does not accept compression. A browser does accept it, and then the same URL answers 200 with `content-encoding: br` and no `Content-Length` (Karahan Tepe's splat, 1,684,352 bytes, does the same). The body the browser reads is still the full file. Vercel's published limit that mentions 100 MB is the CLI source upload, not a cap this response meets: the file is served. drei's splat loader refuses a response with no length, which was the full-page error on the photographs. The walk reads the bytes itself and passes the loader a local object URL that has a length (`photographObjectUrl.ts`). No `vercel.json` change is involved.
 
 ## A production build beside the dev server
 

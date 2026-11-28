@@ -18,8 +18,35 @@ Features 1 to 9 and 11 of the list agreed on 2026-11-19 are built; [`world-atlas
   - The layer follows the middle of the timeline range, in steps of 500 years back to 20,000 BCE.
   - Not looked at on the real GPU.
 - [ ] **10. A regional atlas generated on demand.** Not built. Giza is walkable (model only).
-- [ ] **10. Giza model.** The present heights of Khafre and Menkaure, and that they lie south-west of Khufu, rest on Wikipedia; replace with a survey. Lehner, the AERA survey notes and Nell & Ruggles's full text were not read. The Sphinx, temples, causeways, boat pits and queens' pyramids are not drawn for want of a source giving both size and position.
+- [ ] **10. Giza model.** The present heights of Khafre and Menkaure, and that they lie south-west of Khufu, rest on Wikipedia; replace with a survey. Lehner, the AERA survey notes and Nell & Ruggles's full text were not read. The Sphinx, temples, causeways, boat pits and queens' pyramids are not drawn for want of a source giving both size and position. The walk ground is a 6 km GEM-15 window with a Sentinel-2 drape and the three mounds flattened (26 Nov 2026). GEM-15 at Giza was not checked against a survey, and the view was not looked at on a phone or a real GPU.
 - [ ] **5. Settings panel.** The place view has none. "Megaliths only" does nothing on the Anatolia map, which has no site type filter.
+
+## Launch: search and analytics for ancient-archaeology.com
+
+The site went live on 2026-11-22 at https://ancient-archaeology.com. It is the Next.js app in `Anatolia/atlas`, on Vercel Pro, with the domain at GoDaddy. None of the items below is done.
+
+- [ ] **Google Search Console.** Verify the domain property with a DNS TXT record at GoDaddy, then submit a sitemap. Needs the owner to add the TXT record and to submit the sitemap in Search Console.
+- [ ] **Sitemap and robots.** `Anatolia/atlas/app/sitemap.ts` and `Anatolia/atlas/app/robots.ts` are absent, and the repo has no `sitemap.xml` or `robots.txt`. Add both through those Next.js files. The sitemap must never list candidate or undiscovered-site pages, or precise candidate coordinates. Needs the owner to confirm which published pages may be listed.
+- [ ] **Google Analytics 4.** Create a property and add the tag (for example `@next/third-parties` `GoogleAnalytics`), with the measurement ID as an environment variable. A cookie consent banner is needed for EU visitors (GDPR and ePrivacy) unless GA is configured cookieless. Needs the owner to create the property, set the measurement ID on Vercel, and decide whether consent is required.
+- [ ] **Vercel Web Analytics and Speed Insights,** as an alternative or an addition. Both are cookieless and included in Pro up to the plan limits. Worth comparing with Google Analytics before adding it. Needs the owner to enable them on the Vercel project, or to leave them off.
+- [ ] **Bing Webmaster Tools.** It can import a site from Search Console. Needs the owner to sign in and import, after Search Console is verified.
+- [ ] **Page metadata.** The root layout sets a title and a description only (`Anatolia/atlas/app/layout.tsx`). Add an Open Graph and Twitter image, a canonical URL, and structured data where it fits. Needs the owner to choose the public wording and the share image.
+- [ ] **A privacy page,** describing the analytics if any is added. Needs the owner to name the tools and what each stores. Accounts already need a privacy notice (Decisions waiting); one page can cover both.
+
+## User accounts: sign-in, favourites, discussions
+
+The live site at https://ancient-archaeology.com has no database and no auth. It is the Next.js app in `Anatolia/atlas`, on Vercel Pro. Optional accounts already in the repo (Neon Auth, saved sites and votes; [`accounts.md`](accounts.md)) stay off until their settings exist, and they have not run on Vercel. Favourites on the live site, discussions, and the pages below are not built. None of the items below is done. The owner chooses whether to turn that existing path on or to use one of the stacks in the first item. Prices were read on 2026-11-23 from the Neon, Supabase, Clerk and Resend pricing pages; read them again before choosing, because the figures change. Any paid tier needs the owner's yes, and a written cost estimate, before it is turned on.
+
+- [ ] **Choose an auth and database stack.** Three ways, compared briefly. Needs the owner to pick one (or to turn on the Neon path already in the repo), and to say yes to any paid tier only after a cost estimate. A marketplace install of Neon or Supabase can put later usage on the Vercel invoice, so that yes still applies.
+  - **Auth.js (NextAuth) plus Postgres.** Auth.js is a library in the app, with no vendor fee. Users, favourites and discussions still need a database. Neon or Supabase can be attached from the Vercel Marketplace. Neon Free: 100 CU-hours of compute and 5 GB of network transfer per project each month, 1 GB of storage per project, and the compute scales to zero after five idle minutes. When the compute or transfer allowance is used up, that project's compute is suspended until the next month. Supabase Free, used only as Postgres: a 500 MB database, two active projects, and the project pauses after a week of inactivity. Neon's paid Launch plan is usage-based; its pricing page calls a typical spend $15 a month. Supabase Pro starts at $25 a month.
+  - **Supabase Auth.** Sign-in and Postgres in one project, also available from the Vercel Marketplace. The Free plan includes 50,000 monthly active users and the same 500 MB database, and it pauses after a week of inactivity. Pro starts at $25 a month, with 100,000 monthly active users included.
+  - **Clerk.** Hosted sign-in. The Hobby plan is free up to 50,000 monthly retained users per app (someone who comes back at least a day after signing up). Going past that needs a paid plan. Pro starts at $25 a month, or $20 a month billed yearly, with 50,000 retained users included. Clerk does not store favourites or comments, so a Postgres database is still required, with the Neon or Supabase limits above.
+- [ ] **Google sign-in.** An OAuth client in Google Cloud Console, a consent screen, and redirect URIs for production (`https://ancient-archaeology.com`) and for Vercel preview deployments. The client id and secret are environment variables on Vercel, never in the repo. Needs the owner to create the client, set the consent screen, add the redirect URIs, and set the environment variables.
+- [ ] **Email sign-in.** A magic link or a one-time code, sent by a transactional email provider (for example Resend). The sender domain is ancient-archaeology.com, which needs SPF and DKIM records in DNS at GoDaddy. Resend's free plan is 3,000 emails a month and 100 a day; Pro starts at $20 a month. The daily cap can stop sign-in mail. Needs the owner to choose magic link or code, create the provider account, add the DNS records, and approve any paid tier with a cost estimate.
+- [ ] **Favourites.** A saved-sites table for each user, keyed by catalogue site id, a heart button on site cards, and a "My sites" list. Never store or expose coordinates of candidate or undiscovered sites. Needs the owner to confirm that only published catalogue ids may be saved, and that the list stays private to the signed-in visitor.
+- [ ] **Discussions.** A comment thread on each site, with moderation (report, hide, ban), rate limits, and spam protection (for example Cloudflare Turnstile). A code of conduct, and a rule against posting precise locations of unpublished or vulnerable sites, because of the looting risk. Needs the owner to write the code of conduct, name who moderates, and approve the spam-protection provider.
+- [ ] **Privacy and legal.** Privacy policy and terms pages, GDPR data export and account deletion, and a cookie notice for the session cookie. The launch list already asks for a privacy page for analytics; one page can cover both. The contact wording on public pages is exactly "contact via the contact page", and no email address is shown. Account deletion for the Neon path is already under Decisions waiting. Needs the owner to approve the policy and the terms, to decide who answers requests made through the contact page, and to confirm export and deletion before anyone signs in.
+- [ ] **Security.** CSRF protection on the routes that change state, row-level security or an equivalent ownership check so one account cannot read or write another's rows, and every secret kept in Vercel environment variables. The Neon path already in the repo guards rows in the server and has no row-level security ([`accounts.md`](accounts.md)). Needs the owner to confirm where the secrets live, and that no key is committed.
 
 ## Sharper Göbekli Tepe photographs (the splat)
 
@@ -61,7 +88,8 @@ The splat is sharp only near where photographers stood. 41 of 294 downloaded pho
 
 [`deploy.md`](deploy.md) has the settings and the steps. The production build passes and was run locally as a hosted copy would run; nothing has been deployed.
 
-- [ ] **Not verified on Vercel.** On the first deploy, read the build log for the size of the close-up function (a few megabytes expected; the exclusion in `next.config.ts` cannot be seen working on Windows) and go through the checks in `deploy.md`.
+- [ ] **Not verified on Vercel.** On the first deploy, read the build log for the size of the close-up function (a few megabytes expected; the exclusion in `next.config.ts` cannot be seen working on Windows) and go through the checks in `deploy.md`. The share page traces the detail shards into its function; check that size on the first deploy too.
+- [ ] **Share previews were not opened in WhatsApp, X or LinkedIn.** The page, the copy toast and one generated card were checked locally. A live crawler can still cache an old card or refuse the image.
 - [ ] Vercel's terms on who may use the free plan were not read.
 
 ## Accounts (optional sign-in, saved sites, votes)
@@ -111,9 +139,12 @@ Everything overnight was judged in a software-rendered test browser.
 - [ ] Mouse look, the dive transition, and the pixel ratio settling without visible resizing.
 - [ ] Zooming into a site from the map must arrive walking, not flying (R recovers it).
 - [ ] Thin dotted vertical lines on Karahan Tepe's built east wall: real, or a test-renderer artefact?
+- [ ] Play history on the globe timeline and the Anatolia year bar was looked at in a software-rendered browser only.
+- [ ] News rings on the globe. Seen in a software-rendered browser only. The pulse is CSS; under reduced motion the ring stays still.
 
 ## Known gaps
 
+- [ ] `PlaceTerrainError` (`lib/place/placeTerrain.ts`) and `ReliefFetchError` (`lib/placeTerrainLoad.ts`) still use TypeScript parameter properties. No `scripts/check_*.mts` loads those files, so Node's type stripping does not see them. Give them ordinary fields if a check starts importing them.
 - [ ] Collision is for a walker in the models only. Göbekli Tepe's benches and pedestals are walked through, and there is no touch input.
 - [ ] The repeat-visit fix for the splat (`components/walk/SiteSplat.tsx`) relies on drei 10.7 internals: recheck on an upgrade.
 

@@ -43,6 +43,22 @@
 
 .time-play:hover { background: var(--globe-hover); border-color: var(--globe-rule-strong); }
 .time-play[aria-pressed="true"] { border-color: var(--globe-ochre); background: var(--globe-ochre-tint); color: var(--globe-ochre-ink); }
+.time-transport { display: flex; flex: none; align-items: center; gap: 6px; }
+.time-transport .time-play { min-width: 0; white-space: nowrap; }
+.time-speeds { display: inline-flex; gap: 4px; }
+.time-speed {
+  min-width: 34px;
+  min-height: 32px;
+  padding: 4px 6px;
+  border: 1px solid var(--globe-rule);
+  border-radius: 3px;
+  background: var(--globe-button);
+  color: var(--globe-ink);
+  font-size: 12px;
+  cursor: pointer;
+}
+.time-speed[aria-pressed="true"] { border-color: var(--globe-ochre); background: var(--globe-ochre-tint); color: var(--globe-ochre-ink); }
+.time-speed:focus-visible { outline: 2px solid var(--globe-ochre); outline-offset: 2px; }
 
 .undated-toggle { flex: none; display: flex; align-items: center; gap: 6px; font-size: 12.5px; color: var(--globe-ink-soft); cursor: pointer; }
 
@@ -59,6 +75,42 @@
 /* The named periods of Anatolia, under the track they set. */
 .time-periods { max-width: 100%; margin-top: 8px; }
 .time-fill { position: absolute; top: 9px; height: 2px; border-radius: 2px; background: var(--globe-ochre); pointer-events: none; }
+.time-progress {
+  position: absolute;
+  top: 9px;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--globe-ochre-ink);
+  pointer-events: none;
+  transition: left 160ms linear, width 160ms linear;
+}
+.time-playhead {
+  position: absolute;
+  z-index: 1;
+  top: 0;
+  width: 18px;
+  height: 20px;
+  margin-left: -9px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: ew-resize;
+  touch-action: none;
+  transition: left 160ms linear;
+}
+.time-playhead::before {
+  content: "";
+  position: absolute;
+  left: 8px;
+  top: 1px;
+  width: 2px;
+  height: 18px;
+  border-radius: 1px;
+  background: var(--globe-ochre-ink);
+  box-shadow: 0 0 0 1px var(--globe-ochre);
+}
+.time-track[data-scrubbing="true"] .time-playhead,
+.time-track[data-scrubbing="true"] .time-progress { transition: none; }
 
 .time-thumb {
   position: absolute;
@@ -92,6 +144,8 @@
   gap: 5px;
 }
 
+.dock-head { display: flex; align-items: center; justify-content: flex-end; gap: 4px; width: 100%; }
+
 .chips { display: flex; gap: 5px; overflow: auto; max-width: 52vw; scrollbar-width: none; }
 .dock .chips { display: none; }
 .dock.is-open .chips { display: flex; }
@@ -115,16 +169,81 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .time-play { transition: none; }
+  .time-play, .time-speed, .time-playhead, .time-progress { transition: none; }
 }
+
+.time-sheet-toggle { display: none; }
+.timebar .time-sheet-close { display: none; }
+/* The controlled region of the phone chip. Contents, so the bar's own flex row is unchanged on a wide screen. */
+.time-sheet-body { display: contents; }
 
 @media (pointer: coarse) {
   .atlas { --bar-height: 130px; }
-  .time-play { min-height: 40px; }
+  .time-play, .time-speed { min-height: 40px; }
   .time-track { height: 40px; }
-  .time-track::before, .time-fill { top: 19px; }
+  .time-track::before, .time-fill, .time-progress { top: 19px; }
   .time-tick, .time-interval { top: 15px; }
   .time-thumb { top: 13px; }
+  .time-playhead { top: 10px; height: 28px; width: 28px; margin-left: -14px; }
+  .time-playhead::before { left: 13px; top: 2px; height: 24px; }
+  .time-playhead::after { content: ""; position: absolute; inset: -8px; }
   /* The thumb stays small; its hit area does not. */
   .time-thumb::after { content: ""; position: absolute; inset: -13px; }
+}
+
+/* A phone portrait: the year bar is a chip of the current range. The slider and the period chips open under it. */
+@media (max-width: 640px) {
+  .atlas { --bar-height: 44px; }
+  .time-sheet-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 32px;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: inherit;
+    font: italic 17px/1.15 var(--globe-serif);
+    cursor: pointer;
+  }
+  .time-sheet-toggle::after {
+    content: "";
+    width: 7px;
+    height: 7px;
+    border-right: 1.5px solid currentColor;
+    border-bottom: 1.5px solid currentColor;
+    transform: rotate(45deg) translateY(-2px);
+  }
+  .timebar[data-sheet="open"] .time-sheet-toggle::after { transform: rotate(225deg) translate(-1px, -1px); }
+  .timebar[data-sheet="closed"] {
+    width: max-content;
+    max-width: calc(100% - 2 * var(--edge));
+    left: max(var(--edge), env(safe-area-inset-left, 0px));
+    gap: 0;
+    padding: 7px 12px;
+  }
+  .timebar[data-sheet="closed"] > :not(.time-sheet-toggle) { display: none; }
+  .timebar[data-sheet="open"] {
+    left: max(var(--edge), env(safe-area-inset-left, 0px));
+    right: max(var(--edge), env(safe-area-inset-right, 0px));
+    width: auto;
+    max-height: min(48dvh, 440px);
+    overflow: auto;
+    overscroll-behavior: contain;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .timebar[data-sheet="open"] .time-sheet-toggle { flex: 1 0 100%; justify-content: space-between; padding-right: 40px; }
+  .timebar[data-sheet="open"] .time-transport { flex: 1 1 100%; }
+  .timebar[data-sheet="open"] .time-sheet-close {
+    display: inline-grid;
+    position: absolute;
+    top: 0;
+    right: 0;
+    z-index: 2;
+  }
+  .timebar[data-sheet="open"] [data-role="year-label"] { display: none; }
+  .timebar[data-sheet="open"] .time-readout { flex: 1 1 80px; min-width: 0; }
+  .timebar[data-sheet="open"] .time-periods { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
+  .timebar[data-sheet="open"] .time-periods::-webkit-scrollbar { display: none; }
 }

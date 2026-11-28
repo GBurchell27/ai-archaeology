@@ -12,6 +12,7 @@ import { DEFAULT_GLOBE_LOOK } from "@/lib/globe/viewUrl";
 import { GlobeAtmosphere } from "./GlobeAtmosphere";
 import { GlobeFlight, type GlobeFlyTo } from "./GlobeFlight";
 import type { GlobeBasemap } from "@/lib/globe/basemaps";
+import { imageryHostName } from "@/lib/globe/compactCredits";
 import { GlobeSurface } from "./GlobeSurface";
 import styles from "./GlobeView.module.css";
 
@@ -26,6 +27,8 @@ export interface GlobeViewProps {
   flyTo?: GlobeFlyTo | null;
   /** The imagery draped on the globe, and credited under it. */
   basemap: GlobeBasemap;
+  /** Catalogue licences for the phone's one-line credit. Empty until the index has loaded. */
+  recordCredits?: string;
   /** Rendered inside the Canvas, in the ECEF-metre scene frame of lib/globe/ellipsoid.ts. */
   children?: ReactNode;
   /** DOM chrome laid over the canvas. The layer ignores the pointer; set `pointer-events: auto` on controls. */
@@ -75,10 +78,7 @@ export function GlobeView(props: GlobeViewProps) {
         <p ref={readout} className={styles.readout} data-role="globe-look" aria-label="View centre and camera altitude">
           {formatLook(opening.current)}
         </p>
-        <p className={styles.attribution} data-role="imagery-attribution">
-          Imagery: <a href={basemap.attributionUrl} target="_blank" rel="noreferrer">{basemap.attribution}</a>
-          {" · "}{basemap.licence}
-        </p>
+        <ImageryCredit basemap={basemap} recordCredits={props.recordCredits ?? ""} />
       </div>
       <Canvas
         flat
@@ -94,6 +94,30 @@ export function GlobeView(props: GlobeViewProps) {
         {props.children}
       </Canvas>
     </div>
+  );
+}
+
+/**
+ * Above 640px, the full imagery sentence. On a phone, one line that starts with the host and the licence
+ * (EOX CC BY-NC-SA 4.0, then the catalogue credits) and continues with the full sentence, which scrolls.
+ */
+function ImageryCredit(props: { basemap: GlobeBasemap; recordCredits: string }) {
+  const { basemap, recordCredits } = props;
+  return (
+    <p className={styles.attribution} data-role="imagery-attribution">
+      <span className={styles.attributionDesktop}>
+        Imagery: <a href={basemap.attributionUrl} target="_blank" rel="noreferrer">{basemap.attribution}</a>
+        {" · "}{basemap.licence}
+      </span>
+      <span className={styles.attributionPhone}>
+        <a href={basemap.attributionUrl} target="_blank" rel="noreferrer" aria-label={basemap.attribution}>
+          {imageryHostName(basemap)}
+        </a>
+        {" "}{basemap.licence}
+        {recordCredits ? <span className={styles.recordCredits}> · {recordCredits}</span> : null}
+        <span className={styles.attributionDetail} aria-hidden="true"> · {basemap.attribution}</span>
+      </span>
+    </p>
   );
 }
 

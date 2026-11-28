@@ -1,0 +1,19 @@
+.missing {
+  max-width: 36rem;
+  margin: 12vh auto;
+  padding: 0 24px;
+  color: var(--globe-ink, #ece4d4);
+  font: 17px/1.5 Palatino, Georgia, serif;
+}
+
+.eyebrow {
+  margin: 0 0 12px;
+  font: 600 11px/1.2 system-ui, sans-serif;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--globe-ochre, #dba545);
+}
+
+.missing h1 { margin: 0 0 12px; font-size: 32px; font-weight: 500; }
+.missing p { margin: 0 0 20px; color: var(--globe-ink-soft, #c9c6bd); }
+.missing a { color: var(--globe-link, #f0d49a); }

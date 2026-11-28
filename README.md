@@ -91,6 +91,7 @@ Documents:
 - [`docs/inspiration.md`](docs/inspiration.md): the open projects and papers this learned from.
 - [`docs/data-sources.md`](docs/data-sources.md): the licence register.
 - [`docs/cross-region-pipeline.md`](docs/cross-region-pipeline.md): the cross-region training check.
+- [SAR Doppler feasibility protocol](docs/sar/protocol.md) and the metadata-only Sentinel-1 search.
 
 ## Requirements
 
@@ -249,6 +250,6 @@ python scripts/run_cross_region_smoke.py
 - **It does not find sites.** Every point on the globe was published by someone else first. Nothing here detects, predicts, or confirms a site, and nothing ranks candidates or draws a review map.
 - **The model layer is a map of published-record patterns.** It shows where catalogues are dense as much as where people built. A blank or low cell often means little survey, not absence. It is far too coarse to point at a place.
 - **Coverage is heavily European, because the open data is.** Of the 99,885 Wikidata records, about 89,500 fall in a rough box around Europe. The rest: about 4,500 in Asia, 2,800 in Africa and the nearer Near East, 2,200 in North America, 700 in South America, and 70 in Oceania. Pleiades adds the ancient Mediterranean and Near East and nothing beyond. The OpenStreetMap megaliths are 98% European. Whole traditions of monument building are nearly absent from the globe. That is a gap in open inventories, not in the past.
-- **Most sites have no date.** About 26% of the catalogue carries a date range (30,737 of 118,486 in the 21 November 2026 build). The timeline hides or shows the rest as one undated group.
+- **Most sites have no date.** About 26% of the catalogue carries a date range (30,737 of 118,486 in the 21 November 2026 build). The timeline hides or shows the rest as one undated group, and a new visit leaves them hidden until Include undated is on. Play history reveals dated sites as its playhead reaches them.
 - **Many records are thin.** About one in six has no usable type and is filed as "other". Many are register stubs: a name, a point, and a link.
 - **It does not see underground.** A smooth field can hide archaeology, and a bump can be a spoil heap, a road, or noise.

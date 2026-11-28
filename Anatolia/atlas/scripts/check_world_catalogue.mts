@@ -38,6 +38,13 @@ check("a range after the site does not match", !siteMatches(rows, 0, during([-99
 check("undated sites show only with showUndated",
   siteMatches(rows, 2, during([-500, 0]), siteTypes) && !siteMatches(rows, 2, during([-500, 0], { showUndated: false }), siteTypes));
 check("undated sites show under a null range even without showUndated", siteMatches(rows, 2, during(null, { showUndated: false }), siteTypes));
+// All time with undated off is an open range, so every dated row still counts. check_settings locks that range.
+const allTimeDated = during([-Infinity, Infinity], { showUndated: false });
+const shownRows = [0, 1, 2, 3].filter((row) => siteMatches(rows, row, allTimeDated, siteTypes));
+const reportedUndated = [0, 1, 2, 3].filter((row) => rows.start[row] === null && rows.end[row] === null
+  && siteMatches(rows, row, during(null), siteTypes));
+check("all time with undated off still shows every dated row", shownRows.join(",") === "0,1,3");
+check("the hidden row is still an undated row the toggle can name", reportedUndated.join(",") === "2");
 check("a single known bound is a moment",
   siteMatches(rows, 1, during([-600, -400], { showUndated: false }), siteTypes) && !siteMatches(rows, 3, during([-600, -400]), siteTypes));
 check("type filter", !siteMatches(rows, 0, megalithsOnly, siteTypes) && siteMatches(rows, 1, megalithsOnly, siteTypes));

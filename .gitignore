@@ -17,6 +17,8 @@
 *.u16
 # Small derived place-relief fallback meshes. Source rasters stay ignored.
 !Anatolia/atlas/public/terrain/details/*/copernicus/height.u16
+# The Giza walk's flattened GEM-15 window. The raw tile stays out of git.
+!Anatolia/atlas/public/walk/giza/height.u16
 
 # Inventory dumps stay out of git. The atlas's published site files are the exception.
 *.geojson

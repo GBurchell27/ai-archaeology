@@ -18,7 +18,13 @@ const nextConfig: NextConfig = {
     NEXT_PUBLIC_ATLAS_CLOSEUPS: closeupsAvailable(process.env) ? "on" : "",
   },
   // app/page.tsx reads this file from disk when it exists; a serverless bundle holds only traced files.
-  outputFileTracingIncludes: { "/": ["./public/terrain/regions/sanliurfa/metadata.json"] },
+  outputFileTracingIncludes: {
+    "/": ["./public/terrain/regions/sanliurfa/metadata.json"],
+    // A share page reads one detail shard and the featured blurbs. The shards stay out of the browser bundle.
+    "/site/[slug]": ["./public/terrain/regions/sanliurfa/metadata.json", "./public/world/featured.json", "./public/world/detail/**/*.json"],
+    "/site/[slug]/opengraph-image": ["./public/world/featured.json", "./public/world/detail/**/*.json"],
+    "/site/[slug]/twitter-image": ["./public/world/featured.json", "./public/world/detail/**/*.json"],
+  },
   // The close-up route names public/ and the Python virtualenv by path, so the tracer would pack both (over 500 MB) into its bundle.
   // A serverless host refuses close-ups before either is read (closeupsAvailable in lib/closeupCache.ts).
   outputFileTracingExcludes: { "/api/closeup": ["./public/**", "./scripts/**", "../../.venv/**", "**/.venv/**"] },

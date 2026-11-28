@@ -1,18 +1,21 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import type { GlobeLook, LonLat } from "@/lib/globe/ellipsoid";
 import { globeLookFromAtlas, type AtlasLook } from "@/lib/globe/handoff";
 import { walkReturn, walkSiteForCard } from "@/lib/globe/walkHandoff";
 import { DEFAULT_GLOBE_LOOK, parseViewUrl, serialiseViewUrl, type WalkSource, type WorldViewState } from "@/lib/globe/viewUrl";
+import { TAS_TEPELER_TOUR } from "@/lib/world/guidedTours";
 import type { RegionalTerrain } from "@/lib/types";
 import { findWalkSite } from "@/lib/walk/walkSites";
 import { GlobeModelOverlay } from "./globe/model/GlobeModelOverlay";
 import { ModelControls } from "./globe/model/ModelControls";
 import { withModelParam } from "./globe/model/modelUrl";
 import { useModelLayer } from "./globe/model/useModelLayer";
+import { catalogueIdFromPath, keepsPrettyShareAddress } from "@/lib/share/shareAddress";
 import { historyEntryForView, type HistoryEntry } from "@/lib/globe/viewHistory";
+import { SceneGuard } from "./scene/SceneGuard";
 import { useHistoryTraversal, writeHistoryEntry } from "./useViewHistory";
 import styles from "./WorldCoordinator.module.css";
 
@@ -23,7 +26,7 @@ const PlaceView = dynamic(() => import("./place/PlaceView"), { ssr: false });
 const WalkView = dynamic(() => import("./walk/WalkView").then((module) => module.WalkView), { ssr: false });
 
 type WorldScene =
-  | { view: "globe"; look?: GlobeLook; siteId?: string; theoryId?: string }
+  | { view: "globe"; look?: GlobeLook; siteId?: string; theoryId?: string; tourId?: string; stopId?: string }
   | { view: "atlas"; look?: AtlasLook; siteId?: string }
   | { view: "place"; siteId: string }
   | { view: "walk"; siteId: string; source?: WalkSource };
@@ -37,6 +40,11 @@ interface MountedScene {
 const FADE_MS = 620;
 const URL_WRITE_INTERVAL_MS = 400;
 
+function guardKey(scene: WorldScene, attempt: number): string {
+  const siteId = "siteId" in scene ? scene.siteId ?? "" : "";
+  return `${scene.view}:${siteId}:${attempt}`;
+}
+
 const SITE_ID = /^(?:Q\d+|[a-z0-9]+(?:-[a-z0-9]+)*)$/;
 
 /** `?view=globe&site=<id>`: the site whose card is open on the globe. parseViewUrl only reads `site` for the other views. */
@@ -46,7 +54,7 @@ function globeSiteFromAddress(): string | undefined {
   return site && SITE_ID.test(site) ? site : undefined;
 }
 
-function sceneFromUrl(state: WorldViewState): WorldScene {
+function sceneFromUrl(state: WorldViewState, sharedSiteId?: string): WorldScene {
   if (state.view === "walk") {
     const site = walkSiteForCard(state.siteId);
     // A site with no walk opens the atlas, which ignores an id it does not know.
@@ -55,39 +63,51 @@ function sceneFromUrl(state: WorldViewState): WorldScene {
     return { view: "walk", siteId: site.id, source: site.modelOnly ? undefined : state.source };
   }
   if (state.view !== "globe") return state;
-  const siteId = globeSiteFromAddress();
-  const { longitude, latitude, altitude, theoryId } = state;
+  const siteId = globeSiteFromAddress() ?? sharedSiteId;
+  const { longitude, latitude, altitude, theoryId, tourId, stopId } = state;
   const isDefault = longitude === DEFAULT_GLOBE_LOOK.longitude
     && latitude === DEFAULT_GLOBE_LOOK.latitude
     && altitude === DEFAULT_GLOBE_LOOK.altitude;
+  const tour = tourId ? { tourId, ...(stopId ? { stopId } : {}) } : {};
   // No look at all lets the globe open on its slow idle turn.
-  return isDefault ? { view: "globe", siteId, theoryId } : { view: "globe", look: { longitude, latitude, altitude }, siteId, theoryId };
+  return isDefault ? { view: "globe", siteId, theoryId, ...tour } : { view: "globe", look: { longitude, latitude, altitude }, siteId, theoryId, ...tour };
 }
 
 function urlForScene(scene: WorldScene): string {
   if (scene.view === "globe") {
     const site = scene.siteId ? `&site=${encodeURIComponent(scene.siteId)}` : "";
-    return serialiseViewUrl({ view: "globe", ...(scene.look ?? DEFAULT_GLOBE_LOOK), theoryId: scene.theoryId }) + site;
+    return serialiseViewUrl({
+      view: "globe", ...(scene.look ?? DEFAULT_GLOBE_LOOK), theoryId: scene.theoryId, tourId: scene.tourId, stopId: scene.stopId,
+    }) + site;
   }
   return serialiseViewUrl(scene.view === "atlas" ? { view: "atlas", siteId: scene.siteId } : scene);
 }
 
 function writeUrl(search: string, entry: HistoryEntry = "replace"): void {
-  writeHistoryEntry(`${window.location.pathname}${withModelParam(search)}`, entry);
+  const path = window.location.pathname;
+  const pretty = keepsPrettyShareAddress(path, search, catalogueIdFromPath(path));
+  const target = pretty ? path : `/${withModelParam(search)}`;
+  if (target === `${path}${window.location.search}`) return;
+  writeHistoryEntry(target, entry);
 }
 
 /** Owns which of the four views is showing, the crossfade between them, and the address bar. */
-export function WorldCoordinator(props: { regional: RegionalTerrain | null; initialView: WorldViewState }) {
+export function WorldCoordinator(props: { regional: RegionalTerrain | null; initialView: WorldViewState; sharedSiteId?: string }) {
   const [mounted, setMounted] = useState<{ current: MountedScene; leaving: MountedScene | null }>(
-    () => ({ current: { scene: sceneFromUrl(props.initialView), key: 0 }, leaving: null }),
+    () => ({ current: { scene: sceneFromUrl(props.initialView, props.sharedSiteId), key: 0 }, leaving: null }),
   );
   const globeLook = useRef<GlobeLook | undefined>(mounted.current.scene.view === "globe" ? mounted.current.scene.look : undefined);
   /** The site whose card is open on the globe; it rides along in the address and survives a trip to the place view. */
   const globeSiteId = useRef<string | undefined>(mounted.current.scene.view === "globe" ? mounted.current.scene.siteId : undefined);
   /** The theory the globe's lens is on; it rides along in the address the same way. */
   const globeTheoryId = useRef<string | undefined>(mounted.current.scene.view === "globe" ? mounted.current.scene.theoryId : undefined);
+  /** The guided tour and the stop it is on. Both leave the address when the tour ends. */
+  const globeTourId = useRef<string | undefined>(mounted.current.scene.view === "globe" ? mounted.current.scene.tourId : undefined);
+  const globeStopId = useRef<string | undefined>(mounted.current.scene.view === "globe" ? mounted.current.scene.stopId : undefined);
   const sceneBeforePlace = useRef<WorldScene>({ view: "globe" });
   const currentScene = useRef(mounted.current.scene);
+  const [guardAttempt, setGuardAttempt] = useState(0);
+  const retryGuard = useCallback(() => setGuardAttempt((attempt) => attempt + 1), []);
   const fadeTimer = useRef(0);
   const urlTimer = useRef(0);
   const model = useModelLayer();
@@ -99,6 +119,8 @@ export function WorldCoordinator(props: { regional: RegionalTerrain | null; init
     if (scene.view === "globe") {
       globeSiteId.current = scene.siteId;
       globeTheoryId.current = scene.theoryId;
+      globeTourId.current = scene.tourId;
+      globeStopId.current = scene.stopId;
     }
     window.clearTimeout(urlTimer.current);
     urlTimer.current = 0;
@@ -117,7 +139,10 @@ export function WorldCoordinator(props: { regional: RegionalTerrain | null; init
     // Only the address the page opened on can be wrong.
   }, []);
 
-  useHistoryTraversal((search) => show(sceneFromUrl(parseViewUrl(search)), true));
+  useHistoryTraversal((search) => {
+    const shared = search ? undefined : catalogueIdFromPath(window.location.pathname) ?? undefined;
+    show(sceneFromUrl(parseViewUrl(search), shared), true);
+  });
 
   useEffect(() => () => {
     window.clearTimeout(fadeTimer.current);
@@ -126,7 +151,10 @@ export function WorldCoordinator(props: { regional: RegionalTerrain | null; init
 
   /** The globe as it stands now: where it looks, the open card and the theory lens. */
   const globeSceneNow = useCallback((): WorldScene => (
-    { view: "globe", look: globeLook.current, siteId: globeSiteId.current, theoryId: globeTheoryId.current }
+    {
+      view: "globe", look: globeLook.current, siteId: globeSiteId.current, theoryId: globeTheoryId.current,
+      tourId: globeTourId.current, stopId: globeStopId.current,
+    }
   ), []);
 
   const trackGlobeLook = useCallback((look: GlobeLook) => {
@@ -151,6 +179,18 @@ export function WorldCoordinator(props: { regional: RegionalTerrain | null; init
     if (currentScene.current.view === "globe") writeUrl(urlForScene(globeSceneNow()));
   }, [globeSceneNow]);
 
+  const trackGlobeTour = useCallback((tourId: string | null, stopId: string | null) => {
+    const nextTour = tourId ?? undefined;
+    const nextStop = stopId ?? undefined;
+    if (globeTourId.current === nextTour && globeStopId.current === nextStop) return;
+    globeTourId.current = nextTour;
+    globeStopId.current = nextStop;
+    if (currentScene.current.view !== "globe") return;
+    const scene = globeSceneNow();
+    currentScene.current = scene;
+    writeUrl(urlForScene(scene));
+  }, [globeSceneNow]);
+
   /** The place selected on the atlas rides along in the address by its id, so a reload opens it again. */
   const trackAtlasSite = useCallback((siteId: string | null) => {
     const scene = currentScene.current;
@@ -162,6 +202,8 @@ export function WorldCoordinator(props: { regional: RegionalTerrain | null; init
   // An id the Anatolia catalogue does not know is ignored by the atlas, so it is always safe to pass along.
   const enterAtlas = useCallback((look: AtlasLook, siteId?: string) => show({ view: "atlas", look, siteId }), [show]);
   const exitToGlobe = useCallback((look: LonLat) => show({ view: "globe", look: globeLookFromAtlas(look) }), [show]);
+  const leaveAtlas = useCallback(() => show({ view: "globe" }), [show]);
+  const startTasTepelerTour = useCallback(() => show({ view: "globe", tourId: TAS_TEPELER_TOUR.id }), [show]);
   const exitPlace = useCallback(() => {
     const back = sceneBeforePlace.current;
     // Back on the globe the card of the site just visited reopens.
@@ -198,38 +240,35 @@ export function WorldCoordinator(props: { regional: RegionalTerrain | null; init
   }, []);
 
   function renderScene(scene: WorldScene) {
+    const guard = (exitLabel: string, onExit: () => void, child: ReactNode, onRetry?: () => void) => (
+      <SceneGuard resetKey={guardKey(scene, guardAttempt)} exitLabel={exitLabel} onExit={onExit} onRetry={onRetry}>{child}</SceneGuard>
+    );
     if (scene.view === "walk") {
       const site = findWalkSite(scene.siteId);
-      return site ? <WalkView site={site} initialSource={scene.source} onSourceChange={trackWalkSource} onExit={exitWalk} /> : null;
+      if (!site) return null;
+      const back = walkReturn(site).view === "globe" ? "Back to the globe" : "Back to the map";
+      return guard(back, exitWalk, <WalkView site={site} initialSource={scene.source} onSourceChange={trackWalkSource} onExit={exitWalk} />, retryGuard);
     }
-    if (scene.view === "place") return <PlaceView siteId={scene.siteId} onExit={exitPlace} />;
-    if (scene.view === "atlas") {
-      return (
-        <AtlasApp
-          regional={props.regional}
-          initialLook={scene.look}
-          initialSiteId={scene.siteId}
-          onExitToGlobe={exitToGlobe}
-          onSelectSite={trackAtlasSite}
-          onEnterWalk={openWalk}
-        />
-      );
-    }
-    return (
+    if (scene.view === "place") return guard("Back", exitPlace, <PlaceView siteId={scene.siteId} onExit={exitPlace} />, retryGuard);
+    if (scene.view === "atlas") return guard("Back to the globe", leaveAtlas, <AtlasView regional={props.regional} scene={scene} onExitToGlobe={exitToGlobe} onSelectSite={trackAtlasSite} onEnterWalk={openWalk} onStartTasTepelerTour={startTasTepelerTour} />, retryGuard);
+    return guard("Try again", retryGuard, (
       <GlobeExplorer
         initialLook={scene.look}
         initialSiteId={scene.siteId}
         initialTheoryId={scene.theoryId}
+        initialTourId={scene.tourId}
+        initialStopId={scene.stopId}
         onLookChange={trackGlobeLook}
         onSelectSite={trackGlobeSite}
         onSelectTheory={trackGlobeTheory}
+        onTourChange={trackGlobeTour}
         onOpenPlace={openPlace}
         onEnterAtlas={enterAtlas}
         onEnterWalk={openWalk}
         modelSlot={<ModelControls model={model} />}
         sceneLayers={<GlobeModelOverlay model={model} />}
       />
-    );
+    ));
   }
 
   const { current, leaving } = mounted;
@@ -244,5 +283,26 @@ export function WorldCoordinator(props: { regional: RegionalTerrain | null; init
       ) : null}
       <div key={current.key} className={leaving ? `${styles.layer} ${styles.entering}` : styles.layer}>{renderScene(current.scene)}</div>
     </main>
+  );
+}
+
+function AtlasView(props: {
+  regional: RegionalTerrain | null;
+  scene: Extract<WorldScene, { view: "atlas" }>;
+  onExitToGlobe: (look: LonLat) => void;
+  onSelectSite: (siteId: string | null) => void;
+  onEnterWalk: (siteId: string) => void;
+  onStartTasTepelerTour: () => void;
+}) {
+  return (
+    <AtlasApp
+      regional={props.regional}
+      initialLook={props.scene.look}
+      initialSiteId={props.scene.siteId}
+      onExitToGlobe={props.onExitToGlobe}
+      onSelectSite={props.onSelectSite}
+      onEnterWalk={props.onEnterWalk}
+      onStartTasTepelerTour={props.onStartTasTepelerTour}
+    />
   );
 }

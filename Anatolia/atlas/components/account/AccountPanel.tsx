@@ -49,7 +49,7 @@ export function AccountPanel(props: {
   );
 
   return (
-    <PanelShell dataRole="account-panel" eyebrow={account.email ? `Signed in as ${account.email}` : "Signed in"} title="Your places" closeLabel="Close your places" onClose={props.onClose} footer={footer}>
+    <PanelShell dataRole="account-panel" eyebrow={account.email ? `Signed in as ${account.email}` : "Signed in"} title="Your places" closeName="your places" onClose={props.onClose} footer={footer}>
       {error ? <p className={styles.error} role="alert">{error}</p> : null}
       {LISTS.map((list) => {
         const listed = savedIds.filter((siteId) => saved[siteId] === list.status).flatMap((siteId) => sites?.get(siteId) ?? []);
