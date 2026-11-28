@@ -1,0 +1,32 @@
+name: SAR synthetic tests
+
+on:
+  pull_request:
+    paths:
+      - 'src/ai_archaeology/sar/**'
+      - 'tests/test_sar_*.py'
+      - '.github/workflows/sar.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'src/ai_archaeology/sar/**'
+      - 'tests/test_sar_*.py'
+      - '.github/workflows/sar.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  synthetic:
+    runs-on: ubuntu-24.04
+    env:
+      PYTHONPATH: src
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: '3.11'
+      - name: Run offline SAR tests
+        run: python -m unittest discover -s tests -p 'test_sar_*.py' -v
