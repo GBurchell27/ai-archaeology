@@ -100,11 +100,11 @@ function Hills({ groundLevelM }: { groundLevelM: number }) {
 }
 
 /** What is too far to walk to: the evening sky with its sun, and the hills along the horizon. `scale` sets both further off, the same size to the eye. */
-export function ModelSky({ groundLevelM, scale = 1 }: { groundLevelM: number; scale?: number }) {
+export function ModelSky({ groundLevelM, scale = 1, hills = true }: { groundLevelM: number; scale?: number; hills?: boolean }) {
   return (
     <group scale={scale}>
       <SkyDome />
-      <Hills groundLevelM={groundLevelM / scale} />
+      {hills ? <Hills groundLevelM={groundLevelM / scale} /> : null}
     </group>
   );
 }

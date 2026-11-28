@@ -1,6 +1,6 @@
 /**
- * The walkable model of the three main pyramids of Giza, assembled from the layout: three cores of level courses on
- * flat ground, with the walker starting at the origin, looking north.
+ * The walkable model of the three main pyramids of Giza, assembled from the layout: three cores of level courses,
+ * lifted onto the prebuilt ground by the walk, with the walker starting at the origin, looking north.
  */
 
 import { seededRandom, type PlanPoint, type WalkModel } from "./enclosureModel";
@@ -34,4 +34,5 @@ export const GIZA_MODEL: WalkModel = {
   hypotheses: GIZA_HYPOTHESES,
   pyramidField: pyramidField(gizaPyramids(), seededRandom(COURSE_TONE_SEED)),
   scale: GIZA_WALK_SCALE,
+  terrainId: "giza",
 };

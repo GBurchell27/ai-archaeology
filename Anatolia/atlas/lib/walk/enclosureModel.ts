@@ -59,7 +59,7 @@ export type Enclosure = {
   centralPair: CentralPair;
 };
 
-export type ModelSource = { label: string; url: string };
+export type ModelSource = { label: string; url: string; /** A second link, such as a licence, shown beside `url`. */ licenceUrl?: string };
 
 export type WalkModel = {
   enclosures: readonly Enclosure[];
@@ -74,6 +74,8 @@ export type WalkModel = {
   rockCut?: RockCutModel;
   /** Pyramids standing on open ground, for a site that is neither. */
   pyramidField?: PyramidField;
+  /** A prebuilt ground window the walker stands on. Absent on the flat floor of the pillar sites. */
+  terrainId?: "giza";
   /** For a site far larger than a building: how fast it is crossed and how far its light and horizon reach. */
   scale?: Partial<WalkScale>;
 };

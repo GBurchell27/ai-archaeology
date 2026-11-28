@@ -18,7 +18,7 @@ Features 1 to 9 and 11 of the list agreed on 2026-11-19 are built; [`world-atlas
   - The layer follows the middle of the timeline range, in steps of 500 years back to 20,000 BCE.
   - Not looked at on the real GPU.
 - [ ] **10. A regional atlas generated on demand.** Not built. Giza is walkable (model only).
-- [ ] **10. Giza model.** The present heights of Khafre and Menkaure, and that they lie south-west of Khufu, rest on Wikipedia; replace with a survey. Lehner, the AERA survey notes and Nell & Ruggles's full text were not read. The Sphinx, temples, causeways, boat pits and queens' pyramids are not drawn for want of a source giving both size and position.
+- [ ] **10. Giza model.** The present heights of Khafre and Menkaure, and that they lie south-west of Khufu, rest on Wikipedia; replace with a survey. Lehner, the AERA survey notes and Nell & Ruggles's full text were not read. The Sphinx, temples, causeways, boat pits and queens' pyramids are not drawn for want of a source giving both size and position. The walk ground is a 6 km GEM-15 window with a Sentinel-2 drape and the three mounds flattened (26 Nov 2026). GEM-15 at Giza was not checked against a survey, and the view was not looked at on a phone or a real GPU.
 - [ ] **5. Settings panel.** The place view has none. "Megaliths only" does nothing on the Anatolia map, which has no site type filter.
 
 ## Launch: search and analytics for ancient-archaeology.com
