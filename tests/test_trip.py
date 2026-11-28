@@ -18,4 +18,4 @@ def test_trip_timeline():
     )
     assert completed.returncode == 0, completed.stdout + completed.stderr
     assert '"ok":true' in completed.stdout.replace(" ", "")
-    assert "trip checks passed: 48 segments, 170.75 hours" in completed.stdout
+    assert "trip checks passed: 50 segments, 170.75 hours" in completed.stdout
