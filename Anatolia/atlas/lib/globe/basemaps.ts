@@ -33,8 +33,9 @@ export const GLOBE_BASEMAPS: GlobeBasemap[] = [
   },
 ];
 
-export const DEFAULT_GLOBE_BASEMAP = GLOBE_BASEMAPS[0];
 export const FALLBACK_GLOBE_BASEMAP = GLOBE_BASEMAPS[1];
+// A public copy opens on Blue Marble: EOX lists web services under commercial use (docs/deploy.md). next.config.ts sets the flag on Vercel.
+export const DEFAULT_GLOBE_BASEMAP = process.env.NEXT_PUBLIC_ATLAS_HOSTED === "on" ? FALLBACK_GLOBE_BASEMAP : GLOBE_BASEMAPS[0];
 
 export function basemapTileUrl(basemap: GlobeBasemap, level: number, x: number, y: number): string {
   return basemap.urlTemplate.replace("{z}", String(level)).replace("{x}", String(x)).replace("{y}", String(y));

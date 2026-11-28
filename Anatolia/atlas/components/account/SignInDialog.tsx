@@ -26,7 +26,7 @@ export function SignInDialog(props: { account: AccountViewModel; onClose(): void
         The atlas stays open without an account. Signing in lets you keep a list of sites you want to visit and sites you
         have visited, and vote for the places you find most remarkable.
       </p>
-      <p className={styles.note} data-role="account-stores">{WHAT_AN_ACCOUNT_STORES}</p>
+      <p className={styles.note} data-role="account-stores">{WHAT_AN_ACCOUNT_STORES} <a href="/privacy">Privacy notice</a>.</p>
       <div className={styles.signIn}>
         <button
           type="button" className={`${ui.button} ${ui.buttonPrimary}`} data-action="sign-in-google"

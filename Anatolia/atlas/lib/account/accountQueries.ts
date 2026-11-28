@@ -24,6 +24,8 @@ const SQL = {
   unvote: "delete from public.site_votes where user_id = $1 and site_id = $2",
   forgetSaved: "delete from public.saved_sites where user_id = $1",
   forgetVotes: "delete from public.site_votes where user_id = $1",
+  // db/schema.sql and the auth tables all name the visitor "on delete cascade": sessions, saved sites and votes go with the row.
+  forgetVisitor: 'delete from neon_auth."user" where id = $1',
   voteCounts: "select site_id, count(*)::int as votes from public.site_votes group by site_id order by votes desc, site_id limit $1",
 };
 
@@ -58,6 +60,7 @@ export function createDatabaseAccountBackend(run: QueryRunner, userId: string): 
       await run(SQL.forgetSaved, [userId]);
       await run(SQL.forgetVotes, [userId]);
     },
+    async deleteAccount() { await run(SQL.forgetVisitor, [userId]); },
   };
 }
 

@@ -17,6 +17,8 @@ export interface AccountViewModel {
   setSaved(siteId: string, status: SavedStatus | null): void;
   setVote(siteId: string, voted: boolean): void;
   deleteSavedData(): void;
+  /** Deletes the sign-in and everything saved under it, then signs out. */
+  deleteAccount(): void;
   /** Leaves the page for Google. False when the sign-in could not start. */
   signInWithGoogle(): Promise<boolean>;
   /** Has a code sent to the address. False when it could not be sent. */
@@ -112,6 +114,7 @@ export function useAccount(): AccountViewModel | null {
     setSaved: (siteId, status) => void store?.setSaved(siteId, status),
     setVote: (siteId, voted) => void store?.setVote(siteId, voted),
     deleteSavedData: () => void store?.deleteSavedData(),
+    deleteAccount: () => void store?.deleteAccount().then((deleted) => { if (deleted) signIn.signOut(); }),
     ...signIn,
     loadVoteCounts,
   } : null), [userId, email, store, places, signIn]);

@@ -14,6 +14,7 @@ const nextConfig: NextConfig = {
   // Likewise for terrain close-ups, so the page offers none where the server would refuse them (lib/placeResources.ts).
   env: {
     NEXT_PUBLIC_ATLAS_ACCOUNTS: readAccountSettings(process.env) ? "on" : "",
+    NEXT_PUBLIC_ATLAS_HOSTED: process.env.VERCEL ? "on" : "",
     NEXT_PUBLIC_ATLAS_CLOSEUPS: closeupsAvailable(process.env) ? "on" : "",
   },
   // app/page.tsx reads this file from disk when it exists; a serverless bundle holds only traced files.

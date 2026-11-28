@@ -45,6 +45,12 @@ The splat is sharp only near where photographers stood. 41 of 294 downloaded pho
 - [ ] **4. Better source material.** The real fix.
   - A continuous video walk round the visitor walkway, or a few hundred overlapping photographs from one visit. Own footage, or footage with permission.
   - No openly licensed video of either site was found (Commons, Openverse, Europeana, Internet Archive).
+  - Searched again on 2026-11-21 beyond Commons (nothing downloaded, no image opened). Found for Göbekli Tepe:
+    - Flickr: about 25 photographs from one visit in April 2022 by one photographer, and 6 from August 2019 by another, all CC BY-SA 2.0. Flickr's terms forbid scraping, so a fetch needs a Flickr API key.
+    - Sketchfab: a mesh "from about 400 images" (2019, CC BY 4.0), mirrored on Zenodo as one 176 MB file. The photographs are not offered, and whether it shows the roof is unconfirmed.
+    - Pexels: about 25 photographs under Pexels' own licence, which is not Creative Commons and forbids automated collection.
+  - Found for Karahan Tepe: seven Commons photographs of the porthole stone area uploaded in August 2025 (CC BY-SA 4.0), not of the three modelled structures.
+  - Nothing usable: the German Archaeological Institute's Arachne (no derivatives), Zenodo, Figshare, Dataverse, Europeana, OpenHeritage3D, Openverse, Panoramax. Mapillary and KartaView could not be checked.
 
 ## Karahan Tepe photographs
 
@@ -72,15 +78,14 @@ The splat is sharp only near where photographers stood. 41 of 294 downloaded pho
 
 ## Decisions waiting
 
-- [ ] Accounts: a privacy notice is needed before real visitors sign in, because Neon will hold their email addresses, the IP address and browser name of each session and, with Google, their profile name and picture. Where the project is hosted (region) belongs in it.
+- [ ] Accounts: read the privacy notice at `/privacy` before real visitors sign in. It was drafted from `accounts.md`, is not legal advice, and says the data is kept in the United States (AWS Ohio), read from the database address.
 - [ ] Accounts: before real visitors, Neon's production checklist: your own Google OAuth credentials, your own mail sender, the application name, the deployed address as a trusted domain, and "Allow localhost" off (`accounts.md`, "Before real visitors sign in").
-- [ ] Accounts: deleting an account is done by hand with `neon neon-auth user delete`. Neon Auth's own delete route answered 404, so a "Delete my account" button needs a server route that deletes the `neon_auth` user row itself. Add it, or keep deletion by request?
 - [ ] Accounts: `neon init` declared a sample function (`Anatolia/atlas/hello.ts`) and a private storage bucket (`assets`) in `Anatolia/atlas/neon.ts`. The atlas uses neither. Remove both, or keep them?
 - [ ] Accounts: OpenStreetMap megaliths cannot be saved or voted for, to keep share-alike records out of the lists. Keep, or allow them?
 - [ ] Accounts: a visitor may vote for any number of sites. Keep, or cap it?
 - [ ] Publish on Vercel with terrain close-ups switched off? They need the repository's Python, which Vercel's Node functions do not have. `deploy.md` lists four ways to bring them back and what each costs.
 - [ ] Commit the Şanlıurfa regional files (`Anatolia/atlas/public/terrain/regions/`, 12 files, 2.7 MB, ignored by git today)? Without them the hosted Anatolia map has no 120 m block around Şanlıurfa. They derive from Copernicus GLO-30 and Sentinel-2, and their source files are already tracked under `Anatolia/explorer/public/terrain/`. It needs the ignore line removed and an exception for `height.u16`.
-- [ ] The default globe imagery on a public site. EOX's licence allows non-commercial use with the credit shown, and its tile service calls itself a demo service with rate limiting; no page read says a public website may use the free endpoint. Keep it, ask EOX, or make NASA Blue Marble (no restriction read) the default for the hosted copy.
+- [ ] Globe imagery on a public site: decided 2026-11-21, a copy built on Vercel opens on NASA Blue Marble. Still open: a visitor can pick Sentinel-2 (EOX) in the settings there, and the Anatolia map's satellite layer is an EOX mosaic (CC BY-NC-SA) served from this repository. Keep both, or remove them from the hosted copy?
 
 - [ ] Rerun the Brush training that the system stopped for low memory (about half an hour, nothing else heavy running).
 - [ ] Rent an NVIDIA GPU for a trainer built for tourist photographs. It needs an account and the photographs uploaded to the provider.

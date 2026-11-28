@@ -315,6 +315,7 @@ Save it inside `Anatolia/atlas` so Node finds puppeteer-core, and run it with `n
 ```
 app/page.tsx                      server entry: reads the URL, renders the coordinator
 app/puzzles/                      the puzzles page: standing questions with their facts, theories and experiments
+app/privacy/                      the privacy notice the sign-in links to (docs/accounts.md)
 app/api/closeup/route.ts          the close-up API
 app/theme.css                     the shared --globe-* colour and type tokens every view reads
 components/WorldCoordinator.tsx   view switching, crossfade, address bar

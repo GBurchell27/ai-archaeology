@@ -7,6 +7,7 @@
 //   PUT    votes/<site id>
 //   DELETE votes/<site id>
 //   DELETE data                 every saved site and every vote of the visitor
+//   DELETE account              the visitor's sign-in, and with it all of the above
 
 import type { AccountBackend } from "@/lib/account/accountBackend";
 import { AccountFullError, createDatabaseAccountBackend, loadVoteCounts, type QueryRunner } from "@/lib/account/accountQueries";
@@ -50,6 +51,7 @@ async function answerForWholeAccount(route: string, rows: AccountBackend): Promi
   if (route === "GET saved") return { status: 200, body: { saved: await rows.loadSaved() } };
   if (route === "GET votes") return { status: 200, body: { votes: await rows.loadVotes() } };
   if (route === "DELETE data") return rows.deleteSavedData().then(() => DONE);
+  if (route === "DELETE account") return rows.deleteAccount().then(() => DONE);
   return NOT_FOUND;
 }
 

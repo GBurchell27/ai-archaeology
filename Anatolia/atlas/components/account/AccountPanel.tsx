@@ -17,6 +17,7 @@ const LISTS: { status: SavedStatus; title: string; empty: string }[] = [
   { status: "visited", title: "Visited", empty: "Nothing yet. Open a site and choose “Visited”." },
 ];
 
+const DELETE_ACCOUNT_QUESTION = "Delete your account, with every site you saved and every vote you gave? This cannot be undone.";
 const DELETE_QUESTION = "Delete every site you saved and every vote you gave? This cannot be undone.";
 
 /** The visitor's own space: the two lists, sign out, and deleting what they saved. Signed out, it is the sign-in. */
@@ -41,6 +42,9 @@ export function AccountPanel(props: {
       >
         Delete my saved data
       </button>
+      <button type="button" className={ui.button} data-action="delete-account" onClick={() => { if (window.confirm(DELETE_ACCOUNT_QUESTION)) account.deleteAccount(); }}>
+        Delete my account
+      </button>
     </>
   );
 
@@ -60,7 +64,7 @@ export function AccountPanel(props: {
       })}
       <p className={styles.note}>
         You have voted for {votes.length} {votes.length === 1 ? "site" : "sites"}; a site&rsquo;s card shows your vote.
-        Deleting your saved data removes these lists and your votes. The sign-in itself stays.
+        Deleting your saved data removes these lists and your votes; the sign-in itself stays. Deleting your account removes the sign-in too.
       </p>
     </PanelShell>
   );

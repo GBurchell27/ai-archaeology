@@ -24,4 +24,6 @@ export interface AccountBackend {
   removeVote(siteId: string): Promise<void>;
   /** Every saved site and every vote of this visitor. The sign-in itself stays. */
   deleteSavedData(): Promise<void>;
+  /** The sign-in itself, every session of it, and with it every saved site and vote. */
+  deleteAccount(): Promise<void>;
 }

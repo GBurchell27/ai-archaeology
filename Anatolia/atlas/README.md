@@ -38,7 +38,7 @@ The globe and the Anatolia atlas run on Node alone. The place view also needs th
 
 Zoom in over Turkey and the globe offers **Enter Anatolia terrain** below 900 km. Keep zooming and it enters by itself below 450 km. In the atlas, the **Globe** button or zooming well out goes back.
 
-The imagery is EOX Sentinel-2 cloudless 2020 (CC BY-NC-SA 4.0), streamed. If that host does not answer, the globe falls back to NASA Blue Marble.
+The imagery is EOX Sentinel-2 cloudless 2020 (CC BY-NC-SA 4.0), streamed. If that host does not answer, the globe falls back to NASA Blue Marble. A copy built on Vercel opens on Blue Marble instead.
 
 ## The place view
 

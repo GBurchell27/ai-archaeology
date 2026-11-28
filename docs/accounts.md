@@ -12,7 +12,7 @@ Paths are relative to `Anatolia/atlas` unless they start with `docs/` or `tests/
 | --- | --- |
 | **Not configured** (any of the three settings below is absent when the app is built) | The atlas exactly as it was. No account button, no controls on a site card, no "Most voted". The sign-in code is not downloaded and no request is made. The account routes answer 503. |
 | **Configured, signed out** | "Most voted" and "Sign in" in the globe's top bar. A site card has "Want to visit", "Visited" and "Vote"; pressing one opens the sign-in. The "Most voted" list is readable. |
-| **Signed in** | "Sign in" becomes "Account": the two lists, whose rows open the site on the globe, with "Sign out" and "Delete my saved data". The buttons on a site card save, move, remove and vote. |
+| **Signed in** | "Sign in" becomes "Account": the two lists, whose rows open the site on the globe, with "Sign out", "Delete my saved data" and "Delete my account". The buttons on a site card save, move, remove and vote. |
 
 Accounts exist only on the globe. The Anatolia map, the place view and the walk have no account controls.
 
@@ -148,12 +148,14 @@ Neon's production checklist (`https://neon.com/docs/auth/production-checklist`),
 - **Your own mail sender.** The shared one is for development. Set a custom SMTP provider in the Neon console (Settings, Auth) or with `neon neon-auth config email-provider update`.
 - **The application name** shown in the emails, in the same place.
 - **Switch off "Allow localhost"** on the production branch.
-- **A privacy notice**, because Neon will hold visitors' email addresses. That is a decision waiting in [`todo.md`](todo.md).
+- **Read the privacy notice** at `/privacy` (`app/privacy/page.tsx`), which the sign-in links to. It was drafted from this document and is not legal advice. It names where the data is kept: change `ACCOUNT_DATA_PLACE` there if the Neon project is not in AWS Ohio (the region is in the host name of `DATABASE_URL`).
 
 ## Deleting
 
 - "Delete my saved data" in the Account panel removes every saved site and every vote of that visitor. The sign-in record (the email) stays.
-- Deleting the account itself is done by the keeper: `neon neon-auth user delete <user id> --project-id <project id>`, with the id from `select id, email from neon_auth."user"`. The rows go with it. There is no button for it in the app: Neon Auth's `delete-user` route answered 404 on this project, so a signed-in visitor cannot delete their own account through it. A button would need a server route that deletes the `neon_auth."user"` row itself. That is a decision waiting.
+- "Delete my account" in the same panel removes the sign-in too. The route `DELETE /api/account/account` deletes the visitor's row in `neon_auth."user"`; the sessions, the Google link, the saved sites and the votes all name that row "on delete cascade" and go with it. The page then signs out. Neon Auth's own `delete-user` route answered 404 on this project, which is why the atlas does it itself. Run on 2026-11-21 against the real project with one throwaway account: one user, session, login, saved site and vote before, none after.
+  - Until the page signs out, the browser's session cookie still passes: a read answers an empty list and a save answers 500. The button signs out straight away, so a visitor does not meet this.
+  - The keeper can also delete an account by hand: `neon neon-auth user delete <user id> --project-id <project id>`.
 
 ## The check
 
@@ -190,4 +192,4 @@ Not tested:
 
 ## Not built
 
-Trip planning (an ordered route through saved sites) was raised and left for later. Also absent: "Delete my account" in the app, vote totals on a site card, a limit on how many sites a visitor may vote for beyond the row limit, the visitor's own list of votes (a site's card shows whether they voted for it), and accounts outside the globe view.
+Trip planning (an ordered route through saved sites) was raised and left for later. Also absent: vote totals on a site card, a limit on how many sites a visitor may vote for beyond the row limit, the visitor's own list of votes (a site's card shows whether they voted for it), and accounts outside the globe view.

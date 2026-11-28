@@ -20,6 +20,8 @@ export interface AccountStore {
   setSaved(siteId: string, status: SavedStatus | null): Promise<void>;
   setVote(siteId: string, voted: boolean): Promise<void>;
   deleteSavedData(): Promise<void>;
+  /** True when the account is gone. The caller then drops the session. */
+  deleteAccount(): Promise<boolean>;
 }
 
 export const EMPTY_ACCOUNT_STATE: AccountState = { loaded: false, saved: {}, votes: [], error: null };
@@ -28,6 +30,7 @@ export const ACCOUNT_ERRORS = {
   load: "Your saved sites could not be loaded. Reload the page to try again.",
   change: "That change was not saved. Try again.",
   delete: "Your saved data was not deleted. Try again.",
+  deleteAccount: "Your account was not deleted. Try again.",
 };
 
 function savedWith(saved: AccountState["saved"], siteId: string, status: SavedStatus | null): AccountState["saved"] {
@@ -104,6 +107,11 @@ export function createAccountStore(backend: AccountBackend): AccountStore {
       const { saved, votes } = cell.get();
       update({ saved: {}, votes: [], error: null });
       await attempt(() => backend.deleteSavedData(), () => update({ saved, votes }), ACCOUNT_ERRORS.delete);
+    },
+    async deleteAccount() {
+      update({ error: null });
+      await attempt(() => backend.deleteAccount(), () => {}, ACCOUNT_ERRORS.deleteAccount);
+      return cell.get().error === null;
     },
   };
 }

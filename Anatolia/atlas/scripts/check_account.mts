@@ -77,6 +77,7 @@ function fakeBackend() {
     addVote: (siteId) => run(() => { votes.add(siteId); }),
     removeVote: (siteId) => run(() => { votes.delete(siteId); }),
     deleteSavedData: () => run(() => { saved.clear(); votes.clear(); }),
+    deleteAccount: () => run(() => { saved.clear(); votes.clear(); }),
   };
   return { backend, database };
 }
@@ -131,12 +132,14 @@ function fakeBackend() {
   check("a refused unvote goes back", store.getState().votes, ["Q12508"]);
   await store.deleteSavedData();
   check("a refused delete goes back", store.getState(), { loaded: true, saved: { Q12508: "visited" }, votes: ["Q12508"], error: ACCOUNT_ERRORS.delete });
+  check("a refused account deletion says so and reports failure", [await store.deleteAccount(), store.getState().error], [false, ACCOUNT_ERRORS.deleteAccount]);
 
   database.failing = false;
   await store.setVote("Q214944", true);
   check("the next change that works clears the message", store.getState().error, null);
   await store.deleteSavedData();
   check("delete my saved data empties both", [store.getState().saved, store.getState().votes, database.saved.size, database.votes.size], [{}, [], 0, 0]);
+  check("an account deletion that works reports success", await store.deleteAccount(), true);
 
   stop();
   const heard = notified;
@@ -214,7 +217,7 @@ function recordingRunner() {
 
 const OWN_ROUTES: [string, string[], string | null][] = [
   ["GET", ["saved"], null], ["GET", ["votes"], null], ["PUT", ["saved", "Q214944"], "want"], ["DELETE", ["saved", "Q214944"], null],
-  ["PUT", ["votes", "Q214944"], null], ["DELETE", ["votes", "Q214944"], null], ["DELETE", ["data"], null],
+  ["PUT", ["votes", "Q214944"], null], ["DELETE", ["votes", "Q214944"], null], ["DELETE", ["data"], null], ["DELETE", ["account"], null],
 ];
 
 async function ask(runner: ReturnType<typeof recordingRunner>, userId: string | null, method: string, path: string[], status: string | null = null) {
@@ -245,7 +248,7 @@ async function ask(runner: ReturnType<typeof recordingRunner>, userId: string | 
     check(`signed in, ${method} ${path.join("/")} is answered`, (await ask(runner, "visitor-a", method, path, status)).status, 200);
   }
   check("every statement names the session's visitor first", runner.statements.filter((statement) => statement.values[0] !== "visitor-a"), []);
-  check("every statement is limited to that visitor", runner.statements.filter((statement) => !/user_id = \$1|values \(\$1,/.test(statement.text)), []);
+  check("every statement is limited to that visitor", runner.statements.filter((statement) => !/user_id = \$1|values \(\$1,|^delete from neon_auth\."user" where id = \$1$/.test(statement.text)), []);
   check("no statement carries a value in its text", runner.statements.filter((statement) => /Q214944|visitor-a|'/.test(statement.text)), []);
   check("a read is cut to the most rows a visitor may hold", runner.statements[0].values, ["visitor-a", MOST_ROWS_PER_VISITOR]);
 

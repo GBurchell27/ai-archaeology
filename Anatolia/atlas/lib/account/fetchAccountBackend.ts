@@ -25,6 +25,7 @@ export function createFetchAccountBackend(onSignedOut?: () => void, request: Fet
     addVote: (siteId) => change("PUT", `votes/${encodeURIComponent(siteId)}`),
     removeVote: (siteId) => change("DELETE", `votes/${encodeURIComponent(siteId)}`),
     deleteSavedData: () => change("DELETE", "data"),
+    deleteAccount: () => change("DELETE", "account"),
   };
 }
 
