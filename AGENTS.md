@@ -64,6 +64,7 @@ Read the one that covers your change before editing:
 | `docs/deploy.md` | Publishing the web app on Vercel: the settings, what does not work on a hosted copy and why, the tile hosts' terms, the size, and a production build beside the dev server. |
 | `docs/accounts.md` | Optional sign-in on the globe: saved sites, votes and the "Most voted" list. What is stored, the Neon schema and setup, the three settings, and what was and was not tested. |
 | `docs/todo.md` | Open work, decisions waiting on the owner, and what is unverified. Update it when you finish or find something. |
+| `docs/roadmap.md` | The direction: vision and milestones M1 to M5, each with a goal and success criteria. The tasks are in `docs/todo.md`. |
 
 Update the document when you change what it describes.
 

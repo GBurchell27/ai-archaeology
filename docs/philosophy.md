@@ -6,7 +6,7 @@ What this atlas is for, and how to decide what belongs in it. Written from the o
 
 A centre of information about the deep human past: every published archaeological site on one globe, with the oldest and strangest of them explored in depth. The reader draws their own conclusions. The atlas puts everything on the table and shows what holds each idea up.
 
-The focus is the very ancient: Anatolia, Göbekli Tepe, Karahan Tepe and the Taş Tepeler first, then the other places that raise the same questions, such as Giza. Turkey comes first; the whole globe is the direction.
+The atlas began with Anatolia: Göbekli Tepe, Karahan Tepe and the Taş Tepeler, then Giza. On 2026-11-28 the owner set what comes next. The places to explore in depth are ancient sites with a sense of mystery, and he wants the lost-civilisation question, as Graham Hancock and similar authors pose it, on the table. That question is welcome. Principle 8 still holds: it is never stated as a fact, and it is never drawn as a find. Other periods are in scope when the place is genuinely interesting for that question. The milestones are in [`roadmap.md`](roadmap.md).
 
 ## Principles
 
