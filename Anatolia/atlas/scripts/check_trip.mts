@@ -54,6 +54,7 @@ check("the end is the last segment, finished", locateSegment(timed, span.endMs).
   && locateSegment(timed, span.endMs).progress === 1);
 check("Göbeklitepe on Wednesday afternoon", locateSegment(timed, Date.parse("2026-04-15T14:00:00+03:00")).timed.segment.title === "Göbeklitepe");
 check("on the road to Karadut on Thursday", locateSegment(timed, Date.parse("2026-04-16T13:30:00+03:00")).timed.segment.kind === "travel");
+check("Harran on Saturday afternoon", locateSegment(timed, Date.parse("2026-04-18T14:00:00+03:00")).timed.segment.title === "Harran");
 
 check("next stop from inside a segment", adjacentBoundary(timed, timed[0].startMs + 1, 1) === timed[1].startMs);
 check("previous stop from inside a segment is its start", adjacentBoundary(timed, timed[2].startMs + 1, -1) === timed[2].startMs);

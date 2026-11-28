@@ -22,6 +22,7 @@ export const PLACES = {
   nemrutVisitorCentre: place("Mount Nemrut visitor centre", [38.7281, 37.9704]),
   nemrutSummit: place("Mount Nemrut summit", [38.7408, 37.9806]),
   karahanTepe: place("Karahan Tepe", [39.30361, 37.0925]),
+  harran: place("Harran", [39.025, 36.87083], true),
   akcakale: place("Akçakale, on the Syrian border", [38.9481, 36.7111], true),
   sultanahmet: place("Sultanahmet, Istanbul", [28.9765, 41.0065], true),
   hagiaSophia: place("Hagia Sophia", [28.9801, 41.0086]),
